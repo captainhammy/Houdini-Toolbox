@@ -88,7 +88,7 @@ SOP_PointsFromVoxels::cookMySop(OP_Context &context)
 
     UT_VoxelArrayIteratorF	vit;
 
-    now = context.myTime;
+    now = context.getTime();
 
     if (lockInputs(context) >= UT_ERROR_ABORT)
         return error();
