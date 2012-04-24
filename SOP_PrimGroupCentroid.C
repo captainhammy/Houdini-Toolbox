@@ -261,8 +261,12 @@ SOP_PrimGroupCentroid::cookMySop(OP_Context &context)
 
         // If the entered name is empty, use a default name.
         if (attr_name.length() == 0)
-            attr_name = "source_group";
-
+        {
+            if (useName)
+                attr_name = "name";
+            else
+                attr_name = "source_group";
+        }
         // Create a new string attribute.
         src_gah = gdp->addStringTuple(GA_ATTRIB_POINT, attr_name, 1);
         src_attrib = src_gah.getAttribute();
