@@ -65,7 +65,7 @@ SOP_PrimGroupCentroid::disableParms()
 
     // Disable setting an attribute name when we are storing and using
     // the 'name' attribute.
-    changed = enableParm("name", store && !name);
+    changed = enableParm("name", store);
     // Disable the 'group' parm when we are using the 'name' attribute.
     changed += enableParm("group", !name);
 
@@ -256,19 +256,12 @@ SOP_PrimGroupCentroid::cookMySop(OP_Context &context)
     // If we want to we need to create a new string attribute.
     if (store)
     {
-        // If we are using a name attribute we will automatically store
-        // the value back as the name attribute.
-        if (useName)
-            attr_name = "name";
         // Get the attribute name.
-        else
-        {
-            ATTRIB(attr_name, now);
+        ATTRIB(attr_name, now);
 
-            // If the entered name is empty, use a default name.
-            if (attr_name.length() == 0)
-                attr_name = "source_group";
-        }
+        // If the entered name is empty, use a default name.
+        if (attr_name.length() == 0)
+            attr_name = "source_group";
 
         // Create a new string attribute.
         src_gah = gdp->addStringTuple(GA_ATTRIB_POINT, attr_name, 1);
