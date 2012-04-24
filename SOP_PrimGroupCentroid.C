@@ -366,8 +366,13 @@ SOP_PrimGroupCentroid::cookMySop(OP_Context &context)
 
     else
     {
-        // For each primitive group.
-        GA_FOR_ALL_PRIMGROUPS(input_geo, group)
+        // For each primitive group in order.
+        for (GA_ElementGroupTable::ordered_iterator 
+                __iter = (input_geo)->getElementGroupTable(GA_ATTRIB_PRIMITIVE).obegin(),
+                __end = (input_geo)->getElementGroupTable(GA_ATTRIB_PRIMITIVE).oend();
+            __iter != __end && 
+                (group = static_cast<GA_ElementGroupTableT<GA_ATTRIB_PRIMITIVE>::GROUP_TYPE *>(__iter.item())); 
+            ++__iter)
         {
             // Skip internal groups.
             if (group->getInternal())
