@@ -9,12 +9,16 @@
  *
  * Name: SOP_PrimCentroid.C
  * 
- * Version: 2.0
+ * Version: 3.0
 */
 
 #include "SOP_PrimCentroid.h"
 
+#include <CH/CH_Manager.h>
+#include <GA/GA_AttributeRefMap.h>
+#include <GA/GA_AttributeFilter.h>
 #include <PRM/PRM_Include.h>
+#include <UT/UT_WorkArgs.h>
 
 #include <OP/OP_Operator.h>
 #include <OP/OP_OperatorTable.h>
@@ -47,6 +51,18 @@ SOP_PrimCentroid::SOP_PrimCentroid(OP_Network *net,
                                    OP_Operator *op):
     SOP_Node(net, name, op) {}
 
+unsigned
+SOP_PrimCentroid::disableParms()
+{
+    fpreal t = CHgetEvalTime();
+    unsigned changed;
+
+    // Only enable the parameter if we are copying attributes.
+    changed = enableParm("attributes", COPY(t));
+
+    return changed;
+}
+
 static PRM_Name methodChoices[] =
 {
     PRM_Name("bary", "Barycenter"),
@@ -59,23 +75,56 @@ static PRM_ChoiceList methodChoiceMenu(
                          | PRM_CHOICELIST_REPLACE),
     methodChoices);
 
-static PRM_Name         method_name("method", "Method");
-static PRM_Default      method_default(0);
+
+static PRM_Name names[] =
+{
+    PRM_Name("method", "Method"),
+    PRM_Name("copy", "Copy Attributes"),
+    PRM_Name("attributes", "Attributes to Copy"),
+};
+
+static PRM_Default defaults[] =
+{
+    PRM_Default(0),
+    PRM_Default(0),
+    PRM_Default(0, "*"),
+};
+
+static PRM_ChoiceList attribMenu((PRM_ChoiceListType)(PRM_CHOICELIST_TOGGLE),
+                                 &SOP_PrimCentroid::buildMenu);
 
 PRM_Template
 SOP_PrimCentroid::myTemplateList[] = {
-    PRM_Template(PRM_ORD, 1, &method_name, &method_default, &methodChoiceMenu),
+    PRM_Template(PRM_ORD, 1, &names[0], &defaults[0], &methodChoiceMenu),
+    PRM_Template(PRM_TOGGLE, 1, &names[1], &defaults[1]),
+    PRM_Template(PRM_STRING, 1, &names[2], &defaults[2], &attribMenu),
     PRM_Template()
 };
+
+void
+SOP_PrimCentroid::buildMenu(void *data,
+                            PRM_Name *menu,
+                            int list_size,
+                            const PRM_SpareData *,
+                            const PRM_Parm *)
+{
+    // Get the instance of the operator.
+    SOP_PrimCentroid *me = (SOP_PrimCentroid *)data;
+
+    // Populate the menu with primitive attribute names.
+    me->fillAttribNameMenu(menu, 1000, GEO_PRIMITIVE_DICT , 0);
+}
 
 OP_ERROR
 SOP_PrimCentroid::cookMySop(OP_Context &context)
 {
     fpreal 		        now;
-    exint 		        method;
+    exint 		        method, copy;
 
     GA_Offset                   ptOff;
 
+    const GA_Attribute          *srcAttr;
+    const GA_AttributeDict      *dict;
     GA_RWAttributeRef	        n_gah;
     GA_RWHandleV3               n_h;
 
@@ -83,6 +132,8 @@ SOP_PrimCentroid::cookMySop(OP_Context &context)
     const GU_Detail             *input_geo;
 
     UT_BoundingBox	        bbox;
+    UT_String                   pattern, name;
+    UT_WorkArgs                 tokens;
     
     now = context.getTime();
 
@@ -99,10 +150,57 @@ SOP_PrimCentroid::cookMySop(OP_Context &context)
     // Find out which calculation method we are attempting.
     method = METHOD(now);
 
+    // Find out if we are copying attributes.
+    copy = COPY(now);
+
     // Create the standard point normal (N) attribute.
     n_gah = gdp->addNormalAttribute(GA_ATTRIB_POINT);
     // Bind a read/write attribute handle to the normal attribute.
     n_h.bind(n_gah.getAttribute());
+
+    // Construct an attribute reference map to map attributes.
+    GA_AttributeRefMap hmap(*gdp, input_geo);
+
+    // Are we trying to copy attributes.
+    if (copy)
+    {
+        // Get the attribute selection string.
+        ATTRIBUTES(pattern, now);
+
+        // Make sure we entered something.
+        if (pattern.length() > 0)
+        {
+            // Tokenize the pattern.
+            pattern.tokenize(tokens, " ");
+
+            // The primitive attributes on the incoming geometry.
+            dict = &input_geo->primitiveAttribs();
+
+            // Iterate over all the primitive attributes.
+            for (GA_AttributeDict::iterator it=dict->begin();
+                 !it.atEnd();
+                 ++it)
+            {
+                // The current attribute.
+                srcAttr = it.attrib();
+                // Get the attribute name.
+                name = srcAttr->getName();
+
+                // If the name doesn't match our pattern, skip it.
+                if (!name.matchPattern(tokens))
+                    continue;
+
+                // Create a new point attribute on the current geometry
+                // that is the same as the source attribute.  Append it and
+                // the source to the map.
+                hmap.append(gdp->addPointAttrib(srcAttr).getAttribute(),
+                            srcAttr);
+            }
+        }
+        // If it is empty, don't try to copy attributes later on.
+        else
+            copy = 0;
+    }
 
     // Get the list of input primitives.
     const GA_PrimitiveList &prim_list = input_geo->getPrimitiveList();
@@ -128,6 +226,11 @@ SOP_PrimCentroid::cookMySop(OP_Context &context)
 
         // Set the point's normal to be the normal of the primitive.
         n_h.set(ptOff, prim->computeNormal());
+
+        // If we are copying attributes, copy the primitive attributes from
+        // the current primitive to the new point.
+        if (copy)
+            hmap.copyValue(GA_ATTRIB_POINT, ptOff, GA_ATTRIB_PRIMITIVE, *it);
     }
 
     unlockInputs();
