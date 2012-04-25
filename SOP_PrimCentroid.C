@@ -16,7 +16,6 @@
 
 #include <CH/CH_Manager.h>
 #include <GA/GA_AttributeRefMap.h>
-#include <GA/GA_AttributeFilter.h>
 #include <PRM/PRM_Include.h>
 #include <UT/UT_WorkArgs.h>
 
