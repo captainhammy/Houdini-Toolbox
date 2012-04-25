@@ -100,7 +100,7 @@ static PRM_Default defaults[] =
     PRM_Default(0),
     PRM_Default(0),
     PRM_Default(0),
-    PRM_Default(0, "source_group")
+    PRM_Default(0, "source")
 };
 
 PRM_Template
@@ -265,7 +265,7 @@ SOP_PrimGroupCentroid::cookMySop(OP_Context &context)
             if (useName)
                 attr_name = "name";
             else
-                attr_name = "source_group";
+                attr_name = "group";
         }
         // Create a new string attribute.
         src_gah = gdp->addStringTuple(GA_ATTRIB_POINT, attr_name, 1);
