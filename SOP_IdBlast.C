@@ -133,7 +133,7 @@ SOP_IdBlast::cookMySop(OP_Context &context)
     // If it doesn't exist, display a node error message and exit.
     if (id_gah.isInvalid())
     {
-        addError(SOP_MESSAGE, "Input 1 has no 'id' attribute.");
+        addError(SOP_MESSAGE, "Input geometry has no 'id' attribute.");
         unlockInputs();
         return error();
     }
