@@ -4,7 +4,7 @@
 #       captainhammy@gmail.com
 #       www.captainhammy.com
 #
-# Name:         inlinegeo.py
+# Name:         inline.py
 #
 # Comments:     Custom C++ functions to enhance HOM.
 #
@@ -12,8 +12,8 @@
 #
 
 # Standard Library Imports
-import types
 import ctypes
+import types
 
 # Third Party Imports
 import hou
@@ -23,8 +23,8 @@ cpp_methods = inlinecpp.createLibrary("cpp_methods",
 includes="""
 #include <GA/GA_AttributeRefMap.h>
 #include <GEO/GEO_Face.h>
-#include <GU/GU_Detail.h>
 #include <GQ/GQ_Detail.h>
+#include <GU/GU_Detail.h>
 #include <OP/OP_Node.h>
 #include <PRM/PRM_Parm.h>
 """,
@@ -66,7 +66,7 @@ IntArray findAllPrimitivesByName(const GU_Detail *gdp,
 
     GEO_ConstPrimitivePtrArray  prims;
     GEO_ConstPrimitivePtrArray::const_iterator prims_it;
-    
+
     // Try to find all the primitives given the name.
     gdp->findAllPrimitivesByName(prims,
                                  name_to_match,
@@ -1017,7 +1017,7 @@ def findPrimByName(self,
         match_number (int):
             The match_numberth matching primitive to return.
 
-    Returns:    
+    Returns:
         (hou.Primitive|None):
             A matching primitive, if found.  If no primitive
             is found, returns None.  None is also returned if
@@ -1029,9 +1029,9 @@ def findPrimByName(self,
     """
     # Try to find a primitive matching the name.
     result = cpp_methods.findPrimitiveByName(self,
-                                                 name_to_match,
-                                                 name_attribute,
-                                                 match_number)
+                                             name_to_match,
+                                             name_attribute,
+                                             match_number)
 
     # If the result is -1, no prims were found so return None.
     if result == -1:
@@ -1050,7 +1050,7 @@ def findAllPrimsByName(self, name_to_match, name_attribute="name"):
         name_attribute (string):
             The attribute name to use.
 
-    Returns:    
+    Returns:
         (tuple)
             A tuple of hou.Prim objects whose attribute values
             match.
@@ -1060,9 +1060,9 @@ def findAllPrimsByName(self, name_to_match, name_attribute="name"):
     """
     # Try to find matching primitives.
     result = cpp_methods.findAllPrimitivesByName(self,
-                                                     name_to_match,
-                                                     name_attribute)
-    
+                                                 name_to_match,
+                                                 name_attribute)
+
     # Return a tuple of the matching primitives if any were found.
     if result:
         return self.globPrims(' '.join([str(i) for i in result]))
@@ -1107,11 +1107,11 @@ def copyPointAttributeValues(self, source_point, attributes):
 
     # Copy the values.
     cpp_methods.copyPointAttributeValues(self.geometry(),
-                                             self.number(),
-                                             source_geometry,
-                                             source_point.number(),
-                                             arr,
-                                             num_attribs)
+                                         self.number(),
+                                         source_geometry,
+                                         source_point.number(),
+                                         arr,
+                                         num_attribs)
 
 
 def copyPrimAttributeValues(self, source_prim, attributes):
@@ -1150,11 +1150,11 @@ def copyPrimAttributeValues(self, source_prim, attributes):
 
     # Copy the values.
     cpp_methods.copyPrimAttributeValues(self.geometry(),
-                                            self.number(),
-                                            source_geometry,
-                                            source_prim.number(),
-                                            arr,
-                                            num_attribs)
+                                        self.number(),
+                                        source_geometry,
+                                        source_prim.number(),
+                                        arr,
+                                        num_attribs)
 
 
 def connectedPrims(self):
@@ -1173,7 +1173,7 @@ def connectedPrims(self):
     geometry = self.geometry()
     # Get a list of primitive numbers that reference the point.
     result = cpp_methods.connectedPrims(geometry,
-                                            self.number())
+                                        self.number())
 
     return geometry.globPrims(' '.join([str(i) for i in result]))
 
@@ -1196,7 +1196,7 @@ def connectedPoints(self):
 
     # Get a list of point numbers that are connected to the point.
     result = cpp_methods.connectedPoints(geometry,
-                                             self.number())
+                                         self.number())
 
     # Glob for the points and return them.
     return geometry.globPoints(' '.join([str(i) for i in result]))
@@ -1219,7 +1219,7 @@ def referencingVertices(self):
 
     # Get an object containing primitive and vertex index information.
     result = cpp_methods.referencingVertices(geometry,
-                                                 self.number())
+                                             self.number())
 
     # Construct a list of vertex strings.  Each element has the format:
     # {prim_num}v{vertex_index}.
@@ -1249,15 +1249,15 @@ def setStringAttrib(self, attribute, value):
     if isinstance(self, hou.PointGroup):
         # Attempt to set the attribute and get the result.
         result = cpp_methods.setPointGroupStringAttrib(self.geometry(),
-                                                           self.name(),
-                                                           attribute.name(),
-                                                           value)
+                                                       self.name(),
+                                                       attribute.name(),
+                                                       value)
     else:
         # Attempt to set the attribute and get the result.
         result = cpp_methods.setPrimGroupStringAttrib(self.geometry(),
-                                                          self.name(),
-                                                          attribute.name(),
-                                                          value)
+                                                      self.name(),
+                                                      attribute.name(),
+                                                      value)
 
     # Check the result for errors.
     if result == 1:
@@ -1283,9 +1283,9 @@ def hasEdge(self, point1, point2):
     """
     # Test for the edge.
     return cpp_methods.hasEdge(self.geometry(),
-                                   self.number(),
-                                   point1.number(),
-                                   point2.number())
+                               self.number(),
+                               point1.number(),
+                               point2.number())
 
 
 def insertVertex(self, point, index):
@@ -1304,9 +1304,9 @@ def insertVertex(self, point, index):
     """
     # Insert the vertex.
     cpp_methods.insertVertex(self.geometry(),
-                                 self.number(),
-                                 point.number(),
-                                 index)
+                             self.number(),
+                             point.number(),
+                             index)
 
 
 def deleteVertex(self, index):
@@ -1323,8 +1323,8 @@ def deleteVertex(self, index):
     """
     # Delete teh vertex.
     cpp_methods.deleteVertex(self.geometry(),
-                                 self.number(),
-                                 index)
+                             self.number(),
+                             index)
 
 
 def setPoint(self, index, point):
@@ -1343,9 +1343,9 @@ def setPoint(self, index, point):
     """
     # Delete teh vertex.
     cpp_methods.setPoint(self.geometry(),
-                             self.number(),
-                             index,
-                             point.number())
+                         self.number(),
+                         index,
+                         point.number())
 
 
 def baryCenter(self):
@@ -1362,7 +1362,7 @@ def baryCenter(self):
     """
     # Get the Position3D object representing the barycenter.
     pos = cpp_methods.baryCenter(self.geometry(),
-                                     self.number())
+                                 self.number())
 
     # Construct a vector and return it.
     return hou.Vector3(pos.x, pos.y, pos.z)
@@ -1399,7 +1399,7 @@ def perimeter(self):
     """
     # Calculate and return the perimeter.
     return cpp_methods.perimeter(self.geometry(),
-                                     self.number())
+                                 self.number())
 
 
 def reverse(self):
@@ -1413,7 +1413,7 @@ def reverse(self):
 
     """
     return cpp_methods.reverse(self.geometry(),
-                                   self.number())
+                               self.number())
 
 
 def makeUnique(self):
@@ -1430,7 +1430,7 @@ def makeUnique(self):
 
     """
     return cpp_methods.makeUnique(self.geometry(),
-                                      self.number())
+                                  self.number())
 
 
 def boundingBox(self):
@@ -1447,7 +1447,7 @@ def boundingBox(self):
     """
     # Calculate the bounds for the primitive.
     bounds = cpp_methods.boundingBox(self.geometry(),
-                                         self.number())
+                                     self.number())
 
     # Construct and return a hou.BoundingBox object.
     return hou.BoundingBox(bounds.xmin, bounds.ymin, bounds.zmin,
@@ -1469,10 +1469,10 @@ def groupBoundingBox(self):
     # Calculate the bounds for the group.
     if isinstance(self, hou.PrimGroup):
         bounds = cpp_methods.primGroupBoundingBox(self.geometry(),
-                                                      self.name())
+                                                  self.name())
     else:
         bounds = cpp_methods.pointGroupBoundingBox(self.geometry(),
-                                                       self.name())
+                                                   self.name())
 
     # Construct and return a hou.BoundingBox object.
     return hou.BoundingBox(bounds.xmin, bounds.ymin, bounds.zmin,
@@ -1762,7 +1762,7 @@ def toggleEntries(self):
 
     """
     geometry = self.geometry()
-    
+
     if isinstance(self, hou.PrimGroup):
         group_type = 1
     # hou.PointGroup
@@ -1770,6 +1770,48 @@ def toggleEntries(self):
         group_type = 0
 
     cpp_methods.toggleEntries(geometry, self.name(), group_type)
+
+
+def primGroupContainsAny(self, group):
+    """Returns whether or not any prims in the group are in this group.
+
+    Args:
+        group (hou.PrimGroup):
+            A prim group which may have one or more prims in
+            this group.
+
+    Returns:
+        (bool):
+            Returns True if the group has one or more primitives that are
+            in this group, otherwise False.
+
+    Raises: None
+
+    """
+    geometry = self.geometry()
+
+    return cpp_methods.containsAny(geometry, self.name(), group.name(), 1)
+
+
+def pointGroupContainsAny(self, group):
+    """Returns whether or not any points in the group are in this group.
+
+    Args:
+        group (hou.PointGroup):
+            A point group which may have one or more points in
+            this group.
+
+    Returns:
+        (bool):
+            Returns True if the group has one or more points that are
+            in this group, otherwise False.
+
+    Raises: None
+
+    """
+    geometry = self.geometry()
+
+    return cpp_methods.containsAny(geometry, self.name(), group.name(), 0)
 
 
 def clip(self, normal, dist):
@@ -1941,9 +1983,9 @@ def isParmDefault(self):
 
     # Pass in the tuple name since we have to access the actual parm
     # by index.
-    return cpp_parm_methods.isParmDefault(node,
-                                          self.tuple().name(),
-                                          index)
+    return cpp_methods.isParmDefault(node,
+                                     self.tuple().name(),
+                                     index)
 
 
 def isParmTupleDefault(self):
@@ -1961,8 +2003,8 @@ def isParmTupleDefault(self):
     # Get the node.
     node = self.node()
 
-    return cpp_parm_methods.isParmTupleDefault(node,
-                                               self.name())
+    return cpp_methods.isParmTupleDefault(node,
+                                          self.name())
 
 
 hou.Geometry.findPrimByName = types.MethodType(findPrimByName,
@@ -2058,6 +2100,11 @@ hou.PrimGroup.toggleEntries = types.MethodType(toggleEntries,
                                                None,
                                                hou.PrimGroup)
 
+hou.PrimGroup.containsAny = types.MethodType(primGroupContainsAny,
+                                             None,
+                                             hou.PrimGroup)
+hou.PrimGroup.containsAny.__func__.__name__ = "containsAny"
+
 hou.PointGroup.boundingBox = types.MethodType(groupBoundingBox,
                                               None,
                                               hou.PointGroup)
@@ -2071,6 +2118,11 @@ hou.PointGroup.toggle.__func__.__name__ = "toggle"
 hou.PointGroup.toggleEntries = types.MethodType(toggleEntries,
                                                 None,
                                                 hou.PointGroup)
+
+hou.PointGroup.containsAny = types.MethodType(pointGroupContainsAny,
+                                              None,
+                                              hou.PointGroup)
+hou.PointGroup.containsAny.__func__.__name__ = "containsAny"
 
 hou.Geometry.addPointNormals = types.MethodType(addNormalAttribute,
                                                 None,
