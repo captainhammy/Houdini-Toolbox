@@ -357,19 +357,20 @@ VertexMap referencingVertices(const GU_Detail *gdp, int pt_num)
 """,
 
 """
-int setPrimGroupStringAttrib(GU_Detail *gdp,
-                             const char *group_name,
+int setSharedPrimStringAttrib(GU_Detail *gdp,
                              const char *attrib_name,
-                             const char *value)
+                             const char *value,
+                             const char *group_name=0)
 {
-    GA_PrimitiveGroup                   *group;
+    GA_PrimitiveGroup           *group = 0;
 
-    GA_Attribute                        *attrib;
-    GA_RWAttributeRef                   attrib_gah;
+    GA_Attribute                *attrib;
+    GA_RWAttributeRef           attrib_gah;
     const GA_AIFSharedStringTuple       *s_t;
 
-    // Find the primitive group.
-    group = gdp->findPrimitiveGroup(group_name);
+    // Find the primitive group if necessary.
+    if (group_name)
+        group = gdp->findPrimitiveGroup(group_name);
 
     // Try to find the string attribute.
     attrib_gah = gdp->findStringTuple(GA_ATTRIB_PRIMITIVE, attrib_name);
@@ -384,8 +385,16 @@ int setPrimGroupStringAttrib(GU_Detail *gdp,
     // Get a shared string tuple from the attribute.
     s_t = attrib->getAIFSharedStringTuple();
 
-    // Set all the primitives in the group to the value.
-    s_t->setString(attrib, GA_Range(*group), value, 0);
+    if (group)
+    {
+        // Set all the primitives in the group to the value.
+        s_t->setString(attrib, GA_Range(*group), value, 0);
+    }
+    else
+    {
+        // Set all the primitives in the detail to the value.
+        s_t->setString(attrib, gdp->getPrimitiveRange(), value, 0);
+    }
 
     // Return 0 to indicate success.
     return 0;
@@ -393,19 +402,20 @@ int setPrimGroupStringAttrib(GU_Detail *gdp,
 """,
 
 """
-int setPointGroupStringAttrib(GU_Detail *gdp,
-                              const char *group_name,
+int setSharedPointStringAttrib(GU_Detail *gdp,
                               const char *attrib_name,
-                              const char *value)
+                              const char *value,
+                              const char *group_name=0)
 {
-    GA_PointGroup               *group;
+    GA_PointGroup               *group = 0;
 
     GA_Attribute                *attrib;
     GA_RWAttributeRef           attrib_gah;
     const GA_AIFSharedStringTuple       *s_t;
 
-    // Find the point group.
-    group = gdp->findPointGroup(group_name);
+    // Find the point group if necessary.
+    if (group_name)
+        group = gdp->findPointGroup(group_name);
 
     // Try to find the string attribute.
     attrib_gah = gdp->findStringTuple(GA_ATTRIB_POINT, attrib_name);
@@ -420,8 +430,16 @@ int setPointGroupStringAttrib(GU_Detail *gdp,
     // Get a shared string tuple from the attribute.
     s_t = attrib->getAIFSharedStringTuple();
 
-    // Set all the points in the group to the value.
-    s_t->setString(attrib, GA_Range(*group), value, 0);
+    if (group)
+    {
+        // Set all the points in the group to the value.
+        s_t->setString(attrib, GA_Range(*group), value, 0);
+    }
+    else
+    {
+        // Set all the points in the detail to the value.
+        s_t->setString(attrib, gdp->getPointRange(), value, 0);
+    }
 
     // Return 0 to indicate success.
     return 0;
@@ -1230,14 +1248,20 @@ def referencingVertices(self):
     return geometry.globVertices(' '.join(vertex_strings))
 
 
-def setStringAttrib(self, attribute, value):
-    """Set a string attribute value for every element in the group.
+def setSharedPrimStringAttrib(self, attribute, value, group=None):
+    """Set a string attribute value for primitives.
+
+    If group is None, all primitives will have receive the value.  If
+    a group is passed, only the primitives in the group will be set.
 
     Args:
         attribute (hou.Attrib):
             The string attribute to set.
         value (string):
             The attribute value to set.
+        group (hou.PrimGroup):
+            An optional primitive group to specify which primitives
+            to set.
 
     Returns: None
 
@@ -1246,18 +1270,55 @@ def setStringAttrib(self, attribute, value):
             Raise this exception if the attribute is invalid.
 
     """
-    if isinstance(self, hou.PointGroup):
-        # Attempt to set the attribute and get the result.
-        result = cpp_methods.setPointGroupStringAttrib(self.geometry(),
-                                                       self.name(),
-                                                       attribute.name(),
-                                                       value)
+    # If the group is valid, use that group's name.
+    if group:
+        group_name = group.name()
+    # If not, pass an empty string to signify no group.
     else:
-        # Attempt to set the attribute and get the result.
-        result = cpp_methods.setPrimGroupStringAttrib(self.geometry(),
-                                                      self.name(),
-                                                      attribute.name(),
-                                                      value)
+        group_name = ""
+
+    result = cpp_methods.setSharedPrimStringAttrib(self,
+                                                   attribute.name(),
+                                                   value,
+                                                   group_name)
+
+    # Check the result for errors.
+    if result == 1:
+        raise hou.OperationFailed("Invalid attribute.")
+
+
+def setSharedPointStringAttrib(self, attribute, value, group=None):
+    """Set a string attribute value for points.
+
+    If group is None, all points will have receive the value.  If
+    a group is passed, only the points in the group will be set.
+
+    Args:
+        attribute (hou.Attrib):
+            The string attribute to set.
+        value (string):
+            The attribute value to set.
+        group (hou.PointGroup):
+            An optional point group to specify which points to set.
+
+    Returns: None
+
+    Raises:
+        hou.OperationFailed:
+            Raise this exception if the attribute is invalid.
+
+    """
+    # If the group is valid, use that group's name.
+    if group:
+        group_name = group.name()
+    # If not, pass an empty string to signify no group.
+    else:
+        group_name = ""
+
+    result = cpp_methods.setSharedPointStringAttrib(self,
+                                                    attribute.name(),
+                                                    value,
+                                                    group_name)
 
     # Check the result for errors.
     if result == 1:
@@ -2015,6 +2076,14 @@ hou.Geometry.findAllPrimsByName = types.MethodType(findAllPrimsByName,
                                                    None,
                                                    hou.Geometry)
 
+hou.Geometry.setSharedPrimStringAttrib = types.MethodType(setSharedPrimStringAttrib,
+                                                          None,
+                                                          hou.Geometry)
+
+hou.Geometry.setSharedPointStringAttrib = types.MethodType(setSharedPointStringAttrib,
+                                                           None,
+                                                           hou.Geometry)
+
 hou.Point.copyAttributeValues = types.MethodType(copyPointAttributeValues,
                                                  None,
                                                  hou.Point)
@@ -2036,14 +2105,6 @@ hou.Point.connectedPoints = types.MethodType(connectedPoints,
 hou.Point.referencingVertices = types.MethodType(referencingVertices,
                                                  None,
                                                  hou.Point)
-
-hou.PrimGroup.setStringAttrib = types.MethodType(setStringAttrib,
-                                                 None,
-                                                 hou.PrimGroup)
-
-hou.PointGroup.setStringAttrib = types.MethodType(setStringAttrib,
-                                                 None,
-                                                 hou.PointGroup)
 
 hou.Face.hasEdge = types.MethodType(hasEdge,
                                     None,
