@@ -35,6 +35,61 @@ structs=[("IntArray", "*i"),
         ],
 function_sources=[
 """
+void setVarmap(GU_Detail *gdp,
+               const char **strings,
+               int num_strings)
+{
+    GA_Attribute                *attrib;
+    GA_RWAttributeRef           attrib_gah;
+    const GA_AIFSharedStringTuple       *s_t;
+
+    UT_String                   value;
+
+    // Try to find the string attribute.
+    attrib_gah = gdp->findStringTuple(GA_ATTRIB_DETAIL, "varmap");
+
+    // If it doesn't exist, add it.
+    if (attrib_gah.isInvalid())
+        attrib_gah = gdp->createStringAttribute(GA_ATTRIB_DETAIL, "varmap");
+
+    // Get the actual attribute.
+    attrib = attrib_gah.getAttribute();
+
+    // Get a shared string tuple from the attribute.
+    s_t = attrib->getAIFSharedStringTuple();
+
+    // Resize the tuple to our needed size.
+    s_t->setTupleSize(attrib, num_strings);
+
+    // Iterate over all the strings to assign.
+    for (int i=0; i < num_strings; ++i)
+    {
+        // Get the string.
+        value = strings[i];
+        // Add it to the tuple at this point.
+        s_t->setString(attrib, GA_Offset(0), value, i);
+    }
+}
+""",
+
+"""
+void addVariableName(GU_Detail *gdp,
+                     const char *attrib_name,
+                     const char *var_name)
+{
+    gdp->addVariableName(attrib_name, var_name);
+}
+""",
+
+"""
+void removeVariableName(GU_Detail *gdp,
+                        const char *var_name)
+{
+    gdp->removeVariableName(var_name);
+}
+""",
+
+"""
 int findPrimitiveByName(const GU_Detail *gdp,
                         const char *name_to_match,
                         const char *name_attribute,
@@ -576,7 +631,7 @@ double perimeter(const GU_Detail *gdp, unsigned prim_num)
 """,
 
 """
-void reverse(const GU_Detail *gdp, unsigned prim_num)
+void reversePrimitive(const GU_Detail *gdp, unsigned prim_num)
 {
     GA_Offset                   primOff;
 
@@ -900,6 +955,34 @@ void toggleEntries(GU_Detail *gdp,
 """,
 
 """
+void copyGroup(GU_Detail *gdp,
+               int group_type,
+               const char *group_name,
+               const char *new_group_name)
+{
+    const GA_ElementGroup       *group;
+    GA_ElementGroup             *new_group;
+
+    // Primitive group.
+    if (group_type)
+    {
+        group = gdp->findElementGroup(GA_ATTRIB_PRIMITIVE, group_name);
+        new_group = gdp->createElementGroup(GA_ATTRIB_PRIMITIVE,
+                                            new_group_name);
+    }
+    // Point group.
+    else
+    {
+        group = gdp->findElementGroup(GA_ATTRIB_POINT, group_name);
+        new_group = gdp->createElementGroup(GA_ATTRIB_POINT,
+                                            new_group_name);
+    }
+
+    new_group->copyMembership(*group);
+}
+""",
+
+"""
 bool containsAny(const GU_Detail *gdp,
                  const char *group_name,
                  const char *other_group_name,
@@ -926,6 +1009,84 @@ bool containsAny(const GU_Detail *gdp,
     }
 
     return group->containsAny(range);
+}
+""",
+
+"""
+void primToPointGroup(GU_Detail *gdp,
+                      const char *group_name,
+                      const char *new_group_name,
+                      bool destroy)
+{
+    GA_PrimitiveGroup           *prim_group;
+    GA_PointGroup               *point_group;
+
+    GA_Range                    pr_range, pt_range;
+
+    // Get the list of primitives. 
+    const GA_PrimitiveList &prim_list = gdp->getPrimitiveList();
+
+    // The source group.
+    prim_group = gdp->findPrimitiveGroup(group_name);
+
+    // Create a new point group.
+    point_group = gdp->newPointGroup(new_group_name);
+
+    // Get the range of primitives in the source group.
+    pr_range = GA_Range(*prim_group);
+
+    for (GA_Iterator pr_it(pr_range); !pr_it.atEnd(); ++pr_it)
+    {
+        // Get the range of points referenced by the vertices of
+        // the primitive.
+        pt_range = prim_list.get(*pr_it)->getPointRange(); 
+        // Add each point offset to the group.
+        for (GA_Iterator pt_it(pt_range); !pt_it.atEnd(); ++pt_it)
+            point_group->addOffset(*pt_it);
+    }
+
+    // Destroy the source group if necessary.
+    if (destroy)
+        gdp->destroyPrimitiveGroup(prim_group);
+}
+""",
+
+"""
+void pointToPrimGroup(GU_Detail *gdp,
+                      const char *group_name,
+                      const char *new_group_name,
+                      bool destroy)
+{
+    GA_PrimitiveGroup           *prim_group;
+    GA_PointGroup               *point_group;
+
+    GA_Range                    pr_range, pt_range;
+
+    GA_OffsetArray              prims;
+    GA_OffsetArray::const_iterator prims_it;
+
+    // The source group.
+    point_group = gdp->findPointGroup(group_name);
+
+    // Create a new primitive group.
+    prim_group = gdp->newPrimitiveGroup(new_group_name);
+
+    // The range of points in the source group.
+    pt_range = GA_Range(*point_group);
+
+    for (GA_Iterator pt_it(pt_range); !pt_it.atEnd(); ++pt_it)
+    {
+        // Get an array of primitives that reference the point.
+        gdp->getPrimitivesReferencingPoint(prims, *pt_it);
+
+        // Add each primitive offset to the group.
+        for (prims_it = prims.begin(); !prims_it.atEnd(); ++prims_it)
+            prim_group->addOffset(*prims_it);
+    }
+
+    // Destroy the source group if necessary.
+    if (destroy)
+        gdp->destroyPointGroup(point_group);
 }
 """,
 
@@ -1020,6 +1181,111 @@ bool isParmTupleDefault(OP_Node *node,
 
 ])
 
+def varmap(self):
+    """Get the varmap as a dictionary.
+
+    This function returns a dictionary representing the varmap
+    attribute whose keys are the attribute names and values are
+    the variable names.
+
+    Args: None
+
+    Returns:
+        (dict|None):
+            A dictionary representing the varmap attribute, if
+            it exists.  If the attribute does not exist, returns
+            None.
+
+    Raises: None
+
+    """
+    # Try to find the detail attribute.
+    varmap_attrib = self.findGlobalAttrib("varmap")
+
+    # If it does not exists, return None.
+    if varmap_attrib is None:
+        return None
+
+    # Get the value(s).
+    values = self.attribValue(varmap_attrib)
+
+    # If the value is a single string, convert it to a tuple.
+    if isinstance(values, str):
+	values = (values, )
+
+    # The varmap dictionary.
+    varmap_dict = {}
+
+    for entry in values:
+        # Split the value based on the mapping indicator.
+	attrib_name, var = entry.split(" -> ")
+
+        # Add the information to the dictionary.
+	varmap_dict[attrib_name] = var
+
+    return varmap_dict
+
+
+def setVarmap(self, varmap_dict):
+    """Set the varmap based on the dictionary.
+
+    This function will create variable mappings between the keys
+    and values of the dictionary.  If the attribute does not
+    exist it will be created.
+
+    Args:
+        varmap_dict (dict):
+            A dictionary of attribute and variable names to set
+            the varmap as.
+
+    Returns: None
+
+    Raises: None
+
+    """
+    # Create varmap string mappings from the key/value pairs.
+    strings = ["{0} -> {1}".format(attrib_name, var)
+	       for attrib_name, var in varmap_dict.iteritems()]
+
+    # Construct a ctypes string array to pass the values.
+    arr = (ctypes.c_char_p * len(strings))()
+    arr[:] = strings
+
+    # Update the varmap.
+    cpp_methods.setVarmap(self, arr, len(strings))
+
+
+def addVariableName(self, attrib, var_name):
+    """Add a variable mapping to the attribute in the varmap.
+
+    Args:
+        attrib (hou.Attrib):
+            The attribute to create a variable mapping for.
+        var_name (string):
+            The variable name to map to the attribute.
+
+    Returns: None
+
+    Raises: None
+
+    """
+    cpp_methods.addVariableName(self, attrib.name(), var_name)
+
+
+def removeVariableName(self, var_name):
+    """Remove a variable mapping from the varmap.
+
+    Args:
+        var_name (string):
+            The variable name to remove the mapping for.
+
+    Returns: None
+
+    Raises: None
+
+    """
+    cpp_methods.removeVariableName(self, var_name)
+
 
 def findPrimByName(self,
                    name_to_match,
@@ -1042,7 +1308,7 @@ def findPrimByName(self,
             match_number is greater than the number of matches
             found.
 
-    Raises: N/A
+    Raises: None
 
     """
     # Try to find a primitive matching the name.
@@ -1073,7 +1339,7 @@ def findAllPrimsByName(self, name_to_match, name_attribute="name"):
             A tuple of hou.Prim objects whose attribute values
             match.
 
-    Raises: N/A
+    Raises: None
 
     """
     # Try to find matching primitives.
@@ -1463,7 +1729,7 @@ def perimeter(self):
                                  self.number())
 
 
-def reverse(self):
+def reversePrim(self):
     """Reverse the order of vertices.
 
     Args: None
@@ -1473,7 +1739,7 @@ def reverse(self):
     Raises: None
 
     """
-    return cpp_methods.reverse(self.geometry(),
+    return cpp_methods.reversePrimitive(self.geometry(),
                                self.number())
 
 
@@ -1833,6 +2099,51 @@ def toggleEntries(self):
     cpp_methods.toggleEntries(geometry, self.name(), group_type)
 
 
+def copyGroup(self, new_group_name):
+    """Create a group under the new name with the same membership.
+
+    Args:
+        new_group_name (string):
+            The new group name.
+
+    Returns: None
+
+    Raises:
+        hou.OperationFailed:
+            Raise this exception if the new group name is the same
+            as the source group name, or a group with the new name
+            already exists.
+
+    """
+    geometry = self.geometry()
+
+    # Ensure the new group doesn't have the same name.
+    if new_group_name == self.name():
+        raise hou.OperationFailed("Cannot copy to group with same name.")
+
+    # A group under the new name already exists.
+    new_group_exists = False
+
+    if isinstance(self, hou.PrimGroup):
+        group_type = 1
+        # Found a group with the new name so set the flag to True.
+        if geometry.findPrimGroup(new_group_name):
+            new_group_exists = True
+    # hou.PointGroup
+    else:
+        group_type = 0
+        # Found a group with the new name so set the flag to True.
+        if geometry.findPointGroup(new_group_name):
+            new_group_exists = True
+
+    # If a group with the new name already exists, raise an exception.
+    if new_group_exists:
+        raise hou.OperationFailed("A group with that name already exists.")
+
+    # Copy the group.
+    cpp_methods.copyGroup(geometry, group_type, self.name(), new_group_name)
+
+
 def primGroupContainsAny(self, group):
     """Returns whether or not any prims in the group are in this group.
 
@@ -1873,6 +2184,84 @@ def pointGroupContainsAny(self, group):
     geometry = self.geometry()
 
     return cpp_methods.containsAny(geometry, self.name(), group.name(), 0)
+
+
+def convertToPointGroup(self, new_group_name=None, destroy=True):
+    """Create a new hou.Point group from this primitive group.
+
+    The group will contain all the points referenced by all the vertices
+    of the primitives in the group.
+
+    Args:
+        new_group_name (string):
+            The name of the new point group.  If None, the point group
+            will receive the same name as the source group.
+        remove (bool):
+            Destroy the source primitive group.
+
+    Returns:
+        (hou.PointGroup):
+            The newly created point group.
+
+    Raises:
+        hou.OperationFailed:
+            This exception is raised if there is already a point group
+            with the specified name.
+
+    """
+    geometry = self.geometry()
+
+    if new_group_name is None:
+        new_group_name = self.name()
+
+    if geometry.findPointGroup(new_group_name):
+        raise hou.OperationFailed("Group already exists.")
+
+    cpp_methods.primToPointGroup(geometry,
+                                 self.name(),
+                                 new_group_name,
+                                 destroy)
+
+    return geometry.findPointGroup(new_group_name)
+
+
+def convertToPrimGroup(self, new_group_name=None, destroy=True):
+    """Create a new hou.Prim group from this point group.
+
+    The group will contain all the primitives which have vertices
+    referencing any of the points in the group.
+
+    Args:
+        new_group_name (string):
+            The name of the new prim group.  If None, the prim group
+            will receive the same name as the source group.
+        remove (bool):
+            Destroy the source point group.
+
+    Returns:
+        (hou.PrimGroup):
+            The newly created prim group.
+
+    Raises:
+        hou.OperationFailed:
+            This exception is raised if there is already a prim group
+            with the specified name.
+
+    """
+    geometry = self.geometry()
+
+    if new_group_name is None:
+        new_group_name = self.name()
+
+    if geometry.findPrimGroup(new_group_name):
+        raise hou.OperationFailed("Group already exists.")
+
+    cpp_methods.pointToPrimGroup(geometry,
+                                 self.name(),
+                                 new_group_name,
+                                 destroy)
+
+    return geometry.findPrimGroup(new_group_name)
 
 
 def clip(self, normal, dist):
@@ -2068,6 +2457,22 @@ def isParmTupleDefault(self):
                                           self.name())
 
 
+hou.Geometry.varmap = types.MethodType(varmap,
+                                       None,
+                                       hou.Geometry)
+
+hou.Geometry.setVarmap = types.MethodType(setVarmap,
+                                          None,
+                                          hou.Geometry)
+
+hou.Geometry.addVariableName = types.MethodType(addVariableName,
+                                                None,
+                                                hou.Geometry)
+
+hou.Geometry.removeVariableName = types.MethodType(removeVariableName,
+                                                   None,
+                                                   hou.Geometry)
+
 hou.Geometry.findPrimByName = types.MethodType(findPrimByName,
                                                None,
                                                hou.Geometry)
@@ -2135,9 +2540,10 @@ hou.Prim.perimeter = types.MethodType(perimeter,
                                       None,
                                       hou.Prim)
 
-hou.Prim.reverse = types.MethodType(reverse,
+hou.Prim.reverse = types.MethodType(reversePrim,
                                     None,
                                     hou.Prim)
+hou.Prim.reverse.__func__.__name__ = "reverse"
 
 hou.Prim.makeUnique = types.MethodType(makeUnique,
                                        None,
@@ -2161,10 +2567,19 @@ hou.PrimGroup.toggleEntries = types.MethodType(toggleEntries,
                                                None,
                                                hou.PrimGroup)
 
+hou.PrimGroup.copy = types.MethodType(copyGroup,
+                                      None,
+                                      hou.PrimGroup)
+hou.PrimGroup.copy.__func__.__name__ = "copy"
+
 hou.PrimGroup.containsAny = types.MethodType(primGroupContainsAny,
                                              None,
                                              hou.PrimGroup)
 hou.PrimGroup.containsAny.__func__.__name__ = "containsAny"
+
+hou.PrimGroup.convertToPointGroup = types.MethodType(convertToPointGroup,
+                                                     None,
+                                                     hou.PrimGroup)
 
 hou.PointGroup.boundingBox = types.MethodType(groupBoundingBox,
                                               None,
@@ -2180,10 +2595,19 @@ hou.PointGroup.toggleEntries = types.MethodType(toggleEntries,
                                                 None,
                                                 hou.PointGroup)
 
+hou.PointGroup.copy = types.MethodType(copyGroup,
+                                      None,
+                                      hou.PointGroup)
+hou.PointGroup.copy.__func__.__name__ = "copy"
+
 hou.PointGroup.containsAny = types.MethodType(pointGroupContainsAny,
                                               None,
                                               hou.PointGroup)
 hou.PointGroup.containsAny.__func__.__name__ = "containsAny"
+
+hou.PointGroup.convertToPrimGroup = types.MethodType(convertToPrimGroup,
+                                                     None,
+                                                     hou.PointGroup)
 
 hou.Geometry.addPointNormals = types.MethodType(addNormalAttribute,
                                                 None,
