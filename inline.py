@@ -29,11 +29,43 @@ includes="""
 #include <PRM/PRM_Parm.h>
 """,
 structs=[("IntArray", "*i"),
+         ("StringArray", "**c"),
          ("VertexMap", (("prims", "*i"), ("indices", "*i"))),
          ("Position3D", (("x", "d"), ("y", "d"), ("z", "d"))),
          ("BoundingBox", (("xmin", "d"), ("ymin", "d"), ("zmin", "d"), ("xmax", "d"), ("ymax", "d"), ("zmax", "d"))),
         ],
 function_sources=[
+"""
+int createPoint(GU_Detail *gdp, UT_Vector3D *position)
+{
+    GA_Offset                   ptOff;
+
+    // Add a new point.
+    ptOff = gdp->appendPointOffset();
+
+    // Set the position for the point.
+    gdp->setPos3(ptOff, *position);
+
+    // Return the point number.
+    return gdp->pointIndex(ptOff);
+}
+""",
+
+"""
+IntArray createPoints(GU_Detail *gdp, int count)
+{
+    std::vector<int>            point_nums;
+
+    GA_Offset                   ptOff;
+
+    for (int i=0; i < count; ++i)
+        ptOff = gdp->appendPointOffset();
+        point_nums.push_back(gdp->pointIndex(ptOff));
+
+    return point_nums;
+}
+""",
+
 """
 void setVarmap(GU_Detail *gdp,
                const char **strings,
@@ -412,10 +444,64 @@ VertexMap referencingVertices(const GU_Detail *gdp, int pt_num)
 """,
 
 """
+StringArray primStringAttribValues(const GU_Detail *gdp,
+                                   const char *attrib_name)
+{
+    std::vector<std::string>    result;
+
+    const GA_Attribute          *attrib;
+    GA_ROAttributeRef           attrib_gah;
+    const GA_AIFSharedStringTuple       *s_t;
+
+    // Try to find the string attribute.
+    attrib_gah = gdp->findStringTuple(GA_ATTRIB_PRIMITIVE, attrib_name);
+
+    // Get the actual attribute.
+    attrib = attrib_gah.getAttribute();
+
+    // Get a shared string tuple from the attribute.
+    s_t = attrib->getAIFSharedStringTuple();
+
+    for (GA_Iterator it(gdp->getPrimitiveRange()); !it.atEnd(); ++it)
+        result.push_back(s_t->getString(attrib, *it, 0));
+
+    return result;
+}
+""",
+
+"""
+void setPrimStringAttribValues(GU_Detail *gdp,
+                               const char *attrib_name,
+                               const char **values,
+                               int num_values)
+{
+    GA_Attribute                *attrib;
+    GA_RWAttributeRef           attrib_gah;
+    const GA_AIFSharedStringTuple       *s_t;
+
+    // Try to find the string attribute.
+    attrib_gah = gdp->findStringTuple(GA_ATTRIB_PRIMITIVE, attrib_name);
+
+    // Get the actual attribute.
+    attrib = attrib_gah.getAttribute();
+
+    // Get a shared string tuple from the attribute.
+    s_t = attrib->getAIFSharedStringTuple();
+
+    int i = 0;
+    for (GA_Iterator it(gdp->getPrimitiveRange()); !it.atEnd(); ++it)
+    {
+        s_t->setString(attrib, *it, values[i], 0);
+        i++;
+    }
+}
+""",
+
+"""
 int setSharedPrimStringAttrib(GU_Detail *gdp,
-                             const char *attrib_name,
-                             const char *value,
-                             const char *group_name=0)
+                              const char *attrib_name,
+                              const char *value,
+                              const char *group_name=0)
 {
     GA_PrimitiveGroup           *group = 0;
 
@@ -457,10 +543,64 @@ int setSharedPrimStringAttrib(GU_Detail *gdp,
 """,
 
 """
+StringArray pointStringAttribValues(const GU_Detail *gdp,
+                                    const char *attrib_name)
+{
+    std::vector<std::string>    result;
+
+    const GA_Attribute          *attrib;
+    GA_ROAttributeRef           attrib_gah;
+    const GA_AIFSharedStringTuple       *s_t;
+
+    // Try to find the string attribute.
+    attrib_gah = gdp->findStringTuple(GA_ATTRIB_POINT, attrib_name);
+
+    // Get the actual attribute.
+    attrib = attrib_gah.getAttribute();
+
+    // Get a shared string tuple from the attribute.
+    s_t = attrib->getAIFSharedStringTuple();
+
+    for (GA_Iterator it(gdp->getPointRange()); !it.atEnd(); ++it)
+        result.push_back(s_t->getString(attrib, *it, 0));
+
+    return result;
+}
+""",
+
+"""
+void setPointStringAttribValues(GU_Detail *gdp,
+                                const char *attrib_name,
+                                const char **values,
+                                int num_values)
+{
+    GA_Attribute                *attrib;
+    GA_RWAttributeRef           attrib_gah;
+    const GA_AIFSharedStringTuple       *s_t;
+
+    // Try to find the string attribute.
+    attrib_gah = gdp->findStringTuple(GA_ATTRIB_POINT, attrib_name);
+
+    // Get the actual attribute.
+    attrib = attrib_gah.getAttribute();
+
+    // Get a shared string tuple from the attribute.
+    s_t = attrib->getAIFSharedStringTuple();
+
+    int i = 0;
+    for (GA_Iterator it(gdp->getPointRange()); !it.atEnd(); ++it)
+    {
+        s_t->setString(attrib, *it, values[i], 0);
+        i++;
+    }
+}
+""",
+
+"""
 int setSharedPointStringAttrib(GU_Detail *gdp,
-                              const char *attrib_name,
-                              const char *value,
-                              const char *group_name=0)
+                               const char *attrib_name,
+                               const char *value,
+                               const char *group_name=0)
 {
     GA_PointGroup               *group = 0;
 
@@ -1023,7 +1163,7 @@ void primToPointGroup(GU_Detail *gdp,
 
     GA_Range                    pr_range, pt_range;
 
-    // Get the list of primitives. 
+    // Get the list of primitives.
     const GA_PrimitiveList &prim_list = gdp->getPrimitiveList();
 
     // The source group.
@@ -1039,7 +1179,7 @@ void primToPointGroup(GU_Detail *gdp,
     {
         // Get the range of points referenced by the vertices of
         // the primitive.
-        pt_range = prim_list.get(*pr_it)->getPointRange(); 
+        pt_range = prim_list.get(*pr_it)->getPointRange();
         // Add each point offset to the group.
         for (GA_Iterator pt_it(pt_range); !pt_it.atEnd(); ++pt_it)
             point_group->addOffset(*pt_it);
@@ -1224,6 +1364,27 @@ def varmap(self):
 	varmap_dict[attrib_name] = var
 
     return varmap_dict
+
+
+def createPoint(self, position=None):
+    """Create a new point, optionally located at a position.
+
+    Args:
+        position (hou.Vector3):
+            The position to create the point at.  A value of None will
+            create the point at the origin.
+
+    Returns: None
+
+    Raises: None
+
+    """
+    if position is None:
+        position = hou.Vector3()
+
+    result = cpp_methods.createPoint(self, position)
+
+    return self.iterPoints()[result]
 
 
 def setVarmap(self, varmap_dict):
@@ -1514,6 +1675,72 @@ def referencingVertices(self):
     return geometry.globVertices(' '.join(vertex_strings))
 
 
+def primStringAttribValues(self, name):
+    """Return a tuple of strings containing one attribute's values for
+    all the primitives.
+
+    Args:
+        name (string):
+            The name of the primitive attribute.
+
+    Returns:
+        (tuple):
+            A tuple of strings representing the attribute values for
+            each primitive.
+
+    Raises:
+        hou.OperationFailed:
+            Raise this exception if the attribute name is invalid or
+            the attribute is not a string.
+
+    """
+    attrib = self.findPrimAttrib(name)
+    if attrib is None:
+        raise hou.OperationFailed("Invalid attribute name.")
+
+    if attrib.dataType() != hou.attribData.String:
+        raise hou.OperationFailed("Attribute must be a string.")
+
+    return cpp_methods.primStringAttribValues(self, name)
+
+
+def setPrimStringAttribValues(self, name, values):
+    """Set the string attribute values for all primitives.
+
+    Args:
+        name (string):
+            The name of the primitive attribute.
+        values (tuple):
+            A tuple of strings representing the attribute values for
+            each primitive.
+
+    Raises:
+        hou.OperationFailed:
+            Raise this exception if the attribute name is invalid,
+            the attribute is not a string, or the array of values
+            is not the correct size.
+
+    """
+    attrib = self.findPrimAttrib(name)
+    if attrib is None:
+        raise hou.OperationFailed("Invalid attribute name.")
+
+    if attrib.dataType() != hou.attribData.String:
+        raise hou.OperationFailed("Attribute must be a string.")
+
+    if len(values) != len(self.iterPrims()):
+        raise hou.OperationFailed("Incorrect attribute value sequence size.")
+
+    # Construct a ctypes string array to pass the values.
+    arr = (ctypes.c_char_p * len(values))()
+    arr[:] = values
+
+    return cpp_methods.setPrimStringAttribValues(self,
+                                                 name,
+                                                 arr,
+                                                 len(values))
+
+
 def setSharedPrimStringAttrib(self, attribute, value, group=None):
     """Set a string attribute value for primitives.
 
@@ -1551,6 +1778,72 @@ def setSharedPrimStringAttrib(self, attribute, value, group=None):
     # Check the result for errors.
     if result == 1:
         raise hou.OperationFailed("Invalid attribute.")
+
+
+def pointStringAttribValues(self, name):
+    """Return a tuple of strings containing one attribute's values for
+    all the points.
+
+    Args:
+        name (string):
+            The name of the point attribute.
+
+    Returns:
+        (tuple):
+            A tuple of strings representing the attribute values for
+            each point.
+
+    Raises:
+        hou.OperationFailed:
+            Raise this exception if the attribute name is invalid or
+            the attribute is not a string attribute.
+
+    """
+    attrib = self.findPointAttrib(name)
+    if attrib is None:
+        raise hou.OperationFailed("Invalid attribute name.")
+
+    if attrib.dataType() != hou.attribData.String:
+        raise hou.OperationFailed("Attribute must be a string.")
+
+    return cpp_methods.pointStringAttribValues(self, name)
+
+
+def setPointStringAttribValues(self, name, values):
+    """Set the string attribute values for all points.
+
+    Args:
+        name (string):
+            The name of the point attribute.
+        values (tuple):
+            A tuple of strings representing the attribute values for
+            each point.
+
+    Raises:
+        hou.OperationFailed:
+            Raise this exception if the attribute name is invalid,
+            the attribute is not a string, or the array of values
+            is not the correct size.
+
+    """
+    attrib = self.findPointAttrib(name)
+    if attrib is None:
+        raise hou.OperationFailed("Invalid attribute name.")
+
+    if attrib.dataType() != hou.attribData.String:
+        raise hou.OperationFailed("Attribute must be a string.")
+
+    if len(values) != len(self.iterPoints()):
+        raise hou.OperationFailed("Incorrect attribute value sequence size.")
+
+    # Construct a ctypes string array to pass the values.
+    arr = (ctypes.c_char_p * len(values))()
+    arr[:] = values
+
+    return cpp_methods.setPointStringAttribValues(self,
+                                                  name,
+                                                  arr,
+                                                  len(values))
 
 
 def setSharedPointStringAttrib(self, attribute, value, group=None):
@@ -2457,6 +2750,10 @@ def isParmTupleDefault(self):
                                           self.name())
 
 
+hou.Geometry.createPoint = types.MethodType(createPoint,
+                                            None,
+                                            hou.Geometry)
+
 hou.Geometry.varmap = types.MethodType(varmap,
                                        None,
                                        hou.Geometry)
@@ -2481,9 +2778,25 @@ hou.Geometry.findAllPrimsByName = types.MethodType(findAllPrimsByName,
                                                    None,
                                                    hou.Geometry)
 
+hou.Geometry.primStringAttribValues = types.MethodType(primStringAttribValues,
+                                                       None,
+                                                       hou.Geometry)
+
+hou.Geometry.setPrimStringAttribValues = types.MethodType(setPrimStringAttribValues,
+                                                          None,
+                                                          hou.Geometry)
+
 hou.Geometry.setSharedPrimStringAttrib = types.MethodType(setSharedPrimStringAttrib,
                                                           None,
                                                           hou.Geometry)
+
+hou.Geometry.pointStringAttribValues = types.MethodType(pointStringAttribValues,
+                                                        None,
+                                                        hou.Geometry)
+
+hou.Geometry.setPointStringAttribValues = types.MethodType(setPointStringAttribValues,
+                                                           None,
+                                                           hou.Geometry)
 
 hou.Geometry.setSharedPointStringAttrib = types.MethodType(setSharedPointStringAttrib,
                                                            None,
