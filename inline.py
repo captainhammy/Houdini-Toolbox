@@ -59,8 +59,10 @@ IntArray createPoints(GU_Detail *gdp, int count)
     GA_Offset                   ptOff;
 
     for (int i=0; i < count; ++i)
+    {
         ptOff = gdp->appendPointOffset();
         point_nums.push_back(gdp->pointIndex(ptOff));
+    }
 
     return point_nums;
 }
@@ -1374,7 +1376,9 @@ def createPoint(self, position=None):
             The position to create the point at.  A value of None will
             create the point at the origin.
 
-    Returns: None
+    Returns:
+        (hou.Point):
+            The newly created point.
 
     Raises: None
 
@@ -1385,6 +1389,30 @@ def createPoint(self, position=None):
     result = cpp_methods.createPoint(self, position)
 
     return self.iterPoints()[result]
+
+
+def createPoints(self, count):
+    """Create a specific number of new points.
+
+    Args:
+        count (int):
+            The number of new points to create.
+
+    Returns:
+        (tuple):
+            A tuple of the hou.Point objects created.
+
+    Raises:
+        hou.OperationFailed:
+            Raise this exception if count is not greater than 0.
+
+    """
+    if count <= 0:
+        raise hou.OperationFailed("Invalid number of points.")
+
+    result = cpp_methods.createPoints(self, count)
+
+    return self.globPoints(" ".join([str(i) for i in result]))
 
 
 def setVarmap(self, varmap_dict):
@@ -2753,6 +2781,10 @@ def isParmTupleDefault(self):
 hou.Geometry.createPoint = types.MethodType(createPoint,
                                             None,
                                             hou.Geometry)
+
+hou.Geometry.createPoints = types.MethodType(createPoints,
+                                             None,
+                                             hou.Geometry)
 
 hou.Geometry.varmap = types.MethodType(varmap,
                                        None,
