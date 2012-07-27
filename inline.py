@@ -30,6 +30,7 @@ includes="""
 """,
 structs=[("IntArray", "*i"),
          ("StringArray", "**c"),
+         ("StringTuple", "*StringArray"),
          ("VertexMap", (("prims", "*i"), ("indices", "*i"))),
          ("Position3D", (("x", "d"), ("y", "d"), ("z", "d"))),
          ("BoundingBox", (("xmin", "d"), ("ymin", "d"), ("zmin", "d"), ("xmax", "d"), ("ymax", "d"), ("zmax", "d"))),
@@ -120,6 +121,17 @@ void removeVariableName(GU_Detail *gdp,
                         const char *var_name)
 {
     gdp->removeVariableName(var_name);
+}
+""",
+
+"""
+bool renameAttribute(GU_Detail *gdp,
+                     int attrib_type,
+                     const char *from_name,
+                     const char *to_name)
+{
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attrib_type);
+    return gdp->renameAttribute(owner, GA_SCOPE_PUBLIC, from_name, to_name);
 }
 """,
 
@@ -1321,7 +1333,204 @@ bool isParmTupleDefault(OP_Node *node,
 }
 """,
 
+"""
+StringArray getReferencingParms(OP_Node *node, const char *parm_name)
+{
+    std::vector<std::string>    result;
+
+    PRM_Parm                    *parm_tuple;
+
+    UT_PtrArray<PRM_Parm *>     parm_tuples;
+    UT_IntArray                 component_indices;
+
+    UT_String                   path, chan;
+
+    // Get an array of parameter objects and their component indices
+    // that reference the parameter.
+    node->getParmsThatReference(parm_name, parm_tuples, component_indices);
+
+    for (int i=0; i < parm_tuples.entries(); ++i)
+    {
+        parm_tuple = parm_tuples[i];
+        parm_tuple->getParmOwner()->getFullPath(path);
+        path += "/";
+
+        parm_tuple->getTemplatePtr()->getChannelToken(chan, component_indices[i]);
+        path += chan;
+
+        result.push_back(path.toStdString());
+    }
+
+    if (result.size() == 0)
+        result.push_back("");
+
+    return result;
+}
+""",
+
+"""
+const char *inputLabel(OP_Node *node, int index)
+{
+    return node->inputLabel(index);
+}
+""",
+
+"""
+bool isContainedBy(const OP_Node *node, const OP_Node *parent)
+{
+    return node->getIsContainedBy(parent);
+}
+""",
+
+"""
+StringArray getExistingOpReferences(OP_Node *node, bool recurse)
+{
+    std::vector<std::string>    result;
+
+    UT_String                   path;
+
+    OP_Node                     *ref_node;
+
+    OP_NodeList                 refs;
+    OP_NodeList::const_iterator depend_it;
+
+    node->getExistingOpReferences(refs, recurse);
+
+    for (depend_it=refs.begin(); !depend_it.atEnd(); ++depend_it)
+    {
+        ref_node = *depend_it;
+        ref_node->getFullPath(path);
+
+        result.push_back(path.toStdString());
+    }
+
+    if (result.size() == 0)
+        result.push_back("");
+
+    return result;
+}
+""",
+
+"""
+StringArray getExistingOpDependents(OP_Node *node, bool recurse)
+{
+    std::vector<std::string>    result;
+
+    UT_String                   path;
+
+    OP_Node                     *dep_node;
+
+    OP_NodeList                 deps;
+    OP_NodeList::const_iterator depend_it;
+
+    node->getExistingOpDependents(deps, recurse);
+
+    for (depend_it=deps.begin(); !depend_it.atEnd(); ++depend_it)
+    {
+        dep_node = *depend_it;
+        dep_node->getFullPath(path);
+
+        result.push_back(path.toStdString());
+    }
+
+    if (result.size() == 0)
+        result.push_back("");
+
+    return result;
+}
+""",
+
+"""
+bool isMultiParm(OP_Node *node, const char *parm_name)
+{
+    PRM_Parm &parm = node->getParm(parm_name);
+
+    return parm.isMultiParm();
+}
+""",
+
+"""
+void insertMultiParmItem(OP_Node *node, const char *parm_name, int idx)
+{
+    node->insertMultiParmItem(parm_name, idx);
+}
+""",
+
+"""
+void removeMultiParmItem(OP_Node *node, const char *parm_name, int idx)
+{
+    node->removeMultiParmItem(parm_name, idx);
+}
+""",
+
+"""
+StringTuple getMultiParmInstances(OP_Node *node, const char *parm_name)
+{
+    int                         items, instances;
+    std::vector<StringArray>    blocks;
+
+    PRM_Parm                    *parm;
+    PRM_Parm &multiparm = node->getParm(parm_name);
+
+    // The number of multi parm blocks.
+    items = multiparm.getMultiParmNumItems();
+    // The number of parms in each block.
+    instances = multiparm.getMultiParmInstancesPerItem();
+
+    for (int i=0; i < items; ++i)
+    {
+        std::vector<std::string>    result;
+
+        for (int j=0; j < instances; ++j)
+        {
+            parm = multiparm.getMultiParm(i * instances + j);
+            result.push_back(parm->getToken());
+        }
+
+        // If the block is empty, add an empty string.
+        if (result.size() == 0)
+            result.push_back("");
+
+        blocks.push_back(result);
+
+    }
+
+    // If there are no entries, add an emptry block.
+    if (blocks.size() == 0)
+    {
+        std::vector<std::string>    result;
+        result.push_back("");
+        blocks.push_back(result);
+    }
+
+    return blocks;
+}
+""",
+
 ])
+
+def isReadOnly(self):
+    """
+    Check if the geometry is read only.
+
+    Args: None
+
+    Returns:
+        (bool):
+            Returns True if the geometry is read only, otherwise False.
+
+    Raises: None
+
+    """
+    # Get a GU Detail Handle for the geometry.
+    handle = self._guDetailHandle()
+    # Check if the handle is read only.
+    result = handle.isReadOnly()
+    # Destroy the handle.
+    handle.destroy()
+
+    return result
+
 
 def varmap(self):
     """Get the varmap as a dictionary.
@@ -1474,6 +1683,63 @@ def removeVariableName(self, var_name):
 
     """
     cpp_methods.removeVariableName(self, var_name)
+
+
+def renameAttribute(self, new_name):
+    """Rename the attribute.
+
+    Args:
+        new_name (string):
+            The new attribute name.
+    
+    Returns:
+        (hou.Attrib|None):
+            Returns the newly renamed attribute if successful, otherwise
+            None.
+
+    Raises:
+        hou.OperationFailed:
+            Raises this exception if you try to destroy 'P'.
+
+    """
+    geometry = self.geometry()
+
+    attrib_type = self.type()
+
+    # Get the attribute type as an integer corresponding to the
+    # GA_AttributeOwner enum.
+    if attrib_type == hou.attribType.Vertex:
+        owner = 0
+    elif attrib_type == hou.attribType.Point:
+        owner = 1
+    elif attrib_type == hou.attribType.Prim:
+        owner = 2
+    else:
+        owner = 3
+
+    # Raise an exception when trying to modify 'P'.
+    if attrib_type == hou.attribType.Point and self.name() == "P":
+        raise hou.OperationFailed("Renaming 'P' is not permitted.")
+
+    # Try to rename the attribute.
+    success = cpp_methods.renameAttribute(geometry,
+                                          owner,
+                                          self.name(),
+                                          new_name)
+
+    # That attribute was renamed.
+    if success:
+        # Return the new attribute.
+        if attrib_type == hou.attribType.Vertex:
+            return geometry.findVertexAttrib(new_name)
+        elif attrib_type == hou.attribType.Point:
+            return geometry.findPointAttrib(new_name)
+        elif attrib_type == hou.attribType.Prim:
+            return geometry.findPrimAttrib(new_name)
+        else:
+            return geometry.findGlobalAttrib(new_name)
+
+    return None
 
 
 def findPrimByName(self,
@@ -2778,6 +3044,258 @@ def isParmTupleDefault(self):
                                           self.name())
 
 
+def getReferencingParms(self):
+    """Returns a tuple of parameters that reference this parameter.
+
+    Args: None
+
+    Returns:
+        (tuple):
+            A tuple of referencing hou.Parm objects.
+
+    Raises: None
+
+    """
+    # Get the node.
+    node = self.node()
+
+    # Get any paths to referencing parms.
+    result = cpp_methods.getReferencingParms(node,
+                                             self.name())
+
+    # Create a tuple of parms.
+    return tuple([hou.parm(parm_path) for parm_path in result
+                  if parm_path])
+
+
+def inputLabel(self, index):
+    """Returns the input label for the index.
+
+    Args:
+        index (int):
+            The input index.
+
+    Returns:
+        (string):
+            The label for the input.
+
+    Raises:
+        hou.IndexError:
+            Raise this exception if the index is out of
+            range.
+
+    """
+    if index not in range(0, self.nodeType.maxNumInputs()):
+        raise IndexError("Index out of range.")
+
+    return cpp_methods.inputLabel(self, index)
+
+
+def isContainedBy(self, node):
+    """Test if this node is a contained within the node.
+
+    Args:
+        node (hou.Node):
+            A node that may contain this node.
+
+    Returns:
+        (bool):
+            Returns True if this node is contained in the node,
+            otherwise False.
+
+    Raises: None
+
+    """
+    return cpp_methods.isContainedBy(self, node)
+
+
+def getExistingOpReferences(self, recurse=False):
+    """Returns a tuple of nodes this node has references to.
+
+    Args:
+        recurse (bool):
+            Apply recurively to child nodes.
+
+    Returns:
+        (tuple):
+            A tuple of hou.Node objects the node references.
+
+    Raises: None
+
+    """
+    result = cpp_methods.getExistingOpReferences(self, recurse)
+
+    return tuple([hou.node(path) for path in result if path])
+
+
+def getExistingOpDependents(self, recurse=False):
+    """Returns a tuple of nodes that reference this node.
+
+    Args:
+        recurse (bool):
+            Apply recurively to child nodes.
+
+    Returns:
+        (tuple):
+            A tuple of hou.Node objects that reference this node.
+
+    Raises: None
+
+    """
+    result = cpp_methods.getExistingOpDependents(self, recurse)
+
+    return tuple([hou.node(path) for path in result if path])
+
+
+def isMultiParm(self):
+    """Check if a parameter is a multiparm.
+
+    Args: None
+
+    Returns:
+        (bool):
+            Returns True if the parm is a multiparm, otherwise False.
+
+    Raises: N/A
+
+    """
+    node = self.node()
+
+    return cpp_methods.isMultiParm(node, self.name())
+
+
+def insertMultiParmItem(self, index):
+    """Insert a multiparm item at the specified index.
+
+    This is the equivalent of hitting the Insert Before button (+)
+    on a multiparm to insert a new folder at that location.
+
+    Args:
+        index (int):
+            The index for the new item.
+
+    Returns: None
+
+    Raises:
+        hou.OperationFailed:
+            This exception is raised if the parameter is not a
+            multiparm.
+
+    """
+    node = self.node()
+
+    if not self.isMultiParm():
+        raise hou.OperationFailed("Not a multiparm.")
+
+    cpp_methods.insertMultiParmItem(node, self.name(), index)
+
+
+def removeMultiParmItem(self, index):
+    """Remove a multiparm item at the specified index.
+
+    This is the equivalent of hitting the Remove button (x) on
+    a multiparm to remove a folder.
+
+    Args:
+        index (int):
+            The index to remove.
+
+    Returns: None
+
+    Raises:
+        hou.OperationFailed:
+            This exception is raised if the parameter is not a
+            multiparm.
+
+    """
+    node = self.node()
+
+    if not self.isMultiParm():
+        raise hou.OperationFailed("Not a multiparm.")
+
+    cpp_methods.removeMultiParmItem(node, self.name(), index)
+
+
+def getMultiParmInstances(self):
+    """Return all the parameters in the multiparm block.
+
+    The parameters are returned as a tuple of parameters based
+    on each instance.
+
+    Args: None
+
+    Returns:
+        (tuple):
+            A tuple of tuples representing the parameters of each
+            multiparm instance.
+
+    Raises:
+        hou.OperationFailed:
+            This exception is raised if the parameter is not a
+            multiparm.
+
+    """
+    node = self.node()
+
+    if not self.isMultiParm():
+        raise hou.OperationFailed("Not a multiparm.")
+
+    # Get the multiparm parameter names.
+    result = cpp_methods.getMultiParmInstances(node, self.name())
+
+    multi_parms = []
+
+    # Iterate over each multiparm instance.
+    for block in result:
+        # Build a list of parameters in the instance.
+        parms = [node.parm(parm_name) for parm_name in block if parm_name]
+        multi_parms.append(tuple(parms))
+
+    return tuple(multi_parms)
+
+
+def getMultiParmInstanceValues(self):
+    """Return all the parameter values in the multiparm block.
+
+    The values are returned as a tuple of values based
+    on each instance.
+
+    Args: None
+
+    Returns:
+        (tuple):
+            A tuple of tuples representing the values of each
+            multiparm instance.
+
+    Raises:
+        hou.OperationFailed:
+            This exception is raised if the parameter is not a
+            multiparm.
+
+    """
+    node = self.node()
+
+    if not self.isMultiParm():
+        raise hou.OperationFailed("Not a multiparm.")
+
+    # Get the multiparm parameters.
+    parms = getMultiParmInstances(self)
+
+    all_values = []
+
+    # Iterate over each multiparm instance.
+    for block in parms:
+        # Build a list of parameter values.
+        values = [parm.eval() for parm in block]
+        all_values.append(tuple(values))
+
+    return tuple(all_values)
+
+
+hou.Geometry.isReadOnly = types.MethodType(isReadOnly,
+                                           None,
+                                           hou.Geometry)
+
 hou.Geometry.createPoint = types.MethodType(createPoint,
                                             None,
                                             hou.Geometry)
@@ -2801,6 +3319,11 @@ hou.Geometry.addVariableName = types.MethodType(addVariableName,
 hou.Geometry.removeVariableName = types.MethodType(removeVariableName,
                                                    None,
                                                    hou.Geometry)
+
+hou.Attrib.rename = types.MethodType(renameAttribute,
+                                     None,
+                                     hou.Attrib)
+hou.Attrib.rename.__func__.__name__ = "rename"
 
 hou.Geometry.findPrimByName = types.MethodType(findPrimByName,
                                                None,
@@ -3043,4 +3566,64 @@ hou.ParmTuple.isDefault = types.MethodType(isParmTupleDefault,
                                            None,
                                            hou.ParmTuple)
 hou.ParmTuple.isDefault.__func__.__name__ = "isDefault"
+
+hou.Parm.getReferencingParms = types.MethodType(getReferencingParms,
+                                                None,
+                                                hou.Parm)
+
+hou.Node.inputLabel = types.MethodType(inputLabel,
+                                       None,
+                                       hou.Node)
+
+hou.Node.isContainedBy = types.MethodType(isContainedBy,
+                                          None,
+                                          hou.Node)
+
+hou.Node.getExistingOpReferences = types.MethodType(getExistingOpReferences,
+                                                    None,
+                                                    hou.Node)
+
+hou.Node.getExistingOpDependents = types.MethodType(getExistingOpDependents,
+                                                    None,
+                                                    hou.Node)
+
+hou.Parm.isMultiParm = types.MethodType(isMultiParm,
+                                        None,
+                                        hou.Parm)
+
+hou.Parm.insertMultiParmItem = types.MethodType(insertMultiParmItem,
+                                                None,
+                                                hou.Parm)
+
+hou.Parm.removeMultiParmItem = types.MethodType(removeMultiParmItem,
+                                                None,
+                                                hou.Parm)
+
+hou.Parm.getMultiParmInstances = types.MethodType(getMultiParmInstances,
+                                                  None,
+                                                  hou.Parm)
+
+hou.Parm.getMultiParmInstanceValues = types.MethodType(getMultiParmInstanceValues,
+                                                       None,
+                                                       hou.Parm)
+
+hou.ParmTuple.isMultiParm = types.MethodType(isMultiParm,
+                                             None,
+                                             hou.ParmTuple)
+
+hou.ParmTuple.insertMultiParmItem = types.MethodType(insertMultiParmItem,
+                                                     None,
+                                                     hou.ParmTuple)
+
+hou.ParmTuple.removeMultiParmItem = types.MethodType(removeMultiParmItem,
+                                                     None,
+                                                     hou.ParmTuple)
+
+hou.ParmTuple.getMultiParmInstances = types.MethodType(getMultiParmInstances,
+                                                       None,
+                                                       hou.ParmTuple)
+
+hou.ParmTuple.getMultiParmInstanceValues = types.MethodType(getMultiParmInstanceValues,
+                                                            None,
+                                                            hou.ParmTuple)
 
