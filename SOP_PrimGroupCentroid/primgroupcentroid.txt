@@ -1,0 +1,63 @@
+#type: node
+#context: sop
+#internal: primgroupcentroid
+#largeicon: /nodes/sop/SOP_primgroupcentroid.svg
+
+= PrimitiveGroupCentroid =
+
+"""Create points at the centers of primitive groups."""
+
+This node creates points at the centers of primitive group, or groups of
+primitives with unique *name* or *class* attributes.
+
+The centers of groups can be calculated using the barycenter, boundingbox
+center, or the center of mass.
+
+When points are connected provided through the second input, these points
+will use their source identifier to match to the incoming geometry and
+transform the incoming geometry based on standard Houdini
+[copy/instance behaviour|/copy/instanceattrs].
+
+@parameters
+
+Mode:
+    The method used to partition the geometry for centroid calculations.
+
+    Group:
+        Use specified primitive groups.
+    Name:
+	Use each group of named primitives.
+    Class:
+	Use each group of primitive classes.
+
+Group:
+    When mode is set to *Group*, specify the group(s) to act on.
+
+Method:
+    The centroid calculation method.
+
+    Barycenter:
+        Use the average point position.
+    Bounding Box:
+        Use the center of the bounding box of the geometry.
+    Center of Mass:
+	Use the calculated center of mass.
+
+Store Source Identifier:
+    Create an attribute on the points that indicates the source of each
+    centroid.
+
+Unmatched Behavior:
+    When transforming the geometry, determine what to do for groups that
+    have no matching transform points.
+
+    Keep:
+        Keep the groups and apply no transforms.
+    Destroy:
+	Destroy the geometry.
+
+@inputs
+Source:
+    Geometry to generate centroids for.
+Template:
+    (Optional) Transform the source geometry by matching points.
