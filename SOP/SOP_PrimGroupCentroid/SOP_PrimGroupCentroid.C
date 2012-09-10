@@ -158,9 +158,9 @@ static PRM_Name names[] =
     PRM_Name("group", "Group"),
     PRM_Name("method", "Method"),
     PRM_Name("store", "Store Source Identifier"),
-    PRM_Name("attributes", "Attributes to copy"),
+    PRM_Name("attributes", "Attributes to Copy"),
     PRM_Name("behavior", "Unmatched Behavior"),
-    PRM_Name("bind_attributes", "Bind Attributes to copy"),
+    PRM_Name("bind_attributes", "Bind Attributes to Copy"),
 };
 
 static PRM_Name modeChoices[] =
