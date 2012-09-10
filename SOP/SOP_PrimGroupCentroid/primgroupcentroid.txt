@@ -18,6 +18,11 @@ will use their source identifier to match to the incoming geometry and
 transform the incoming geometry based on standard Houdini
 [copy/instance behaviour|/copy/instanceattrs].
 
+Attributes can also be copied to/from the centroid points. Primitive
+attribute values will be averaged onto the centroid points.  Point
+attributes from the binding points will be copied as primitive attributes
+to the corresponding input geometry.
+
 @parameters
 
 Mode:
@@ -47,6 +52,10 @@ Store Source Identifier:
     Create an attribute on the points that indicates the source of each
     centroid.
 
+Attribute to Copy:
+    Attributes to copy from the primitives to the centroid points.  The
+    attribute values are averages.
+
 Unmatched Behavior:
     When transforming the geometry, determine what to do for groups that
     have no matching transform points.
@@ -55,6 +64,10 @@ Unmatched Behavior:
         Keep the groups and apply no transforms.
     Destroy:
 	Destroy the geometry.
+
+Bind Attribute to Copy:
+    Attributes to copy from the binding points to the matching geometry.
+    The attributes are copied as Primitive attributes.
 
 @inputs
 Source:

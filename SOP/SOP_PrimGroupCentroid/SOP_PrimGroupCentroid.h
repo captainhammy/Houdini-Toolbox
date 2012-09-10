@@ -21,39 +21,67 @@
 class SOP_PrimGroupCentroid: public SOP_Node
 {
 public:
-    static OP_Node 	*myConstructor(OP_Network *,
+    static OP_Node      *myConstructor(OP_Network *,
                                        const char *,
-				       OP_Operator *);
+                        OP_Operator *);
     static PRM_Template myTemplateList[];
+    static void         buildMenu(void *,
+                                  PRM_Name *,
+                                  int,
+                                  const PRM_SpareData *,
+                                  const PRM_Parm *);
+    static bool         validateAttrib(const GA_Attribute *,
+                                       void *);
 
 protected:
-			SOP_PrimGroupCentroid(OP_Network *,
-					      const char *,
-					      OP_Operator *);
-    virtual		~SOP_PrimGroupCentroid() {};
-    virtual OP_ERROR	cookMySop(OP_Context &context);
-    virtual unsigned	disableParms();
+                        SOP_PrimGroupCentroid(OP_Network *,
+                                              const char *,
+                                              OP_Operator *);
+    virtual             ~SOP_PrimGroupCentroid() {};
+    virtual OP_ERROR    cookMySop(OP_Context &context);
+    virtual unsigned    disableParms();
     virtual const char  *inputLabel(unsigned) const;
 
 private:
-    exint		MODE(fpreal t) { return evalInt("mode", 0, t); }
-    exint		METHOD(fpreal t) { return evalInt("method", 0, t); }
-    void		GROUP(UT_String &str, fpreal t)	{ evalString(str, "group", 0, t); }
-    bool		STORE(fpreal t) { return evalInt("store", 0, t); }
-    exint		BEHAVIOR(fpreal t) { return evalInt("behavior", 0, t); }
-    void		centerOfMass(GA_Range &,
-				     const GA_PrimitiveList &,
-				     UT_Vector3 &);
-    void		baryCenter(const GU_Detail *,
-				   GA_Range &,
-				   const GA_PrimitiveList &,
-				   UT_Vector3 &);
-    void		buildTransform(UT_Matrix4 &,
-				       const GU_Detail *,
-				       const UT_Vector3,
-				       GA_Offset);
-    int			buildCentroids(fpreal, exint, exint);
-    int			bindToCentroids(fpreal, exint, exint);
+    int                 MODE(fpreal t) { return evalInt("mode", 0, t); }
+    int                 METHOD(fpreal t) { return evalInt("method", 0, t); }
+    void                GROUP(UT_String &str, fpreal t) { evalString(str, "group", 0, t); }
+    bool                STORE(fpreal t) { return evalInt("store", 0, t); }
+    int                 BEHAVIOR(fpreal t) { return evalInt("behavior", 0, t); }
+    void                ATTRIBUTES(UT_String &str, fpreal t) { evalString(str, "attributes", 0, t); }
+    void                BIND(UT_String &str, fpreal t) { evalString(str, "bind_attributes", 0, t); }
+    void                buildRefMap(GA_AttributeRefMap &,
+                                    UT_String &,
+                                    GU_Detail *,
+                                    const GU_Detail *,
+                                    int,
+                                    GA_AttributeOwner);
+    int                 buildAttribData(int,
+                                        const GU_Detail *,
+                                        UT_Array<GA_Range> &,
+                                        UT_StringArray &,
+                                        UT_IntArray &);
+    void                buildGroupData(UT_String &,
+                                       const GU_Detail *,
+                                       UT_Array<GA_Range> &,
+                                       UT_StringArray &);
+    void                boundingBox(const GU_Detail *,
+                                    GA_Range &,
+                                    const GA_PrimitiveList &,
+                                    UT_Vector3 &);
+    void                centerOfMass(GA_Range &,
+                                     const GA_PrimitiveList &,
+                                     UT_Vector3 &);
+    void                baryCenter(const GU_Detail *,
+                                   GA_Range &,
+                                   const GA_PrimitiveList &,
+                                   UT_Vector3 &);
+    void                buildTransform(UT_Matrix4 &,
+                                       const GU_Detail *,
+                                       const UT_Vector3,
+                                       GA_Offset);
+    int                buildCentroids(fpreal, int, int);
+    int                bindToCentroids(fpreal, int, int);
 
 };
 
