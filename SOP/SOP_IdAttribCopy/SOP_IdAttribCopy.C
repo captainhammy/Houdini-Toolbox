@@ -10,86 +10,42 @@
  *
  * Name: SOP_IdAttribCopy.C
  * 
- * Version: 1.0
 */
 
 #include "SOP_IdAttribCopy.h"
 
+#include <CH/CH_Manager.h>
 #include <GA/GA_AttributeRefMap.h>
 #include <GA/GA_PageIterator.h>
 #include <GA/GA_SplittableRange.h>
 #include <OP/OP_Operator.h>
 #include <OP/OP_OperatorTable.h>
 #include <PRM/PRM_Include.h>
+#include <UT/UT_BitArray.h>
 #include <UT/UT_DSOVersion.h>
 #include <UT/UT_WorkArgs.h>
-
-void
-SOP_IdAttribCopy::testBuildPartial(const GA_SplittableRange &range,
-                                   GA_AttributeRefMap hmap,
-                                   const GA_Attribute *id_gah,
-                                   const IdOffsetMap &id_map,
-                                   const UT_JobInfo &info)
-{
-    exint                   id;
-
-    GA_Offset               start, end;
-    GA_ROPageHandleI        id_ph(id_gah);
-
-    IdOffsetMap::const_iterator map_it;
-
-    hmap.initThreadInstance();
-
-    // Iterate over the pages.
-    for (GA_PageIterator pit = range.beginPages(); !pit.atEnd(); ++pit)
-    {
-        // Set the handle to this page.
-        id_ph.setPage(*pit);
-
-        // Get the offsets in the page.
-        for (GA_Iterator it(pit.begin()); it.blockAdvance(start, end); )
-        {
-            // Iterate over the offsets in the page.
-            for (GA_Offset pt = start; pt < end; ++pt)
-            {
-                // Get the id value for this point.
-                id = id_ph.get(pt);
-                // Try to find the corresponding id.
-                map_it = id_map.find(id);
-                // If the iterator isn't at the end, copy the value.
-                if (map_it != id_map.end())
-                {
-                    // Copy the point attributes from the offset pointed
-                    // to by the found 'id' value to the current point.
-                    hmap.copyValue(GA_ATTRIB_POINT,
-                                           pt,
-                                           GA_ATTRIB_POINT,
-                                           (*map_it).second);
-                }
-            }
-        }
-    }
-
-}
-
 
 // This class is used to copy point attributes in a threaded manner.
 class AttributeIdCopier {
 public:
     AttributeIdCopier(const GA_AttributeRefMap *hmap,
                       const GA_Attribute *id,
-                      const IdOffsetMap *id_map):
-        myAttribMap(hmap), myId(id), myIdMap(id_map) {}
+                      const IdOffsetMap *id_map,
+                      UT_BitArray *matches):
+        myAttribMap(hmap), myId(id), myIdMap(id_map), myMatches(matches) {}
 
     // The function that is called by UTparallelFor to do the work.
     void operator()(const GA_SplittableRange &range) const
     {
         exint                   id;
 
+        GA_Detail               *dest;
         GA_Offset               start, end;
         GA_ROPageHandleI        id_ph(myId);
 
         IdOffsetMap::const_iterator map_it;
+
+        dest = myAttribMap->getDestDetail();
 
         // Iterate over the pages.
         for (GA_PageIterator pit = range.beginPages(); !pit.atEnd(); ++pit)
@@ -116,6 +72,10 @@ public:
                                                pt,
                                                GA_ATTRIB_POINT,
                                                (*map_it).second);
+
+                        // If the bit array is valid, set this index to true.
+                        if (myMatches)
+                            myMatches->setBit(dest->pointIndex(pt), true);
                     }
                 }
             }
@@ -126,6 +86,7 @@ private:
     const GA_AttributeRefMap    *myAttribMap;
     const GA_Attribute          *myId;
     const IdOffsetMap           *myIdMap;
+    UT_BitArray                 *myMatches;
 
 };
 
@@ -156,11 +117,30 @@ SOP_IdAttribCopy::SOP_IdAttribCopy(OP_Network *net,
                                    OP_Operator *op):
     SOP_Node(net, name, op), myGroup(0) {}
 
+unsigned
+SOP_IdAttribCopy::disableParms()
+{
+    fpreal	t = CHgetEvalTime();
+    unsigned 	changed;
+    bool 	group;
+
+
+    // Are we grouping the matched points?
+    group = GROUPMATCHED(t);
+
+    // Enable the "Group Name" field.
+    changed = enableParm("groupname", group);
+
+    return changed;
+}
+
 static PRM_Name names[] =
 {
     PRM_Name("group", "Group"),
-    PRM_Name("attributes", "Attributes to copy"),
+    PRM_Name("attributes", "Attributes to Copy"),
     PRM_Name("copyp", "Accept \"P\""),
+    PRM_Name("creategroup", "Group Matched Points"),
+    PRM_Name("groupname", "Group Name"),
 };
 
 static PRM_Default defaults[] =
@@ -168,6 +148,8 @@ static PRM_Default defaults[] =
     PRM_Default(0, ""),
     PRM_Default(0, "*"),
     PRM_Default(0),
+    PRM_Default(0),
+    PRM_Default(0, "match"),
 };
 
 static PRM_ChoiceList attribMenu((PRM_ChoiceListType)(PRM_CHOICELIST_TOGGLE),
@@ -178,6 +160,8 @@ SOP_IdAttribCopy::myTemplateList[] = {
     PRM_Template(PRM_STRING, 1, &names[0], &defaults[0], &SOP_Node::pointGroupMenu),
     PRM_Template(PRM_STRING, 1, &names[1], &defaults[1], &attribMenu),
     PRM_Template(PRM_TOGGLE, 1, &names[2], &defaults[2]),
+    PRM_Template(PRM_TOGGLE, 1, &names[3], &defaults[3]),
+    PRM_Template(PRM_STRING, 1, &names[4], &defaults[4]),
     PRM_Template()
 };
 
@@ -230,7 +214,8 @@ SOP_IdAttribCopy::cookInputGroups(OP_Context &context, int alone)
 
     myGroup = 0;
 
-    GROUP(grp_name, context.getTime());                // Get the group string.
+    // Get the group string.
+    GROUP(grp_name, context.getTime());
 
     // If the group string is not null, then we try to parse the group.
     if (grp_name.isstring())
@@ -274,10 +259,13 @@ SOP_IdAttribCopy::cookInputGroups(OP_Context &context, int alone)
 OP_ERROR
 SOP_IdAttribCopy::cookMySop(OP_Context &context)
 {
+    bool                        group_matched;
     fpreal 		        now;
     exint                       id; 
 
     GA_Offset                   start, end;
+
+    GA_PointGroup               *group;
 
     const GA_Attribute          *source_attr;
     const GA_AttributeDict      *dict;
@@ -286,7 +274,8 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
 
     const GU_Detail             *src_geo;
 
-    UT_String                   name, pattern;
+    UT_BitArray                 matches;
+    UT_String                   attribute_name, pattern, group_name;
     UT_WorkArgs                 tokens;
     
     IdOffsetMap                 id_map;
@@ -349,15 +338,16 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
             {
                 // The current attribute.
                 source_attr = it.attrib();
+
                 // Get the attribute name.
-                name = source_attr->getName();
+                attribute_name = source_attr->getName();
 
                 // Skip the 'id' attribute.
-                if (name == "id")
+                if (attribute_name == "id")
                     continue;
 
                 // If the name doesn't match our pattern, skip it.
-                if (!name.matchPattern(tokens))
+                if (!attribute_name.matchPattern(tokens))
                     continue;
 
                 // Try to find the attribute on the first input geometry.
@@ -376,9 +366,9 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
             // If we are allowing 'P' to be copied, see if we should copy it.
             if (COPYP(now))
             {
-                name = "P";
+                attribute_name = "P";
                 // If 'P' matches our pattern, add it to the map.
-                if (name.matchPattern(tokens))
+                if (attribute_name.matchPattern(tokens))
                     hmap.append(gdp->getP(), src_geo->getP());
             }
         }
@@ -405,19 +395,61 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
             }
         }
 
-/*
-        // Engage attribute copying across threads.
-        UTparallelFor(GA_SplittableRange(gdp->getPointRange(myGroup)),
-                      AttributeIdCopier(&hmap, id_gah.getAttribute(), &id_map));
-*/
+        // Check if we are supposed to group the matched points.
+        group_matched = GROUPMATCHED(now);
 
+        if (group_matched)
+        {
+            // Resize the bit array to match the number of points in
+            // the detail.
+            matches.resize(gdp->getNumPoints());
+            
+            // Get the group name to use.
+            GROUPNAME(group_name, now);
+            // Create a new point group.
+            group = gdp->newPointGroup(group_name);
+        }
 
-        const GA_Attribute *attrib = id_gah.getAttribute();
-        const GA_SplittableRange range = GA_SplittableRange(gdp->getPointRange(myGroup));
-        testBuild(range, hmap, attrib, id_map);
+        // Get the range to act on.
+        GA_SplittableRange parallel_range(gdp->getPointRange(myGroup));
 
+        // Engage attribute copying across threads.  If we are grouping
+        // matched points, pass the bit array.  If not, pass 0.
+        UTparallelFor(parallel_range,
+                      AttributeIdCopier(&hmap,
+                                        id_gah.getAttribute(),
+                                        &id_map,
+                                        group_matched ? &matches : 0)
+                     );
+
+        // If we are grouping, check the bit array and add the corresponding
+        // indices to the new group.
+        if (group_matched)
+        {
+            int i=0;
+            for (matches.iterateInit(i); i >= 0; i = matches.iterateNext(i))
+            {
+                if (matches(i))
+                    group->addOffset(gdp->pointOffset(i));
+            }
+        }
     }
+
     unlockInputs();
     return error();
+}
+
+const char *
+SOP_IdAttribCopy::inputLabel(unsigned idx) const
+{
+    switch (idx)
+    {
+        case 0:
+            return "Geometry to copy attributes to.";
+        case 1:
+            return "Geometry to copy attributes from.";
+        default:
+            return "Input";
+    }
 }
 

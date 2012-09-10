@@ -1,0 +1,37 @@
+#type: node
+#context: sop
+#icon: SOP/idattribcopy
+#largeicon: /nodes/sop/SOP_idattribcopy.svg
+
+= IdAttribCopy =
+
+"""Copy attribute values between point, matched by id."""
+
+This node copies attribute values from one set of points to another,
+matching points by *id* instead of point number.
+
+@parameters
+
+Group:
+    Subset of input geometry to match against.
+
+Attributes to Copy:
+    The names of the attributes to copy.
+
+Accept "P":
+    Allow copying of position (P).
+
+Group Matched Points:
+    Create a new point group with all the points that matched.
+
+Group Name:
+    The name of the group to create.
+
+@inputs
+Input 1:
+    Geometry to copy attributes to.
+Input 2:
+    Geometry to copy attributes from.
+
+@related:
+- [Node:sop/attribcopy]
