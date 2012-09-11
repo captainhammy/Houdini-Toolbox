@@ -56,7 +56,7 @@ SOP_PrimGroupCentroid::disableParms()
 {
     fpreal                      t = CHgetEvalTime();
     unsigned                    changed;
-    int                       mode;
+    int                         mode;
 
     OP_Node                     *bind_input;
 
@@ -82,7 +82,8 @@ SOP_PrimGroupCentroid::disableParms()
 }
 
 bool
-SOP_PrimGroupCentroid::validateAttrib(const GA_Attribute *attribute, void *data)
+SOP_PrimGroupCentroid::validateAttrib(const GA_Attribute *attribute,
+                                      void *data)
 {
     // Extract the mode value.
     int mode = *((int *)data);
@@ -112,7 +113,7 @@ SOP_PrimGroupCentroid::buildMenu(void *data,
                                  const PRM_Parm *)
 {
     fpreal                      t = CHgetEvalTime();
-    int                       input_index, mode;
+    int                         input_index, mode;
 
     GA_AttributeOwner           owner;
 
@@ -314,7 +315,7 @@ SOP_PrimGroupCentroid::buildRefMap(GA_AttributeRefMap &hmap,
                                    GA_AttributeOwner owner)
 {
     const GA_AttributeDict      *dict;
-    GA_AttributeDict::iterator  attrib_it;
+    GA_AttributeDict::iterator  a_it;
 
     const GA_Attribute          *source_attr;
     GA_ROAttributeRef           attr_gah;
@@ -333,10 +334,10 @@ SOP_PrimGroupCentroid::buildRefMap(GA_AttributeRefMap &hmap,
         dict = &input_geo->pointAttribs();
 
     // Iterate over all the point attributes.
-    for (attrib_it=dict->begin(GA_SCOPE_PUBLIC); !attrib_it.atEnd(); ++attrib_it)
+    for (a_it=dict->begin(GA_SCOPE_PUBLIC); !a_it.atEnd(); ++a_it)
     {
         // The current attribute.
-        source_attr = attrib_it.attrib();
+        source_attr = a_it.attrib();
         // Get the attribute name.
         attr_name = source_attr->getName();
 
@@ -445,7 +446,6 @@ SOP_PrimGroupCentroid::boundingBox(const GU_Detail *input_geo,
                                    UT_Vector3 &pos)
 {
     GA_Range                    pt_range;
-    GA_WeightedSum              sum;
 
     UT_BoundingBox              bbox;
 
@@ -477,14 +477,11 @@ SOP_PrimGroupCentroid::centerOfMass(GA_Range &pr_range,
 {
     fpreal                      area, total_area;
 
-    GA_WeightedSum              sum;
-
     const GEO_Primitive         *prim;
 
     // Set the position and total area to 0.
     pos.assign(0,0,0);
     total_area = 0;
-
 
     // Iterate over all the primitives in the range.
     for (GA_Iterator it(pr_range); !it.atEnd(); ++it)
@@ -631,8 +628,10 @@ SOP_PrimGroupCentroid::buildTransform(UT_Matrix4 &mat,
         scale = scale_h.get(ptOff);
     }
     else
+    {
         // Use a default scale.
         scale.assign(1, 1, 1);
+    }
 
     // Try to find the specific attribute.
     rot_gah = input_geo->findFloatTuple(GA_ATTRIB_POINT,
@@ -653,7 +652,18 @@ SOP_PrimGroupCentroid::buildTransform(UT_Matrix4 &mat,
     }
 
     if (use_orient)
-        xform.instance(pt_pos, dir, pscale, &scale, &up, &rot, &trans, &orient);
+    {
+        xform.instance(pt_pos,
+                       dir,
+                       pscale,
+                       &scale,
+                       &up,
+                       &rot,
+                       &trans,
+                       &orient);
+    }
+
+    // Need to build the transform manually.
     else
     {
         // Try to find the point Normal attribute.
@@ -842,18 +852,31 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
             }
         }
 
-        // If there are no entries in the map then we don't need to copy anything,
-        // so point the map pointer to 0 to skip summing.
+        // If there are no entries in the map then we don't need to copy
+        // anything.
         if (hmap.entries() > 0)
         {
             GA_WeightedSum              sum;
 
+            // Start a weighted sum for the range.
             hmap.startSum(sum, GA_ATTRIB_POINT, ptOff);
 
+            // Add the values for each primitive to the sum.
             for (GA_Iterator it(*array_it); !it.atEnd(); ++it)
-                hmap.addSumValue(sum, GA_ATTRIB_POINT, ptOff, GA_ATTRIB_PRIMITIVE, *it, 1);
+            {
+                hmap.addSumValue(sum,
+                                 GA_ATTRIB_POINT,
+                                 ptOff,
+                                 GA_ATTRIB_PRIMITIVE,
+                                 *it,
+                                 1);
+            }
 
-            hmap.finishSum(sum, GA_ATTRIB_POINT, ptOff, 1);
+            // Finish the sum, normalizing the values.
+            hmap.finishSum(sum,
+                           GA_ATTRIB_POINT,
+                           ptOff,
+                           1.0/(*array_it).getEntries());
         }
     }
 
@@ -1030,7 +1053,12 @@ SOP_PrimGroupCentroid::bindToCentroids(fpreal t, int mode, int method)
         if (hmap.entries())
         {
             for (GA_Iterator pr_it(pr_range); !pr_it.atEnd(); ++pr_it)
-                hmap.copyValue(GA_ATTRIB_PRIMITIVE, *pr_it, GA_ATTRIB_POINT, *it);
+            {
+                hmap.copyValue(GA_ATTRIB_PRIMITIVE,
+                               *pr_it,
+                               GA_ATTRIB_POINT,
+                               *it);
+            }
         }
     }
 
