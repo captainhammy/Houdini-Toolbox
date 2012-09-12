@@ -9,7 +9,6 @@
  * 
  * Name: SOP_PrimCentroid.h
  *
- * Version: 3.0
 */
 
 #ifndef __SOP_PrimCentroid_h__
@@ -36,11 +35,10 @@ protected:
 					 OP_Operator *);
     virtual		~SOP_PrimCentroid() {};
     virtual OP_ERROR	cookMySop(OP_Context &);
-    virtual unsigned	disableParms();
+    virtual const char  *inputLabel(unsigned) const;
 
 private:
-    exint		METHOD(fpreal t) { return evalInt("method", 0, t); }
-    exint		COPY(fpreal t) { return evalInt("copy", 0, t); }
+    int		        METHOD(fpreal t) { return evalInt("method", 0, t); }
     void		ATTRIBUTES(UT_String &str, fpreal t) { evalString(str, "attributes", 0, t); }
 
 };

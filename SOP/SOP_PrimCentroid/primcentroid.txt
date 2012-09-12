@@ -1,0 +1,31 @@
+#type: node
+#context: sop
+#internal: primcentroid
+#largeicon: /nodes/sop/SOP_primcentroid.svg
+
+= PrimitiveCentroid =
+
+"""Create points at the centers of primitives."""
+
+This node creates points at the centers of primitives. These points have 
+their normal value set to the normal of the source primitive.  Specific
+attributes can also be copied.
+
+@parameters
+    Method:
+	The type of calculation to use when computing the centroid.
+    
+	Barycenter:
+	    Use the average point position of each point in the primitive.
+	Bounding Box:
+	    Use the bouding box of the primitive.
+
+    Attributes to Copy:
+	Primitive attributes to copy to the center points.
+
+@inputs
+Source:
+    Primitives to generate centroids for.
+
+@related
+    - [PrimitiveGroupCentroid SOP|/nodes/sop/primgroupcentroid]
