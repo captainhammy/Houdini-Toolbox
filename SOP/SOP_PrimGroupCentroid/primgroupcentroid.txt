@@ -74,3 +74,6 @@ Source:
     Geometry to generate centroids for.
 Template:
     (Optional) Transform the source geometry by matching points.
+
+@related
+    - [PrimitiveCentroid SOP|/nodes/sop/primcentroid]
