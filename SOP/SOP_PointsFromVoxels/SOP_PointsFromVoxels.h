@@ -9,7 +9,6 @@
  * 
  * Name: SOP_PointsFromVoxels.h
  *
- * Version: 1.0
 */
 
 #ifndef __SOP_PointsFromVoxels_h__

@@ -9,7 +9,6 @@
  *
  * Name: SOP_PointsFromVoxels.C
  * 
- * Version: 1.0
 */
 
 #include "SOP_PointsFromVoxels.h"
@@ -17,7 +16,6 @@
 #include <GEO/GEO_PrimVolume.h>
 #include <PRM/PRM_Include.h>
 #include <UT/UT_VoxelArray.h>
-
 #include <OP/OP_Operator.h>
 #include <OP/OP_OperatorTable.h>
 #include <UT/UT_DSOVersion.h>
@@ -27,7 +25,7 @@ newSopOperator(OP_OperatorTable *table)
 { 
     table->addOperator(
         new OP_Operator("pointsfromvoxels",
-                        "Points From Voxels",
+                        "PointsFromVoxels",
                         SOP_PointsFromVoxels::myConstructor,
                         SOP_PointsFromVoxels::myTemplateList,
                         1,
@@ -80,12 +78,11 @@ SOP_PointsFromVoxels::cookMySop(OP_Context &context)
 
     GA_Offset                   ptOff;
 
-    UT_Vector3			pos;
-
     const GU_Detail		*input_geo;
     const GEO_Primitive		*prim;
     const GEO_PrimVolume	*vol;
 
+    UT_Vector3			pos;
     UT_VoxelArrayIteratorF	vit;
 
     now = context.getTime();
@@ -95,11 +92,13 @@ SOP_PointsFromVoxels::cookMySop(OP_Context &context)
 
     // Get the primitive number.
     primnum = PRIM(now);
+
     // Check for culling.
     cull = CULL(now);
 
     // Clear out the detail since we only want our new points.
     gdp->clearAndDestroy();
+
     // Get the input geometry as read only.
     GU_DetailHandleAutoReadLock gdl(inputGeoHandle(0));
     input_geo = gdl.getGdp();
@@ -117,6 +116,7 @@ SOP_PointsFromVoxels::cookMySop(OP_Context &context)
 
             // Get a voxel read handle from the primitive.
 	    UT_VoxelArrayReadHandleF	vox(vol->getVoxelHandle());
+
             // Attach the voxel iterator to the handle.
 	    vit.setHandle(vox);
 
@@ -129,6 +129,7 @@ SOP_PointsFromVoxels::cookMySop(OP_Context &context)
                     continue;
                 // Convert the voxel index to a position.
                 vol->indexToPos(vit.x(), vit.y(), vit.z(), pos);
+
                 // Create a point and set it to the position of the
                 // voxel.
                 ptOff = gdp->appendPointOffset();

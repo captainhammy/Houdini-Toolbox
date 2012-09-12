@@ -1,0 +1,18 @@
+#type: node
+#context: sop
+#internal: pointsfromvoxels
+#largeicon: /nodes/sop/SOP_pointsfromvoxels.svg
+
+= PointsFromVoxels = 
+
+"""Create points at the center of each voxel of a fog volume."""
+
+This node will create a point at the center of each voxel of the specified 
+primitive in a fog volume. 
+
+@parameters
+    Primitive Number:
+        The primitive number of the volume to use.
+    Cull Empty:
+	Only create a point if the voxel has a non-zero value.
+
