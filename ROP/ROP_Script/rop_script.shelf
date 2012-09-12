@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shelfDocument>
+  <!-- This file contains definitions of shelves, toolbars, and tools.
+ It should not be hand-edited when it is being used by the application.
+ Note, that two definitions of the same element are not allowed in
+ a single file. -->
+
+  <tool name="driver_script" label="Script" icon="ROP_script">
+    <helpURL>operator:Driver/script</helpURL>
+    <toolMenuContext name="viewer">
+      <contextNetType>ROP</contextNetType>
+    </toolMenuContext>
+    <toolMenuContext name="pop_viewer">
+      <contextNetType>ROP</contextNetType>
+    </toolMenuContext>
+    <toolMenuContext name="network">
+      <contextOpType>Driver/script</contextOpType>
+    </toolMenuContext>
+    <toolSubmenu>Utility</toolSubmenu>
+    <toolSubmenu>Houdini Toolbox</toolSubmenu>
+    <script scriptType="python"><![CDATA[import drivertoolutils
+
+drivertoolutils.genericTool(kwargs, 'script')]]></script>
+  </tool>
+</shelfDocument>

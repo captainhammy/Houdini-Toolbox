@@ -9,7 +9,6 @@
  *
  * Name: ROP_Script.C
  *
- * Version: 1.0
 */
 
 #include "ROP_Script.h"
@@ -31,7 +30,7 @@ newDriverOperator(OP_OperatorTable *table)
 			ROP_Script::myConstructor,
 			ROP_Script::getTemplatePair(),
 			0,
-			0,
+			9999,
 			ROP_Script::getVariablePair(),
 			OP_FLAG_GENERATOR)
     );
@@ -183,8 +182,10 @@ ROP_Script::renderFrame(fpreal time, UT_Interrupt *)
     {
         // Run the statements in a new context and store the result.
         result = PYrunPythonStatementsInNewContext(command);
-        // Add a node error if necessary.
-        addPythonNodeError(result);
+
+        // If there was an error, add an error on the node.
+        if (result.myResultType == PY_Result::ERR)
+            addPythonNodeError(result);
     }
     // If the language is 'hscript', or any other value, run the command
     // as hscript.

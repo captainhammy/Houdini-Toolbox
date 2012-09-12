@@ -1,0 +1,21 @@
+#type: node
+#context: out
+#internal: script
+#largeicon: /nodes/out/ROP_script.svg
+
+= Script =
+
+"""Create points at the centers of primitives."""
+
+
+@parameters
+
+[Include:standard#render_buttons]
+
+[Include:standard#valid_frame_range]
+
+Command:
+    The script command to run.
+
+[Include:standard#scripts_tab]
+

@@ -9,7 +9,6 @@
  *
  * Name: ROP_Script.h
  *
- * Version: 1.0
 */
 
 #ifndef __ROP_Script_h__
@@ -34,9 +33,9 @@ protected:
 					   const char *,
 					   OP_Operator *);
     virtual ~ROP_Script() {};
-    virtual int			 startRender(int nframes, fpreal s, fpreal e);
-    virtual ROP_RENDER_CODE	 renderFrame(fpreal time, UT_Interrupt *boss);
-    virtual ROP_RENDER_CODE	 endRender();
+    virtual int		        startRender(int nframes, fpreal s, fpreal e);
+    virtual ROP_RENDER_CODE	renderFrame(fpreal time, UT_Interrupt *boss);
+    virtual ROP_RENDER_CODE	endRender();
 
 private:
     void 			LANGUAGE(UT_String &str, fpreal t) { evalString(str, "language", 0, t); }
