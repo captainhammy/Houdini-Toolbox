@@ -5,8 +5,10 @@
 
 = Script =
 
-"""Create points at the centers of primitives."""
+"""Run Hscript or Python code as a render operation."""
 
+This operator allows you to run code at render time, independent of the
+normal pre/post render/frame options.
 
 @parameters
 
