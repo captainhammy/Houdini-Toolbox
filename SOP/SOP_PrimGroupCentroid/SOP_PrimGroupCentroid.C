@@ -1079,7 +1079,7 @@ OP_ERROR
 SOP_PrimGroupCentroid::cookMySop(OP_Context &context)
 {
     fpreal                      now;
-    int                       method, mode;
+    int                         method, mode;
 
     now = context.getTime();
 
