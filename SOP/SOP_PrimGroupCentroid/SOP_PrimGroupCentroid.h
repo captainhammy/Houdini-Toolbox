@@ -23,7 +23,7 @@ class SOP_PrimGroupCentroid: public SOP_Node
 public:
     static OP_Node      *myConstructor(OP_Network *,
                                        const char *,
-                        OP_Operator *);
+                                       OP_Operator *);
     static PRM_Template myTemplateList[];
     static void         buildMenu(void *,
                                   PRM_Name *,
