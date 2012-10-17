@@ -77,7 +77,7 @@ def addToClass(*args, **kwargs):
 
         # We don't really care about modifying the function so just return
         # it.
-        return method
+        return f
 
     return decorator
 
@@ -242,8 +242,6 @@ _cpp_methods = inlinecpp.createLibrary(
 #include <OP/OP_Node.h>
 #include <OP/OP_OTLManager.h>
 #include <PRM/PRM_Parm.h>
-#include <PXL/PXL_Raster.h>
-#include <UT/UT_Rect.h>
 #include <UT/UT_WorkArgs.h>
 """,
     structs=[
