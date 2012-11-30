@@ -328,6 +328,7 @@ expandRange(const char *pattern)
 void
 sortAlongAxis(GU_Detail *gdp, int mode, int axis)
 {
+    # Convert the int value to the axis type.
     GU_AxisType axis_type = static_cast<GU_AxisType>(axis);
 
     // Sort primitives.
@@ -574,10 +575,8 @@ renameAttribute(GU_Detail *gdp,
                 const char *from_name,
                 const char *to_name)
 {
-    GA_AttributeOwner           owner;
-
     // Convert the int value to the attribute owner type.
-    owner = static_cast<GA_AttributeOwner>(attrib_type);
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attrib_type);
 
     // Rename the attribute.
     return gdp->renameAttribute(owner, GA_SCOPE_PUBLIC, from_name, to_name);
@@ -704,12 +703,10 @@ copyPointAttributeValues(GU_Detail *dest_gdp,
                          const char **attribute_names,
                          int num_attribs)
 {
+    const GA_Attribute          *attr;
     GA_Offset                   srcOff, destOff;
-
     GA_ROAttributeRef           src_gah;
     GA_RWAttributeRef           dest_gah;
-
-    const GA_Attribute          *attr;
 
     UT_String                   attr_name;
 
@@ -762,12 +759,10 @@ copyPrimAttributeValues(GU_Detail *dest_gdp,
                         const char **attribute_names,
                         int num_attribs)
 {
+    const GA_Attribute          *attr;
     GA_Offset                   srcOff, destOff;
-
     GA_ROAttributeRef           src_gah;
     GA_RWAttributeRef           dest_gah;
-
-    const GA_Attribute          *attr;
 
     UT_String                   attr_name;
 
@@ -897,7 +892,6 @@ connectedPoints(const GU_Detail *gdp, int pt_num)
 
     GA_Offset                   ptOff;
     GA_OffsetArray              prims;
-
     GA_Range                    pt_range;
 
     const GEO_Primitive         *prim;
@@ -948,10 +942,10 @@ referencingVertices(const GU_Detail *gdp, int pt_num)
     GA_Index                    primIdx;
     GA_Offset                   ptOff, primOff, vtxOff;
     GA_OffsetArray              vertices;
-
+    GA_OffsetArray::const_iterator vert_it;
     const GA_Primitive          *prim;
 
-    GA_OffsetArray::const_iterator vert_it;
+    VertexMap                   vert_map;
 
     ptOff = gdp->pointOffset(pt_num);
     gdp->getVerticesReferencingPoint(vertices, ptOff);
@@ -976,7 +970,6 @@ referencingVertices(const GU_Detail *gdp, int pt_num)
         }
     }
 
-    VertexMap vert_map;
     vert_map.prims.set(prim_indices);
     vert_map.indices.set(vert_indices);
 
@@ -990,9 +983,9 @@ primStringAttribValues(const GU_Detail *gdp, const char *attrib_name)
 {
     std::vector<std::string>    result;
 
+    const GA_AIFSharedStringTuple       *s_t;
     const GA_Attribute          *attrib;
     GA_ROAttributeRef           attrib_gah;
-    const GA_AIFSharedStringTuple       *s_t;
 
     // Try to find the string attribute.
     attrib_gah = gdp->findStringTuple(GA_ATTRIB_PRIMITIVE, attrib_name);
@@ -1019,9 +1012,9 @@ setPrimStringAttribValues(GU_Detail *gdp,
                           const char **values,
                           int num_values)
 {
+    const GA_AIFSharedStringTuple       *s_t;
     GA_Attribute                *attrib;
     GA_RWAttributeRef           attrib_gah;
-    const GA_AIFSharedStringTuple       *s_t;
 
     // Try to find the string attribute.
     attrib_gah = gdp->findStringTuple(GA_ATTRIB_PRIMITIVE, attrib_name);
@@ -1048,11 +1041,11 @@ setSharedPrimStringAttrib(GU_Detail *gdp,
                           const char *value,
                           const char *group_name=0)
 {
-    GA_PrimitiveGroup           *group = 0;
 
-    GA_Attribute                *attrib;
-    GA_RWAttributeRef           attrib_gah;
     const GA_AIFSharedStringTuple       *s_t;
+    GA_Attribute                *attrib;
+    GA_PrimitiveGroup           *group = 0;
+    GA_RWAttributeRef           attrib_gah;
 
     // Find the primitive group if necessary.
     if (group_name)
@@ -1097,9 +1090,9 @@ pointStringAttribValues(const GU_Detail *gdp, const char *attrib_name)
 {
     std::vector<std::string>    result;
 
+    const GA_AIFSharedStringTuple       *s_t;
     const GA_Attribute          *attrib;
     GA_ROAttributeRef           attrib_gah;
-    const GA_AIFSharedStringTuple       *s_t;
 
     // Try to find the string attribute.
     attrib_gah = gdp->findStringTuple(GA_ATTRIB_POINT, attrib_name);
@@ -1128,9 +1121,9 @@ setPointStringAttribValues(GU_Detail *gdp,
 {
     int                         i=0;
 
+    const GA_AIFSharedStringTuple       *s_t;
     GA_Attribute                *attrib;
     GA_RWAttributeRef           attrib_gah;
-    const GA_AIFSharedStringTuple       *s_t;
 
     // Try to find the string attribute.
     attrib_gah = gdp->findStringTuple(GA_ATTRIB_POINT, attrib_name);
@@ -1156,11 +1149,10 @@ setSharedPointStringAttrib(GU_Detail *gdp,
                            const char *value,
                            const char *group_name=0)
 {
-    GA_PointGroup               *group = 0;
-
-    GA_Attribute                *attrib;
-    GA_RWAttributeRef           attrib_gah;
     const GA_AIFSharedStringTuple       *s_t;
+    GA_Attribute                *attrib;
+    GA_PointGroup               *group = 0;
+    GA_RWAttributeRef           attrib_gah;
 
     // Find the point group if necessary.
     if (group_name)
@@ -1265,7 +1257,6 @@ void
 setPoint(GU_Detail *gdp, unsigned prim_num, unsigned idx, unsigned pt_num)
 {
     GA_Offset                   ptOff, primOff;
-
     GA_Primitive                *prim;
 
     ptOff = gdp->pointOffset(pt_num);
@@ -1308,7 +1299,6 @@ double
 primitiveArea(const GU_Detail *gdp, unsigned prim_num)
 {
     GA_Offset                   primOff;
-
     const GA_Primitive         *prim;
 
     primOff = gdp->primitiveOffset(prim_num);
@@ -1324,7 +1314,6 @@ double
 perimeter(const GU_Detail *gdp, unsigned prim_num)
 {
     GA_Offset                   primOff;
-
     const GA_Primitive         *prim;
 
     primOff = gdp->primitiveOffset(prim_num);
@@ -1711,8 +1700,8 @@ copyGroup(GU_Detail *gdp,
           const char *new_group_name)
 {
     GA_AttributeOwner           owner;
-    const GA_ElementGroup       *group;
     GA_ElementGroup             *new_group;
+    const GA_ElementGroup       *group;
 
     owner = group_type ? GA_ATTRIB_PRIMITIVE : GA_ATTRIB_POINT;
 
@@ -1735,10 +1724,8 @@ containsAny(const GU_Detail *gdp,
             int group_type)
 {
     const GA_ElementGroup       *group;
-
-    const GA_PrimitiveGroup     *prim_group;
     const GA_PointGroup         *point_group;
-
+    const GA_PrimitiveGroup     *prim_group;
     GA_Range                    range;
 
     if (group_type)
@@ -1762,13 +1749,12 @@ containsAny(const GU_Detail *gdp,
 """
 void
 primToPointGroup(GU_Detail *gdp,
-                      const char *group_name,
-                      const char *new_group_name,
-                      bool destroy)
+                 const char *group_name,
+                 const char *new_group_name,
+                 bool destroy)
 {
-    GA_PrimitiveGroup           *prim_group;
     GA_PointGroup               *point_group;
-
+    GA_PrimitiveGroup           *prim_group;
     GA_Range                    pr_range, pt_range;
 
     // Get the list of primitives.
@@ -1811,13 +1797,11 @@ pointToPrimGroup(GU_Detail *gdp,
                  const char *new_group_name,
                  bool destroy)
 {
-    GA_PrimitiveGroup           *prim_group;
-    GA_PointGroup               *point_group;
-
-    GA_Range                    pr_range, pt_range;
-
     GA_OffsetArray              prims;
     GA_OffsetArray::const_iterator prims_it;
+    GA_PointGroup               *point_group;
+    GA_PrimitiveGroup           *prim_group;
+    GA_Range                    pr_range, pt_range;
 
     // The source group.
     point_group = gdp->findPointGroup(group_name);
@@ -1977,9 +1961,8 @@ getReferencingParms(OP_Node *node, const char *parm_name)
 
     PRM_Parm                    *parm_tuple;
 
-    UT_PtrArray<PRM_Parm *>     parm_tuples;
     UT_IntArray                 component_indices;
-
+    UT_PtrArray<PRM_Parm *>     parm_tuples;
     UT_String                   path, chan;
 
     // Get an array of parameter objects and their component indices
@@ -2065,7 +2048,6 @@ getExistingOpReferences(OP_Node *node, bool recurse)
     UT_String                   path;
 
     OP_Node                     *ref_node;
-
     OP_NodeList                 refs;
     OP_NodeList::const_iterator depend_it;
 
@@ -2094,12 +2076,11 @@ getExistingOpDependents(OP_Node *node, bool recurse)
 {
     std::vector<std::string>    result;
 
-    UT_String                   path;
-
     OP_Node                     *dep_node;
-
     OP_NodeList                 deps;
     OP_NodeList::const_iterator depend_it;
+
+    UT_String                   path;
 
     node->getExistingOpDependents(deps, recurse);
 
@@ -2162,6 +2143,7 @@ getMultiParmInstances(OP_Node *node, const char *parm_name)
     std::vector<StringArray>    blocks;
 
     PRM_Parm                    *parm;
+
     PRM_Parm &multiparm = node->getParm(parm_name);
 
     // The number of multi parm blocks.
@@ -5205,14 +5187,14 @@ def inputLabel(self, index):
 
 @addToClass(hou.Node)
 def messageNodes(self):
-    """Get any of this node's message nodes.
+    """Get a list of this node's message nodes.
 
     Raises:
         N/A
 
     Returns:
         (hou.Node)
-            A tuple of hou.Node objects which are message nodes.
+            A tuple of message nodes.
 
     """
     # Get the otl definition for this node's type, if any.
@@ -5238,14 +5220,14 @@ def messageNodes(self):
 
 @addToClass(hou.Node)
 def editableNodes(self):
-    """Get any of this node's editable nodes.
+    """Get a list of this node's editable nodes.
 
     Raises:
         N/A
 
     Returns:
         (hou.Node)
-            A tuple of hou.Node objects which are editable nodes.
+            A tuple of editable nodes.
 
     """
     # Get the otl definition for this node's type, if any.
