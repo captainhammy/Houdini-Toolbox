@@ -29,10 +29,10 @@ def addToModule(module):
 
     """
 
-    def decorator(f):
+    def decorator(func):
         # Simply add the function to the module object.
-        setattr(module, f.__name__, f)
-        return f
+        setattr(module, func.__name__, func)
+        return func
 
     return decorator
 
@@ -58,7 +58,7 @@ def addToClass(*args, **kwargs):
     """
     import types
 
-    def decorator(f):
+    def decorator(func):
         # Iterate over each class passed in.
         for target_class in args:
             # Check if we tried to set the method name.  If so, use the
@@ -67,28 +67,28 @@ def addToClass(*args, **kwargs):
                 func_name = kwargs["name"]
             # If not, use the original name.
             else:
-                func_name = f.__name__
+                func_name = func.__name__
 
             # Create a new unbound method.
-            method = types.MethodType(f, None, target_class)
+            method = types.MethodType(func, None, target_class)
 
             # Attach the method to the class.
             setattr(target_class, func_name, method)
 
         # We don't really care about modifying the function so just return
         # it.
-        return f
+        return func
 
     return decorator
 
 
 #-----------------------------------------------------------------------------
 #    Name: _buildCStringArray
-#    Args: values : (list)
+#    Args: values : ([str])
 #              A list of strings.
+#  Raises: N/A
 # Returns: c_char_p_Array
 #              A ctypes char * array.
-#  Raises: N/A
 #    Desc: Convert a list of strings to a ctypes char * array.
 #-----------------------------------------------------------------------------
 def _buildCStringArray(values):
@@ -101,11 +101,11 @@ def _buildCStringArray(values):
 
 #-----------------------------------------------------------------------------
 #    Name: _buildCFloatArray
-#    Args: values : (list)
-#              A list of floats.
+#    Args: values : ([float])
+#              A list of floats to convert.
+#  Raises: N/A
 # Returns: c_float_Array
 #              A ctypes float array.
-#  Raises: N/A
 #    Desc: Convert a list of numbers to a ctypes float array.
 #-----------------------------------------------------------------------------
 def _buildCFloatArray(values):
@@ -117,12 +117,29 @@ def _buildCFloatArray(values):
 
 
 #-----------------------------------------------------------------------------
+#    Name: _buildCIntArray
+#    Args: values : ([int])
+#              A list of ints to convert.
+#  Raises: N/A
+# Returns: c_int_Array
+#              A ctypes int array.
+#    Desc: Convert a list of numbers to a ctypes int array.
+#-----------------------------------------------------------------------------
+def _buildCIntArray(values):
+    import ctypes
+    arr = (ctypes.c_int * len(values))()
+    arr[:] = values
+
+    return arr
+
+
+#-----------------------------------------------------------------------------
 #    Name: _buildBoundingBox
 #    Args: bounds : (hutil.cppinline.BoundingBox)
 #              An inlinecpp bounding box object.
+#  Raises: N/A
 # Returns: hou.BoundingBox
 #              A HOM style bounding box.
-#  Raises: N/A
 #    Desc: Convert an inlinecpp returned bounding box to a hou.BoundingBox.
 #-----------------------------------------------------------------------------
 def _buildBoundingBox(bounds):
@@ -141,11 +158,11 @@ def _buildBoundingBox(bounds):
 #    Name: _getPointsFromList
 #    Args: geometry : (hou.Geometry)
 #              The geometry the points belongs to.
-#          point_list : (list|tuple)
+#          point_list : ([int]|(int))
 #              A list of integers representing point numbers.
-# Returns: tuple
-#              A tuple of hou.Point objects.
 #  Raises: N/A
+# Returns: (hou.Point)
+#              A tuple of hou.Point objects.
 #    Desc: Convert a list of point numbers to hou.Point objects.
 #-----------------------------------------------------------------------------
 def _getPointsFromList(geometry, point_list):
@@ -164,11 +181,11 @@ def _getPointsFromList(geometry, point_list):
 #    Name: _getPrimsFromList
 #    Args: geometry : (hou.Geometry)
 #              The geometry the primitives belongs to.
-#          prim_list : (list|tuple)
+#          prim_list : ([int]|(int))
 #              A list of integers representing primitive numbers.
-# Returns: tuple
-#              A tuple of hou.Prim objects.
 #  Raises: N/A
+# Returns: (hou.Prim)
+#              A tuple of hou.Prim objects.
 #    Desc: Convert a list of primitive numbers to hou.Prim objects.
 #-----------------------------------------------------------------------------
 def _getPrimsFromList(geometry, prim_list):
@@ -185,11 +202,11 @@ def _getPrimsFromList(geometry, prim_list):
 
 #-----------------------------------------------------------------------------
 #    Name: _getNodesFromPaths
-#    Args: paths : (list|tuple)
+#    Args: paths : ([str]|(str))
 #              A list of strings node paths.
-# Returns: tuple
-#              A tuple of hou.Node objects.
 #  Raises: N/A
+# Returns: (hou.Node)
+#              A tuple of hou.Node objects.
 #    Desc: Convert a list of string paths to hou.Node objects.
 #-----------------------------------------------------------------------------
 def _getNodesFromPaths(paths):
@@ -202,10 +219,10 @@ def _getNodesFromPaths(paths):
 #              A Houdini node.
 #          prefix : (str)
 #              An opinfo line prefix containing a date and time.
+#  Raises: N/A
 # Returns: datetime.datetime|None
 #              The datetime matching the opinfo line, if it exists, otherwise
 #              None.
-#  Raises: N/A
 #    Desc: Extract a datetime.datetime from the opinfo of a node.
 #-----------------------------------------------------------------------------
 def _getTimeFromOpInfo(node, prefix):
@@ -229,6 +246,7 @@ def _getTimeFromOpInfo(node, prefix):
     return None
 
 
+# Create the library as a private object.
 _cpp_methods = inlinecpp.createLibrary(
     "cpp_methods",
     acquire_hom_lock=True,
@@ -240,6 +258,7 @@ _cpp_methods = inlinecpp.createLibrary(
 #include <GU/GU_Detail.h>
 #include <OP/OP_Director.h>
 #include <OP/OP_Node.h>
+#include <OP/OP_OTLDefinition.h>
 #include <OP/OP_OTLManager.h>
 #include <PRM/PRM_Parm.h>
 #include <UT/UT_WorkArgs.h>
@@ -316,6 +335,7 @@ sortAlongAxis(GU_Detail *gdp, int mode, int axis)
     {
         gdp->sortPrimitiveList(axis_type);
     }
+
     // Sort points.
     else
     {
@@ -333,6 +353,7 @@ sortByValues(GU_Detail *gdp, int mode, float *values)
     {
         gdp->sortPrimitiveList(values);
     }
+
     // Sort points.
     else
     {
@@ -350,6 +371,7 @@ sortListRandomly(GU_Detail *gdp, int mode, float seed)
     {
         gdp->sortPrimitiveList(seed);
     }
+
     // Sort points.
     else
     {
@@ -367,6 +389,7 @@ shiftList(GU_Detail *gdp, int mode, int offset)
     {
         gdp->shiftPrimitiveList(offset);
     }
+
     // Sort points.
     else
     {
@@ -384,6 +407,7 @@ reverseList(GU_Detail *gdp, int mode)
     {
         gdp->reversePrimitiveList();
     }
+
     // Sort points.
     else
     {
@@ -403,6 +427,7 @@ proximityToList(GU_Detail *gdp, int mode, const UT_Vector3D *point)
     {
         gdp->proximityToPrimitiveList(pos);
     }
+
     // Sort points.
     else
     {
@@ -519,6 +544,7 @@ setVarmap(GU_Detail *gdp, const char **strings, int num_strings)
     {
         // Get the string.
         value = strings[i];
+
         // Add it to the tuple at this point.
         s_t->setString(attrib, GA_Offset(0), value, i);
     }
@@ -568,10 +594,12 @@ findPrimitiveByName(const GU_Detail *gdp,
     const GEO_Primitive         *prim;
 
     // Try to find a primitive.
-    prim = gdp->findPrimitiveByName(name_to_match,
-                                    GEO_PrimTypeCompat::GEOPRIMALL,
-                                    name_attribute,
-                                    match_number);
+    prim = gdp->findPrimitiveByName(
+        name_to_match,
+        GEO_PrimTypeCompat::GEOPRIMALL,
+        name_attribute,
+        match_number
+    );
 
     // If one was found, return its number.
     if (prim)
@@ -596,10 +624,12 @@ findAllPrimitivesByName(const GU_Detail *gdp,
     GEO_ConstPrimitivePtrArray::const_iterator prims_it;
 
     // Try to find all the primitives given the name.
-    gdp->findAllPrimitivesByName(prims,
-                                 name_to_match,
-                                 GEO_PrimTypeCompat::GEOPRIMALL,
-                                 name_attribute);
+    gdp->findAllPrimitivesByName(
+        prims,
+        name_to_match,
+        GEO_PrimTypeCompat::GEOPRIMALL,
+        name_attribute
+    );
 
     // Add any found prims to the array.
     for (prims_it = prims.begin(); !prims_it.atEnd(); ++prims_it)
@@ -608,6 +638,60 @@ findAllPrimitivesByName(const GU_Detail *gdp,
     }
 
     return prim_nums;
+}
+""",
+
+"""
+void
+mergePointGroup(GU_Detail *gdp, const GU_Detail *src, const char *group_name)
+{
+    const GA_PointGroup         *group;
+
+    group = src->findPointGroup(group_name);
+
+    gdp->mergePoints(*src, GA_Range(*group));
+}
+""",
+
+"""
+void
+mergePoints(GU_Detail *gdp, const GU_Detail *src, int *vals, int num_vals)
+{
+    GA_OffsetList               points;
+
+    for (int i=0; i<num_vals; ++i)
+    {
+        points.append(vals[i]);
+    }
+
+    gdp->mergePoints(*src, GA_Range(src->getPointMap(), points));
+}
+""",
+
+"""
+void
+mergePrimGroup(GU_Detail *gdp, const GU_Detail *src, const char *group_name)
+{
+    const GA_PrimitiveGroup     *group;
+
+    group = src->findPrimitiveGroup(group_name);
+
+    gdp->mergePrimitives(*src, GA_Range(*group));
+}
+""",
+
+"""
+void
+mergePrims(GU_Detail *gdp, const GU_Detail *src, int *vals, int num_vals)
+{
+    GA_OffsetList               prims;
+
+    for (int i=0; i<num_vals; ++i)
+    {
+        prims.append(vals[i]);
+    }
+
+    gdp->mergePrimitives(*src, GA_Range(src->getPrimitiveMap(), prims));
 }
 """,
 
@@ -640,6 +724,7 @@ copyPointAttributeValues(GU_Detail *dest_gdp,
 
         // Get the attribute reference from the source geometry.
         src_gah = src_gdp->findPointAttribute(attr_name);
+
         if (src_gah.isValid())
         {
             // Get the actual attribute.
@@ -697,6 +782,7 @@ copyPrimAttributeValues(GU_Detail *dest_gdp,
 
         // Get the attribute reference from the source geometry.
         src_gah = src_gdp->findPrimitiveAttribute(attr_name);
+
         if (src_gah.isValid())
         {
             // Get the actual attribute.
@@ -721,10 +807,7 @@ copyPrimAttributeValues(GU_Detail *dest_gdp,
     destOff = src_gdp->primitiveOffset(dest_pr);
 
     // Copy the attribute value.
-    hmap.copyValue(GA_ATTRIB_PRIMITIVE,
-                   destOff,
-                   GA_ATTRIB_PRIMITIVE,
-                   srcOff);
+    hmap.copyValue(GA_ATTRIB_PRIMITIVE, destOff, GA_ATTRIB_PRIMITIVE, srcOff);
 }
 """,
 
@@ -784,10 +867,10 @@ edgeAdjacentPolygons(const GU_Detail *gdp, int prim_num)
 IntArray
 connectedPrims(const GU_Detail *gdp, int pt_num)
 {
-    std::vector<int>    prim_nums;
+    std::vector<int>            prim_nums;
 
-    GA_Offset           ptOff;
-    GA_OffsetArray      prims;
+    GA_Offset                   ptOff;
+    GA_OffsetArray              prims;
     GA_OffsetArray::const_iterator prims_it;
 
     // Get the selected point offset.
@@ -842,6 +925,7 @@ connectedPoints(const GU_Detail *gdp, int pt_num)
             // Build an edge between the source point and this point on the
             // primitive.
             GA_Edge edge(ptOff, *pt_it);
+
             // If there is an edge between those 2 points, add the point
             // to the list.
             if (prim->hasEdge(edge))
@@ -1317,7 +1401,6 @@ boundingBox(const GU_Detail *gdp, unsigned prim_num)
 BoundingBox
 primGroupBoundingBox(const GU_Detail *gdp, const char *group_name)
 {
-
     const GA_PrimitiveGroup     *group;
 
     UT_BoundingBox              bbox;
@@ -1345,7 +1428,6 @@ primGroupBoundingBox(const GU_Detail *gdp, const char *group_name)
 BoundingBox
 pointGroupBoundingBox(const GU_Detail *gdp, const char *group_name)
 {
-
     const GA_PointGroup         *group;
 
     UT_BoundingBox              bbox;
@@ -1466,6 +1548,7 @@ destroyEmptyGroups(GU_Detail *gdp, int mode)
     {
         gdp->destroyEmptyGroups(GA_ATTRIB_PRIMITIVE);
     }
+
     else
     {
         gdp->destroyEmptyGroups(GA_ATTRIB_POINT);
@@ -1516,6 +1599,7 @@ uniquePoints(GU_Detail *gdp, const char *group_name, int group_type)
         {
             group = gdp->findPrimitiveGroup(group_name);
         }
+
         else
         {
             group = gdp->findPointGroup(group_name);
@@ -1527,11 +1611,39 @@ uniquePoints(GU_Detail *gdp, const char *group_name, int group_type)
 """,
 
 """
+int
+groupSize(const GU_Detail *gdp, const char *group_name, int group_type)
+{
+    const GA_Group              *group;
+
+    switch (group_type)
+    {
+        // Point group.
+        case 0:
+            group = gdp->findPointGroup(group_name);
+            break;
+
+        // Prim group.
+        case 1:
+            group = gdp->findPrimitiveGroup(group_name);
+            break;
+
+        // Edge group.
+        case 2:
+            group = gdp->findEdgeGroup(group_name);
+            break;
+    }
+
+    return group->entries();
+}
+""",
+
+"""
 void
 toggleMembership(GU_Detail *gdp, const char *group_name,
                  int group_type, int elem_num)
 {
-    GA_ElementGroup             *group = 0;
+    GA_ElementGroup             *group;
     GA_Offset                   elem_offset;
 
     if (group_type)
@@ -1539,6 +1651,7 @@ toggleMembership(GU_Detail *gdp, const char *group_name,
         group = gdp->findPrimitiveGroup(group_name);
         elem_offset = gdp->primitiveOffset(elem_num);
     }
+
     else
     {
         group = gdp->findPointGroup(group_name);
@@ -1553,12 +1666,13 @@ toggleMembership(GU_Detail *gdp, const char *group_name,
 void
 setEntries(GU_Detail *gdp, const char *group_name, int group_type)
 {
-    GA_ElementGroup             *group = 0;
+    GA_ElementGroup             *group;
 
     if (group_type)
     {
         group = gdp->findPrimitiveGroup(group_name);
     }
+
     else
     {
         group = gdp->findPointGroup(group_name);
@@ -1573,12 +1687,13 @@ setEntries(GU_Detail *gdp, const char *group_name, int group_type)
 void
 toggleEntries(GU_Detail *gdp, const char *group_name, int group_type)
 {
-    GA_ElementGroup             *group = 0;
+    GA_ElementGroup             *group;
 
     if (group_type)
     {
         group = gdp->findPrimitiveGroup(group_name);
     }
+
     else
     {
         group = gdp->findPointGroup(group_name);
@@ -1632,6 +1747,7 @@ containsAny(const GU_Detail *gdp,
         prim_group = gdp->findPrimitiveGroup(other_group_name);
         range = gdp->getPrimitiveRange(prim_group);
     }
+
     else
     {
         group = gdp->findPointGroup(group_name);
@@ -1672,6 +1788,7 @@ primToPointGroup(GU_Detail *gdp,
         // Get the range of points referenced by the vertices of
         // the primitive.
         pt_range = prim_list.get(*pr_it)->getPointRange();
+
         // Add each point offset to the group.
         for (GA_Iterator pt_it(pt_range); !pt_it.atEnd(); ++pt_it)
         {
@@ -1690,9 +1807,9 @@ primToPointGroup(GU_Detail *gdp,
 """
 void
 pointToPrimGroup(GU_Detail *gdp,
-                      const char *group_name,
-                      const char *new_group_name,
-                      bool destroy)
+                 const char *group_name,
+                 const char *new_group_name,
+                 bool destroy)
 {
     GA_PrimitiveGroup           *prim_group;
     GA_PointGroup               *point_group;
@@ -1733,14 +1850,41 @@ pointToPrimGroup(GU_Detail *gdp,
 
 """
 void
-clip(GU_Detail *gdp, UT_Vector3D *normal, float dist)
+clip(GU_Detail *gdp,
+     UT_DMatrix4 *xform,
+     UT_Vector3D *normal,
+     float dist,
+     const char *group_name)
 {
+    GA_PrimitiveGroup           *group = 0;
+
+    UT_Matrix4 mat(*xform);
     UT_Vector3 dir(*normal);
 
-    GQ_Detail                   *gqd = new GQ_Detail(gdp);
+    // Invert the matrix to move the geometry from our cutting location to the
+    // origin and transform it.
+    mat.invert();
+    gdp->transform(mat);
 
-    gqd->clip(dir, dist, 0);
+    // Find the primitive group if necessary.
+    if (group_name)
+    {
+        group = gdp->findPrimitiveGroup(group_name);
+    }
+
+    // Construct a new GQ Detail to do the clipping.
+    GQ_Detail *gqd = new GQ_Detail(gdp, group);
+
+    // Clip the geometry.
+    gqd->clip(dir, -dist, 0);
+
+    // Remove the detail.
     delete gqd;
+
+    // Invert the matrix again and move the geometry back to its original
+    // position.
+    mat.invert();
+    gdp->transform(mat);
 }
 """,
 
@@ -1885,52 +2029,6 @@ const char *
 inputLabel(OP_Node *node, int index)
 {
     return node->inputLabel(index);
-}
-""",
-
-"""
-StringArray
-messageNodes(const OP_Node *node)
-{
-    std::vector<std::string>    paths;
-
-    OP_Network                  *network;
-    OP_NodeList                 nodes;
-
-    UT_String                   path;
-
-    // Cast to a network.
-    network = (OP_Network *)node;
-
-    // Get any message nodes.  If there are none, add an emptry string to
-    // the list of paths and return it.
-    if (!network->getMessageSubNodes(nodes))
-    {
-        paths.push_back("");
-        return paths;
-    }
-
-    // Add each message node path to the list.
-    for (int i=0; i<nodes.entries(); ++i)
-    {
-        nodes[i]->getFullPath(path);
-        paths.push_back(path.toStdString());
-    }
-
-    // Return the paths.
-    return paths;
-}
-""",
-
-"""
-int
-representativeNode(const OP_Node *node)
-{
-    OP_Network                  *network;
-
-    network = (OP_Network *)node;
-
-    return network->getRepresentativeNodeId(0, 0);
 }
 """,
 
@@ -2122,14 +2220,15 @@ getDual(const UT_Vector3D *vec, UT_DMatrix3 *mat)
 }
 """,
 
-"""const char *
+"""
+const char *
 getMetaSource(const char *filename)
 {
-    OP_OTLLibrary       *lib;
+    int                         idx;
 
-    int                 idx;
+    OP_OTLLibrary               *lib;
 
-    UT_String           test;
+    UT_String                   test;
 
     OP_OTLManager &manager = OPgetDirector()->getOTLManager();
     idx = manager.findLibrary(filename);
@@ -2145,7 +2244,8 @@ getMetaSource(const char *filename)
 }
 """,
 
-"""bool
+"""
+bool
 removeMetaSource(const char *metasrc)
 {
     OP_OTLManager &manager = OPgetDirector()->getOTLManager();
@@ -2156,7 +2256,8 @@ removeMetaSource(const char *metasrc)
 }
 """,
 
-"""StringArray
+"""
+StringArray
 getLibrariesInMetaSource(const char *metasrc)
 {
     std::vector<std::string>    result;
@@ -2188,6 +2289,43 @@ getLibrariesInMetaSource(const char *metasrc)
     }
 
     return result;
+}
+""",
+
+"""
+bool
+isDummyDefinition(const char *filename,
+                  const char *tablename,
+                  const char *opname)
+{
+    int                         def_idx, lib_idx;
+
+    OP_OTLDefinition            definition;
+    OP_OTLLibrary               *lib;
+
+    // Get the OTL manager.
+    OP_OTLManager &manager = OPgetDirector()->getOTLManager();
+
+    // Try to find the library with the file name.
+    lib_idx = manager.findLibrary(filename);
+
+    // Get the library.
+    lib = (lib_idx >= 0) ? manager.getLibrary(lib_idx): NULL;
+
+    if (lib)
+    {
+        // Try to find a definition for the operator type.
+        def_idx = lib->getDefinitionIndex(tablename, opname);
+
+        // If it exists, query if it is a dummy definition.
+        if (def_idx >= 0)
+        {
+            return lib->getDefinitionIsDummy(def_idx);
+        }
+    }
+
+    // Couldn't find the library or definition inside is, so return false.
+    return false;
 }
 """,
     ]
@@ -2294,7 +2432,7 @@ def sortByValues(self, geometry_type, values):
         geometry_type : (hou.geometryType)
             The type of geometry elements to sort.
 
-        values : (list)
+        values : ([float])
             A list of numbers to sort by.
 
     Raises:
@@ -2665,7 +2803,7 @@ def createPoints(self, count):
             Raise this exception if count is not greater than 0.
 
     Returns:
-        tuple
+        (hou.Point)
             A tuple of the hou.Point objects created.
 
     """
@@ -2679,6 +2817,102 @@ def createPoints(self, count):
     result = _cpp_methods.createPoints(self, count)
 
     return _getPointsFromList(self, result)
+
+
+@addToClass(hou.Geometry)
+def mergePointGroup(self, group):
+    """Merges points from a group into this detail.
+
+    Args:
+        group : (hou.PointGroup)
+            A group of points to merge into this detail.
+
+    Raises:
+        hou.GeometryPermissionError
+            This exception is raised if the geometry is read-only.
+
+    Returns:
+        None
+
+    """
+    # Make sure the geometry is not read only.
+    if self.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    _cpp_methods.mergePointGroup(self, group.geometry(), group.name())
+
+
+@addToClass(hou.Geometry)
+def mergePoints(self, points):
+    """Merge a list of points from a detail into this detail.
+
+    Args:
+        points : ([hou.Point])
+            A group of points to merge into this detail.
+
+    Raises:
+        hou.GeometryPermissionError
+            This exception is raised if the geometry is read-only.
+
+    Returns:
+        None
+
+    """
+    # Make sure the geometry is not read only.
+    if self.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    arr = _buildCIntArray([point.number() for point in points])
+
+    _cpp_methods.mergePoints(self, points[0].geometry(), arr, len(arr))
+
+
+@addToClass(hou.Geometry)
+def mergePrimGroup(self, group):
+    """Merges prims from a group into this detail.
+
+    Args:
+        group : (hou.PrimGroup)
+            A group of prims to merge into this detail.
+
+    Raises:
+        hou.GeometryPermissionError
+            This exception is raised if the geometry is read-only.
+
+    Returns:
+        None
+
+    """
+    # Make sure the geometry is not read only.
+    if self.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    _cpp_methods.mergePrimGroup(self, group.geometry(), group.name())
+
+
+@addToClass(hou.Geometry)
+def mergePrims(self, prims):
+    """Merges a list of prims from a detail into this detail.
+
+    Args:
+        prims : ([hou.Prim])
+            A group of prims to merge into this detail.
+
+    Raises:
+        hou.GeometryPermissionError
+            This exception is raised if the geometry is read-only.
+
+    Returns:
+        None
+
+    """
+    # Make sure the geometry is not read only.
+    if self.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    arr = _buildCIntArray([prim.number() for prim in prims])
+
+    _cpp_methods.mergePrims(self, prims[0].geometry(), arr, len(arr))
 
 
 @addToClass(hou.Geometry)
@@ -2930,7 +3164,7 @@ def findAllPrimsByName(self, name_to_match, name_attribute="name"):
         N/A
 
     Returns:
-        tuple
+        (hou.Prim)
             A tuple of hou.Prim objects whose attribute values match.
 
     """
@@ -2949,7 +3183,7 @@ def findAllPrimsByName(self, name_to_match, name_attribute="name"):
     return ()
 
 
-@addToClass(hou.Point, name="copyAttributeValues")
+@addToClass(hou.Point, name="copyAttribValues")
 def copyPointAttributeValues(self, source_point, attributes):
     """Copy attribute values from the source point to this point.
 
@@ -2957,7 +3191,7 @@ def copyPointAttributeValues(self, source_point, attributes):
         source_point : (hou.Point)
             The point to copy the attribute values from.
 
-        attributes : (list)
+        attributes : ([hou.Attrib])
             A list of hou.Attrib objects representing point attributes on the
             source geometry.
 
@@ -2968,7 +3202,7 @@ def copyPointAttributeValues(self, source_point, attributes):
     Returns:
         None
 
-    If the attributes do not exist on the destination point they will be
+    If the attributes do not exist on the destination detail they will be
     created.
 
     """
@@ -3003,7 +3237,7 @@ def copyPointAttributeValues(self, source_point, attributes):
     )
 
 
-@addToClass(hou.Prim, name="copyAttributeValues")
+@addToClass(hou.Prim, name="copyAttribValues")
 def copyPrimAttributeValues(self, source_prim, attributes):
     """Copy attribute values from the source primitive to this primitive.
 
@@ -3011,7 +3245,7 @@ def copyPrimAttributeValues(self, source_prim, attributes):
         source_prim : (hou.Prim)
             The primitive to copy the attribute values from.
 
-        attributes : (list)
+        attributes : ([hou.Attrib])
             A list of hou.Attrib objects representing primitive attributes
             on the source geometry.
 
@@ -3065,7 +3299,7 @@ def pointAdjacentPolygons(self):
         N/A
 
     Returns:
-        tuple
+        (hou.Prim)
             A tuple of hou.Prim objects.
 
     """
@@ -3086,7 +3320,7 @@ def edgeAdjacentPolygons(self):
         N/A
 
     Returns:
-        tuple
+        (hou.Prim)
             A tuple of hou.Prim objects.
 
     """
@@ -3107,7 +3341,7 @@ def connectedPrims(self):
         N/A
 
     Returns:
-        tuple
+        (hou.Prim)
             A tuple of hou.Prim objects that reference the point.
 
     """
@@ -3128,7 +3362,7 @@ def connectedPoints(self):
         N/A
 
     Returns:
-        tuple
+        (hou.Point)
             A tuple of hou.Point objects that share an edge with the point.
 
     """
@@ -3150,7 +3384,7 @@ def referencingVertices(self):
         N/A
 
     Returns:
-        tuple
+        (hou.Vertex)
             A tuple of hou.Vertex objects that reference the point.
 
     """
@@ -3168,8 +3402,6 @@ def referencingVertices(self):
     # Glob for the vertices and return them.
     return geometry.globVertices(' '.join(vertex_strings))
 
-# TODO: point/primIntAttribValues
-
 @addToClass(hou.Geometry)
 def pointStringAttribValues(self, name):
     """Return a tuple of strings containing one attribute's values for all the
@@ -3185,7 +3417,7 @@ def pointStringAttribValues(self, name):
             attribute is not a string attribute.
 
     Returns:
-        tuple
+        (str)
             A tuple of strings representing the attribute values for each
             point.
 
@@ -3209,7 +3441,7 @@ def setPointStringAttribValues(self, name, values):
         name : (string)
             The name of the point attribute.
 
-        values : (tuple)
+        values : ((str))
             A tuple of strings representing the attribute values for each
             point.
 
@@ -3318,7 +3550,7 @@ def primStringAttribValues(self, name):
             attribute is not a string.
 
     Returns:
-        tuple
+        (str)
             A tuple of strings representing the attribute values for each
             primitive.
 
@@ -3342,7 +3574,7 @@ def setPrimStringAttribValues(self, name, values):
         name : (string)
             The name of the primitive attribute.
 
-        values : (tuple)
+        values : ((str))
             A tuple of strings representing the attribute values for each
             primitive.
 
@@ -3463,6 +3695,48 @@ def hasEdge(self, point1, point2):
         point1.number(),
         point2.number()
     )
+
+
+@addToClass(hou.Face)
+def sharedEdges(self, prim):
+    """Get a tuple of any shared edges between two prims.
+
+    Args:
+        prim : (hou.Face)
+            The primitive to check for shared edges.
+
+    Raises:
+        N/A
+
+    Returns:
+        (hou.Edge)
+            A tuple of shared edges.
+
+    """
+    # A comparison function key function to sort points by their numbers.
+    test_key = lambda pt: pt.number()
+
+    geometry = self.geometry()
+
+    # A list of unique edges.
+    edges = set()
+
+    # Iterate over each vertex of the primitive.
+    for vertex in self.vertices():
+        # Get the point for the vertex.
+        vertex_point = vertex.point()
+
+        # Iterate over all the connected points.
+        for connected in vertex_point.connectedPoints():
+            # Sort the points.
+            pt1, pt2 = sorted((vertex_point, connected), key=test_key)
+
+            # Ensure the edge exists for both primitives.
+            if self.hasEdge(pt1, pt2) and prim.hasEdge(pt1, pt2):
+                # Find the edge and add it to the list.
+                edges.add(geometry.findEdge(pt1, pt2))
+
+    return tuple(edges)
 
 
 @addToClass(hou.Face)
@@ -3869,15 +4143,26 @@ def convex(self, max_points=3):
 
 
 @addToClass(hou.Geometry)
-def clip(self, normal, dist):
+def clip(self, origin, normal, dist=0, below=False, group=None):
     """Clip this geometry along a plane.
 
     Args:
-        normal : (hou.Vector3)
-            The normal of the plane to clip with.
+        origin : (hou.Vector3)
+            The origin of the clipping plane.
 
-        dist : (float)
-            The distance along the normal to clip at.
+        normal : (hou.Vector3)
+            The normal vector of the clipping plane.
+
+        dist=0 : (float)
+            The distance to translate the clipping plane along its normal.
+
+        below=False : (bool)
+            Keep the primitives below the clipping plane.  When False,
+            primitives above the plane will be kept.
+
+        group=None : (hou.PrimGroup)
+            An optional primitive group to restrict the clipping operation
+            to.
 
     Raises:
         hou.GeometryPermissionError
@@ -3891,7 +4176,27 @@ def clip(self, normal, dist):
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    _cpp_methods.clip(self, normal.normalized(), dist)
+    # If the group is valid, use that group's name.
+    if group:
+        group_name = group.name()
+
+    # If not, pass an empty string to signify no group.
+    else:
+        group_name = ""
+
+    # If we want to keep the prims below the plane we need to offset
+    # the origin along the normal by the distance and then reverse
+    # the normal and set the distance to 0.
+    if below:
+        origin += normal * dist
+        normal *= -1
+        dist = 0
+
+    # Build a transform to modify the geometry so we can have the plane not
+    # centered at the origin.
+    xform = hou.hmath.buildTranslate(origin)
+
+    _cpp_methods.clip(self, xform, normal.normalized(), dist, group_name)
 
 
 @addToClass(hou.Geometry)
@@ -4058,6 +4363,33 @@ def groupBoundingBox(self):
     return _buildBoundingBox(bounds)
 
 
+@addToClass(hou.EdgeGroup, hou.PointGroup, hou.PrimGroup, name="__len__")
+@addToClass(hou.EdgeGroup, hou.PointGroup, hou.PrimGroup, name="size")
+def groupSize(self):
+    """Get the number of elements in this group.
+
+    Raises:
+        N/A
+
+    Returns:
+        int
+            The number of elements in this group.
+
+    """
+    geometry = self.geometry()
+
+    if isinstance(self, hou.PointGroup):
+        group_type = 0
+
+    elif isinstance(self, hou.PrimGroup):
+        group_type = 1
+
+    elif isinstance(self, hou.EdgeGroup):
+        group_type = 2
+
+    return _cpp_methods.groupSize(geometry, self.name(), group_type)
+
+
 @addToClass(hou.PointGroup, name="toggle")
 def togglePoint(self, point):
     """Toggle group membership for a point.
@@ -4144,8 +4476,53 @@ def toggleEntries(self):
     _cpp_methods.toggleEntries(geometry, self.name(), group_type)
 
 
-@addToClass(hou.PointGroup, hou.PrimGroup, name="copy")
-def copyGroup(self, new_group_name):
+@addToClass(hou.PointGroup, name="copy")
+def copyPointGroup(self, new_group_name):
+    """Create a new point group under the new name with the same membership.
+
+    Args:
+        new_group_name : (string)
+            The new group name.
+
+    Raises:
+        hou.GeometryPermissionError
+            This exception is raised if the geometry is read-only.
+
+        hou.OperationFailed
+            Raise this exception if the new group name is the same as the
+            source group name, or a group with the new name already exists.
+
+    Returns:
+        hou.PointGroup
+            The new point group.
+
+    """
+    geometry = self.geometry()
+
+    # Make sure the geometry is not read only.
+    if geometry.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    # Ensure the new group doesn't have the same name.
+    if new_group_name == self.name():
+        raise hou.OperationFailed("Cannot copy to group with same name.")
+
+    # Check for an existing group of the same name.
+    if geometry.findPointGroup(new_group_name):
+        # If one exists, raise an exception.
+        raise hou.OperationFailed(
+            "Point group '{0}' already exists.".format(new_group_name)
+        )
+
+    # Copy the group.
+    _cpp_methods.copyGroup(geometry, 0, self.name(), new_group_name)
+
+    # Return the new group.
+    return geometry.findPointGroup(new_group_name)
+
+
+@addToClass(hou.PrimGroup, name="copy")
+def copyPrimGroup(self, new_group_name):
     """Create a group under the new name with the same membership.
 
     Args:
@@ -4161,7 +4538,8 @@ def copyGroup(self, new_group_name):
             source group name, or a group with the new name already exists.
 
     Returns:
-        None
+        hou.PrimGroup
+            The new primitive group.
 
     """
     geometry = self.geometry()
@@ -4174,27 +4552,18 @@ def copyGroup(self, new_group_name):
     if new_group_name == self.name():
         raise hou.OperationFailed("Cannot copy to group with same name.")
 
-    # A group under the new name already exists.
-    new_group_exists = False
-
-    if isinstance(self, hou.PrimGroup):
-        group_type = 1
-        # Found a group with the new name so set the flag to True.
-        if geometry.findPrimGroup(new_group_name):
-            new_group_exists = True
-    # hou.PointGroup
-    else:
-        group_type = 0
-        # Found a group with the new name so set the flag to True.
-        if geometry.findPointGroup(new_group_name):
-            new_group_exists = True
-
-    # If a group with the new name already exists, raise an exception.
-    if new_group_exists:
-        raise hou.OperationFailed("A group with that name already exists.")
+    # Check for an existing group of the same name.
+    if geometry.findPrimGroup(new_group_name):
+        # If one exists, raise an exception.
+        raise hou.OperationFailed(
+            "Primitive group '{0}' already exists.".format(new_group_name)
+        )
 
     # Copy the group.
-    _cpp_methods.copyGroup(geometry, group_type, self.name(), new_group_name)
+    _cpp_methods.copyGroup(geometry, 1, self.name(), new_group_name)
+
+    # Return the new group.
+    return geometry.findPrimGroup(new_group_name)
 
 
 @addToClass(hou.PointGroup, name="containsAny")
@@ -4203,8 +4572,7 @@ def pointGroupContainsAny(self, group):
 
     Args:
         group : (hou.PointGroup)
-            A point group which may have one or more points in
-            this group.
+            A point group which may have one or more points in this group.
 
     Raises:
         N/A
@@ -4226,8 +4594,7 @@ def primGroupContainsAny(self, group):
 
     Args:
         group : (hou.PrimGroup)
-            A prim group which may have one or more prims in
-            this group.
+            A prim group which may have one or more prims in this group.
 
     Raises:
         N/A
@@ -4453,7 +4820,6 @@ def addToMin(self, vec):
     """
     _cpp_methods.addToMin(self, vec)
 
-#TODO: Make these take a tuple/list
 @addToClass(hou.BoundingBox)
 def addToMax(self, vec):
     """Add values to the maximum bounds of this bounding box.
@@ -4552,7 +4918,7 @@ def getReferencingParms(self):
         N/A
 
     Returns:
-        tuple
+        (hou.Parm)
             A tuple of referencing hou.Parm objects.
 
     """
@@ -4610,7 +4976,7 @@ def getMultiParmInstanceIndex(self):
             multiparm.
 
     Returns:
-        tuple
+        (int)
             Returns a tuple of multiparm indices.
 
     If this parameter is part of a multiparm, then its index in the multiparm
@@ -4641,7 +5007,7 @@ def getTupleMultiParmInstanceIndex(self):
             instance of a multiparm.
 
     Returns:
-        tuple
+        (int)
             Returns a tuple of multiparm indices.
 
     If this parameter tuple is part of a multiparm, then its index in the
@@ -4727,7 +5093,7 @@ def getMultiParmInstances(self):
             This exception is raised if the parameter is not a multiparm.
 
     Returns:
-        tuple
+        ((hou.Parm))
             A tuple of tuples representing the parameters of each multiparm
             instance.
 
@@ -4763,7 +5129,7 @@ def getMultiParmInstanceValues(self):
             This exception is raised if the parameter is not a multiparm.
 
     Returns:
-        tuple
+        ((float))
             A tuple of tuples representing the values of each multiparm
             instance.
 
@@ -4837,7 +5203,6 @@ def inputLabel(self, index):
 
     return _cpp_methods.inputLabel(self, index)
 
-
 @addToClass(hou.Node)
 def messageNodes(self):
     """Get any of this node's message nodes.
@@ -4846,15 +5211,89 @@ def messageNodes(self):
         N/A
 
     Returns:
-        tuple
-            Returns a tuple of hou.Node objects for are any message nodes.
+        (hou.Node)
+            A tuple of hou.Node objects which are message nodes.
 
     """
-    # Get any message node paths.
-    result = _cpp_methods.messageNodes(self)
+    # Get the otl definition for this node's type, if any.
+    definition = self.type().definition()
 
-    # Convert them to hou.Nodes.
-    return _getNodesFromPaths(result)
+    if definition is not None:
+        # Check that there are message nodes.
+        if "MessageNodes" in definition.sections():
+            # Extract the list of them.
+            contents = definition.sections()["MessageNodes"].contents()
+
+            # Split the contents to get each path.
+            paths = contents.split()
+
+            # Build a list of nodes.
+            nodes = [self.node(path) for path in paths]
+
+            # Return a tuple of only valid nodes.
+            return tuple([node for node in nodes if node is not None])
+
+    return ()
+
+
+@addToClass(hou.Node)
+def editableNodes(self):
+    """Get any of this node's editable nodes.
+
+    Raises:
+        N/A
+
+    Returns:
+        (hou.Node)
+            A tuple of hou.Node objects which are editable nodes.
+
+    """
+    # Get the otl definition for this node's type, if any.
+    definition = self.type().definition()
+
+    if definition is not None:
+        # Check that there are editable nodes.
+        if "EditableNodes" in definition.sections():
+            # Extract the list of them.
+            contents = definition.sections()["EditableNodes"].contents()
+
+            # Split the contents to get each path.
+            paths = contents.split()
+
+            # Build a list of nodes.
+            nodes = [self.node(path) for path in paths]
+
+            # Return a tuple of only valid nodes.
+            return tuple([node for node in nodes if node is not None])
+
+    return ()
+
+
+@addToClass(hou.Node)
+def diveTarget(self):
+    """Get this node's dive target node.
+
+    Raises:
+        N/A
+
+    Returns:
+        hou.Node|None
+            Returns this node's dive target node if one exists, otherwise None.
+
+    """
+    # Get the otl definition for this node's type, if any.
+    definition = self.type().definition()
+
+    if definition is not None:
+        # Check that there is a dive target.
+        if "DiveTarget" in definition.sections():
+            # Get it's path.
+            target = definition.sections()["DiveTarget"].contents()
+
+            # Return the node.
+            return self.node(target)
+
+    return None
 
 
 @addToClass(hou.Node)
@@ -4869,9 +5308,18 @@ def representativeNode(self):
             Returns the representative hou.Node if one exists, otherwise None.
 
     """
-    session_id = _cpp_methods.representativeNode(self)
+    # Get the otl definition for this node's type, if any.
+    definition = self.type().definition()
 
-    return hou.nodeBySessionId(session_id)
+    if definition is not None:
+        # Get the path to the representative node, if any.
+        path = definition.representativeNodePath()
+
+        if path:
+            # Return the node.
+            return self.node(path)
+
+    return None
 
 
 @addToClass(hou.Node)
@@ -4891,7 +5339,20 @@ def isContainedBy(self, node):
             False.
 
     """
-    return _cpp_methods.isContainedBy(self, node)
+    # Get this node's parent.
+    parent = self.parent()
+
+    # Keep looking until we have no more parents.
+    while parent is not None:
+        # If the parent is the target node, return True.
+        if parent == node:
+            return True
+
+        # Get the parent's parent and try again.
+        parent = parent.parent()
+
+    # Didn't find the node, so return False.
+    return False
 
 
 @addToClass(hou.Node)
@@ -4940,7 +5401,7 @@ def getOpReferences(self, recurse=False):
         N/A
 
     Returns:
-        tuple
+        (hou.Node)
             A tuple of hou.Node objects the node references.
 
     """
@@ -4961,7 +5422,7 @@ def getOpDependents(self, recurse=False):
         N/A
 
     Returns:
-        tuple
+        (hou.Node)
             A tuple of hou.Node objects that reference this node.
 
     """
@@ -5177,13 +5638,13 @@ def isIdentity(self):
     # We are a 3x3 matrix.
     if isinstance(self, hou.Matrix3):
         # Construct a new 3x3 matrix.
-        m = hou.Matrix3()
+        mat = hou.Matrix3()
 
         # Set it to be the identity.
-        m.setToIdentity()
+        mat.setToIdentity()
 
         # Compare the two.
-        return self == m
+        return self == mat
 
     # Compare against the identity transform from hmath.
     return self == hou.hmath.identityTransform()
@@ -5194,7 +5655,7 @@ def setTranslates(self, translates):
     """Set the translation values of this matrix.
 
     Args:
-        translates : (list|tuple|hou.Vector3)
+        translates : ([float]|(float)|hou.Vector3)
             The new translation values.  This can be any sequence of three
             floats.
 
@@ -5250,16 +5711,18 @@ def buildLookat(from_vec, to_vec, up):
 
 
 @addToModule(hou.hmath)
-def buildInstance(position, direction, pscale=1, scale=hou.Vector3(1,1,1),
-                  up=hou.Vector3(0,1,0), rot=hou.Quaternion(0,0,0,1),
-                  trans=hou.Vector3(0,0,0), orient=None):
+def buildInstance(position, direction=hou.Vector3(0,0,1), pscale=1,
+                  scale=hou.Vector3(1 ,1 ,1), up=hou.Vector3(0,1,0),
+                  rot=hou.Quaternion(0,0,0,1), trans=hou.Vector3(0,0,0),
+                  orient=None
+                 ):
     """Compute a transform to orient to a given direction.
 
     Args:
         position : (hou.Vector3)
             The position of the instance.
 
-        direction : (hou.Vector3)
+        direction=hou.Vector3(0,0,1) : (hou.Vector3)
             Direction to orient the +Z axis to.
 
         pscale=1 : (float)
@@ -5375,7 +5838,7 @@ def getMetaSource(self):
     Hip File", "Fallback Libraries" or specific OPlibraries files.
 
     """
-    return hou.hda.getMetaSource(self.libraryFilePath())
+    return hou.hda.metaSource(self.libraryFilePath())
 
 
 @addToModule(hou.hda)
@@ -5411,7 +5874,7 @@ def librariesInMetaSource(meta_source):
         N/A
 
     Returns:
-        tuple
+        (str)
             A tuple of operator library paths contained in the meta source.
 
     """
@@ -5420,4 +5883,26 @@ def librariesInMetaSource(meta_source):
 
     # Return a tuple of the valid values.
     return tuple([path for path in result if path])
+
+
+@addToClass(hou.HDADefinition)
+def isDummy(self):
+    """Check if this definition is a dummy definition.
+
+    Raises:
+        N/A
+
+    Returns:
+        bool
+            Returns True if this definition is a dummy definition, otherwise
+            False.
+
+    A dummy, or empty definition is created by Houdini when it cannot find
+    an operator definition that it needs in the current session.
+    """
+    return _cpp_methods.isDummyDefinition(
+        self.libraryFilePath(),
+        self.nodeTypeCategory().name(),
+        self.nodeTypeName()
+    )
 
