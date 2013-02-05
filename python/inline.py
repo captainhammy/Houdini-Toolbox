@@ -82,7 +82,7 @@ def addToClass(*args, **kwargs):
     return decorator
 
 
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 #    Name: _buildCStringArray
 #    Args: values : ([str])
 #              A list of strings.
@@ -90,7 +90,7 @@ def addToClass(*args, **kwargs):
 # Returns: c_char_p_Array
 #              A ctypes char * array.
 #    Desc: Convert a list of strings to a ctypes char * array.
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 def _buildCStringArray(values):
     import ctypes
     arr = (ctypes.c_char_p * len(values))()
@@ -99,7 +99,7 @@ def _buildCStringArray(values):
     return arr
 
 
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 #    Name: _buildCFloatArray
 #    Args: values : ([float])
 #              A list of floats to convert.
@@ -107,7 +107,7 @@ def _buildCStringArray(values):
 # Returns: c_float_Array
 #              A ctypes float array.
 #    Desc: Convert a list of numbers to a ctypes float array.
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 def _buildCFloatArray(values):
     import ctypes
     arr = (ctypes.c_float * len(values))()
@@ -116,7 +116,7 @@ def _buildCFloatArray(values):
     return arr
 
 
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 #    Name: _buildCIntArray
 #    Args: values : ([int])
 #              A list of ints to convert.
@@ -124,7 +124,7 @@ def _buildCFloatArray(values):
 # Returns: c_int_Array
 #              A ctypes int array.
 #    Desc: Convert a list of numbers to a ctypes int array.
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 def _buildCIntArray(values):
     import ctypes
     arr = (ctypes.c_int * len(values))()
@@ -133,7 +133,7 @@ def _buildCIntArray(values):
     return arr
 
 
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 #    Name: _buildBoundingBox
 #    Args: bounds : (hutil.cppinline.BoundingBox)
 #              An inlinecpp bounding box object.
@@ -141,7 +141,7 @@ def _buildCIntArray(values):
 # Returns: hou.BoundingBox
 #              A HOM style bounding box.
 #    Desc: Convert an inlinecpp returned bounding box to a hou.BoundingBox.
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 def _buildBoundingBox(bounds):
     # Construct a new HOM bounding box from the name members of the class.
     return hou.BoundingBox(
@@ -154,7 +154,7 @@ def _buildBoundingBox(bounds):
     )
 
 
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 #    Name: _getPointsFromList
 #    Args: geometry : (hou.Geometry)
 #              The geometry the points belongs to.
@@ -164,7 +164,7 @@ def _buildBoundingBox(bounds):
 # Returns: (hou.Point)
 #              A tuple of hou.Point objects.
 #    Desc: Convert a list of point numbers to hou.Point objects.
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 def _getPointsFromList(geometry, point_list):
     # Return a empty tuple if the point list is empty.
     if not point_list:
@@ -177,7 +177,7 @@ def _getPointsFromList(geometry, point_list):
     return geometry.globPoints(point_str)
 
 
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 #    Name: _getPrimsFromList
 #    Args: geometry : (hou.Geometry)
 #              The geometry the primitives belongs to.
@@ -187,7 +187,7 @@ def _getPointsFromList(geometry, point_list):
 # Returns: (hou.Prim)
 #              A tuple of hou.Prim objects.
 #    Desc: Convert a list of primitive numbers to hou.Prim objects.
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 def _getPrimsFromList(geometry, prim_list):
     # Return a empty tuple if the prim list is empty.
     if not prim_list:
@@ -200,7 +200,7 @@ def _getPrimsFromList(geometry, prim_list):
     return geometry.globPrims(prim_str)
 
 
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 #    Name: _getNodesFromPaths
 #    Args: paths : ([str]|(str))
 #              A list of strings node paths.
@@ -208,12 +208,12 @@ def _getPrimsFromList(geometry, prim_list):
 # Returns: (hou.Node)
 #              A tuple of hou.Node objects.
 #    Desc: Convert a list of string paths to hou.Node objects.
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 def _getNodesFromPaths(paths):
     return tuple([hou.node(path) for path in paths if path])
 
 
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 #    Name: _getTimeFromOpInfo
 #    Args: node : (hou.Node)
 #              A Houdini node.
@@ -224,7 +224,7 @@ def _getNodesFromPaths(paths):
 #              The datetime matching the opinfo line, if it exists, otherwise
 #              None.
 #    Desc: Extract a datetime.datetime from the opinfo of a node.
-#-----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 def _getTimeFromOpInfo(node, prefix):
     import datetime
 
@@ -2983,7 +2983,7 @@ def addVariableName(self, attrib, var_name):
         attrib : (hou.Attrib)
             The attribute to create a variable mapping for.
 
-        var_name : (string)
+        var_name : (str)
             The variable name to map to the attribute.
 
     Raises:
@@ -3006,7 +3006,7 @@ def removeVariableName(self, var_name):
     """Remove a variable mapping from the varmap.
 
     Args:
-        var_name : (string)
+        var_name : (str)
             The variable name to remove the mapping for.
 
     Raises:
@@ -3029,7 +3029,7 @@ def renameAttribute(self, new_name):
     """Rename this attribute.
 
     Args:
-        new_name : (string)
+        new_name : (str)
             The new attribute name.
 
     Raises:
@@ -3096,10 +3096,10 @@ def findPrimByName(self, name_to_match, name_attribute="name", match_number=0):
     """Find a primitive with a matching name attribute value.
 
     Args:
-        name_to_match : (string)
+        name_to_match : (str)
             The name attribute value to match.
 
-        name_attribute="name" : (string)
+        name_attribute="name" : (str)
             The attribute name to use.
 
         match_number=0 : (int)
@@ -3136,10 +3136,10 @@ def findAllPrimsByName(self, name_to_match, name_attribute="name"):
     """Find all primitives with a matching name attribute value.
 
     Args:
-        name_to_match : (string)
+        name_to_match : (str)
             The name attribute value to match.
 
-        name_attribute="name" : (string)
+        name_attribute="name" : (str)
             The attribute name to use.
 
     Raises:
@@ -3390,7 +3390,7 @@ def pointStringAttribValues(self, name):
     points.
 
     Args:
-        name : (string)
+        name : (str)
             The name of the point attribute.
 
     Raises:
@@ -3420,7 +3420,7 @@ def setPointStringAttribValues(self, name, values):
     """Set the string attribute values for all points.
 
     Args:
-        name : (string)
+        name : (str)
             The name of the point attribute.
 
         values : ((str))
@@ -3474,7 +3474,7 @@ def setSharedPointStringAttrib(self, attribute, value, group=None):
         attribute : (hou.Attrib)
             The string attribute to set.
 
-        value : (string)
+        value : (str)
             The attribute value to set.
 
         group=None (hou.PointGroup)
@@ -3523,7 +3523,7 @@ def primStringAttribValues(self, name):
     primitives.
 
     Args:
-        name : (string)
+        name : (str)
             The name of the primitive attribute.
 
     Raises:
@@ -3553,7 +3553,7 @@ def setPrimStringAttribValues(self, name, values):
     """Set the string attribute values for all primitives.
 
     Args:
-        name : (string)
+        name : (str)
             The name of the primitive attribute.
 
         values : ((str))
@@ -3607,7 +3607,7 @@ def setSharedPrimStringAttrib(self, attribute, value, group=None):
         attribute : (hou.Attrib)
             The string attribute to set.
 
-        value : (string)
+        value : (str)
             The attribute value to set.
 
         group=None : (hou.PrimGroup)
@@ -4463,7 +4463,7 @@ def copyPointGroup(self, new_group_name):
     """Create a new point group under the new name with the same membership.
 
     Args:
-        new_group_name : (string)
+        new_group_name : (str)
             The new group name.
 
     Raises:
@@ -4508,7 +4508,7 @@ def copyPrimGroup(self, new_group_name):
     """Create a group under the new name with the same membership.
 
     Args:
-        new_group_name : (string)
+        new_group_name : (str)
             The new group name.
 
     Raises:
@@ -4597,7 +4597,7 @@ def convertToPointGroup(self, new_group_name=None, destroy=True):
     """Create a new hou.Point group from this primitive group.
 
     Args:
-        new_group_name=None : (string)
+        new_group_name=None : (str)
             The name of the new point group.  If None, the point group
             will receive the same name as the source group.
 
@@ -4651,7 +4651,7 @@ def convertToPrimGroup(self, new_group_name=None, destroy=True):
     """Create a new hou.Prim group from this point group.
 
     Args:
-        new_group_name=None : (string)
+        new_group_name=None : (str)
             The name of the new prim group.  If None, the prim group will
             receive the same name as the source group.
 
@@ -5176,7 +5176,7 @@ def inputLabel(self, index):
             Raise this exception if the index is out of range.
 
     Returns:
-        string
+        str
             The label for the input.
 
     """
