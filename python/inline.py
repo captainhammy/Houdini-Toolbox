@@ -155,6 +155,19 @@ def _buildBoundingBox(bounds):
 
 
 # -----------------------------------------------------------------------------
+#    Name: _cleanStringValues
+#    Args: values : ([str]|(str))
+#              A list of strings.
+#  Raises: N/A
+# Returns: (str)
+#              A tuple of cleaned string values.
+#    Desc: Process a string list, removing empty strings.
+# -----------------------------------------------------------------------------
+def _cleanStringValues(values):
+    return tuple([val for val in values if val])
+
+
+# -----------------------------------------------------------------------------
 #    Name: _getPointsFromList
 #    Args: geometry : (hou.Geometry)
 #              The geometry the points belongs to.
@@ -203,7 +216,7 @@ def _getPrimsFromList(geometry, prim_list):
 # -----------------------------------------------------------------------------
 #    Name: _getNodesFromPaths
 #    Args: paths : ([str]|(str))
-#              A list of strings node paths.
+#              A list of string node paths.
 #  Raises: N/A
 # Returns: (hou.Node)
 #              A tuple of hou.Node objects.
@@ -211,6 +224,19 @@ def _getPrimsFromList(geometry, prim_list):
 # -----------------------------------------------------------------------------
 def _getNodesFromPaths(paths):
     return tuple([hou.node(path) for path in paths if path])
+
+
+# -----------------------------------------------------------------------------
+#    Name: _getParmsFromPaths
+#    Args: paths : ([str]|(str))
+#              A list of string parameter paths.
+#  Raises: N/A
+# Returns: (hou.Parm)
+#              A tuple of hou.Parm objects.
+#    Desc: Convert a list of string paths to hou.Parm objects.
+# -----------------------------------------------------------------------------
+def _getParmsFromPaths(paths):
+    return tuple([hou.parm(path) for path in paths if path])
 
 
 # -----------------------------------------------------------------------------
@@ -1797,8 +1823,10 @@ groupSize(const GU_Detail *gdp, const char *group_name, int group_type)
 
 """
 void
-toggleMembership(GU_Detail *gdp, const char *group_name,
-                 int group_type, int elem_num)
+toggleMembership(GU_Detail *gdp,
+                 const char *group_name,
+                 int group_type,
+                 int elem_num)
 {
     GA_ElementGroup             *group;
     GA_Offset                   elem_offset;
@@ -2532,7 +2560,7 @@ def getVariableNames(dirty=False):
     var_names =  _cpp_methods.getVariableNames(dirty)
 
     # Remove any empty names.
-    return tuple([var_name for var_name in var_names if var_name])
+    return _cleanStringValues(var_names)
 
 
 @addToModule(hou)
@@ -5195,7 +5223,7 @@ def getReferencingParms(self):
     result = _cpp_methods.getReferencingParms(node, self.name())
 
     # Create a tuple of parms.
-    return tuple([hou.parm(parm_path) for parm_path in result if parm_path])
+    return _getParmsFromPaths(result)
 
 
 @addToClass(hou.Parm, hou.ParmTuple)
@@ -6136,7 +6164,7 @@ def librariesInMetaSource(meta_source):
     result = _cpp_methods.getLibrariesInMetaSource(meta_source)
 
     # Return a tuple of the valid values.
-    return tuple([path for path in result if path])
+    return _cleanStringValues(result)
 
 
 @addToClass(hou.HDADefinition)
