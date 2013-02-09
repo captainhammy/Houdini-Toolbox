@@ -82,7 +82,7 @@ def addToClass(*args, **kwargs):
     return decorator
 
 
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #    Name: _buildCStringArray
 #    Args: values : ([str])
 #              A list of strings.
@@ -90,7 +90,7 @@ def addToClass(*args, **kwargs):
 # Returns: c_char_p_Array
 #              A ctypes char * array.
 #    Desc: Convert a list of strings to a ctypes char * array.
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 def _buildCStringArray(values):
     import ctypes
     arr = (ctypes.c_char_p * len(values))()
@@ -99,7 +99,7 @@ def _buildCStringArray(values):
     return arr
 
 
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #    Name: _buildCFloatArray
 #    Args: values : ([float])
 #              A list of floats to convert.
@@ -107,7 +107,7 @@ def _buildCStringArray(values):
 # Returns: c_float_Array
 #              A ctypes float array.
 #    Desc: Convert a list of numbers to a ctypes float array.
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 def _buildCFloatArray(values):
     import ctypes
     arr = (ctypes.c_float * len(values))()
@@ -116,7 +116,7 @@ def _buildCFloatArray(values):
     return arr
 
 
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #    Name: _buildCIntArray
 #    Args: values : ([int])
 #              A list of ints to convert.
@@ -124,7 +124,7 @@ def _buildCFloatArray(values):
 # Returns: c_int_Array
 #              A ctypes int array.
 #    Desc: Convert a list of numbers to a ctypes int array.
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 def _buildCIntArray(values):
     import ctypes
     arr = (ctypes.c_int * len(values))()
@@ -133,7 +133,7 @@ def _buildCIntArray(values):
     return arr
 
 
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #    Name: _buildBoundingBox
 #    Args: bounds : (hutil.cppinline.BoundingBox)
 #              An inlinecpp bounding box object.
@@ -141,7 +141,7 @@ def _buildCIntArray(values):
 # Returns: hou.BoundingBox
 #              A HOM style bounding box.
 #    Desc: Convert an inlinecpp returned bounding box to a hou.BoundingBox.
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 def _buildBoundingBox(bounds):
     # Construct a new HOM bounding box from the name members of the class.
     return hou.BoundingBox(
@@ -154,7 +154,7 @@ def _buildBoundingBox(bounds):
     )
 
 
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #    Name: _getPointsFromList
 #    Args: geometry : (hou.Geometry)
 #              The geometry the points belongs to.
@@ -164,7 +164,7 @@ def _buildBoundingBox(bounds):
 # Returns: (hou.Point)
 #              A tuple of hou.Point objects.
 #    Desc: Convert a list of point numbers to hou.Point objects.
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 def _getPointsFromList(geometry, point_list):
     # Return a empty tuple if the point list is empty.
     if not point_list:
@@ -177,7 +177,7 @@ def _getPointsFromList(geometry, point_list):
     return geometry.globPoints(point_str)
 
 
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #    Name: _getPrimsFromList
 #    Args: geometry : (hou.Geometry)
 #              The geometry the primitives belongs to.
@@ -187,7 +187,7 @@ def _getPointsFromList(geometry, point_list):
 # Returns: (hou.Prim)
 #              A tuple of hou.Prim objects.
 #    Desc: Convert a list of primitive numbers to hou.Prim objects.
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 def _getPrimsFromList(geometry, prim_list):
     # Return a empty tuple if the prim list is empty.
     if not prim_list:
@@ -200,7 +200,7 @@ def _getPrimsFromList(geometry, prim_list):
     return geometry.globPrims(prim_str)
 
 
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #    Name: _getNodesFromPaths
 #    Args: paths : ([str]|(str))
 #              A list of strings node paths.
@@ -208,12 +208,12 @@ def _getPrimsFromList(geometry, prim_list):
 # Returns: (hou.Node)
 #              A tuple of hou.Node objects.
 #    Desc: Convert a list of string paths to hou.Node objects.
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 def _getNodesFromPaths(paths):
     return tuple([hou.node(path) for path in paths if path])
 
 
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #    Name: _getTimeFromOpInfo
 #    Args: node : (hou.Node)
 #              A Houdini node.
@@ -224,7 +224,7 @@ def _getNodesFromPaths(paths):
 #              The datetime matching the opinfo line, if it exists, otherwise
 #              None.
 #    Desc: Extract a datetime.datetime from the opinfo of a node.
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 def _getTimeFromOpInfo(node, prefix):
     import datetime
 
@@ -256,6 +256,7 @@ _cpp_methods = inlinecpp.createLibrary(
 #include <GEO/GEO_Face.h>
 #include <GQ/GQ_Detail.h>
 #include <GU/GU_Detail.h>
+#include <OP/OP_CommandManager.h>
 #include <OP/OP_Director.h>
 #include <OP/OP_Node.h>
 #include <OP/OP_OTLDefinition.h>
@@ -280,6 +281,162 @@ _cpp_methods = inlinecpp.createLibrary(
         ),
     ],
     function_sources=[
+"""
+const char *
+getVariable(const char *name)
+{
+    OP_CommandManager           *cmd;
+    OP_Director                 *director;
+
+    UT_String                   value;
+
+    // Get the scene director.
+    director = OPgetDirector();
+
+    // Get the command manager.
+    cmd = director->getCommandManager();
+
+    cmd->getVariable(name, value);
+
+    return value.buffer();
+}
+""",
+
+"""
+StringArray
+getVariableNames(int dirty=0)
+{
+    std::vector<std::string>    result;
+
+    OP_CommandManager           *cmd;
+    OP_Director                 *director;
+
+    UT_StringArray              names;
+
+    // Get the scene director.
+    director = OPgetDirector();
+
+    // Get the command manager.
+    cmd = director->getCommandManager();
+
+    cmd->getVariableNames(names, dirty);
+
+    names.toStdVectorOfStrings(result);
+
+    if (result.size() == 0)
+    {
+        result.push_back("");
+    }
+
+    return result;
+}
+""",
+
+"""
+void
+setVariable(const char *name, const char *value, int local)
+{
+    OP_CommandManager           *cmd;
+    OP_Director                 *director;
+
+    // Get the scene director.
+    director = OPgetDirector();
+
+    // Get the command manager.
+    cmd = director->getCommandManager();
+
+    cmd->setVariable(name, value, local);
+}
+""",
+
+"""
+void
+unsetVariable(const char *name)
+{
+    OP_CommandManager           *cmd;
+    OP_Director                 *director;
+
+    // Get the scene director.
+    director = OPgetDirector();
+
+    // Get the command manager.
+    cmd = director->getCommandManager();
+
+    cmd->unsetVariable(name);
+}
+""",
+
+"""
+void
+varChange()
+{
+    int                         num_names;
+
+    OP_CommandManager           *cmd;
+    OP_Director                 *director;
+    OP_Node                     *node;
+    OP_NodeList                 nodes;
+    OP_NodeList::const_iterator node_it;
+
+    PRM_ParmList                *parms;
+
+    UT_String                   var_name;
+    UT_StringArray              dirty_names, var_names;
+
+    // Get the scene director.
+    director = OPgetDirector();
+
+    // Get the command manager.
+    cmd = director->getCommandManager();
+
+    // Get any dirty variables.
+    cmd->getVariableNames(dirty_names, true);
+
+    // The number of dirty variable names.
+    num_names = dirty_names.entries();
+
+    // If there are no dirty variables, don't do anything.
+    if (num_names == 0)
+    {
+        return;
+    }
+
+    // Process each dirty name and prefix it with a $.
+    for (int i=0; i<num_names; ++i)
+    {
+        var_name.sprintf("$%s", dirty_names(i).buffer());
+        var_names.append(var_name);
+    }
+
+    // Get all the nodes in the session.
+    director->getAllNodes(nodes);
+
+    // Process each node.
+    for (node_it=nodes.begin(); !node_it.atEnd(); ++node_it)
+    {
+        // Get the node.
+        node = *node_it;
+
+        // Get the list of parameters for the node.
+        parms = node->getParmList();
+
+        // Search for each dirty variable name.
+        for (int i=0; i<num_names; ++i)
+        {
+            // If the variable is used by any parameters on the node, tell
+            // them to update.
+            if (parms->findString(var_names(i), true, false))
+            {
+                parms->notifyVarChange(var_names(i));
+            }
+        }
+    }
+
+    // Clear all the diry variables.
+    cmd->clearDirtyVariables();
+}
+""",
+
 """
 int
 addNumToRange(int num, int sec, void *data)
@@ -328,7 +485,7 @@ expandRange(const char *pattern)
 void
 sortAlongAxis(GU_Detail *gdp, int mode, int axis)
 {
-    # Convert the int value to the axis type.
+    // Convert the int value to the axis type.
     GU_AxisType axis_type = static_cast<GU_AxisType>(axis);
 
     // Sort primitives.
@@ -2045,11 +2202,11 @@ getExistingOpReferences(OP_Node *node, bool recurse)
 {
     std::vector<std::string>    result;
 
-    UT_String                   path;
-
     OP_Node                     *ref_node;
     OP_NodeList                 refs;
     OP_NodeList::const_iterator depend_it;
+
+    UT_String                   path;
 
     node->getExistingOpReferences(refs, recurse);
 
@@ -2312,6 +2469,135 @@ isDummyDefinition(const char *filename,
 """,
     ]
 )
+
+
+@addToModule(hou)
+def getVariable(name):
+    """Returns the value of the named variable.
+
+    Args:
+        name : (str)
+            The name of the variable.
+
+    Raises:
+        N/A
+
+    Returns:
+        int|float|str|None
+            The value of the variable.  Returns None if no such variable
+            exists.
+
+    """
+    # Since Houdini stores all variable values as strings we use the ast module
+    # to handle parsing the string and returning the proper data type.
+    import ast
+
+    # If the variable name isn't in list of variables, return None.
+    if name not in _cpp_methods.getVariableNames():
+        return None
+
+    # Get the value of the variable.
+    value = _cpp_methods.getVariable(name)
+
+    # Try to convert it to the proper Python type.
+    try:
+        return ast.literal_eval(value)
+
+    # Except against common parsing/evaluating errors and return the raw
+    # value since the type will be a string.
+    except SyntaxError:
+        return value
+
+    except ValueError:
+        return value
+
+
+@addToModule(hou)
+def getVariableNames(dirty=False):
+    """Get a tuple of all available variable names.
+
+    Args:
+        dirty=False : (bool)
+            Return only 'dirty' variables.  A dirty variable is a variable
+            that has been created or modified but not updated throughout the
+            session by something like the 'varchange' hscript command.
+
+    Raises:
+        N/A
+
+    Returns:
+        (str)
+            A tuple of any valid variable names.
+
+    """
+    # Get all the valid variable names.
+    var_names =  _cpp_methods.getVariableNames(dirty)
+
+    # Remove any empty names.
+    return tuple([var_name for var_name in var_names if var_name])
+
+
+@addToModule(hou)
+def setVariable(name, value, local=False):
+    """Set a variable.
+
+    Args:
+        name : (str)
+            The name of the variable to set.
+
+        value : (int|float|str)
+            The value of the variable.
+
+        local=False : (bool)
+            Create a local variable.  If not, the variable will be global.
+
+    Raises:
+        N/A
+
+    Returns:
+        None
+
+    """
+    _cpp_methods.setVariable(name, str(value), local)
+
+
+@addToModule(hou)
+def unsetVariable(name):
+    """Unset a variable.
+
+    Args:
+        name : (str)
+            The name of the variable to unset.
+
+    Raises:
+        N/A
+
+    Returns:
+        None
+
+    This function will do nothing if no such variable exists.
+
+    """
+    _cpp_methods.unsetVariable(name)
+
+
+@addToModule(hou)
+def varChange():
+    """Cook any operators using changed variables.
+
+    Raises:
+        N/A
+
+    Returns:
+        None
+
+    When a variable's value changes, the OPs which reference that variable are
+    not automatically cooked. Use this function to cook all OPs when a variable
+    they use changes.
+
+    """
+    _cpp_methods.varChange()
+
 
 @addToModule(hou)
 def expandRange(pattern):
@@ -5206,14 +5492,8 @@ def messageNodes(self):
             # Extract the list of them.
             contents = definition.sections()["MessageNodes"].contents()
 
-            # Split the contents to get each path.
-            paths = contents.split()
-
-            # Build a list of nodes.
-            nodes = [self.node(path) for path in paths]
-
-            # Return a tuple of only valid nodes.
-            return tuple([node for node in nodes if node is not None])
+            # Glob for any specified nodes and return them.
+            return self.glob(contents)
 
     return ()
 
@@ -5239,14 +5519,8 @@ def editableNodes(self):
             # Extract the list of them.
             contents = definition.sections()["EditableNodes"].contents()
 
-            # Split the contents to get each path.
-            paths = contents.split()
-
-            # Build a list of nodes.
-            nodes = [self.node(path) for path in paths]
-
-            # Return a tuple of only valid nodes.
-            return tuple([node for node in nodes if node is not None])
+            # Glob for any specified nodes and return them.
+            return self.glob(contents)
 
     return ()
 
