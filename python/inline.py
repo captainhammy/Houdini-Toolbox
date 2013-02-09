@@ -263,6 +263,19 @@ _cpp_methods = inlinecpp.createLibrary(
 #include <OP/OP_OTLManager.h>
 #include <PRM/PRM_Parm.h>
 #include <UT/UT_WorkArgs.h>
+
+// Validate a vector of strings so that it can be returned as a StringArray.
+// Currently we cannot return an empty vector.
+void validateStringVector(std::vector<std::string> &string_vec)
+{
+    // Check for an empty vector.
+    if (string_vec.size() == 0)
+    {
+        // An an empty string.
+        string_vec.push_back("");
+    }
+}
+
 """,
     structs=[
         ("IntArray", "*i"),
@@ -323,10 +336,8 @@ getVariableNames(int dirty=0)
 
     names.toStdVectorOfStrings(result);
 
-    if (result.size() == 0)
-    {
-        result.push_back("");
-    }
+    // Check for an empty vector.
+    validateStringVector(result);
 
     return result;
 }
@@ -2139,10 +2150,8 @@ getReferencingParms(OP_Node *node, const char *parm_name)
         result.push_back(path.toStdString());
     }
 
-    if (result.size() == 0)
-    {
-        result.push_back("");
-    }
+    // Check for an empty vector.
+    validateStringVector(result);
 
     return result;
 }
@@ -2218,10 +2227,8 @@ getExistingOpReferences(OP_Node *node, bool recurse)
         result.push_back(path.toStdString());
     }
 
-    if (result.size() == 0)
-    {
-        result.push_back("");
-    }
+    // Check for an empty vector.
+    validateStringVector(result);
 
     return result;
 }
@@ -2249,10 +2256,8 @@ getExistingOpDependents(OP_Node *node, bool recurse)
         result.push_back(path.toStdString());
     }
 
-    if (result.size() == 0)
-    {
-        result.push_back("");
-    }
+    // Check for an empty vector.
+    validateStringVector(result);
 
     return result;
 }
@@ -2319,16 +2324,13 @@ getMultiParmInstances(OP_Node *node, const char *parm_name)
             result.push_back(parm->getToken());
         }
 
-        // If the block is empty, add an empty string.
-        if (result.size() == 0)
-        {
-            result.push_back("");
-        }
+        // Check for an empty vector.
+        validateStringVector(result);
 
         blocks.push_back(result);
     }
 
-    // If there are no entries, add an emptry block.
+    // If there are no entries, add an empty block.
     if (blocks.size() == 0)
     {
         std::vector<std::string>    result;
@@ -2420,12 +2422,8 @@ getLibrariesInMetaSource(const char *metasrc)
 
     }
 
-    // If no elements were found, add an empty string so inlinecpp will be
-    // happy.
-    if (result.size() == 0)
-    {
-        result.push_back("");
-    }
+    // Check for an empty vector.
+    validateStringVector(result);
 
     return result;
 }
