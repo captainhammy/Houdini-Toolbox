@@ -72,12 +72,12 @@ SOP_PrimGroupCentroid::disableParms()
     // Enable the 'store' parm when there is no 2nd input.
     changed += enableParm("store", bind_input == NULL);
 
-    // Enable behavior parm when there is a 2nd input.
-    changed += enableParm("behavior", bind_input != NULL);
-
     // Enable attribute and variable copying when not using a 2nd input.
     changed += enableParm("attributes", bind_input == NULL);
     changed += enableParm("copyvariables", bind_input == NULL);
+
+    // Enable behavior parm when there is a 2nd input.
+    changed += enableParm("behavior", bind_input != NULL);
 
     changed += enableParm("bind_attributes", bind_input != NULL);
 
