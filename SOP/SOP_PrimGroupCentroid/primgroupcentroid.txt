@@ -56,6 +56,10 @@ Attribute to Copy:
     Attributes to copy from the primitives to the centroid points.  The
     attribute values are averages.
 
+Copy Local Variable:
+    All local variables referring to the copied attributes are also
+    copied.
+
 Unmatched Behavior:
     When transforming the geometry, determine what to do for groups that
     have no matching transform points.

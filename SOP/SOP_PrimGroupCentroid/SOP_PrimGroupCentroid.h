@@ -18,6 +18,9 @@
 
 #include <SOP/SOP_Node.h>
 
+// Simple pair to pass along our gdp and attribute pattern args.
+typedef std::pair<GU_Detail *, UT_WorkArgs*> AttrCopyPair;
+
 class SOP_PrimGroupCentroid: public SOP_Node
 {
 public:
@@ -32,6 +35,9 @@ public:
                                   const PRM_Parm *);
     static bool         validateAttrib(const GA_Attribute *,
                                        void *);
+    static int          copyLocalVariables(const char *,
+                                           const char *,
+                                           void *);
 
 protected:
                         SOP_PrimGroupCentroid(OP_Network *,
@@ -47,12 +53,13 @@ private:
     int                 METHOD(fpreal t) { return evalInt("method", 0, t); }
     void                GROUP(UT_String &str, fpreal t) { evalString(str, "group", 0, t); }
     bool                STORE(fpreal t) { return evalInt("store", 0, t); }
+    bool                COPY(fpreal t) { return evalInt("copyvariables", 0, t); }
     int                 BEHAVIOR(fpreal t) { return evalInt("behavior", 0, t); }
     void                ATTRIBUTES(UT_String &str, fpreal t) { evalString(str, "attributes", 0, t); }
     void                BIND(UT_String &str, fpreal t) { evalString(str, "bind_attributes", 0, t); }
-    void                buildRefMap(GA_AttributeRefMap &,
+    void                buildRefMap(fpreal,
+                                    GA_AttributeRefMap &,
                                     UT_String &,
-                                    GU_Detail *,
                                     const GU_Detail *,
                                     int,
                                     GA_AttributeOwner);
@@ -80,8 +87,8 @@ private:
                                        const GU_Detail *,
                                        const UT_Vector3,
                                        GA_Offset);
-    int                buildCentroids(fpreal, int, int);
-    int                bindToCentroids(fpreal, int, int);
+    int                 buildCentroids(fpreal, int, int);
+    int                 bindToCentroids(fpreal, int, int);
 
 };
 

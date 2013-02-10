@@ -160,6 +160,7 @@ static PRM_Name names[] =
     PRM_Name("method", "Method"),
     PRM_Name("store", "Store Source Identifier"),
     PRM_Name("attributes", "Attributes to Copy"),
+    PRM_Name("copyvariables", "Copy Local Variables"),
     PRM_Name("behavior", "Unmatched Behavior"),
     PRM_Name("bind_attributes", "Bind Attributes to Copy"),
 };
@@ -209,6 +210,7 @@ static PRM_Default defaults[] =
     PRM_Default(0),
     PRM_Default(0),
     PRM_Default(0, ""),
+    PRM_Default(1),
     PRM_Default(0),
     PRM_Default(0, ""),
 };
@@ -220,8 +222,9 @@ SOP_PrimGroupCentroid::myTemplateList[] = {
     PRM_Template(PRM_ORD, 1, &names[2], &defaults[2], &methodChoiceMenu),
     PRM_Template(PRM_TOGGLE, 1, &names[3], &defaults[3]),
     PRM_Template(PRM_STRING, 1, &names[4], &defaults[4], &attribMenu),
-    PRM_Template(PRM_ORD, 1, &names[5], &defaults[5], &behaviorChoiceMenu),
-    PRM_Template(PRM_STRING, 1, &names[6], &defaults[6], &attribMenu),
+    PRM_Template(PRM_TOGGLE, 1, &names[5], &defaults[5]),
+    PRM_Template(PRM_ORD, 1, &names[6], &defaults[6], &behaviorChoiceMenu),
+    PRM_Template(PRM_STRING, 1, &names[7], &defaults[7], &attribMenu),
     PRM_Template()
 };
 
@@ -306,10 +309,36 @@ SOP_PrimGroupCentroid::buildAttribData(int mode,
     return 0;
 }
 
+int
+SOP_PrimGroupCentroid::copyLocalVariables(const char *attr,
+                                          const char *varname,
+                                          void *data)
+{
+    AttrCopyPair                *info;
+
+    GU_Detail                   *gdp;
+
+    UT_String                   attr_name(attr);
+    UT_WorkArgs                 *tokens;
+
+    // Extract the passed in pair.
+    info = (AttrCopyPair *)data;
+
+    // Extract the data.
+    gdp = info->first;
+    tokens = info->second;
+
+    // If the attribute name matches, add the local variable.
+    if (attr_name.matchPattern(*tokens))
+        gdp->addVariableName(attr, varname);
+
+    return 1;
+}
+
 void
-SOP_PrimGroupCentroid::buildRefMap(GA_AttributeRefMap &hmap,
+SOP_PrimGroupCentroid::buildRefMap(fpreal t,
+                                   GA_AttributeRefMap &hmap,
                                    UT_String &pattern,
-                                   GU_Detail *gdp,
                                    const GU_Detail *input_geo,
                                    int mode,
                                    GA_AttributeOwner owner)
@@ -323,71 +352,127 @@ SOP_PrimGroupCentroid::buildRefMap(GA_AttributeRefMap &hmap,
     UT_String                   attr_name;
     UT_WorkArgs                 tokens;
 
-    // Tokenize the pattern.
-    pattern.tokenize(tokens, " ");
-
-    // Select the appropriate attribute dictionary to use.
-    if (owner == GA_ATTRIB_PRIMITIVE)
-        dict = &input_geo->primitiveAttribs();
-    // GA_ATTRIB_POINT
-    else
-        dict = &input_geo->pointAttribs();
-
-    // Iterate over all the point attributes.
-    for (a_it=dict->begin(GA_SCOPE_PUBLIC); !a_it.atEnd(); ++a_it)
+    // If the pattern isn't empty then we should look for attributes to copy.
+    if (pattern.length() > 0)
     {
-        // The current attribute.
-        source_attr = a_it.attrib();
-        // Get the attribute name.
-        attr_name = source_attr->getName();
+        // Tokenize the pattern.
+        pattern.tokenize(tokens, " ");
 
-        // If the name doesn't match our pattern, skip it.
-        if (!attr_name.matchPattern(tokens))
-            continue;
-
-        // Skip attribute names matching our current mode.  These are left
-        // to the 'store' parm setting.
-        if (mode == 1 and attr_name == "name")
-            continue;
-        else if (mode == 2 and attr_name == "class")
-            continue;
-
-        // Select the appropriate attribute type to search for.
+        // Select the appropriate attribute dictionary to use.
         if (owner == GA_ATTRIB_PRIMITIVE)
-        {
-            // Try to find the point attribute on the geometry.
-            attr_gah = gdp->findPointAttrib(*source_attr);
-        }
+            dict = &input_geo->primitiveAttribs();
         // GA_ATTRIB_POINT
         else
+            dict = &input_geo->pointAttribs();
+
+        // Iterate over all the point attributes.
+        for (a_it=dict->begin(GA_SCOPE_PUBLIC); !a_it.atEnd(); ++a_it)
         {
-            // If we are doing points, we can ignore P.
-            if (attr_name == "P")
+            // The current attribute.
+            source_attr = a_it.attrib();
+            // Get the attribute name.
+            attr_name = source_attr->getName();
+
+            // If the name doesn't match our pattern, skip it.
+            if (!attr_name.matchPattern(tokens))
                 continue;
 
-            // Try to find the primitive attribute on the geometry.
-            attr_gah = gdp->findPrimAttrib(*source_attr);
-        }
+            // Skip attribute names matching our current mode.  These are left
+            // to the 'store' parm setting.
+            if (mode == 1 and attr_name == "name")
+            {
+                continue;
+            }
+            else if (mode == 2 and attr_name == "class")
+            {
+                continue;
+            }
 
-        // If it doesn't exist, create a new attribute.
-        if (attr_gah.isInvalid())
-        {
+            // Select the appropriate attribute type to search for.
             if (owner == GA_ATTRIB_PRIMITIVE)
             {
-                // Create a new point attribute on the current geometry
-                // that is the same as the source attribute.  Append it and
-                // the source to the map.
-                hmap.append(gdp->addPointAttrib(source_attr).getAttribute(),
-                            source_attr);
+                // Try to find the point attribute on the geometry.
+                attr_gah = gdp->findPointAttrib(*source_attr);
             }
+            // GA_ATTRIB_POINT
             else
             {
-                // Create a new point attribute on the current geometry
-                // that is the same as the source attribute.  Append it and
-                // the source to the map.
-                hmap.append(gdp->addPrimAttrib(source_attr).getAttribute(),
-                            source_attr);
+                // If we are doing points, we can ignore P.
+                if (attr_name == "P")
+                    continue;
+
+                // Try to find the primitive attribute on the geometry.
+                attr_gah = gdp->findPrimAttrib(*source_attr);
             }
+
+            // If it doesn't exist, create a new attribute.
+            if (attr_gah.isInvalid())
+            {
+                if (owner == GA_ATTRIB_PRIMITIVE)
+                {
+                    // Create a new point attribute on the current geometry
+                    // that is the same as the source attribute.  Append it and
+                    // the source to the map.
+                    hmap.append(gdp->addPointAttrib(source_attr).getAttribute(),
+                                source_attr);
+                }
+                else
+                {
+                    // Create a new point attribute on the current geometry
+                    // that is the same as the source attribute.  Append it and
+                    // the source to the map.
+                    hmap.append(gdp->addPrimAttrib(source_attr).getAttribute(),
+                                source_attr);
+                }
+            }
+        }
+    }
+
+    // Copy local variables.
+    if (COPY(t))
+    {
+        UT_String           source_name;
+
+        // Potentially storing a source identifying attribute whose local
+        // variable may need to be copied.
+        if (mode == 1 || mode == 2)
+        {
+            // The source attribute name to copy any local variable for.
+            if (mode == 1)
+                source_name = "name";
+            else
+                source_name = "class";
+
+            // If we aren't storing the source identifier then we should not
+            // be copying the local variable.  To ensure we don't do this,
+            // such as in the case the user enters '*', we should make sure
+            // to include ^{the source name} to exclude it.
+            if (!STORE(t))
+                source_name.sprintf("^%s", source_name.buffer());
+
+            // Add the name to the token list.
+            tokens.appendArg(const_cast<char *>(source_name.buffer()));
+
+            // Apparently we also need to insert a NULL pointer into the list.
+            tokens.appendArg(NULL);
+        }
+
+        // If we have any tokens to match against, try to copy local variables.
+        if (tokens.getArgc() > 0)
+        {
+            // Build a pair that we can use to send data along.
+            AttrCopyPair            info;
+
+            // Store our new gdp and the tokens to match names against.
+            info.first = gdp;
+            info.second = &tokens;
+
+            // Traverse the variable names on the input geometry and attempt
+            // to copy any that match to our new geometry.
+            input_geo->traverseVariableNames(
+                SOP_PrimGroupCentroid::copyLocalVariables,
+                &info
+            );
         }
     }
 }
@@ -579,7 +664,6 @@ SOP_PrimGroupCentroid::buildTransform(UT_Matrix4 &mat,
         use_orient = true;
     }
 
-
     // Try to find the 'trans' point attribute.
     trans_gah = input_geo->findFloatTuple(GA_ATTRIB_POINT,
                                           GA_SCOPE_PUBLIC,
@@ -752,6 +836,7 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
         {
             // Add the int tuple.
             ident_gah = gdp->addIntTuple(GA_ATTRIB_POINT, "class", 1);
+
             // Bind the handle.
             class_h.bind(ident_gah.getAttribute());
         }
@@ -776,9 +861,8 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
     // Get the attribute selection string.
     ATTRIBUTES(pattern, t);
 
-    // If we have a pattern, try to build the ref map.
-    if (pattern.length() > 0)
-        buildRefMap(hmap, pattern, gdp, input_geo, mode, GA_ATTRIB_PRIMITIVE);
+    // Build the reference map.
+    buildRefMap(t, hmap, pattern, input_geo, mode, GA_ATTRIB_PRIMITIVE);
 
     // The list of GA_Primitives in the input geometry.
     const GA_PrimitiveList &prim_list = input_geo->getPrimitiveList();
@@ -915,9 +999,8 @@ SOP_PrimGroupCentroid::bindToCentroids(fpreal t, int mode, int method)
     // Get the attribute selection string.
     BIND(pattern, t);
 
-    // If we have a pattern, try to build the ref map.
-    if (pattern.length() > 0)
-        buildRefMap(hmap, pattern, gdp, input_geo, mode, GA_ATTRIB_POINT);
+    // Build the reference map.
+    buildRefMap(t, hmap, pattern, input_geo, mode, GA_ATTRIB_POINT);
 
     // The list of GA_Primitives in the input geometry.
     const GA_PrimitiveList &prim_list = gdp->getPrimitiveList();
