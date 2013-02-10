@@ -67,15 +67,18 @@ SOP_PrimGroupCentroid::disableParms()
     bind_input = getInput(1);
 
     // Only use the 'group' parm when doing a group operation.
-    changed = enableParm("group", mode == 0 && bind_input == NULL);
+    changed = enableParm("group", mode == MODE_GROUP && bind_input == NULL);
 
     // Enable the 'store' parm when there is no 2nd input.
     changed += enableParm("store", bind_input == NULL);
 
-    // Enable thavior' parm when there is a 2nd input.
+    // Enable behavior parm when there is a 2nd input.
     changed += enableParm("behavior", bind_input != NULL);
 
+    // Enable attribute and variable copying when not using a 2nd input.
     changed += enableParm("attributes", bind_input == NULL);
+    changed += enableParm("copyvariables", bind_input == NULL);
+
     changed += enableParm("bind_attributes", bind_input != NULL);
 
     return changed;
@@ -91,11 +94,11 @@ SOP_PrimGroupCentroid::validateAttrib(const GA_Attribute *attribute,
     UT_String attr_name = attribute->getName();
 
     // Don't add 'name' when we are doing that type of operation.
-    if (mode == 1 && attr_name == "name")
+    if (mode == MODE_NAME && attr_name == MODENAME_NAME)
         return false;
 
     // Don't add 'class' when we are doing that type of operation.
-    if (mode == 2 && attr_name == "class")
+    if (mode == MODE_CLASS && attr_name == MODENAME_CLASS)
         return false;
 
     // Skip 'P'.
@@ -167,9 +170,9 @@ static PRM_Name names[] =
 
 static PRM_Name modeChoices[] =
 {
-    PRM_Name("group", "Group"),
-    PRM_Name("name", "Name"),
-    PRM_Name("class", "Class"),
+    PRM_Name(MODENAME_GROUP, "Group"),
+    PRM_Name(MODENAME_NAME, "Name"),
+    PRM_Name(MODENAME_CLASS, "Class"),
     PRM_Name(0)
 };
 
@@ -245,7 +248,7 @@ SOP_PrimGroupCentroid::buildAttribData(int mode,
     UT_String                   attr_name, str_value;
 
     // Determine the attribute name to use.
-    attr_name = (mode == 1) ? "name": "class";
+    attr_name = (mode == MODE_NAME) ? MODENAME_NAME: MODENAME_CLASS;
 
     // Find the attribute.
     source_gah = input_geo->findPrimitiveAttribute(attr_name);
@@ -258,13 +261,13 @@ SOP_PrimGroupCentroid::buildAttribData(int mode,
     }
 
     // If the 'name' attribute isn't a string, add an error and quit.
-    if (mode == 1 && !source_gah.isString())
+    if (mode == MODE_NAME && !source_gah.isString())
     {
         addError(SOP_ATTRIBUTE_INVALID, "'name' must be a string.");
         return 1;
     }
     // If the 'class' attribute isn't an int, add an error and quit.
-    else if (mode == 2 && !source_gah.isInt())
+    else if (mode == MODE_CLASS && !source_gah.isInt())
     {
         addError(SOP_ATTRIBUTE_INVALID, "'class' must be an integer.");
         return 1;
@@ -274,7 +277,7 @@ SOP_PrimGroupCentroid::buildAttribData(int mode,
     unique_count = input_geo->getUniqueValueCount(source_gah);
 
     // Add all the ranges and unique values to the appropriate arrays.
-    if (mode == 1)
+    if (mode == MODE_NAME)
     {
         for (int idx=0; idx<unique_count; ++idx)
         {
@@ -314,22 +317,18 @@ SOP_PrimGroupCentroid::copyLocalVariables(const char *attr,
                                           const char *varname,
                                           void *data)
 {
-    AttrCopyPair                *info;
+    GA_ROAttributeRef           gah;
 
     GU_Detail                   *gdp;
 
-    UT_String                   attr_name(attr);
-    UT_WorkArgs                 *tokens;
+    // Extract the detail.
+    gdp = (GU_Detail *)data;
 
-    // Extract the passed in pair.
-    info = (AttrCopyPair *)data;
+    // Try to find the attribute we are processing.
+    gah = gdp->findPointAttribute(attr);
 
-    // Extract the data.
-    gdp = info->first;
-    tokens = info->second;
-
-    // If the attribute name matches, add the local variable.
-    if (attr_name.matchPattern(*tokens))
+    // If a point attribute exists then we can copy this variable mapping.
+    if (gah.isValid())
         gdp->addVariableName(attr, varname);
 
     return 1;
@@ -341,7 +340,8 @@ SOP_PrimGroupCentroid::buildRefMap(fpreal t,
                                    UT_String &pattern,
                                    const GU_Detail *input_geo,
                                    int mode,
-                                   GA_AttributeOwner owner)
+                                   GA_AttributeOwner owner,
+                                   bool copy=false)
 {
     const GA_AttributeDict      *dict;
     GA_AttributeDict::iterator  a_it;
@@ -379,11 +379,11 @@ SOP_PrimGroupCentroid::buildRefMap(fpreal t,
 
             // Skip attribute names matching our current mode.  These are left
             // to the 'store' parm setting.
-            if (mode == 1 and attr_name == "name")
+            if (mode == MODE_NAME and attr_name == MODENAME_NAME)
             {
                 continue;
             }
-            else if (mode == 2 and attr_name == "class")
+            else if (mode == MODE_CLASS and attr_name == MODENAME_CLASS)
             {
                 continue;
             }
@@ -429,51 +429,14 @@ SOP_PrimGroupCentroid::buildRefMap(fpreal t,
     }
 
     // Copy local variables.
-    if (COPY(t))
+    if (copy)
     {
-        UT_String           source_name;
-
-        // Potentially storing a source identifying attribute whose local
-        // variable may need to be copied.
-        if (mode == 1 || mode == 2)
-        {
-            // The source attribute name to copy any local variable for.
-            if (mode == 1)
-                source_name = "name";
-            else
-                source_name = "class";
-
-            // If we aren't storing the source identifier then we should not
-            // be copying the local variable.  To ensure we don't do this,
-            // such as in the case the user enters '*', we should make sure
-            // to include ^{the source name} to exclude it.
-            if (!STORE(t))
-                source_name.sprintf("^%s", source_name.buffer());
-
-            // Add the name to the token list.
-            tokens.appendArg(const_cast<char *>(source_name.buffer()));
-
-            // Apparently we also need to insert a NULL pointer into the list.
-            tokens.appendArg(NULL);
-        }
-
-        // If we have any tokens to match against, try to copy local variables.
-        if (tokens.getArgc() > 0)
-        {
-            // Build a pair that we can use to send data along.
-            AttrCopyPair            info;
-
-            // Store our new gdp and the tokens to match names against.
-            info.first = gdp;
-            info.second = &tokens;
-
-            // Traverse the variable names on the input geometry and attempt
-            // to copy any that match to our new geometry.
-            input_geo->traverseVariableNames(
-                SOP_PrimGroupCentroid::copyLocalVariables,
-                &info
-            );
-        }
+        // Traverse the variable names on the input geometry and attempt
+        // to copy any that match to our new geometry.
+        input_geo->traverseVariableNames(
+            SOP_PrimGroupCentroid::copyLocalVariables,
+            gdp
+        );
     }
 }
 
@@ -800,7 +763,7 @@ SOP_PrimGroupCentroid::buildTransform(UT_Matrix4 &mat,
 int
 SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
 {
-    bool                        store;
+    bool                        copy, store;
     exint                       int_value;
 
     const GA_AIFStringTuple     *ident_t;
@@ -832,10 +795,10 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
     if (store)
     {
         // A 'class' operation, so create a new integer attribute.
-        if (mode == 2)
+        if (mode == MODE_CLASS)
         {
             // Add the int tuple.
-            ident_gah = gdp->addIntTuple(GA_ATTRIB_POINT, "class", 1);
+            ident_gah = gdp->addIntTuple(GA_ATTRIB_POINT, MODENAME_CLASS, 1);
 
             // Bind the handle.
             class_h.bind(ident_gah.getAttribute());
@@ -844,7 +807,7 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
         // attribute.
         else
         {
-            attr_name = (mode == 0) ? "group" : "name";
+            attr_name = (mode == MODE_GROUP) ? MODENAME_GROUP : MODENAME_NAME;
 
             // Create a new string attribute.
             ident_gah = gdp->addStringTuple(GA_ATTRIB_POINT, attr_name, 1);
@@ -861,14 +824,16 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
     // Get the attribute selection string.
     ATTRIBUTES(pattern, t);
 
+    copy = COPY(t);
+
     // Build the reference map.
-    buildRefMap(t, hmap, pattern, input_geo, mode, GA_ATTRIB_PRIMITIVE);
+    buildRefMap(t, hmap, pattern, input_geo, mode, GA_ATTRIB_PRIMITIVE, copy);
 
     // The list of GA_Primitives in the input geometry.
     const GA_PrimitiveList &prim_list = input_geo->getPrimitiveList();
 
     // Creating by groups.
-    if (mode == 0)
+    if (mode == MODE_GROUP)
     {
         // Get the group pattern.
         GROUP(pattern, t);
@@ -922,7 +887,7 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
         if (store)
         {
             // 'class', so get the integer value at this iterator index.
-            if (mode == 2)
+            if (mode == MODE_CLASS)
             {
                 int_value = int_values(array_it.index());
                 class_h.set(ptOff, int_value);
@@ -1012,14 +977,14 @@ SOP_PrimGroupCentroid::bindToCentroids(fpreal t, int mode, int method)
     // Determine which attribute we need from the points, based on the mode.
     switch (mode)
     {
-        case 0:
-            attr_name = "group";
+        case MODE_GROUP:
+            attr_name = MODENAME_GROUP;
             break;
-        case 1:
-            attr_name = "name";
+        case MODE_NAME:
+            attr_name = MODENAME_NAME;
             break;
-        case 2:
-            attr_name = "class";
+        case MODE_CLASS:
+            attr_name = MODENAME_CLASS;
             break;
         default:
             addError(SOP_MESSAGE, "Invalid mode setting");
@@ -1038,7 +1003,7 @@ SOP_PrimGroupCentroid::bindToCentroids(fpreal t, int mode, int method)
 
     // If not using groups, we need to check if the matching primitive
     // attribute exists on the geometry.
-    if (mode != 0)
+    if (mode != MODE_GROUP)
     {
         // Try to find the attribute.
         primattr_gah = gdp->findPrimitiveAttribute(attr_name);
@@ -1052,7 +1017,7 @@ SOP_PrimGroupCentroid::bindToCentroids(fpreal t, int mode, int method)
     }
 
     // 'class' uses the int handle.
-    if (mode == 2)
+    if (mode == MODE_CLASS)
         class_h.bind(attr_gah.getAttribute());
     // Groups and 'name' use the string handle.
     else
@@ -1060,7 +1025,7 @@ SOP_PrimGroupCentroid::bindToCentroids(fpreal t, int mode, int method)
 
     for (GA_Iterator it(input_geo->getPointRange()); !it.atEnd(); ++it)
     {
-        if (mode == 0)
+        if (mode == MODE_GROUP)
         {
             // Get the unique string value.
             str_value = str_h.get(*it);
@@ -1081,7 +1046,7 @@ SOP_PrimGroupCentroid::bindToCentroids(fpreal t, int mode, int method)
         }
         else
         {
-            if (mode == 1)
+            if (mode == MODE_NAME)
             {
                 // Get the unique string value.
                 str_value = str_h.get(*it);
@@ -1126,7 +1091,7 @@ SOP_PrimGroupCentroid::bindToCentroids(fpreal t, int mode, int method)
         buildTransform(mat, input_geo, pos, *it);
 
         // Transform the geometry from the centroid.
-        if (mode == 0)
+        if (mode == MODE_GROUP)
             gdp->transform(mat, group);
         else
             gdp->transform(mat, temp_group);

@@ -18,8 +18,10 @@
 
 #include <SOP/SOP_Node.h>
 
-// Simple pair to pass along our gdp and attribute pattern args.
-typedef std::pair<GU_Detail *, UT_WorkArgs*> AttrCopyPair;
+// Constants used to represent different mode types string names.
+#define MODENAME_CLASS "class"
+#define MODENAME_GROUP "group"
+#define MODENAME_NAME "name"
 
 class SOP_PrimGroupCentroid: public SOP_Node
 {
@@ -62,7 +64,8 @@ private:
                                     UT_String &,
                                     const GU_Detail *,
                                     int,
-                                    GA_AttributeOwner);
+                                    GA_AttributeOwner,
+                                    bool);
     int                 buildAttribData(int,
                                         const GU_Detail *,
                                         UT_Array<GA_Range> &,
@@ -89,6 +92,9 @@ private:
                                        GA_Offset);
     int                 buildCentroids(fpreal, int, int);
     int                 bindToCentroids(fpreal, int, int);
+
+    // Enumeration mapping mode types to mode parameter values.
+    enum                MODES {MODE_GROUP, MODE_NAME, MODE_CLASS};
 
 };
 
