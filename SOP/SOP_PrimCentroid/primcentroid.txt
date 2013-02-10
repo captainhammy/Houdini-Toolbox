@@ -23,6 +23,9 @@ attributes can also be copied.
     Attributes to Copy:
 	Primitive attributes to copy to the center points.
 
+    Copy Local Variable:
+        All local variables referring to the copied attributes are also
+        copied.
 @inputs
 Source:
     Primitives to generate centroids for.

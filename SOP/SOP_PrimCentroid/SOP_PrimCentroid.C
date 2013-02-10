@@ -8,7 +8,7 @@
  *     	Create points at the centroid of primitives.
  *
  * Name: SOP_PrimCentroid.C
- * 
+ *
 */
 
 #include "SOP_PrimCentroid.h"
@@ -21,7 +21,7 @@
 #include <OP/OP_OperatorTable.h>
 #include <UT/UT_DSOVersion.h>
 
-void 
+void
 newSopOperator(OP_OperatorTable *table)
 {
     table->addOperator(
@@ -36,15 +36,15 @@ newSopOperator(OP_OperatorTable *table)
 }
 
 OP_Node *
-SOP_PrimCentroid::myConstructor(OP_Network *net, 
-                                const char *name, 
+SOP_PrimCentroid::myConstructor(OP_Network *net,
+                                const char *name,
                                 OP_Operator *op)
 {
     return new SOP_PrimCentroid(net, name, op);
 }
 
 SOP_PrimCentroid::SOP_PrimCentroid(OP_Network *net,
-                                   const char *name, 
+                                   const char *name,
                                    OP_Operator *op):
     SOP_Node(net, name, op) {}
 
@@ -57,7 +57,7 @@ static PRM_Name methodChoices[] =
 };
 
 static PRM_ChoiceList methodChoiceMenu(
-    (PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE 
+    (PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE
                          | PRM_CHOICELIST_REPLACE),
     methodChoices);
 
@@ -66,12 +66,25 @@ static PRM_Name names[] =
 {
     PRM_Name("method", "Method"),
     PRM_Name("attributes", "Attributes to Copy"),
+    PRM_Name("copyvariables", "Copy Local Variables"),
 };
 
 static PRM_Default defaults[] =
 {
     PRM_Default(0),
     PRM_Default(0, ""),
+    PRM_Default(1),
+};
+
+static PRM_ChoiceList attribMenu((PRM_ChoiceListType)(PRM_CHOICELIST_TOGGLE),
+                                 &SOP_PrimCentroid::buildMenu);
+
+PRM_Template
+SOP_PrimCentroid::myTemplateList[] = {
+    PRM_Template(PRM_ORD, 1, &names[0], &defaults[0], &methodChoiceMenu),
+    PRM_Template(PRM_STRING, 1, &names[1], &defaults[1], &attribMenu),
+    PRM_Template(PRM_TOGGLE, 1, &names[2], &defaults[2]),
+    PRM_Template()
 };
 
 void
@@ -87,16 +100,6 @@ SOP_PrimCentroid::buildMenu(void *data,
     // Populate the menu with primitive attribute names.
     me->fillAttribNameMenu(menu, 100, GEO_PRIMITIVE_DICT , 0);
 }
-
-static PRM_ChoiceList attribMenu((PRM_ChoiceListType)(PRM_CHOICELIST_TOGGLE),
-                                 &SOP_PrimCentroid::buildMenu);
-
-PRM_Template
-SOP_PrimCentroid::myTemplateList[] = {
-    PRM_Template(PRM_ORD, 1, &names[0], &defaults[0], &methodChoiceMenu),
-    PRM_Template(PRM_STRING, 1, &names[1], &defaults[1], &attribMenu),
-    PRM_Template()
-};
 
 OP_ERROR
 SOP_PrimCentroid::cookMySop(OP_Context &context)
@@ -118,7 +121,7 @@ SOP_PrimCentroid::cookMySop(OP_Context &context)
     UT_BoundingBox	        bbox;
     UT_String                   pattern, attr_name;
     UT_WorkArgs                 tokens;
-    
+
     now = context.getTime();
 
     if (lockInputs(context) >= UT_ERROR_ABORT)
@@ -160,7 +163,7 @@ SOP_PrimCentroid::cookMySop(OP_Context &context)
         {
             // The current attribute.
             source_attr = a_it.attrib();
-            
+
             // Get the attribute name.
             attr_name = source_attr->getName();
 
@@ -174,8 +177,26 @@ SOP_PrimCentroid::cookMySop(OP_Context &context)
             hmap.append(gdp->addPointAttrib(source_attr).getAttribute(),
                         source_attr);
         }
+
+        // Copy local variables.
+        if (COPY(now))
+        {
+            // Build a pair that we can use to send data along.
+            AttrCopyPair            info;
+
+            // Store our new gdp and the tokens to match names against.
+            info.first = gdp;
+            info.second = &tokens;
+
+            // Traverse the variable names on the input geometry and attempt to
+            // copy any that match to our new geometry.
+            input_geo->traverseVariableNames(
+                SOP_PrimCentroid::copyLocalVariables,
+                &info
+            );
+        }
     }
-     
+
     // Get the list of input primitives.
     const GA_PrimitiveList &prim_list = input_geo->getPrimitiveList();
 
@@ -210,6 +231,32 @@ SOP_PrimCentroid::cookMySop(OP_Context &context)
 
     unlockInputs();
     return error();
+}
+
+int
+SOP_PrimCentroid::copyLocalVariables(const char *attr,
+                                     const char *varname,
+                                     void *data)
+{
+    AttrCopyPair                *info;
+
+    GU_Detail                   *gdp;
+
+    UT_String                   attr_name(attr);
+    UT_WorkArgs                 *tokens;
+
+    // Extract the passed in pair.
+    info = (AttrCopyPair *)data;
+
+    // Extract the data.
+    gdp = info->first;
+    tokens = info->second;
+
+    // If the attribute name matches, add the local variable.
+    if (attr_name.matchPattern(*tokens))
+        gdp->addVariableName(attr, varname);
+
+    return 1;
 }
 
 const char *

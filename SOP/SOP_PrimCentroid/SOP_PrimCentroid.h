@@ -16,6 +16,9 @@
 
 #include <SOP/SOP_Node.h>
 
+// Simple pair to pass along our gdp and attribute pattern args.
+typedef std::pair<GU_Detail *, UT_WorkArgs*> AttrCopyPair;
+
 class SOP_PrimCentroid: public SOP_Node
 {
 public:
@@ -28,6 +31,9 @@ public:
 				  int,
 				  const PRM_SpareData *,
 				  const PRM_Parm *);
+    static int          copyLocalVariables(const char *,
+                                           const char *,
+                                           void *);
 
 protected:
 			SOP_PrimCentroid(OP_Network *, 
@@ -38,8 +44,9 @@ protected:
     virtual const char  *inputLabel(unsigned) const;
 
 private:
-    int		        METHOD(fpreal t) { return evalInt("method", 0, t); }
-    void		ATTRIBUTES(UT_String &str, fpreal t) { evalString(str, "attributes", 0, t); }
+    int                 METHOD(fpreal t) { return evalInt("method", 0, t); }
+    void                ATTRIBUTES(UT_String &str, fpreal t) { evalString(str, "attributes", 0, t); }
+    bool                COPY(fpreal t) { return evalInt("copyvariables", 0, t); }
 
 };
 
