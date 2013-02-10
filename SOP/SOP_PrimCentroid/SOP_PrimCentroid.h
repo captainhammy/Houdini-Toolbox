@@ -16,9 +16,6 @@
 
 #include <SOP/SOP_Node.h>
 
-// Simple pair to pass along our gdp and attribute pattern args.
-typedef std::pair<GU_Detail *, UT_WorkArgs*> AttrCopyPair;
-
 class SOP_PrimCentroid: public SOP_Node
 {
 public:

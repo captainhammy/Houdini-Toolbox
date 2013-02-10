@@ -181,18 +181,11 @@ SOP_PrimCentroid::cookMySop(OP_Context &context)
         // Copy local variables.
         if (COPY(now))
         {
-            // Build a pair that we can use to send data along.
-            AttrCopyPair            info;
-
-            // Store our new gdp and the tokens to match names against.
-            info.first = gdp;
-            info.second = &tokens;
-
             // Traverse the variable names on the input geometry and attempt to
             // copy any that match to our new geometry.
             input_geo->traverseVariableNames(
                 SOP_PrimCentroid::copyLocalVariables,
-                &info
+                gdp
             );
         }
     }
@@ -238,22 +231,18 @@ SOP_PrimCentroid::copyLocalVariables(const char *attr,
                                      const char *varname,
                                      void *data)
 {
-    AttrCopyPair                *info;
+    GA_ROAttributeRef           gah;
 
     GU_Detail                   *gdp;
 
-    UT_String                   attr_name(attr);
-    UT_WorkArgs                 *tokens;
+    // Extract the detail.
+    gdp = (GU_Detail *)data;
 
-    // Extract the passed in pair.
-    info = (AttrCopyPair *)data;
+    // Try to find the attribute we are processing.
+    gah = gdp->findPointAttribute(attr);
 
-    // Extract the data.
-    gdp = info->first;
-    tokens = info->second;
-
-    // If the attribute name matches, add the local variable.
-    if (attr_name.matchPattern(*tokens))
+    // If a point attribute exists then we can copy this variable mapping.
+    if (gah.isValid())
         gdp->addVariableName(attr, varname);
 
     return 1;
