@@ -2390,6 +2390,14 @@ getDual(const UT_Vector3D *vec, UT_DMatrix3 *mat)
 """,
 
 """
+bool
+canCreateDigitalAsset(OP_Node *node)
+{
+    return node->canCreateNewOpType();
+}
+""",
+
+"""
 const char *
 getMetaSource(const char *filename)
 {
@@ -6079,6 +6087,39 @@ def buildInstance(position, direction=hou.Vector3(0,0,1), pscale=1,
 
     # Return the instance transform matrix.
     return scale_matrix * alignment_matrix * rot_matrix * trans_matrix
+
+
+@addToClass(hou.Node)
+def isDigitalAsset(self):
+    """Determine if this node is a digital asset.
+
+    Raises:
+        N/A
+
+    Returns:
+        bool
+            Returns True if this node is a digital asset, otherwise False.
+
+    A node is a digital asset if its node type has a hou.HDADefinition.
+
+    """
+    return self.type().definition() is not None
+
+
+@addToClass(hou.Node)
+def canCreateDigitalAsset(self):
+    """Determine if this node can be used to create a new operator type.
+
+    Raises:
+        N/A
+
+    Returns:
+        bool
+            Returns True if this node can be turned into a digital asset,
+            otherwise False.
+
+    """
+    return _cpp_methods.canCreateDigitalAsset(self)
 
 
 @addToModule(hou.hda)
