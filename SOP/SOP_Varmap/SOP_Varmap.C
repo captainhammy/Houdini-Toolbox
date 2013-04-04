@@ -50,7 +50,7 @@ static PRM_Name names[] =
     PRM_Name("point", "Point Attributes"),
     PRM_Name("vertex", "Vertex Attributes"),
     PRM_Name("primitive", "Primitive Attributes"),
-    PRM_Name("global", "Glboal Attributes"),
+    PRM_Name("global", "Global Attributes"),
     PRM_Name(0)
 };
 
