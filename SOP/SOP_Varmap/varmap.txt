@@ -1,0 +1,21 @@
+#type: node
+#context: sop
+#internal: varmap
+#largeicon: /nodes/sop/SOP_varmap.svg
+
+=Varmap=
+
+"""Create local variables for input attributes."""
+
+This node creates variable mappings for input attributes based on the standard uppercase attribute name.
+
+@parameters
+    Point Attributes:
+	Create mappings for all point attributes.
+    Vertex Attributes:
+	Create mappings for all vertex attributes.
+    Primitive Attributes:
+	Create mappings for all primitive attributes.
+    Global Attributes:
+	Create mappings for all global (detail) attributes.
+
