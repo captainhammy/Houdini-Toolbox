@@ -520,6 +520,34 @@ expandRange(const char *pattern)
 
 """
 void
+sortByAttribute(GU_Detail *gdp,
+                int attribute_type,
+                const char *attrib_name,
+                int index,
+                bool reverse)
+{
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
+
+    // Get the index map for the specify attribute type.
+    GA_IndexMap &map = gdp->getIndexMap(owner);
+
+    // Build an attribute compare object for the attribute.
+    GA_IndexMap::AttributeCompare compare(map, attrib_name, index);
+
+    // Sort by the attribute.
+    map.sortIndices(compare);
+
+    // Reverse the sorted list.
+    if (reverse)
+    {
+        map.reverseIndices();
+    }
+
+}
+""",
+
+"""
+void
 sortAlongAxis(GU_Detail *gdp, int mode, int axis)
 {
     // Convert the int value to the axis type.
@@ -1674,27 +1702,13 @@ addVelocityAttribute(GU_Detail *gdp)
 
 """
 bool
-addDiffuseAttribute(GU_Detail *gdp, int mode)
+addDiffuseAttribute(GU_Detail *gdp, int attribute_type)
 {
     GA_RWAttributeRef           diff_gah;
 
-    switch (mode)
-    {
-        case 0:
-            diff_gah = gdp->addDiffuseAttribute(GA_ATTRIB_POINT);
-            break;
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
 
-        case 1:
-            diff_gah = gdp->addDiffuseAttribute(GA_ATTRIB_PRIMITIVE);
-            break;
-
-        case 2:
-            diff_gah = gdp->addDiffuseAttribute(GA_ATTRIB_VERTEX);
-            break;
-
-        default:
-            break;
-    }
+    diff_gah = gdp->addDiffuseAttribute(owner);
 
     // Return true if the attribute was created.
     if (diff_gah.isValid())
@@ -1725,17 +1739,11 @@ convexPolygons(GU_Detail *gdp, unsigned maxpts=3)
 
 """
 void
-destroyEmptyGroups(GU_Detail *gdp, int mode)
+destroyEmptyGroups(GU_Detail *gdp, int attribute_type)
 {
-    if (mode)
-    {
-        gdp->destroyEmptyGroups(GA_ATTRIB_PRIMITIVE);
-    }
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
 
-    else
-    {
-        gdp->destroyEmptyGroups(GA_ATTRIB_POINT);
-    }
+    gdp->destroyEmptyGroups(owner);
 }
 """,
 
@@ -2676,6 +2684,62 @@ def isReadOnly(self):
     handle.destroy()
 
     return result
+
+
+@addToClass(hou.Geometry)
+def sortByAttribute(self, attribute, tuple_index=0, reverse=False):
+    """Sort points, primitives or vertices based on attribute values.
+
+    Args:
+        attribute : (hou.Attrib)
+            The attribute to sort by.
+
+        tuple_index : (int)
+            The attribute tuple index to sort by.
+
+        reverse=False : (bool)
+            Sort in reverse.
+
+    Raises:
+        hou.GeometryPermissionError
+            This exception is raised if the geometry is read-only.
+
+        ValueError
+            This exception is raised if the index is not valid.
+
+        hou.OperationFailed
+            This exception is raised if the attribute type is not supported.
+
+    Returns:
+        None
+
+    """
+    # Make sure the geometry is not read only.
+    if self.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    # Verify the axis.
+    if tuple_index not in range(attribute.size()):
+        raise ValueError("Invalid tuple index: {0}".format(tuple_index))
+
+    attrib_type = attribute.type()
+    attrib_name = attribute.name()
+
+    if attrib_type == hou.attribType.Vertex:
+        mode = 0
+
+    elif attrib_type == hou.attribType.Point:
+        mode = 1
+
+    elif attrib_type == hou.attribType.Prim:
+        mode = 2
+
+    else:
+        raise hou.OperationFailed(
+            "Attribute type must be point, primitive or vertex."
+        )
+
+    _cpp_methods.sortByAttribute(self, mode, attrib_name, tuple_index, reverse)
 
 
 @addToClass(hou.Geometry)
@@ -4388,26 +4452,26 @@ def addColorAttribute(self, attrib_type):
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    # Try to add a point Cd attribute.
-    if attrib_type == hou.attribType.Point:
+    # Try to add a vertex Cd attribute.
+    if attrib_type == hou.attribType.Vertex:
         result = _cpp_methods.addDiffuseAttribute(self, 0)
+
+        if result:
+            return self.findVertexAttrib("Cd")
+
+    # Try to add a point Cd attribute.
+    elif attrib_type == hou.attribType.Point:
+        result = _cpp_methods.addDiffuseAttribute(self, 1)
 
         if result:
             return self.findPointAttrib("Cd")
 
     # Try to add a primitive Cd attribute.
     elif attrib_type == hou.attribType.Prim:
-        result = _cpp_methods.addDiffuseAttribute(self, 1)
-
-        if result:
-            return self.findPrimAttrib("Cd")
-
-    # Try to add a vertex Cd attribute.
-    elif attrib_type == hou.attribType.Vertex:
         result = _cpp_methods.addDiffuseAttribute(self, 2)
 
         if result:
-            return self.findVertexAttrib("Cd")
+            return self.findPrimAttrib("Cd")
 
     # The type didn't match any of the valid ones so we should thrown an
     # exception.
@@ -4502,8 +4566,13 @@ def clip(self, origin, normal, dist=0, below=False, group=None):
 
 
 @addToClass(hou.Geometry)
-def destroyEmptyPointGroups(self):
-    """Remove any empty point groups.
+def destroyEmptyGroups(self, attrib_type):
+    """Remove any empty groups of the specified type.
+
+    Args:
+        attrib_type : (hou.attribType)
+            A hou.attribType value to specify which type of empty groups to
+            destroy.
 
     Raises:
         hou.GeometryPermissionError
@@ -4517,26 +4586,21 @@ def destroyEmptyPointGroups(self):
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    _cpp_methods.destroyEmptyGroups(self, 0)
+    if attrib_type == hou.attribType.Vertex:
+        mode = 0
 
+    elif attrib_type == hou.attribType.Point:
+        mode = 1
 
-@addToClass(hou.Geometry)
-def destroyEmptyPrimGroups(self):
-    """Remove any empty primitive groups.
+    elif attrib_type == hou.attribType.Prim:
+        mode = 2
 
-    Raises:
-        hou.GeometryPermissionError
-            This exception is raised if the geometry is read-only.
+    else:
+        raise hou.OperationFailed(
+            "Attribute type must be point, primitive or vertex."
+        )
 
-    Returns:
-        None
-
-    """
-    # Make sure the geometry is not read only.
-    if self.isReadOnly():
-        raise hou.GeometryPermissionError()
-
-    _cpp_methods.destroyEmptyGroups(self, 1)
+    _cpp_methods.destroyEmptyGroups(self, mode)
 
 
 @addToClass(hou.Geometry)
