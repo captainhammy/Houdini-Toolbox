@@ -1,0 +1,17 @@
+{
+    "name": "debug",
+
+    "define": {
+	"Pz": {
+	    "vextype": "float",
+	    "pfilter": "minmax min"
+	}
+    },
+
+    "include": {
+	"P": true,
+	"N": true,
+	"Render_Time": true
+    }
+}
+

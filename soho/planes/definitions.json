@@ -1,0 +1,21 @@
+{
+    "Pz": {
+	"vextype": "float",
+	"pfilter": "minmax min"
+    },
+
+    "N": {
+	"vextype": "vector",
+	"pfilter": "minmax min"
+    },
+
+    "Render_Time": {
+	"vextype": "float"
+    },
+    
+    "P": {
+	"vextype": "vector",
+	"pfilter": "minmax min"
+    }
+}
+
