@@ -5,7 +5,7 @@
  *      www.captainhammy.com
  *
  * Description:
- *     	Create points at the centroid of primitives.
+ *      Create points at the centroid of primitives.
  *
  * Name: SOP_PrimCentroid.C
  *
@@ -104,21 +104,21 @@ SOP_PrimCentroid::buildMenu(void *data,
 OP_ERROR
 SOP_PrimCentroid::cookMySop(OP_Context &context)
 {
-    fpreal 		        now;
-    int 		        method;
+    fpreal                      now;
+    int                         method;
 
     const GA_Attribute          *source_attr;
     const GA_AttributeDict      *dict;
     GA_AttributeDict::iterator  a_it;
     GA_Offset                   ptOff;
-    GA_RWAttributeRef	        n_gah;
+    GA_RWAttributeRef           n_gah;
     GA_RWHandleV3               n_h;
 
-    const GEO_Primitive	        *prim;
+    const GEO_Primitive         *prim;
 
     const GU_Detail             *input_geo;
 
-    UT_BoundingBox	        bbox;
+    UT_BoundingBox              bbox;
     UT_String                   pattern, attr_name;
     UT_WorkArgs                 tokens;
 
@@ -193,14 +193,14 @@ SOP_PrimCentroid::cookMySop(OP_Context &context)
     // Get the list of input primitives.
     const GA_PrimitiveList &prim_list = input_geo->getPrimitiveList();
 
+    // Add points for each primitive.
+    ptOff = gdp->appendPointBlock(input_geo->getNumPrimitives());
+
     // Iterate over primitives using pages.
     for (GA_Iterator it(input_geo->getPrimitiveRange()); !it.atEnd(); ++it)
     {
         // Get the primitive from the list.
         prim = (const GEO_Primitive *) prim_list.get(*it);
-
-        // Create a new point offset for this primitive.
-        ptOff = gdp->appendPointOffset();
 
         if (method)
         {
@@ -220,6 +220,9 @@ SOP_PrimCentroid::cookMySop(OP_Context &context)
         // the current primitive to the new point.
         if (hmap.entries() > 0)
             hmap.copyValue(GA_ATTRIB_POINT, ptOff, GA_ATTRIB_PRIMITIVE, *it);
+
+        // Increment the point offset.
+        ptOff++;
     }
 
     unlockInputs();

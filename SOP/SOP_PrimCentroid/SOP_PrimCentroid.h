@@ -5,8 +5,8 @@
  *      www.captainhammy.com
  *
  * Description:
- *     	Create points at the centroid of primitives.
- * 
+ *      Create points at the centroid of primitives.
+ *
  * Name: SOP_PrimCentroid.h
  *
 */
@@ -19,25 +19,25 @@
 class SOP_PrimCentroid: public SOP_Node
 {
 public:
-    static OP_Node 	*myConstructor(OP_Network *, 
-				       const char *, 
-				       OP_Operator *);
+    static OP_Node      *myConstructor(OP_Network *,
+                                       const char *,
+                                       OP_Operator *);
     static PRM_Template myTemplateList[];
-    static void		buildMenu(void *,
-				  PRM_Name *,
-				  int,
-				  const PRM_SpareData *,
-				  const PRM_Parm *);
+    static void         buildMenu(void *,
+                                  PRM_Name *,
+                                  int,
+                                  const PRM_SpareData *,
+                                  const PRM_Parm *);
     static int          copyLocalVariables(const char *,
                                            const char *,
                                            void *);
 
 protected:
-			SOP_PrimCentroid(OP_Network *, 
-					 const char *, 
-					 OP_Operator *);
-    virtual		~SOP_PrimCentroid() {};
-    virtual OP_ERROR	cookMySop(OP_Context &);
+                        SOP_PrimCentroid(OP_Network *,
+                                         const char *,
+                                         OP_Operator *);
+    virtual             ~SOP_PrimCentroid() {};
+    virtual OP_ERROR    cookMySop(OP_Context &);
     virtual const char  *inputLabel(unsigned) const;
 
 private:
