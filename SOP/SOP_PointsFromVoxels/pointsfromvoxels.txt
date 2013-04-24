@@ -15,4 +15,8 @@ primitive in a fog volume.
         The primitive number of the volume to use.
     Cull Empty:
 	Only create a point if the voxel has a non-zero value.
+    Store Voxel Values:
+	Store the voxel values on each representative point.  If a *name*
+	attribute exists, the attribute will be named using the selected
+	primitive's name.  If not, the attribute will be called *value*.
 
