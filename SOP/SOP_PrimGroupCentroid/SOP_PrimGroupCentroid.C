@@ -153,9 +153,6 @@ SOP_PrimGroupCentroid::buildMenu(void *data,
                            &mode);
 }
 
-static PRM_ChoiceList attribMenu((PRM_ChoiceListType)(PRM_CHOICELIST_TOGGLE),
-                                 &SOP_PrimGroupCentroid::buildMenu);
-
 static PRM_Name names[] =
 {
     PRM_Name("mode", "Mode"),
@@ -166,6 +163,18 @@ static PRM_Name names[] =
     PRM_Name("copyvariables", "Copy Local Variables"),
     PRM_Name("behavior", "Unmatched Behavior"),
     PRM_Name("bind_attributes", "Bind Attributes to Copy"),
+};
+
+static PRM_Default defaults[] =
+{
+    PRM_Default(1),
+    PRM_Default(0),
+    PRM_Default(0),
+    PRM_Default(0),
+    PRM_Default(0, ""),
+    PRM_Default(1),
+    PRM_Default(0),
+    PRM_Default(0, ""),
 };
 
 static PRM_Name modeChoices[] =
@@ -192,31 +201,20 @@ static PRM_Name behaviorChoices[] =
 };
 
 static PRM_ChoiceList modeChoiceMenu(
-    (PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE
-                         | PRM_CHOICELIST_REPLACE),
+    (PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
     modeChoices);
 
 static PRM_ChoiceList methodChoiceMenu(
-    (PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE
-                         | PRM_CHOICELIST_REPLACE),
+    (PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
     methodChoices);
 
-static PRM_ChoiceList behaviorChoiceMenu(
-    (PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE
-                         | PRM_CHOICELIST_REPLACE),
-    behaviorChoices);
+static PRM_ChoiceList attribMenu(
+    (PRM_ChoiceListType)(PRM_CHOICELIST_TOGGLE),
+    &SOP_PrimGroupCentroid::buildMenu);
 
-static PRM_Default defaults[] =
-{
-    PRM_Default(1),
-    PRM_Default(0),
-    PRM_Default(0),
-    PRM_Default(0),
-    PRM_Default(0, ""),
-    PRM_Default(1),
-    PRM_Default(0),
-    PRM_Default(0, ""),
-};
+static PRM_ChoiceList behaviorChoiceMenu(
+    (PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
+    behaviorChoices);
 
 PRM_Template
 SOP_PrimGroupCentroid::myTemplateList[] = {
@@ -283,11 +281,13 @@ SOP_PrimGroupCentroid::buildAttribData(int mode,
         {
             // Get the unique string value.
             str_value = input_geo->getUniqueStringValue(source_gah, idx);
+
             // Get the primitive range corresponding to that value.
             pr_range = input_geo->getRangeByValue(source_gah, str_value);
 
             // Add the range to the array.
             range_array.append(pr_range);
+
             // Add the string value to the string value list.
             string_values.append(str_value);
         }
@@ -298,11 +298,13 @@ SOP_PrimGroupCentroid::buildAttribData(int mode,
         {
             // Get the unique integer value.
             int_value = input_geo->getUniqueIntegerValue(source_gah, idx);
+
             // Get the primitive range corresponding to that value.
             pr_range = input_geo->getRangeByValue(source_gah, int_value);
 
             // Add the range to the array.
             range_array.append(pr_range);
+
             // Add the integer value to the integer value list.
             int_values.append(int_value);
         }
@@ -361,6 +363,7 @@ SOP_PrimGroupCentroid::buildRefMap(fpreal t,
         // Select the appropriate attribute dictionary to use.
         if (owner == GA_ATTRIB_PRIMITIVE)
             dict = &input_geo->primitiveAttribs();
+
         // GA_ATTRIB_POINT
         else
             dict = &input_geo->pointAttribs();
@@ -383,6 +386,7 @@ SOP_PrimGroupCentroid::buildRefMap(fpreal t,
             {
                 continue;
             }
+
             else if (mode == MODE_CLASS and attr_name == MODENAME_CLASS)
             {
                 continue;
@@ -394,6 +398,7 @@ SOP_PrimGroupCentroid::buildRefMap(fpreal t,
                 // Try to find the point attribute on the geometry.
                 attr_gah = gdp->findPointAttrib(*source_attr);
             }
+
             // GA_ATTRIB_POINT
             else
             {
@@ -416,6 +421,7 @@ SOP_PrimGroupCentroid::buildRefMap(fpreal t,
                     hmap.append(gdp->addPointAttrib(source_attr).getAttribute(),
                                 source_attr);
                 }
+
                 else
                 {
                     // Create a new point attribute on the current geometry
@@ -536,10 +542,13 @@ SOP_PrimGroupCentroid::centerOfMass(GA_Range &pr_range,
     {
         // Get the primitive.
         prim = (const GEO_Primitive *) prim_list.get(*it);
+
         // Calculate the area of the primitive.
         area = prim->calcArea();
+
         // Add the barycenter multiplied by the area to the position.
         pos += prim->baryCenter() * area;
+
         // Add this primitive's area to the total area.
         total_area += area;
     }
@@ -619,6 +628,7 @@ SOP_PrimGroupCentroid::buildTransform(UT_Matrix4 &mat,
     if (orient_gah.isValid())
     {
         orient_h.bind(orient_gah.getAttribute());
+
         // Get the attribute value.
         UT_Vector4 value = orient_h.get(ptOff);
 
