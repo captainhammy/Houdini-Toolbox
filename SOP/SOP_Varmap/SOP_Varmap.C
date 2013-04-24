@@ -5,7 +5,7 @@
  *      www.captainhammy.com
  *
  * Description:
- *     	Automatically generate local variable mappings.
+ *      Automatically generate local variable mappings.
  *
  * Name: SOP_Varmap.C
  *
@@ -108,7 +108,7 @@ SOP_Varmap::addMappings(const GA_AttributeDict *dict,
 OP_ERROR
 SOP_Varmap::cookMySop(OP_Context &context)
 {
-    fpreal 			now;
+    fpreal                      now;
 
     const GA_AIFSharedStringTuple       *s_t;
     GA_Attribute                *varmap;

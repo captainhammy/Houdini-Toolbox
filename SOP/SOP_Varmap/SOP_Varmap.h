@@ -5,7 +5,7 @@
  *      www.captainhammy.com
  *
  * Description:
- *     	Automatically generate local variable mappings.
+ *      Automatically generate local variable mappings.
  *
  * Name: SOP_Varmap.h
  *
@@ -20,25 +20,25 @@ class SOP_Varmap: public SOP_Node
 {
 public:
     static OP_Node      *myConstructor(OP_Network *,
-				       const char *,
-				       OP_Operator *);
+                                       const char *,
+                                       OP_Operator *);
     static PRM_Template myTemplateList[];
     void                addMappings(const GA_AttributeDict *,
                                     const GA_AIFSharedStringTuple *,
                                     GA_Attribute *);
 
 protected:
-			SOP_Varmap(OP_Network *,
-				   const char *,
-				   OP_Operator *);
-    virtual		~SOP_Varmap() {};
-    virtual OP_ERROR	cookMySop(OP_Context &context);
+                        SOP_Varmap(OP_Network *,
+                                   const char *,
+                                   OP_Operator *);
+    virtual             ~SOP_Varmap() {};
+    virtual OP_ERROR    cookMySop(OP_Context &context);
 
 private:
-    unsigned		POINT(fpreal t) { return evalInt("point", 0, t); }
-    unsigned		VERT(fpreal t) { return evalInt("vertex", 0, t); }
-    unsigned		PRIM(fpreal t) { return evalInt("primitive", 0, t); }
-    unsigned		DETAIL(fpreal t) { return evalInt("global", 0, t); }
+    unsigned            POINT(fpreal t) { return evalInt("point", 0, t); }
+    unsigned            VERT(fpreal t) { return evalInt("vertex", 0, t); }
+    unsigned            PRIM(fpreal t) { return evalInt("primitive", 0, t); }
+    unsigned            DETAIL(fpreal t) { return evalInt("global", 0, t); }
 
 };
 
