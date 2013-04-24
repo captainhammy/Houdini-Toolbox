@@ -111,6 +111,58 @@ class TestInlineCpp(unittest.TestCase):
     def tearDown(self):
 	pass
 
+    def test_getVariable(self):
+        hipName = hou.getVariable("HIPNAME")
+
+        self.assertEqual(hipName, os.path.basename(hou.hipFile.path()))
+
+    def test_setVariable(self):
+        value = 22
+        hou.setVariable("awesome", value)
+
+        self.assertEqual(hou.getVariable("awesome"), 22)
+    
+    def test_getVariableNames(self):
+        variableNames = hou.getVariableNames()
+
+        self.assertTrue("ACTIVETAKE" in variableNames)
+
+    def test_getDirtyVariableNames(self):
+        variableNames = hou.getVariableNames()
+
+        dirtyVariableNames = hou.getVariableNames(dirty=True)
+
+        self.assertNotEqual(variableNames, dirtyVariableNames)
+
+    def test_unsetVariable(self):
+        hou.setVariable("tester", 10)
+        hou.unsetVariable("tester")
+
+        self.assertTrue(hou.getVariable("tester") is None)
+
+    def test_varChange(self):
+        parm = hou.parm("/obj/test_varChange/file1/file")
+
+        string = "something_$VARCHANGE.bgeo"
+
+        parm.set(string)
+
+        path = parm.eval()
+
+        self.assertEqual(path, string.replace("$VARCHANGE", ""))
+
+        hou.setVariable("VARCHANGE", 22)
+
+        hou.varChange()
+
+        newPath = parm.eval()
+
+        # Test the paths aren't the same.
+        self.assertNotEqual(path, newPath)
+
+        # Test the update was successful.
+        self.assertEqual(newPath, string.replace("$VARCHANGE", "22"))
+
     def test_expandRange(self):
         values = hou.expandRange("0-5 10-20:2 64 65-66")
         target = (0, 1, 2, 3, 4, 5, 10, 12, 14, 16, 18, 20, 64, 65, 66)
@@ -125,6 +177,51 @@ class TestInlineCpp(unittest.TestCase):
     def test_isReadOnlyFalse(self):
         geo = hou.Geometry()
         self.assertFalse(geo.isReadOnly())
+
+    def test_sortByAttribute(self):
+        geo = getObjGeoCopy("test_sortByAttribute")
+
+        attrib = geo.findPrimAttrib("id")
+
+        geo.sortByAttribute(attrib)
+
+        values = [int(val) for val in geo.primFloatAttribValues("id")]
+
+        self.assertEqual(values, range(10))
+
+    def test_sortByAttributeReversed(self):
+        geo = getObjGeoCopy("test_sortByAttribute")
+
+        attrib = geo.findPrimAttrib("id")
+
+        geo.sortByAttribute(attrib, reverse=True)
+
+        values = [int(val) for val in geo.primFloatAttribValues("id")]
+
+        self.assertEqual(values, list(reversed(range(10))))
+
+    def test_sortByAttributeInvalidIndex(self):
+        geo = getObjGeoCopy("test_sortByAttribute")
+
+        attrib = geo.findPrimAttrib("id")
+
+        self.assertRaises(
+            IndexError,
+            geo.sortByAttribute,
+            attrib,
+            1
+        )
+
+    def test_sortByAttributeDetail(self):
+        geo = getObjGeoCopy("test_sortByAttribute")
+
+        attrib = geo.findGlobalAttrib("varmap")
+
+        self.assertRaises(
+            hou.OperationFailed,
+            geo.sortByAttribute,
+            attrib
+        )
 
     def test_sortAlongAxisPoints(self):
         geo = getObjGeoCopy("test_sortAlongAxisPoints")
@@ -745,7 +842,19 @@ class TestInlineCpp(unittest.TestCase):
         self.assertTrue(face.hasEdge(p0, p2))
 
     def test_sharedEdges(self):
-        pass
+        geo = getObjGeo("test_sharedEdges")
+    
+        pr0, pr1 = geo.prims()
+
+        edges = pr0.sharedEdges(pr1)
+
+        pt2 = geo.iterPoints()[2]
+        pt3 = geo.iterPoints()[3]
+
+        edge = geo.findEdge(pt2, pt3)
+
+        self.assertEqual(edges, (edge,))
+
 
     def test_insertVertex(self):
         geo = getObjGeoCopy("test_insertVertex")
@@ -1006,7 +1115,7 @@ class TestInlineCpp(unittest.TestCase):
 
         geo.createPointGroup("empty")
 
-        geo.destroyEmptyPointGroups()
+        geo.destroyEmptyGroups(hou.attribType.Point)
 
         self.assertEqual(len(geo.pointGroups()), 0)
 
@@ -1015,7 +1124,7 @@ class TestInlineCpp(unittest.TestCase):
 
         geo.createPrimGroup("empty")
 
-        geo.destroyEmptyPrimGroups()
+        geo.destroyEmptyGroups(hou.attribType.Prim)
 
         self.assertEqual(len(geo.primGroups()), 0)
 
@@ -1824,6 +1933,21 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(mat, TARGET)
 
+    def test_isDigitalAsset(self):
+        self.assertTrue(OBJ.node("test_isDigitalAsset").isDigitalAsset())
+
+    def test_isNotDigitalAsset(self):
+        self.assertFalse(OBJ.node("test_isNotDigitalAsset").isDigitalAsset())
+
+    def test_canCreateDigitalAsset(self):
+        self.assertTrue(
+            OBJ.node("test_canCreateDigitalAsset").canCreateDigitalAsset()
+        )
+    def test_cantCreateDigitalAsset(self):
+        self.assertFalse(
+            OBJ.node("test_cantCreateDigitalAsset").canCreateDigitalAsset()
+        )
+
     def test_metaSource(self):
         TARGET = "Scanned OTL Directories"
         path = hou.expandString("$HH/otls/OPlibSop.otl")
@@ -1878,7 +2002,6 @@ class TestInlineCpp(unittest.TestCase):
 if __name__ == '__main__':
     # Load the testing hip file.
     hou.hipFile.load("test_inline.hip")
-
     # Run the tests.
     unittest.main()
 

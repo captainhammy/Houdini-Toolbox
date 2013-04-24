@@ -9,94 +9,45 @@ and modules they are meant to extend.
 __author__ = "Graham Thompson"
 __email__ = "captainhammy@gmail.com"
 
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
 # Houdini Imports
 import hou
 import inlinecpp
 
-def addToModule(module):
-    """This function decorator adds the function to a specified module.
+# Mapping between hou.attribTypes and corresponding GA_AttributeOwner values.
+_ATTRIB_TYPE_MAP = {
+    hou.attribType.Vertex: 0,
+    hou.attribType.Point: 1,
+    hou.attribType.Prim: 2,
+    hou.attribType.Global: 3,
+}
 
-    Args:
-        module : (module)
-            The HOM module to extend.
-
-    Raises:
-        N/A
-
-    Returns:
-        func
-            The original module object is returned.
-
-    """
-
-    def decorator(func):
-        # Simply add the function to the module object.
-        setattr(module, func.__name__, func)
-        return func
-
-    return decorator
-
-
-def addToClass(*args, **kwargs):
-    """This function decorator adds the function to specified classes,
-    optionally specifying a different function name.
-
-    Args:
-        *args:
-            One of more HOM classes to extend.
-
-        **kwargs:
-            name: Set a specific name for the unbound method.
-
-    Raises:
-        N/A
-
-    Returns:
-        func
-            The original function object is returned, unmodified.
-
-    """
-    import types
-
-    def decorator(func):
-        # Iterate over each class passed in.
-        for target_class in args:
-            # Check if we tried to set the method name.  If so, use the
-            # specified value.
-            if "name" in kwargs:
-                func_name = kwargs["name"]
-            # If not, use the original name.
-            else:
-                func_name = func.__name__
-
-            # Create a new unbound method.
-            method = types.MethodType(func, None, target_class)
-
-            # Attach the method to the class.
-            setattr(target_class, func_name, method)
-
-        # We don't really care about modifying the function so just return
-        # it.
-        return func
-
-    return decorator
-
+# =============================================================================
+# NON-PUBLIC FUNCTIONS
+# =============================================================================
 
 # -----------------------------------------------------------------------------
-#    Name: _buildCStringArray
-#    Args: values : ([str])
-#              A list of strings.
+#    Name: _buildBoundingBox
+#    Args: bounds : (hutil.cppinline.BoundingBox)
+#              An inlinecpp bounding box object.
 #  Raises: N/A
-# Returns: c_char_p_Array
-#              A ctypes char * array.
-#    Desc: Convert a list of strings to a ctypes char * array.
+# Returns: hou.BoundingBox
+#              A HOM style bounding box.
+#    Desc: Convert an inlinecpp returned bounding box to a hou.BoundingBox.
 # -----------------------------------------------------------------------------
-def _buildCStringArray(values):
-    import ctypes
-    arr = (ctypes.c_char_p * len(values))()
-    arr[:] = values
-
-    return arr
+def _buildBoundingBox(bounds):
+    # Construct a new HOM bounding box from the name members of the class.
+    return hou.BoundingBox(
+        bounds.xmin,
+        bounds.ymin,
+        bounds.zmin,
+        bounds.xmax,
+        bounds.ymax,
+        bounds.zmax
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -134,24 +85,20 @@ def _buildCIntArray(values):
 
 
 # -----------------------------------------------------------------------------
-#    Name: _buildBoundingBox
-#    Args: bounds : (hutil.cppinline.BoundingBox)
-#              An inlinecpp bounding box object.
+#    Name: _buildCStringArray
+#    Args: values : ([str])
+#              A list of strings.
 #  Raises: N/A
-# Returns: hou.BoundingBox
-#              A HOM style bounding box.
-#    Desc: Convert an inlinecpp returned bounding box to a hou.BoundingBox.
+# Returns: c_char_p_Array
+#              A ctypes char * array.
+#    Desc: Convert a list of strings to a ctypes char * array.
 # -----------------------------------------------------------------------------
-def _buildBoundingBox(bounds):
-    # Construct a new HOM bounding box from the name members of the class.
-    return hou.BoundingBox(
-        bounds.xmin,
-        bounds.ymin,
-        bounds.zmin,
-        bounds.xmax,
-        bounds.ymax,
-        bounds.zmax
-    )
+def _buildCStringArray(values):
+    import ctypes
+    arr = (ctypes.c_char_p * len(values))()
+    arr[:] = values
+
+    return arr
 
 
 # -----------------------------------------------------------------------------
@@ -165,6 +112,32 @@ def _buildBoundingBox(bounds):
 # -----------------------------------------------------------------------------
 def _cleanStringValues(values):
     return tuple([val for val in values if val])
+
+
+# -----------------------------------------------------------------------------
+#    Name: _getNodesFromPaths
+#    Args: paths : ([str]|(str))
+#              A list of string node paths.
+#  Raises: N/A
+# Returns: (hou.Node)
+#              A tuple of hou.Node objects.
+#    Desc: Convert a list of string paths to hou.Node objects.
+# -----------------------------------------------------------------------------
+def _getNodesFromPaths(paths):
+    return tuple([hou.node(path) for path in paths if path])
+
+
+# -----------------------------------------------------------------------------
+#    Name: _getParmsFromPaths
+#    Args: paths : ([str]|(str))
+#              A list of string parameter paths.
+#  Raises: N/A
+# Returns: (hou.Parm)
+#              A tuple of hou.Parm objects.
+#    Desc: Convert a list of string paths to hou.Parm objects.
+# -----------------------------------------------------------------------------
+def _getParmsFromPaths(paths):
+    return tuple([hou.parm(path) for path in paths if path])
 
 
 # -----------------------------------------------------------------------------
@@ -211,32 +184,6 @@ def _getPrimsFromList(geometry, prim_list):
 
     # Glob for the specified prims.
     return geometry.globPrims(prim_str)
-
-
-# -----------------------------------------------------------------------------
-#    Name: _getNodesFromPaths
-#    Args: paths : ([str]|(str))
-#              A list of string node paths.
-#  Raises: N/A
-# Returns: (hou.Node)
-#              A tuple of hou.Node objects.
-#    Desc: Convert a list of string paths to hou.Node objects.
-# -----------------------------------------------------------------------------
-def _getNodesFromPaths(paths):
-    return tuple([hou.node(path) for path in paths if path])
-
-
-# -----------------------------------------------------------------------------
-#    Name: _getParmsFromPaths
-#    Args: paths : ([str]|(str))
-#              A list of string parameter paths.
-#  Raises: N/A
-# Returns: (hou.Parm)
-#              A tuple of hou.Parm objects.
-#    Desc: Convert a list of string paths to hou.Parm objects.
-# -----------------------------------------------------------------------------
-def _getParmsFromPaths(paths):
-    return tuple([hou.parm(path) for path in paths if path])
 
 
 # -----------------------------------------------------------------------------
@@ -542,19 +489,18 @@ sortByAttribute(GU_Detail *gdp,
     {
         map.reverseIndices();
     }
-
 }
 """,
 
 """
 void
-sortAlongAxis(GU_Detail *gdp, int mode, int axis)
+sortAlongAxis(GU_Detail *gdp, int element_type, int axis)
 {
     // Convert the int value to the axis type.
     GU_AxisType axis_type = static_cast<GU_AxisType>(axis);
 
     // Sort primitives.
-    if (mode)
+    if (element_type)
     {
         gdp->sortPrimitiveList(axis_type);
     }
@@ -569,10 +515,10 @@ sortAlongAxis(GU_Detail *gdp, int mode, int axis)
 
 """
 void
-sortByValues(GU_Detail *gdp, int mode, float *values)
+sortByValues(GU_Detail *gdp, int element_type, float *values)
 {
     // Sort primitives.
-    if (mode)
+    if (element_type)
     {
         gdp->sortPrimitiveList(values);
     }
@@ -587,10 +533,10 @@ sortByValues(GU_Detail *gdp, int mode, float *values)
 
 """
 void
-sortListRandomly(GU_Detail *gdp, int mode, float seed)
+sortListRandomly(GU_Detail *gdp, int element_type, float seed)
 {
     // Sort primitives.
-    if (mode)
+    if (element_type)
     {
         gdp->sortPrimitiveList(seed);
     }
@@ -605,10 +551,10 @@ sortListRandomly(GU_Detail *gdp, int mode, float seed)
 
 """
 void
-shiftList(GU_Detail *gdp, int mode, int offset)
+shiftList(GU_Detail *gdp, int element_type, int offset)
 {
     // Sort primitives.
-    if (mode)
+    if (element_type)
     {
         gdp->shiftPrimitiveList(offset);
     }
@@ -623,10 +569,10 @@ shiftList(GU_Detail *gdp, int mode, int offset)
 
 """
 void
-reverseList(GU_Detail *gdp, int mode)
+reverseList(GU_Detail *gdp, int element_type)
 {
     // Sort primitives.
-    if (mode)
+    if (element_type)
     {
         gdp->reversePrimitiveList();
     }
@@ -641,12 +587,12 @@ reverseList(GU_Detail *gdp, int mode)
 
 """
 void
-proximityToList(GU_Detail *gdp, int mode, const UT_Vector3D *point)
+proximityToList(GU_Detail *gdp, int element_type, const UT_Vector3D *point)
 {
     UT_Vector3                  pos(*point);
 
     // Sort primitives.
-    if (mode)
+    if (element_type)
     {
         gdp->proximityToPrimitiveList(pos);
     }
@@ -717,20 +663,16 @@ createPoint(GU_Detail *gdp, UT_Vector3D *position)
 """,
 
 """
-IntArray
-createPoints(GU_Detail *gdp, int count)
+int
+createPoints(GU_Detail *gdp, int npoints)
 {
-    std::vector<int>            point_nums;
-
     GA_Offset                   ptOff;
 
-    for (int i=0; i < count; ++i)
-    {
-        ptOff = gdp->appendPointOffset();
-        point_nums.push_back(gdp->pointIndex(ptOff));
-    }
+    // Build a block of points.
+    ptOff = gdp->appendPointBlock(npoints);
 
-    return point_nums;
+    // Return the starting point number.
+    return gdp->pointIndex(ptOff);
 }
 """,
 
@@ -745,12 +687,12 @@ setVarmap(GU_Detail *gdp, const char **strings, int num_strings)
     UT_String                   value;
 
     // Try to find the string attribute.
-    attrib_gah = gdp->findStringTuple(GA_ATTRIB_DETAIL, "varmap");
+    attrib_gah = gdp->findStringTuple(GA_ATTRIB_GLOBAL, "varmap");
 
     // If it doesn't exist, add it.
     if (attrib_gah.isInvalid())
     {
-        attrib_gah = gdp->createStringAttribute(GA_ATTRIB_DETAIL, "varmap");
+        attrib_gah = gdp->createStringAttribute(GA_ATTRIB_GLOBAL, "varmap");
     }
 
     // Get the actual attribute.
@@ -1784,17 +1726,17 @@ uniquePoints(GU_Detail *gdp, const char *group_name, int group_type)
 {
     GA_ElementGroup             *group = 0;
 
-    if (group_name)
-    {
-        if (group_type)
-        {
-            group = gdp->findPrimitiveGroup(group_name);
-        }
+    GA_GroupType type = static_cast<GA_GroupType>(group_type);
 
-        else
-        {
+    switch (type)
+    {
+        case GA_GROUP_POINT:
             group = gdp->findPointGroup(group_name);
-        }
+            break;
+
+        case GA_GROUP_PRIMITIVE:
+            group = gdp->findPrimitiveGroup(group_name);
+            break;
     }
 
     gdp->uniquePoints(group);
@@ -1807,20 +1749,22 @@ groupSize(const GU_Detail *gdp, const char *group_name, int group_type)
 {
     const GA_Group              *group;
 
-    switch (group_type)
+    GA_GroupType type = static_cast<GA_GroupType>(group_type);
+
+    switch (type)
     {
         // Point group.
-        case 0:
+        case GA_GROUP_POINT:
             group = gdp->findPointGroup(group_name);
             break;
 
         // Prim group.
-        case 1:
+        case GA_GROUP_PRIMITIVE:
             group = gdp->findPrimitiveGroup(group_name);
             break;
 
         // Edge group.
-        case 2:
+        case GA_GROUP_EDGE:
             group = gdp->findEdgeGroup(group_name);
             break;
     }
@@ -1839,16 +1783,19 @@ toggleMembership(GU_Detail *gdp,
     GA_ElementGroup             *group;
     GA_Offset                   elem_offset;
 
-    if (group_type)
-    {
-        group = gdp->findPrimitiveGroup(group_name);
-        elem_offset = gdp->primitiveOffset(elem_num);
-    }
+    GA_GroupType type = static_cast<GA_GroupType>(group_type);
 
-    else
+    switch (type)
     {
-        group = gdp->findPointGroup(group_name);
-        elem_offset = gdp->pointOffset(elem_num);
+        case GA_GROUP_POINT:
+            group = gdp->findPointGroup(group_name);
+            elem_offset = gdp->pointOffset(elem_num);
+            break;
+
+        case GA_GROUP_PRIMITIVE:
+            group = gdp->findPrimitiveGroup(group_name);
+            elem_offset = gdp->primitiveOffset(elem_num);
+            break;
     }
 
     group->toggleOffset(elem_offset);
@@ -1861,18 +1808,20 @@ setEntries(GU_Detail *gdp, const char *group_name, int group_type)
 {
     GA_ElementGroup             *group;
 
-    if (group_type)
-    {
-        group = gdp->findPrimitiveGroup(group_name);
-    }
+    GA_GroupType type = static_cast<GA_GroupType>(group_type);
 
-    else
+    switch (type)
     {
-        group = gdp->findPointGroup(group_name);
+        case GA_GROUP_POINT:
+            group = gdp->findPointGroup(group_name);
+            break;
+
+        case GA_GROUP_PRIMITIVE:
+            group = gdp->findPrimitiveGroup(group_name);
+            break;
     }
 
     group->setEntries();
-
 }
 """,
 
@@ -1882,14 +1831,17 @@ toggleEntries(GU_Detail *gdp, const char *group_name, int group_type)
 {
     GA_ElementGroup             *group;
 
-    if (group_type)
-    {
-        group = gdp->findPrimitiveGroup(group_name);
-    }
+    GA_GroupType type = static_cast<GA_GroupType>(group_type);
 
-    else
+    switch (type)
     {
-        group = gdp->findPointGroup(group_name);
+        case GA_GROUP_POINT:
+            group = gdp->findPointGroup(group_name);
+            break;
+
+        case GA_GROUP_PRIMITIVE:
+            group = gdp->findPrimitiveGroup(group_name);
+            break;
     }
 
     group->toggleEntries();
@@ -1932,18 +1884,20 @@ containsAny(const GU_Detail *gdp,
     const GA_PrimitiveGroup     *prim_group;
     GA_Range                    range;
 
-    if (group_type)
-    {
-        group = gdp->findPrimitiveGroup(group_name);
-        prim_group = gdp->findPrimitiveGroup(other_group_name);
-        range = gdp->getPrimitiveRange(prim_group);
-    }
+    GA_GroupType type = static_cast<GA_GroupType>(group_type);
 
-    else
+    switch (type)
     {
-        group = gdp->findPointGroup(group_name);
-        point_group = gdp->findPointGroup(other_group_name);
-        range = gdp->getPointRange(point_group);
+        case GA_GROUP_POINT:
+            group = gdp->findPointGroup(group_name);
+            point_group = gdp->findPointGroup(other_group_name);
+            range = gdp->getPointRange(point_group);
+            break;
+
+        case GA_GROUP_PRIMITIVE:
+            group = gdp->findPrimitiveGroup(group_name);
+            prim_group = gdp->findPrimitiveGroup(other_group_name);
+            range = gdp->getPrimitiveRange(prim_group);
     }
 
     return group->containsAny(range);
@@ -2512,6 +2466,78 @@ isDummyDefinition(const char *filename,
     ]
 )
 
+# =============================================================================
+# FUNCTIONS
+# =============================================================================
+
+def addToClass(*args, **kwargs):
+    """This function decorator adds the function to specified classes,
+    optionally specifying a different function name.
+
+    Args:
+        *args:
+            One of more HOM classes to extend.
+
+        **kwargs:
+            name: Set a specific name for the unbound method.
+
+    Raises:
+        N/A
+
+    Returns:
+        func
+            The original function object is returned, unmodified.
+
+    """
+    import types
+
+    def decorator(func):
+        # Iterate over each class passed in.
+        for target_class in args:
+            # Check if we tried to set the method name.  If so, use the
+            # specified value.
+            if "name" in kwargs:
+                func_name = kwargs["name"]
+            # If not, use the original name.
+            else:
+                func_name = func.__name__
+
+            # Create a new unbound method.
+            method = types.MethodType(func, None, target_class)
+
+            # Attach the method to the class.
+            setattr(target_class, func_name, method)
+
+        # We don't really care about modifying the function so just return
+        # it.
+        return func
+
+    return decorator
+
+
+def addToModule(module):
+    """This function decorator adds the function to a specified module.
+
+    Args:
+        module : (module)
+            The HOM module to extend.
+
+    Raises:
+        N/A
+
+    Returns:
+        func
+            The original module object is returned.
+
+    """
+
+    def decorator(func):
+        # Simply add the function to the module object.
+        setattr(module, func.__name__, func)
+        return func
+
+    return decorator
+
 
 @addToModule(hou)
 def getVariable(name):
@@ -2535,7 +2561,7 @@ def getVariable(name):
     import ast
 
     # If the variable name isn't in list of variables, return None.
-    if name not in _cpp_methods.getVariableNames():
+    if name not in getVariableNames():
         return None
 
     # Get the value of the variable.
@@ -2701,11 +2727,11 @@ def sortByAttribute(self, attribute, tuple_index=0, reverse=False):
             Sort in reverse.
 
     Raises:
+        IndexError
+            This exception is raised if the index is not valid.
+
         hou.GeometryPermissionError
             This exception is raised if the geometry is read-only.
-
-        ValueError
-            This exception is raised if the index is not valid.
 
         hou.OperationFailed
             This exception is raised if the attribute type is not supported.
@@ -2718,28 +2744,28 @@ def sortByAttribute(self, attribute, tuple_index=0, reverse=False):
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    # Verify the axis.
+    # Verify the tuple index is valid.
     if tuple_index not in range(attribute.size()):
-        raise ValueError("Invalid tuple index: {0}".format(tuple_index))
+        raise IndexError("Invalid tuple index: {0}".format(tuple_index))
 
     attrib_type = attribute.type()
     attrib_name = attribute.name()
 
-    if attrib_type == hou.attribType.Vertex:
-        mode = 0
-
-    elif attrib_type == hou.attribType.Point:
-        mode = 1
-
-    elif attrib_type == hou.attribType.Prim:
-        mode = 2
-
-    else:
+    if attrib_type == hou.attribType.Global:
         raise hou.OperationFailed(
             "Attribute type must be point, primitive or vertex."
         )
 
-    _cpp_methods.sortByAttribute(self, mode, attrib_name, tuple_index, reverse)
+    # Get the corresponding attribute type id.
+    type_id = _ATTRIB_TYPE_MAP[attrib_type]
+
+    _cpp_methods.sortByAttribute(
+        self,
+        type_id,
+        attrib_name,
+        tuple_index,
+        reverse
+    )
 
 
 @addToClass(hou.Geometry)
@@ -3102,6 +3128,7 @@ def sortByExpression(self, geometry_type, expression):
             # Get this point to be the current point.  This allows '$PT' to
             # work properly in the expression.
             sop_node.setCurPoint(point)
+
             # Add the evaluated expression value to the list.
             values.append(hou.hscriptExpression(expression))
 
@@ -3111,6 +3138,7 @@ def sortByExpression(self, geometry_type, expression):
             # Get this point to be the current point.  This allows '$PR' to
             # work properly in the expression.
             sop_node.setCurPrim(prim)
+
             # Add the evaluated expression value to the list.
             values.append(hou.hscriptExpression(expression))
 
@@ -3154,11 +3182,11 @@ def createPoint(self, position=None):
 
 
 @addToClass(hou.Geometry)
-def createPoints(self, count):
+def createPoints(self, npoints):
     """Create a specific number of new points.
 
     Args:
-        count : (int)
+        npoints : (int)
             The number of new points to create.
 
     Raises:
@@ -3166,7 +3194,7 @@ def createPoints(self, count):
             This exception is raised if the geometry is read-only.
 
         hou.OperationFailed
-            Raise this exception if count is not greater than 0.
+            Raise this exception if npoints is not greater than 0.
 
     Returns:
         (hou.Point)
@@ -3177,12 +3205,16 @@ def createPoints(self, count):
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    if count <= 0:
+    if npoints <= 0:
         raise hou.OperationFailed("Invalid number of points.")
 
-    result = _cpp_methods.createPoints(self, count)
+    result = _cpp_methods.createPoints(self, npoints)
 
-    return _getPointsFromList(self, result)
+    # Since the result is only the starting point number we need to
+    # build a starting from that.
+    point_nums = range(result, result+npoints)
+
+    return _getPointsFromList(self, point_nums)
 
 
 @addToClass(hou.Geometry)
@@ -3437,16 +3469,7 @@ def renameAttribute(self, new_name):
 
     attrib_type = self.type()
 
-    # Get the attribute type as an integer corresponding to the
-    # GA_AttributeOwner enum.
-    if attrib_type == hou.attribType.Vertex:
-        owner = 0
-    elif attrib_type == hou.attribType.Point:
-        owner = 1
-    elif attrib_type == hou.attribType.Prim:
-        owner = 2
-    else:
-        owner = 3
+    owner = _ATTRIB_TYPE_MAP[attrib_type]
 
     # Raise an exception when trying to modify 'P'.
     if attrib_type == hou.attribType.Point and self.name() == "P":
@@ -4586,21 +4609,15 @@ def destroyEmptyGroups(self, attrib_type):
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    if attrib_type == hou.attribType.Vertex:
-        mode = 0
-
-    elif attrib_type == hou.attribType.Point:
-        mode = 1
-
-    elif attrib_type == hou.attribType.Prim:
-        mode = 2
-
-    else:
+    if attrib_type == hou.attribType.Global:
         raise hou.OperationFailed(
             "Attribute type must be point, primitive or vertex."
         )
 
-    _cpp_methods.destroyEmptyGroups(self, mode)
+    # Get the corresponding attribute type id.
+    type_id = _ATTRIB_TYPE_MAP[attrib_type]
+
+    _cpp_methods.destroyEmptyGroups(self, type_id)
 
 
 @addToClass(hou.Geometry)
@@ -5564,7 +5581,7 @@ def inputLabel(self, index):
             The label for the input.
 
     """
-    if index not in range(0, self.type().maxNumInputs()):
+    if index not in range(self.type().maxNumInputs()):
         raise IndexError("Index out of range.")
 
     return _cpp_methods.inputLabel(self, index)
