@@ -196,7 +196,7 @@ SOP_PointsFromVoxels::cookMySop(OP_Context &context)
                 vol->getRes(rx, ry, rz);
 
                 // Add points for each voxel.
-                ptOff = gdp->appendPointBlock(rx * ry *rz);
+                ptOff = gdp->appendPointBlock(rx * ry * rz);
 
                 // Iterate over all the voxels.
                 for (vit.rewind(); !vit.atEnd(); vit.advance())

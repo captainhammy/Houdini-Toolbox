@@ -5,11 +5,10 @@
  *      www.captainhammy.com
  *
  * Description:
- *     	Delete points by ID.
- * 
+ *      Delete points by ID.
+ *
  * Name: SOP_IdBlast.h
  *
- * Version: 1.0
 */
 
 #ifndef __SOP_IdBlast_h__
@@ -28,20 +27,20 @@ typedef std::pair<GA_PointGroup *, IdOffsetMap *> GroupIdMapPair;
 class SOP_IdBlast: public SOP_Node
 {
 public:
-    static OP_Node 	*myConstructor(OP_Network *, 
-				       const char *, 
-				       OP_Operator *);
+    static OP_Node      *myConstructor(OP_Network *,
+                                       const char *,
+                                       OP_Operator *);
     static PRM_Template myTemplateList[];
-  
+
 protected:
-			SOP_IdBlast(OP_Network *, 
-					 const char *, 
-					 OP_Operator *);
-    virtual		~SOP_IdBlast() {};
-    virtual OP_ERROR	cookMySop(OP_Context &);
+                        SOP_IdBlast(OP_Network *,
+                                    const char *,
+                                    OP_Operator *);
+    virtual             ~SOP_IdBlast() {};
+    virtual OP_ERROR    cookMySop(OP_Context &);
 
 private:
-    void		IDS(UT_String &str, fpreal t) { evalString(str, "ids", 0, t); }
+    void                IDS(UT_String &str, fpreal t) { evalString(str, "ids", 0, t); }
 
 };
 
