@@ -40,7 +40,8 @@ protected:
     virtual OP_ERROR    cookMySop(OP_Context &);
 
 private:
-    void                IDS(UT_String &str, fpreal t) { evalString(str, "ids", 0, t); }
+    void                GROUP(UT_String &str, fpreal t) { evalString(str, "group", 0, t); }
+    bool                NEGATE(fpreal t) { return evalInt("negate", 0, t); }
 
 };
 

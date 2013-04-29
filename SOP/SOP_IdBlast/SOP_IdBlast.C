@@ -48,17 +48,20 @@ SOP_IdBlast::SOP_IdBlast(OP_Network *net,
 
 static PRM_Name names[] =
 {
-    PRM_Name("ids", "Ids"),
+    PRM_Name("group", "Group"),
+    PRM_Name("negate", "Delete Non-Selected"),
 };
 
 static PRM_Default defaults[] =
 {
     PRM_Default(0, ""),
+    PRM_Default(0),
 };
 
 PRM_Template
 SOP_IdBlast::myTemplateList[] = {
     PRM_Template(PRM_STRING, 1, &names[0], &defaults[0]),
+    PRM_Template(PRM_TOGGLE, 1, &names[1], &defaults[1]),
     PRM_Template()
 };
 
@@ -91,21 +94,19 @@ int addOffsetToGroup(int num, int sec, void *data)
 OP_ERROR
 SOP_IdBlast::cookMySop(OP_Context &context)
 {
-    fpreal                      now;
     exint                       id, max;
+    fpreal                      now;
 
     GA_Offset                   start, end;
-
     GA_PointGroup               *group;
-
     GA_ROAttributeRef           id_gah;
     GA_ROPageHandleI            id_ph;
 
     UT_String                   pattern;
     UT_WorkArgs                 tokens;
 
-    IdOffsetMap                 id_map, srcid_map;
     GroupIdMapPair              pair;
+    IdOffsetMap                 id_map, srcid_map;
 
     now = context.getTime();
 
@@ -116,7 +117,7 @@ SOP_IdBlast::cookMySop(OP_Context &context)
     duplicateSource(0, context);
 
     // Get the id pattern.
-    IDS(pattern, now);
+    GROUP(pattern, now);
 
     // If it's emptry, don't do anything.
     if (pattern.length() == 0)
@@ -134,7 +135,7 @@ SOP_IdBlast::cookMySop(OP_Context &context)
     // If it doesn't exist, display a node error message and exit.
     if (id_gah.isInvalid())
     {
-        addError(SOP_MESSAGE, "Input geometry has no 'id' attribute.");
+        addError(SOP_MESSAGE, "Input geometry has no point 'id' attribute.");
         unlockInputs();
         return error();
     }
@@ -174,6 +175,12 @@ SOP_IdBlast::cookMySop(OP_Context &context)
     {
         UT_String id_range(tokens[i]);
         id_range.traversePattern(max, &pair, addOffsetToGroup);
+    }
+
+    // Toggle the entries if we want to delete the non-selected points.
+    if (NEGATE(now))
+    {
+        group->toggleEntries();
     }
 
     // Destroy the points.
