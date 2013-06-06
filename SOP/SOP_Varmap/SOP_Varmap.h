@@ -23,9 +23,7 @@ public:
                                        const char *,
                                        OP_Operator *);
     static PRM_Template myTemplateList[];
-    void                addMappings(const GA_AttributeDict *);//,
-//                                    const GA_AIFSharedStringTuple *,
-//                                    GA_Attribute *);
+    void                addMappings(const GA_AttributeDict *);
 
 protected:
                         SOP_Varmap(OP_Network *,
