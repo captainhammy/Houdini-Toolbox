@@ -72,9 +72,7 @@ SOP_Varmap::myTemplateList[] = {
 };
 
 void
-SOP_Varmap::addMappings(const GA_AttributeDict *dict,
-                        const GA_AIFSharedStringTuple *s_t,
-                        GA_Attribute *varmap)
+SOP_Varmap::addMappings(const GA_AttributeDict *dict)
 {
     GA_Attribute                *attrib;
     GA_AttributeDict::ordered_iterator  a_it;
@@ -97,11 +95,7 @@ SOP_Varmap::addMappings(const GA_AttributeDict *dict,
         upper_name = attrib->getName();
         upper_name.toUpper();
 
-        // Build an attribute mapping string.
-        new_name.sprintf("%s -> %s", attr_name.buffer(), upper_name.buffer());
-
-        // Add it to the varmap.
-        s_t->arrayAppendUniqueString(varmap, new_name);
+        gdp->addVariableName(attr_name, upper_name);
     }
 }
 
@@ -110,10 +104,7 @@ SOP_Varmap::cookMySop(OP_Context &context)
 {
     fpreal                      now;
 
-    const GA_AIFSharedStringTuple       *s_t;
-    GA_Attribute                *varmap;
     const GA_AttributeDict      *dict;
-    GA_RWAttributeRef           varmap_gah;
 
     now = context.getTime();
 
@@ -122,44 +113,28 @@ SOP_Varmap::cookMySop(OP_Context &context)
 
     duplicateSource(0, context);
 
-    // Try to find the string attribute.
-    varmap_gah = gdp->findStringTuple(GA_ATTRIB_DETAIL, "varmap");
-
-    // If it doesn't exist, add it.
-    if (varmap_gah.isInvalid())
-    {
-        varmap_gah = gdp->createStringAttribute(GA_ATTRIB_DETAIL, "varmap");
-    }
-
-    // Get the actual attribute.
-    varmap = varmap_gah.getAttribute();
-
-    // Get a shared string tuple from the attribute.
-    s_t = varmap->getAIFSharedStringTuple();
-
-    // Process each type of attribute.
     if (POINT(now))
     {
         dict = &gdp->pointAttribs();
-        addMappings(dict, s_t, varmap);
+        addMappings(dict);
     }
 
     if (VERT(now))
     {
         dict = &gdp->vertexAttribs();
-        addMappings(dict, s_t, varmap);
+        addMappings(dict);
     }
 
     if (PRIM(now))
     {
         dict = &gdp->primitiveAttribs();
-        addMappings(dict, s_t, varmap);
+        addMappings(dict);
     }
 
     if (DETAIL(now))
     {
         dict = &gdp->attribs();
-        addMappings(dict, s_t, varmap);
+        addMappings(dict);
     }
 
     unlockInputs();
