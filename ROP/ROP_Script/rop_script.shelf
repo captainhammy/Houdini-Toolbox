@@ -7,12 +7,6 @@
 
   <tool name="driver_script" label="Script" icon="ROP_script">
     <helpURL>operator:Driver/script</helpURL>
-    <toolMenuContext name="viewer">
-      <contextNetType>ROP</contextNetType>
-    </toolMenuContext>
-    <toolMenuContext name="pop_viewer">
-      <contextNetType>ROP</contextNetType>
-    </toolMenuContext>
     <toolMenuContext name="network">
       <contextOpType>Driver/script</contextOpType>
     </toolMenuContext>

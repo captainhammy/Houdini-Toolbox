@@ -10,9 +10,6 @@
     <toolMenuContext name="viewer">
       <contextNetType>SOP</contextNetType>
     </toolMenuContext>
-    <toolMenuContext name="pop_viewer">
-      <contextNetType>SOP</contextNetType>
-    </toolMenuContext>
     <toolMenuContext name="network">
       <contextOpType>Sop/varmap</contextOpType>
     </toolMenuContext>
