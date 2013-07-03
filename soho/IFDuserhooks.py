@@ -12,7 +12,7 @@ import traceback
 # Houdini Imports
 from IFDapi import ray_comment
 
-# Custom Imports
+# Houdini Toolbox Imports
 import ht.sohohooks.planes
 
 # =============================================================================
