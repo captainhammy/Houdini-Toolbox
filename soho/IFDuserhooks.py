@@ -13,7 +13,7 @@ import traceback
 from IFDapi import ray_comment
 
 # Custom Imports
-import sohohooks.planes
+import ht.sohohooks.planes
 
 # =============================================================================
 # CONSTANTS
@@ -21,7 +21,7 @@ import sohohooks.planes
 
 _HOOK_FUNCTIONS = {
     # Called after wrangling the camera.
-    "post_cameraDisplay": (sohohooks.planes.addRenderPlanes,),
+    "post_cameraDisplay": (ht.sohohooks.planes.addRenderPlanes,),
 }
 
 # =============================================================================
@@ -51,6 +51,8 @@ def call(hookName="", *args, **kwargs):
     """
     # Try to get methods to call for this hook.
     methods = _HOOK_FUNCTIONS.get(hookName, ())
+
+    result = False
 
     for method in methods:
         # Try to call the function.
