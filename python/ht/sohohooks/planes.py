@@ -2,7 +2,7 @@
 based on definitions in files.
 
 Synopsis
-========
+--------
 
 Classes:
     RenderPlane
@@ -12,6 +12,12 @@ Classes:
         An object representing a group of RenderPlane definitions.
 
 Exceptions:
+    InvalidPlaneValueError
+        Exception for invalid plane setting values.
+
+    InvalidVexTypeError
+        Exception for invalid 'vextype' information.
+
     MissingVexTypeError
         Exception for a 'vextype' information.
 
@@ -19,8 +25,11 @@ Functions:
     addRenderPlanes()
         Adds deep rasters as defined by a .json file.
 
+    buildPlaneGroups()
+        Build a list of all available RenderPlaneGroups found.
+
 Description
-===========
+-----------
 
 By default, the automatic planes system uses planes defined in a string
 parameter 'auto_planes'.  In this parameter you can specify groups of planes
@@ -28,6 +37,8 @@ that should be added.  Before attempting to add the planes it verifies that
 they are not disabled by checking the 'disable_auto_planes' parameter.
 
 """
+__author__ = "Graham Thompson"
+__email__ = "captainhammy@gmail.com"
 
 # =============================================================================
 # IMPORTS
@@ -49,11 +60,23 @@ import soho
 # =============================================================================
 
 __all__ = [
+    "InvalidPlaneValueError",
+    "InvalidVexTypeError",
     "MissingVexTypeError",
     "RenderPlane",
     "RenderPlaneGroup",
     "addRenderPlanes",
+    "buildPlaneGroups"
 ]
+
+# =============================================================================
+# CONSTANTS
+# =============================================================================
+
+_DATA_TYPES = {
+    "quantization": ('8', '16', 'half', 'float'),
+    "vextype": ("float", "vector", "vector4")
+}
 
 # =============================================================================
 # CLASSES
@@ -62,12 +85,15 @@ __all__ = [
 class RenderPlane(object):
     """An object representing an extra image plane for Mantra."""
 
-    def __init__(self, variable, data):
+    def __init__(self, variable, filePath, data):
         """Create a new RenderPlane object.
 
         Args:
             variable : (str)
                 The name of the vex variable for the plane.
+
+            filePath : (str)
+                The path containing the plane definition.
 
             data : (dict)
                 A dictionary containing render plane information.
@@ -81,7 +107,9 @@ class RenderPlane(object):
             N/A
 
         """
-	self._variable = str(variable)
+        self._variable = str(variable)
+
+        self._filePath = filePath
 
         # If there is no 'vextype' data in the dictionary we need to raise
         # an exception.
@@ -89,23 +117,36 @@ class RenderPlane(object):
             raise MissingVexTypeError(str(variable))
 
         # Remove the data from the dictionary and store it.
-	self._vextype = str(data.pop("vextype"))
+        self._vextype = str(data.pop("vextype"))
+
+        if self.vextype not in _DATA_TYPES["vextype"]:
+            raise InvalidVexTypeError(self.vextype)
 
         # Plane information we care about.
-	self._channel = None
-	self._lightexport = None
-	self._pfilter = None
-	self._planefile = None
-	self._quantize = "half"
-	self._sfilter = "alpha"
+        self._channel = None
+        self._lightexport = None
+        self._pfilter = None
+        self._planefile = None
+        self._quantize = "half"
+        self._sfilter = "alpha"
 
-        # TODO: Verify values?
+        # Process the dictionary.
+        for name, value in data.iteritems():
+            value = str(value)
 
-        # Process the dictionary.  If any of the keys correspond to attributes
-        # on this object we store their data.
-	for name, value in data.iteritems():
-	    if hasattr(self, name):
-		setattr(self, name, str(value))
+            # Check if there is a restriction on the data type.
+            if name in _DATA_TYPES:
+                # Get the allowable types for this data.
+                allowable = _DATA_TYPES[name]
+
+                # If the value isn't in the list, raise an exception.
+                if value not in allowable:
+                    raise InvalidPlaneValueError(name, value, allowable)
+
+            # If the key corresponds to attributes on this object we store
+            # the data.
+            if hasattr(self, name):
+                setattr(self, name, value)
 
         # If no channel was specified, use the variable name.
         if self.channel is None:
@@ -116,6 +157,9 @@ class RenderPlane(object):
     # =========================================================================
     # SPECIAL METHODS
     # =========================================================================
+
+    def __cmp__(self, other):
+        return cmp(self.name, other.name)
 
     def __repr__(self):
         return "<RenderPlane {0}>".format(self.variable)
@@ -140,17 +184,17 @@ class RenderPlane(object):
     #    Desc: Run the 'post_defplane' IFD hook.
     # -------------------------------------------------------------------------
     def _callPostDefPlane(self, wrangler, cam, now):
-	IFDhooks.call(
-	    "post_defplane",
-	    self.variable,
-	    self.vextype,
-	    -1,
-	    wrangler,
-	    cam,
-	    now,
-	    self.planefile,
-	    self.lightexport
-	)
+        IFDhooks.call(
+            "post_defplane",
+            self.variable,
+            self.vextype,
+            -1,
+            wrangler,
+            cam,
+            now,
+            self.planefile,
+            self.lightexport
+        )
 
     # -------------------------------------------------------------------------
     #    Name: _callPreDefPlane
@@ -166,17 +210,17 @@ class RenderPlane(object):
     #    Desc: Run the 'pre_defplane' IFD hook.
     # -------------------------------------------------------------------------
     def _callPreDefPlane(self, wrangler, cam, now):
-	return IFDhooks.call(
-	    "pre_defplane",
-	    self.variable,
-	    self.vextype,
-	    -1,
-	    wrangler,
-	    cam,
-	    now,
-	    self.planefile,
-	    self.lightexport
-	)
+        return IFDhooks.call(
+            "pre_defplane",
+            self.variable,
+            self.vextype,
+            -1,
+            wrangler,
+            cam,
+            now,
+            self.planefile,
+            self.lightexport
+        )
 
     # =========================================================================
     # INSTANCE PROPERTIES
@@ -185,65 +229,74 @@ class RenderPlane(object):
     @property
     def channel(self):
         """(str) The name of the output plane's channel."""
-	return self._channel
+        return self._channel
 
     @channel.setter
     def channel(self, channel):
-	self._channel = channel
+        self._channel = channel
+
+    @property
+    def filePath(self):
+        """(str) The path containing the plane definition."""
+        return self._filePath
+
+    @filePath.setter
+    def filePath(self, filePath):
+        self._filePath = filePath
 
     @property
     def lightexport(self):
-	return self._lightexport
+        return self._lightexport
 
     @lightexport.setter
     def lightexport(self, lightexport):
-	self._lightexport = lightexport
+        self._lightexport = lightexport
 
     @property
     def pfilter(self):
         """(str) The name of the output plane's pixel filter."""
-	return self._pfilter
+        return self._pfilter
 
     @pfilter.setter
     def pfilter(self, pfilter):
-	self._pfilter = pfilter
+        self._pfilter = pfilter
 
     @property
     def planefile(self):
         """(str|None) The name of the output plane's specific file, if any."""
-	return self._planefile
+        return self._planefile
 
     @planefile.setter
     def planefile(self, planefile):
-	self._planefile = planefile
+        self._planefile = planefile
 
     @property
     def quantize(self):
         """(str) The type of quantization for the output plane."""
-	return self._quantize
+        return self._quantize
 
     @quantize.setter
     def quantize(self, quantize):
-	self._quantize = quantize
+        self._quantize = quantize
 
     @property
     def sfilter(self):
         """(str) The name of the output plane's sample filter."""
-	return self._sfilter
+        return self._sfilter
 
     @sfilter.setter
     def sfilter(self, sfilter):
-	self._sfilter = sfilter
+        self._sfilter = sfilter
 
     @property
     def variable(self):
         """(str) The name of the output plane's vex variable."""
-	return self._variable
+        return self._variable
 
     @property
     def vextype(self):
         """(str) The data type of the output plane."""
-	return self._vextype
+        return self._vextype
 
     # =========================================================================
     # PUBLIC METHODS
@@ -271,11 +324,11 @@ class RenderPlane(object):
         """
         # Call the 'pre_defplane' hook.  If the function returns True,
         # return.
-	if self._callPreDefPlane(wrangler, cam, now):
-	    return
+        if self._callPreDefPlane(wrangler, cam, now):
+            return
 
         # Start of plane block in IFD.
-	IFDapi.ray_start("plane")
+        IFDapi.ray_start("plane")
 
         # Primary block information.
         IFDapi.ray_property("plane", "variable", [self.variable])
@@ -284,34 +337,37 @@ class RenderPlane(object):
         IFDapi.ray_property("plane", "quantize", [self.quantize])
 
         # Optional plane information.
-	if self.planefile is not None:
-	    IFDapi.ray_property("plane", "planefile", [self.planefile])
+        if self.planefile is not None:
+            IFDapi.ray_property("plane", "planefile", [self.planefile])
 
-	if self.lightexport is not None:
-	    IFDapi.ray_property("plane", "lightexport", [self.lightexport])
+        if self.lightexport is not None:
+            IFDapi.ray_property("plane", "lightexport", [self.lightexport])
 
-	if self.pfilter:
-	    IFDapi.ray_property("plane", "pfilter", [self.pfilter])
-	
-	if self.sfilter:
-	    IFDapi.ray_property("plane", "sfilter", [self.sfilter])
-	
+        if self.pfilter:
+            IFDapi.ray_property("plane", "pfilter", [self.pfilter])
+
+        if self.sfilter:
+            IFDapi.ray_property("plane", "sfilter", [self.sfilter])
+
         # Call the 'post_defplane' hook.
-	self._callPostDefPlane(wrangler, cam, now)
+        self._callPostDefPlane(wrangler, cam, now)
 
         # End the plane definition block.
-	IFDapi.ray_end()
+        IFDapi.ray_end()
 
 
 class RenderPlaneGroup(object):
     """An object representing a group of RenderPlane definitions."""
 
-    def __init__(self, name):
+    def __init__(self, name, filePath):
         """Create a new RenderPlaneGroup.
 
         Args:
             name : (str)
                 The name of the group.
+
+            filePath : (str)
+                The path containing the group definition.
 
         Raises:
             N/A
@@ -320,8 +376,9 @@ class RenderPlaneGroup(object):
             N/A
 
         """
-	self._name = name
-	self._planes = []
+        self._name = name
+        self._filePath = filePath
+        self._planes = []
 
     # =========================================================================
     # SPECIAL METHODS
@@ -341,14 +398,23 @@ class RenderPlaneGroup(object):
     # =========================================================================
 
     @property
+    def filePath(self):
+        """(str) The path containing the group definition."""
+        return self._filePath
+
+    @filePath.setter
+    def filePath(self, filePath):
+        self._filePath = filePath
+
+    @property
     def name(self):
         """(str) The name of the group."""
-	return self._name
+        return self._name
 
     @property
     def planes(self):
         """([RenderPlane]) A list of RenderPlanes in the group."""
-	return self._planes
+        return self._planes
 
     # =========================================================================
     # PUBLIC FUNCTIONS
@@ -374,18 +440,49 @@ class RenderPlaneGroup(object):
             None
 
         """
-	for plane in self.planes:
-	    plane.writeToIfd(wrangler, cam, now)
+        for plane in self.planes:
+            plane.writeToIfd(wrangler, cam, now)
 
 
 # =============================================================================
 # EXCEPTIONS
 # =============================================================================
 
-def MissingVexTypeError(Exception):
-    """Exception for a 'vextype' information."""
+class InvalidPlaneValueError(Exception):
+    """Exception for invalid plane setting values."""
+
+    def __init__(self, name, value, allowable):
+        super(InvalidPlaneValueError, self).__init__()
+        self.allowable = allowable
+        self.name = name
+        self.value = value
+
+    def __str__(self):
+        return "Invalid '{0}' in '{1}': Must be one of: {2}".format(
+            self.value,
+            self.name,
+            self.allowable
+        )
+
+
+class InvalidVexTypeError(Exception):
+    """Exception for invalid 'vextype' information."""
+
+    def __init__(self, vextype):
+        super(InvalidVexTypeError, self).__init__()
+        self.vextype = vextype
+
+    def __str__(self):
+        return "Invalid vex type: '{0}'".format(
+            self.vextype
+        )
+
+
+class MissingVexTypeError(Exception):
+    """Exception for missing 'vextype' information."""
 
     def __init__(self, variable):
+        super(MissingVexTypeError, self).__init__()
         self.variable = variable
 
     def __str__(self):
@@ -432,7 +529,7 @@ def _findPlaneDefinitions():
                 continue
 
             # Build the plane.
-            plane = RenderPlane(planeName, planeData)
+            plane = RenderPlane(planeName, filePath, planeData)
 
             # Store a reference to the plane based on the name in the map.
             defMap[planeName] = plane
@@ -473,76 +570,6 @@ def _findPlaneGroups():
 
 
 # -----------------------------------------------------------------------------
-#    Name: _buildPlaneGroups
-#  Raises: N/A
-# Returns: [RenderPlaneGroup]
-#              A list of found RenderPlaneGroups.
-#    Desc: Build a list of all available RenderPlaneGroups found.
-# -----------------------------------------------------------------------------
-def _buildPlaneGroups():
-    planeDefinitions = _findPlaneDefinitions()
-
-    planeGroups = _findPlaneGroups()
-
-    groups = []
-
-    # Process each file name/path.
-    for fileName, filePath in planeGroups.iteritems():
-        # Load the json file.
-        f = open(filePath)
-        data = json.load(f)
-        f.close()
-
-        # Get the group name.
-        groupName = data["name"]
-
-        # Build a new group object.
-        group = RenderPlaneGroup(groupName)
-
-        definedDefinitions = {}
-
-        if "define" in data:
-            defines = data["define"]
-
-            for planeName, planeData in defines.iteritems():
-                # If a plane of the same name has already been processed, skip
-                # it.
-                if planeName in definedDefinitions:
-                    continue
-
-                # Build the plane.
-                plane = RenderPlane(planeName, planeData)
-
-                # Store a reference to the plane based on the name in the map.
-                definedDefinitions[planeName] = plane
-
-                group.planes.append(plane)
-
-        if "include" in data:
-            # Look for any planes to include.
-            includes = data["include"]
-
-            for planeName, enabled in includes.iteritems():
-                # Skip disabled planes.
-                if not enabled:
-                    continue
-
-                if planeName in definedDefinitions:
-                    continue
-
-                # If the plane is defined, add it to the group's list of
-                # planes.
-                if planeName in planeDefinitions:
-                    plane = planeDefinitions[planeName]
-                    group.planes.append(plane)
-
-        # Add this group to the list.
-        groups.append(group)
-
-    return groups
-
-
-# -----------------------------------------------------------------------------
 #    Name: _disablePlanes
 #    Args: wrangler : (Object|None)
 #              A wrangler object, if any.
@@ -567,8 +594,8 @@ def _disablePlanes(wrangler, cam, now):
     # Parameter exists.
     if plist:
         # If the parameter is set, return True to disable the planes.
-	if plist["disable"].Value[0] == 1:
-	    return True
+        if plist["disable"].Value[0] == 1:
+            return True
 
     return False
 
@@ -599,7 +626,7 @@ def addRenderPlanes(wrangler, cam, now):
     """
     # Check if automatic planes should be disabled.
     if _disablePlanes(wrangler, cam, now):
-	return
+        return
 
     # The parameter that defines which automatic planes to add.
     parms = {"auto_planes": soho.SohoParm("auto_planes", "str", [""])}
@@ -610,18 +637,90 @@ def addRenderPlanes(wrangler, cam, now):
     # Parameter exists.
     if plist:
         # Get the string value.
-	planeStr = plist["auto_planes"].Value[0]
+        planeStr = plist["auto_planes"].Value[0]
 
-	if planeStr:
+        if planeStr:
             # Split the string to get the group names.
-	    planeList = planeStr.split()
+            planeList = planeStr.split()
 
             # Build all existing groups.
-	    groups = _buildPlaneGroups()
+            groups = buildPlaneGroups()
 
             # For each group available, if it matches the selection of groups
             # to add, write the planes to the ifd.
-	    for group in groups:
-		if group.name in planeList:
-		    group.writePlanesToIfd(wrangler, cam, now)
+            for group in groups:
+                if group.name in planeList:
+                    group.writePlanesToIfd(wrangler, cam, now)
+
+def buildPlaneGroups():
+    """Build a list of all available RenderPlaneGroups found.
+
+    Raises:
+        N/A
+
+    Returns:
+        [RenderPlaneGroup]
+            A list of found RenderPlaneGroups.
+
+    """
+    planeDefinitions = _findPlaneDefinitions()
+
+    planeGroups = _findPlaneGroups()
+
+    groups = []
+
+    # Process each file name/path.
+    for filePath in planeGroups.itervalues():
+        # Load the json file.
+        f = open(filePath)
+        data = json.load(f)
+        f.close()
+
+        # Get the group name.
+        groupName = data["name"]
+
+        # Build a new group object.
+        group = RenderPlaneGroup(groupName, filePath)
+
+        definedDefinitions = {}
+
+        if "define" in data:
+            defines = data["define"]
+
+            for planeName, planeData in defines.iteritems():
+                # If a plane of the same name has already been processed, skip
+                # it.
+                if planeName in definedDefinitions:
+                    continue
+
+                # Build the plane.
+                plane = RenderPlane(planeName, filePath, planeData)
+
+                # Store a reference to the plane based on the name in the map.
+                definedDefinitions[planeName] = plane
+
+                group.planes.append(plane)
+
+        if "include" in data:
+            # Look for any planes to include.
+            includes = data["include"]
+
+            for planeName, enabled in includes.iteritems():
+                # Skip disabled planes.
+                if not enabled:
+                    continue
+
+                if planeName in definedDefinitions:
+                    continue
+
+                # If the plane is defined, add it to the group's list of
+                # planes.
+                if planeName in planeDefinitions:
+                    plane = planeDefinitions[planeName]
+                    group.planes.append(plane)
+
+        # Add this group to the list.
+        groups.append(group)
+
+    return groups
 
