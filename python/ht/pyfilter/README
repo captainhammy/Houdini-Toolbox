@@ -1,0 +1,4 @@
+ You can run the following command to perform the filtering defined in props.json to the
+ example .ifd file.
+ 
+ mantra -f test.ifd -P "/path/to/customPyFilter.py -file props.json -logLevel DEBUG"
