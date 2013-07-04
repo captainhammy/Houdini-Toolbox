@@ -50,10 +50,7 @@ import json
 import os
 
 # Houdini Imports
-import IFDapi
-import IFDhooks
 import hou
-import soho
 
 # =============================================================================
 # EXPORTS
@@ -299,6 +296,8 @@ class RenderPlane(object):
             None
 
         """
+        import soho
+
         # The base data to pass along.
         data = {
             "variable": self.variable,
@@ -411,6 +410,8 @@ class RenderPlane(object):
             None
 
         """
+        import IFDapi
+
         # Call the 'pre_defplane' hook.  If the function returns True,
         # return.
         if _callPreDefPlane(data, wrangler, cam, now):
@@ -615,6 +616,8 @@ class MissingVexTypeError(Exception):
 #    Desc: Run the 'post_defplane' IFD hook.
 # -------------------------------------------------------------------------
 def _callPostDefPlane(data, wrangler, cam, now):
+    import IFDhooks
+
     return IFDhooks.call(
         "post_defplane",
         data["variable"],
@@ -644,6 +647,8 @@ def _callPostDefPlane(data, wrangler, cam, now):
 #    Desc: Run the 'pre_defplane' IFD hook.
 # -------------------------------------------------------------------------
 def _callPreDefPlane(data, wrangler, cam, now):
+    import IFDhooks
+
     return IFDhooks.call(
         "pre_defplane",
         data["variable"],
@@ -747,6 +752,8 @@ def _findPlaneGroups():
 #          for the value of the 'disable_auto_planes' parameter.
 # -----------------------------------------------------------------------------
 def _disablePlanes(wrangler, cam, now):
+    import soho
+
     # The parameter that defines if planes should be disabled or not.
     parms = {"disable": soho.SohoParm("disable_auto_planes", "int", [False])}
 
@@ -786,6 +793,8 @@ def addRenderPlanes(wrangler, cam, now):
         None
 
     """
+    import soho
+
     # Check if automatic planes should be disabled.
     if _disablePlanes(wrangler, cam, now):
         return
