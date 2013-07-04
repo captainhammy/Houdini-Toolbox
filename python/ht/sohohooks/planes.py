@@ -288,11 +288,6 @@ class RenderPlane(object):
 
         self._conditionals = []
 
-        # If there is no 'vextype' data in the dictionary we need to raise
-        # an exception.
-        if "vextype" not in data:
-            raise MissingVexTypeError(variable)
-
         # Plane information we care about.
         self._channel = None
         self._lightexport = None
@@ -327,6 +322,11 @@ class RenderPlane(object):
             # the data.
             if hasattr(self, name):
                 setattr(self, name, value)
+
+        # If the vextype information wasn't specified, or was set to 'null',
+        # raise an exception because it is mandatory.
+        if self.vextype is None:
+            raise MissingVexTypeError(variable)
 
         # Check for conditional settings.
         if "conditionals" in data:
