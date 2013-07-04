@@ -73,7 +73,9 @@ __all__ = [
 # CONSTANTS
 # =============================================================================
 
-_DATA_TYPES = {
+# Allowable values for various settings.
+_ALLOWABLE_VALUES = {
+    "lightexport": ("per-light", "single"),
     "quantization": ('8', '16', 'half', 'float'),
     "vextype": ("float", "vector", "vector4")
 }
@@ -83,10 +85,16 @@ _DATA_TYPES = {
 # =============================================================================
 
 class RenderPlane(object):
-    """An object representing an extra image plane for Mantra."""
+    """An object representing an extra image plane for Mantra.
+
+    """
+
+    # =========================================================================
+    # CONSTRUCTORS
+    # =========================================================================
 
     def __init__(self, variable, filePath, data):
-        """Create a new RenderPlane object.
+        """Initialize a new RenderPlane object.
 
         Args:
             variable : (str)
@@ -119,12 +127,14 @@ class RenderPlane(object):
         # Remove the data from the dictionary and store it.
         self._vextype = str(data.pop("vextype"))
 
-        if self.vextype not in _DATA_TYPES["vextype"]:
+        if self.vextype not in _ALLOWABLE_VALUES["vextype"]:
             raise InvalidVexTypeError(self.vextype)
 
         # Plane information we care about.
         self._channel = None
         self._lightexport = None
+        self._lightmask = None
+        self._lightselection = None
         self._pfilter = None
         self._planefile = None
         self._quantize = "half"
@@ -132,12 +142,17 @@ class RenderPlane(object):
 
         # Process the dictionary.
         for name, value in data.iteritems():
+            # If the value is None then the user specified a value of 'null'
+            # and we should skip this option.
+            if value is None:
+                continue
+
             value = str(value)
 
             # Check if there is a restriction on the data type.
-            if name in _DATA_TYPES:
+            if name in _ALLOWABLE_VALUES:
                 # Get the allowable types for this data.
-                allowable = _DATA_TYPES[name]
+                allowable = _ALLOWABLE_VALUES[name]
 
                 # If the value isn't in the list, raise an exception.
                 if value not in allowable:
@@ -152,8 +167,6 @@ class RenderPlane(object):
         if self.channel is None:
             self.channel = self.variable
 
-        # TODO: Light export stuff?
-
     # =========================================================================
     # SPECIAL METHODS
     # =========================================================================
@@ -166,61 +179,6 @@ class RenderPlane(object):
 
     def __str__(self):
         return self.variable
-
-    # =========================================================================
-    # PRIVATE METHODS
-    # =========================================================================
-
-    # -------------------------------------------------------------------------
-    #    Name: _callPostDefPlane
-    #    Args: wrangler : (Object)
-    #              A wrangler object.
-    #          cam : (soho.SohoObject)
-    #              The camera being rendered.
-    #          now : (float)
-    #               The parameter evaluation time.
-    #  Raises: N/A
-    # Returns: None
-    #    Desc: Run the 'post_defplane' IFD hook.
-    # -------------------------------------------------------------------------
-    def _callPostDefPlane(self, wrangler, cam, now):
-        IFDhooks.call(
-            "post_defplane",
-            self.variable,
-            self.vextype,
-            -1,
-            wrangler,
-            cam,
-            now,
-            self.planefile,
-            self.lightexport
-        )
-
-    # -------------------------------------------------------------------------
-    #    Name: _callPreDefPlane
-    #    Args: wrangler : (Object)
-    #              A wrangler object.
-    #          cam : (soho.SohoObject)
-    #              The camera being rendered.
-    #          now : (float)
-    #               The parameter evaluation time.
-    #  Raises: N/A
-    # Returns: bool
-    #              The result of the 'pre_defplane' hook call.
-    #    Desc: Run the 'pre_defplane' IFD hook.
-    # -------------------------------------------------------------------------
-    def _callPreDefPlane(self, wrangler, cam, now):
-        return IFDhooks.call(
-            "pre_defplane",
-            self.variable,
-            self.vextype,
-            -1,
-            wrangler,
-            cam,
-            now,
-            self.planefile,
-            self.lightexport
-        )
 
     # =========================================================================
     # INSTANCE PROPERTIES
@@ -246,11 +204,30 @@ class RenderPlane(object):
 
     @property
     def lightexport(self):
+        """(str) The light output mode."""
         return self._lightexport
 
     @lightexport.setter
     def lightexport(self, lightexport):
         self._lightexport = lightexport
+
+    @property
+    def lightmask(self):
+        """(str) The light mask."""
+        return self._lightmask
+
+    @lightmask.setter
+    def lightmask(self, lightmask):
+        self._lightmask = lightmask
+
+    @property
+    def lightselection(self):
+        """(str) The light selection."""
+        return self._lightselection
+
+    @lightselection.setter
+    def lightselection(self, lightselection):
+        self._lightselection = lightselection
 
     @property
     def pfilter(self):
@@ -263,7 +240,7 @@ class RenderPlane(object):
 
     @property
     def planefile(self):
-        """(str|None) The name of the output plane's specific file, if any."""
+        """(str) The name of the output plane's specific file, if any."""
         return self._planefile
 
     @planefile.setter
@@ -302,8 +279,8 @@ class RenderPlane(object):
     # PUBLIC METHODS
     # =========================================================================
 
-    def writeToIfd(self, wrangler, cam, now):
-        """Write the plane to the ifd.
+    def outputPlanes(self, wrangler, cam, now):
+        """Output all necessary planes.
 
         Args:
             wrangler : (Object)
@@ -322,45 +299,166 @@ class RenderPlane(object):
             None
 
         """
+        # The base data to pass along.
+        data = {
+            "variable": self.variable,
+            "vextype": self.vextype,
+            "channel": self.channel,
+            "quantize": self.quantize,
+            "planefile": self.planefile
+        }
+
+        if self.pfilter:
+            data["pfilter"] = self.pfilter
+
+        if self.sfilter:
+            data["sfilter"] = self.sfilter
+
+        # Handle any light exporting.
+        if self.lightexport is not None:
+            # Get a list of lights matching out mask and selection.
+            lights = cam.objectList(
+                "objlist:light",
+                now,
+                self.lightmask,
+                self.lightselection
+            )
+
+            if self.lightexport == "per-light":
+                # Process each light.
+                for light in lights:
+                    # Try and find the suffix using the 'vm_export_suffix'
+                    # parameter.  If it doesn't exist, use an emptry string.
+                    suffix = light.getDefaultedString(
+                        "vm_export_suffix", now, ['']
+                    )[0]
+
+                    prefix = []
+
+                    # Look for the prefix parameter.  If it doesn't exist, use
+                    # the light's name and replace the '/' with '_'.  The
+                    # default value of 'vm_export_prefix' is usually $OS.
+                    if not light.evalString("vm_export_prefix", now, prefix):
+                        prefix = [light.getName()[1:].replace('/', '_')]
+
+                    # If there is a prefix we construct the channel name using
+                    # it and the suffix.
+                    if prefix:
+                        channel = "{0}_{1}{2}".format(
+                            prefix[0],
+                            self.channel,
+                            suffix
+                        )
+
+                    # If not and there is a valid suffix, add it to the channel
+                    # name.
+                    elif suffix:
+                        channel = "{0}{1}".format(self.channel, suffix)
+
+                    # Throw an error because all the per-light channels will
+                    # have the same name.
+                    else:
+                       soho.error("Empty suffix for per-light exports.")
+
+                    data["channel"] = channel
+                    data["lightexport"] = light.getName()
+
+                    # Write this light export to the ifd.
+                    self.writeToIfd(data, wrangler, cam, now)
+
+            elif self.lightexport == "single":
+                # Take all the light names and join them together.
+                lightexport = ' '.join([light.getName() for light in lights])
+
+                # If there are no lights, we can't pass in an empty string
+                # since then mantra will think that light exports are
+                # disabled.  So pass down an string that presumably doesn't
+                # match any light name.
+                if not lightexport:
+                    lightexport = "__nolights__"
+
+                data["lightexport"] = lightexport
+
+                # Write the combined light export to the ifd.
+                self.writeToIfd(data, wrangler, cam, now)
+
+        else:
+            # Write a normal plane definition.
+            self.writeToIfd(data, wrangler, cam, now)
+
+
+    @staticmethod
+    def writeToIfd(data, wrangler, cam, now):
+        """Write the plane to the ifd.
+
+        Args:
+            data : (dict)
+                The data dictionary containing output information.
+
+            wrangler : (Object)
+                A wrangler object.
+
+            cam : (soho.SohoObject)
+                The camera being rendered.
+
+            now : (float)
+                The parameter evaluation time.
+
+        Raises:
+            N/A
+
+        Returns:
+            None
+
+        """
         # Call the 'pre_defplane' hook.  If the function returns True,
         # return.
-        if self._callPreDefPlane(wrangler, cam, now):
+        if _callPreDefPlane(data, wrangler, cam, now):
             return
 
         # Start of plane block in IFD.
         IFDapi.ray_start("plane")
 
         # Primary block information.
-        IFDapi.ray_property("plane", "variable", [self.variable])
-        IFDapi.ray_property("plane", "vextype", [self.vextype])
-        IFDapi.ray_property("plane", "channel", [self.channel])
-        IFDapi.ray_property("plane", "quantize", [self.quantize])
+        IFDapi.ray_property("plane", "variable", [data["variable"]])
+        IFDapi.ray_property("plane", "vextype", [data["vextype"]])
+        IFDapi.ray_property("plane", "channel", [data["channel"]])
+        IFDapi.ray_property("plane", "quantize", [data["quantize"]])
 
         # Optional plane information.
-        if self.planefile is not None:
-            IFDapi.ray_property("plane", "planefile", [self.planefile])
+        if "planefile" in data:
+            planefile = data["planefile"]
+            if planefile is not None:
+                IFDapi.ray_property("plane", "planefile", [planefile])
 
-        if self.lightexport is not None:
-            IFDapi.ray_property("plane", "lightexport", [self.lightexport])
+        if "lightexport" in data:
+            IFDapi.ray_property("plane", "lightexport", [data["lightexport"]])
 
-        if self.pfilter:
-            IFDapi.ray_property("plane", "pfilter", [self.pfilter])
+        if "pfilter" in data:
+            IFDapi.ray_property("plane", "pfilter", [data["pfilter"]])
 
-        if self.sfilter:
-            IFDapi.ray_property("plane", "sfilter", [self.sfilter])
+        if "sfilter" in data:
+            IFDapi.ray_property("plane", "sfilter", [data["sfilter"]])
 
         # Call the 'post_defplane' hook.
-        self._callPostDefPlane(wrangler, cam, now)
+        if _callPostDefPlane(data, wrangler, cam, now):
+            return
 
         # End the plane definition block.
         IFDapi.ray_end()
 
 
 class RenderPlaneGroup(object):
-    """An object representing a group of RenderPlane definitions."""
+    """An object representing a group of RenderPlane definitions.
+
+    """
+
+    # =========================================================================
+    # CONSTRUCTORS
+    # =========================================================================
 
     def __init__(self, name, filePath):
-        """Create a new RenderPlaneGroup.
+        """Initialize a new RenderPlaneGroup.
 
         Args:
             name : (str)
@@ -441,7 +539,7 @@ class RenderPlaneGroup(object):
 
         """
         for plane in self.planes:
-            plane.writeToIfd(wrangler, cam, now)
+            plane.outputPlanes(wrangler, cam, now)
 
 
 # =============================================================================
@@ -449,7 +547,9 @@ class RenderPlaneGroup(object):
 # =============================================================================
 
 class InvalidPlaneValueError(Exception):
-    """Exception for invalid plane setting values."""
+    """Exception for invalid plane setting values.
+
+    """
 
     def __init__(self, name, value, allowable):
         super(InvalidPlaneValueError, self).__init__()
@@ -458,7 +558,7 @@ class InvalidPlaneValueError(Exception):
         self.value = value
 
     def __str__(self):
-        return "Invalid '{0}' in '{1}': Must be one of: {2}".format(
+        return "Invalid '{0}' in '{1}': Must be one of {2}".format(
             self.value,
             self.name,
             self.allowable
@@ -466,7 +566,9 @@ class InvalidPlaneValueError(Exception):
 
 
 class InvalidVexTypeError(Exception):
-    """Exception for invalid 'vextype' information."""
+    """Exception for invalid 'vextype' information.
+
+    """
 
     def __init__(self, vextype):
         super(InvalidVexTypeError, self).__init__()
@@ -479,7 +581,9 @@ class InvalidVexTypeError(Exception):
 
 
 class MissingVexTypeError(Exception):
-    """Exception for missing 'vextype' information."""
+    """Exception for missing 'vextype' information.
+
+    """
 
     def __init__(self, variable):
         super(MissingVexTypeError, self).__init__()
@@ -494,6 +598,62 @@ class MissingVexTypeError(Exception):
 # =============================================================================
 # PRIVATE FUNCTIONS
 # =============================================================================
+
+# -------------------------------------------------------------------------
+#    Name: _callPostDefPlane
+#    Args: data : (dict)
+#              The plane data dictionary.
+#          wrangler : (Object)
+#              A wrangler object.
+#          cam : (soho.SohoObject)
+#              The camera being rendered.
+#          now : (float)
+#               The parameter evaluation time.
+#  Raises: N/A
+# Returns: bool
+#              The result of the 'post_defplane' hook call.
+#    Desc: Run the 'post_defplane' IFD hook.
+# -------------------------------------------------------------------------
+def _callPostDefPlane(data, wrangler, cam, now):
+    return IFDhooks.call(
+        "post_defplane",
+        data["variable"],
+        data["vextype"],
+        -1,
+        wrangler,
+        cam,
+        now,
+        data["planefile"],
+        data.get("lightexport")
+    )
+
+# -------------------------------------------------------------------------
+#    Name: _callPreDefPlane
+#    Args: data : (dict)
+#              The plane data dictionary.
+#          wrangler : (Object)
+#              A wrangler object.
+#          cam : (soho.SohoObject)
+#              The camera being rendered.
+#          now : (float)
+#               The parameter evaluation time.
+#  Raises: N/A
+# Returns: bool
+#              The result of the 'pre_defplane' hook call.
+#    Desc: Run the 'pre_defplane' IFD hook.
+# -------------------------------------------------------------------------
+def _callPreDefPlane(data, wrangler, cam, now):
+    return IFDhooks.call(
+        "pre_defplane",
+        data["variable"],
+        data["vextype"],
+        -1,
+        wrangler,
+        cam,
+        now,
+        data["planefile"],
+        data.get("lightexport")
+    )
 
 # -----------------------------------------------------------------------------
 #    Name: _findPlaneDefinitions
@@ -571,7 +731,7 @@ def _findPlaneGroups():
 
 # -----------------------------------------------------------------------------
 #    Name: _disablePlanes
-#    Args: wrangler : (Object|None)
+#    Args: wrangler : (Object)
 #              A wrangler object, if any.
 #          cam : (soho.SohoObject)
 #              The camera being rendered.
@@ -608,7 +768,7 @@ def addRenderPlanes(wrangler, cam, now):
     """Adds deep rasters as defined by a json file.
 
     Args:
-        wrangler : (Object|None)
+        wrangler : (Object)
             A wrangler object, if any.
 
         cam : (soho.SohoObject)
@@ -651,6 +811,7 @@ def addRenderPlanes(wrangler, cam, now):
             for group in groups:
                 if group.name in planeList:
                     group.writePlanesToIfd(wrangler, cam, now)
+
 
 def buildPlaneGroups():
     """Build a list of all available RenderPlaneGroups found.

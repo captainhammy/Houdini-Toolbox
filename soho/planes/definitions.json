@@ -15,7 +15,10 @@
     
     "P": {
 	"vextype": "vector",
-	"pfilter": "minmax min"
+	"pfilter": "minmax min",
+	"lightexport": "per-light",
+	"lightmask": "*",
+	"lightselection": "*"
     }
 }
 
