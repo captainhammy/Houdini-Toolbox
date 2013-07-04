@@ -627,6 +627,7 @@ def _callPostDefPlane(data, wrangler, cam, now):
         data.get("lightexport")
     )
 
+
 # -------------------------------------------------------------------------
 #    Name: _callPreDefPlane
 #    Args: data : (dict)
@@ -654,6 +655,7 @@ def _callPreDefPlane(data, wrangler, cam, now):
         data["planefile"],
         data.get("lightexport")
     )
+
 
 # -----------------------------------------------------------------------------
 #    Name: _findPlaneDefinitions
