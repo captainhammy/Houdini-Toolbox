@@ -5,6 +5,9 @@ Synopsis
 --------
 
 Classes:
+    PlaneConditional
+        An object representing conditional plane settings.
+
     RenderPlane
         An object representing an extra image plane for Mantra.
 
@@ -14,9 +17,6 @@ Classes:
 Exceptions:
     InvalidPlaneValueError
         Exception for invalid plane setting values.
-
-    InvalidVexTypeError
-        Exception for invalid 'vextype' information.
 
     MissingVexTypeError
         Exception for a 'vextype' information.
@@ -48,6 +48,7 @@ __email__ = "captainhammy@gmail.com"
 import glob
 import json
 import os
+import re
 
 # Houdini Imports
 import hou
@@ -58,8 +59,8 @@ import hou
 
 __all__ = [
     "InvalidPlaneValueError",
-    "InvalidVexTypeError",
     "MissingVexTypeError",
+    "PlaneConditional",
     "RenderPlane",
     "RenderPlaneGroup",
     "addRenderPlanes",
@@ -81,6 +82,172 @@ _ALLOWABLE_VALUES = {
 # CLASSES
 # =============================================================================
 
+class PlaneConditional(object):
+    """An object representing conditional plane settings.
+
+    """
+
+    # =========================================================================
+    # CONSTRUCTORS
+    # =========================================================================
+
+    def __init__(self, data):
+        """Initialize a PlaneConditional object.
+
+        Args:
+            data : (dict)
+                A dictionary of data.
+
+        Raises:
+            N/A
+
+        Returns:
+            N/A
+
+        """
+        # Store the pattern to match by.
+        self._pattern = data["pattern"]
+
+        # The parameter data to match against.
+        self._parmData = data["parm"]
+
+        # Data to return as a result of the match.
+        self._match = {}
+        self._nomatch = {}
+
+        # If we have data to apply when the pattern mat
+        if "match" in data:
+            self._validateMatchData(data["match"])
+            self.match.update(data["match"])
+
+        if "nomatch" in data:
+            self._validateMatchData(data["nomatch"])
+            self.nomatch.update(data["nomatch"])
+
+    # =========================================================================
+    # SPECIAL METHODS
+    # =========================================================================
+
+    def __repr__(self):
+        return "<PlaneConditional {0} ({1})>".format(
+            self.parmData["name"],
+            self.pattern
+        )
+
+    # =========================================================================
+    # NON-PUBLIC METHODS
+    # =========================================================================
+
+    # -------------------------------------------------------------------------
+    #    Name: _validateMatchData
+    #    Args: data : (dict)
+    #              The plane data dictionary to validate.
+    #  Raises: InvalidPlaneValueError
+    #              This exception is raised when a render plane value is of a
+    #              non-allowable value.
+    # Returns: None
+    #    Desc: Validate the match plane data to ensure all the values are
+    #          legal.
+    # -------------------------------------------------------------------------
+    @staticmethod
+    def _validateMatchData(data):
+        for name, value in data.iteritems():
+            # Check if there is a restriction on the data type.
+            if name in _ALLOWABLE_VALUES:
+                # Get the allowable types for this data.
+                allowable = _ALLOWABLE_VALUES[name]
+
+                # If the value isn't in the list, raise an exception.
+                if value not in allowable:
+                    raise InvalidPlaneValueError(name, value, allowable)
+
+    # =========================================================================
+    # INSTANCE PROPERTIES
+    # =========================================================================
+
+    @property
+    def match(self):
+        """(dict) Data to use when the pattern matches."""
+        return self._match
+
+    @property
+    def nomatch(self):
+        """(dict) Data to use when the pattern doesn match."""
+        return self._nomatch
+
+    @property
+    def parmData(self):
+        """(dict) Data about the parameter to match against."""
+        return self._parmData
+
+    @property
+    def pattern(self):
+        """(str) The regex pattern to match agains the parameter value."""
+        return self._pattern
+
+    # =========================================================================
+    # METHODS
+    # =========================================================================
+
+    def getData(self, wrangler, cam, now):
+        """Get the conditional data to apply.
+
+        Args:
+            wrangler : (Object)
+                A wrangler object.
+
+            cam : (soho.SohoObject)
+                The camera being rendered.
+
+            now : (float)
+                The parameter evaluation time.
+
+        Raises:
+            N/A
+
+        Returns:
+            dict
+                A dictionary of plane settings.
+
+        This function matches the pattern against the specified parameter
+        value and returns the corresponding match data.
+
+        """
+        import soho
+
+        parmName = self.parmData["name"]
+
+        # Build a dictionary containing the required SohoParm object.  We don't
+        # want to skip defaults because if the parm is at its default we won't
+        # be able to check against it.
+        parms = {
+            parmName: soho.SohoParm(
+                parmName,
+                self.parmData["type"],
+                default=[self.parmData["default"]],
+                skipdefault=False
+            )
+        }
+
+        # Attempt to evaluate the parameter.
+        plist = cam.wrangle(wrangler, parms, now)
+
+        # Parameter exists and a value was found.
+        if plist:
+            # Get the parameter value.
+            result = plist[parmName].Value[0]
+
+            # Match the value against the pattern.  Return the corresponding
+            # data.
+            if re.match(self.pattern, result) is not None:
+                return self.match
+
+            else:
+                return self.nomatch
+
+        return {}
+
+
 class RenderPlane(object):
     """An object representing an extra image plane for Mantra.
 
@@ -91,7 +258,7 @@ class RenderPlane(object):
     # =========================================================================
 
     def __init__(self, variable, filePath, data):
-        """Initialize a new RenderPlane object.
+        """Initialize a RenderPlane object.
 
         Args:
             variable : (str)
@@ -104,28 +271,27 @@ class RenderPlane(object):
                 A dictionary containing render plane information.
 
         Raises:
+            InvalidPlaneValueTypeError
+                This exception is raised if a plane value error is not valid.
+
             MissingVexTypeError
-                This exception is raised if there is no "vextype" entry
-                in the data dictionary.
+                This exception is raised if there is no "vextype" entry in the
+                data dictionary.
 
         Returns:
             N/A
 
         """
-        self._variable = str(variable)
+        self._variable = variable
 
         self._filePath = filePath
+
+        self._conditionals = []
 
         # If there is no 'vextype' data in the dictionary we need to raise
         # an exception.
         if "vextype" not in data:
-            raise MissingVexTypeError(str(variable))
-
-        # Remove the data from the dictionary and store it.
-        self._vextype = str(data.pop("vextype"))
-
-        if self.vextype not in _ALLOWABLE_VALUES["vextype"]:
-            raise InvalidVexTypeError(self.vextype)
+            raise MissingVexTypeError(variable)
 
         # Plane information we care about.
         self._channel = None
@@ -136,6 +302,7 @@ class RenderPlane(object):
         self._planefile = None
         self._quantize = "half"
         self._sfilter = "alpha"
+        self._vextype = None
 
         # Process the dictionary.
         for name, value in data.iteritems():
@@ -144,7 +311,8 @@ class RenderPlane(object):
             if value is None:
                 continue
 
-            value = str(value)
+            if name == "conditionals":
+                continue
 
             # Check if there is a restriction on the data type.
             if name in _ALLOWABLE_VALUES:
@@ -159,6 +327,16 @@ class RenderPlane(object):
             # the data.
             if hasattr(self, name):
                 setattr(self, name, value)
+
+        # Check for conditional settings.
+        if "conditionals" in data:
+            # Get the conditional data.
+            conditionals = data["conditionals"]
+
+            # Build PlaneConditionals and add them to our list.
+            for conditionalData in conditionals:
+                conditional = PlaneConditional(conditionalData)
+                self.conditionals.append(conditional)
 
         # If no channel was specified, use the variable name.
         if self.channel is None:
@@ -189,6 +367,11 @@ class RenderPlane(object):
     @channel.setter
     def channel(self, channel):
         self._channel = channel
+
+    @property
+    def conditionals(self):
+        """([RenderConditional]) RenderConditional objects for the plane."""
+        return self._conditionals
 
     @property
     def filePath(self):
@@ -272,6 +455,10 @@ class RenderPlane(object):
         """(str) The data type of the output plane."""
         return self._vextype
 
+    @vextype.setter
+    def vextype(self, vextype):
+        self._vextype = vextype
+
     # =========================================================================
     # PUBLIC METHODS
     # =========================================================================
@@ -312,6 +499,11 @@ class RenderPlane(object):
 
         if self.sfilter:
             data["sfilter"] = self.sfilter
+
+        # Apply any conditionals before the light export phase.
+        if self.conditionals:
+            for conditional in self.conditionals:
+                data.update(conditional.getData(wrangler, cam, now))
 
         # Handle any light exporting.
         if self.lightexport is not None:
@@ -459,7 +651,7 @@ class RenderPlaneGroup(object):
     # =========================================================================
 
     def __init__(self, name, filePath):
-        """Initialize a new RenderPlaneGroup.
+        """Initialize a RenderPlaneGroup.
 
         Args:
             name : (str)
@@ -559,25 +751,10 @@ class InvalidPlaneValueError(Exception):
         self.value = value
 
     def __str__(self):
-        return "Invalid '{0}' in '{1}': Must be one of {2}".format(
+        return "Invalid value '{0}' in '{1}': Must be one of {2}".format(
             self.value,
             self.name,
             self.allowable
-        )
-
-
-class InvalidVexTypeError(Exception):
-    """Exception for invalid 'vextype' information.
-
-    """
-
-    def __init__(self, vextype):
-        super(InvalidVexTypeError, self).__init__()
-        self.vextype = vextype
-
-    def __str__(self):
-        return "Invalid vex type: '{0}'".format(
-            self.vextype
         )
 
 
@@ -600,7 +777,7 @@ class MissingVexTypeError(Exception):
 # PRIVATE FUNCTIONS
 # =============================================================================
 
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #    Name: _callPostDefPlane
 #    Args: data : (dict)
 #              The plane data dictionary.
@@ -614,7 +791,7 @@ class MissingVexTypeError(Exception):
 # Returns: bool
 #              The result of the 'post_defplane' hook call.
 #    Desc: Run the 'post_defplane' IFD hook.
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 def _callPostDefPlane(data, wrangler, cam, now):
     import IFDhooks
 
@@ -631,7 +808,7 @@ def _callPostDefPlane(data, wrangler, cam, now):
     )
 
 
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #    Name: _callPreDefPlane
 #    Args: data : (dict)
 #              The plane data dictionary.
@@ -645,7 +822,7 @@ def _callPostDefPlane(data, wrangler, cam, now):
 # Returns: bool
 #              The result of the 'pre_defplane' hook call.
 #    Desc: Run the 'pre_defplane' IFD hook.
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 def _callPreDefPlane(data, wrangler, cam, now):
     import IFDhooks
 
@@ -660,6 +837,39 @@ def _callPreDefPlane(data, wrangler, cam, now):
         data["planefile"],
         data.get("lightexport")
     )
+
+
+# -------------------------------------------------------------------------
+#    Name: _convertFromUnicode
+#    Args: data : (object)
+#              An object to try to convert.
+#  Raises: N/A
+# Returns: object
+#              The converted object.
+#    Desc: Convert any unicode members to normal strings.
+# -------------------------------------------------------------------------
+def _convertFromUnicode(data):
+    # If the data is a dictionary we need to convert the key/value pairs
+    # and return a new dictionary.
+    if isinstance(data, dict):
+        return dict(
+            [
+                (_convertFromUnicode(key), _convertFromUnicode(value))
+                 for key, value in data.iteritems()
+            ]
+        )
+
+    # Convert any elements in a list.
+    elif isinstance(data, list):
+        return [_convertFromUnicode(element) for element in data]
+
+    # The data is a unicode string, so encode it to a regular one.
+    elif isinstance(data, unicode):
+        return data.encode('utf-8')
+
+    # Return the untouched data.
+    else:
+        return data
 
 
 # -----------------------------------------------------------------------------
@@ -688,6 +898,9 @@ def _findPlaneDefinitions():
         f = open(filePath)
         data = json.load(f)
         f.close()
+
+        # Convert from unicode to regular strings.
+        data = _convertFromUnicode(data)
 
         # Process each plane definition.
         for planeName, planeData in data.iteritems():
@@ -847,6 +1060,9 @@ def buildPlaneGroups():
         f = open(filePath)
         data = json.load(f)
         f.close()
+
+        # Convert from unicode to regular strings.
+        data = _convertFromUnicode(data)
 
         # Get the group name.
         groupName = data["name"]

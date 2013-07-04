@@ -18,7 +18,27 @@
 	"pfilter": "minmax min",
 	"lightexport": "per-light",
 	"lightmask": "*",
-	"lightselection": "*"
+	"lightselection": "*",
+
+	"conditionals": [
+	    {
+		"pattern": "pbr",
+
+		"parm": {
+		    "name": "vm_renderengine",
+		    "type": "str",
+		    "default": ""
+		},
+
+		"match": {
+		    "vextype": "float"
+		},
+
+		"nomatch": {
+		    "vextype": "vector4"
+		}
+	    }
+	]
     }
 }
 
