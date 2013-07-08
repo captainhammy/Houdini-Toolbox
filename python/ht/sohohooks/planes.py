@@ -73,7 +73,7 @@ __all__ = [
 
 # Allowable values for various settings.
 _ALLOWABLE_VALUES = {
-    "lightexport": ("per-light", "single"),
+    "lightexport": ("per-category", "per-light", "single"),
     "quantization": ('8', '16', 'half', 'float'),
     "vextype": ("float", "vector", "vector4")
 }
@@ -402,7 +402,7 @@ class RenderPlane(object):
 
     @property
     def lightselection(self):
-        """(str) The light selection."""
+        """(str) The light selection (categories)."""
         return self._lightselection
 
     @lightselection.setter
@@ -549,7 +549,7 @@ class RenderPlane(object):
                     # Throw an error because all the per-light channels will
                     # have the same name.
                     else:
-                       soho.error("Empty suffix for per-light exports.")
+                        soho.error("Empty suffix for per-light exports.")
 
                     data["channel"] = channel
                     data["lightexport"] = light.getName()
@@ -572,6 +572,58 @@ class RenderPlane(object):
 
                 # Write the combined light export to the ifd.
                 self.writeToIfd(data, wrangler, cam, now)
+
+            elif self.lightexport == "per-category":
+                # A mapping between category names and their member lights.
+                categoryMap = {}
+
+                # Process each selected light.
+                for light in lights:
+                    # Get the category for the light.
+                    categories = []
+                    light.evalString("categories", now, categories)
+
+                    # Light doesn't have a 'categories' parameter.
+                    if not categories:
+                        continue
+
+                    # Get the raw string.
+                    categories = categories[0]
+
+                    # Since the categories value can be space or comma
+                    # separated we replace the commas with spaces then split.
+                    categories = categories.replace(',', ' ')
+                    categories = categories.split()
+
+                    # If the categories list was empty, put the light in a fake
+                    # category.
+                    if not categories:
+                        noCatLights = categoryMap.setdefault("__none__", [])
+                        noCatLights.append(light)
+
+                    else:
+                        # For each category the light belongs to, add it to
+                        # the list.
+                        for category in categories:
+                            catLights = categoryMap.setdefault(category, [])
+                            catLights.append(light)
+
+                # Process all the found categories and their member lights.
+                for category, lights in categoryMap.iteritems():
+                    # Construct the export string to contain all the member
+                    # lights.
+                    lightexport = ' '.join(
+                        [light.getName() for light in lights]
+                    )
+
+                    data["lightexport"] = lightexport
+
+                    # The channel is the regular channel named prefixed with
+                    # the category name.
+                    data["channel"] = "{0}_{1}".format(category, self.channel)
+
+                    # Write the per-category light export to the ifd.
+                    self.writeToIfd(data, wrangler, cam, now)
 
         else:
             # Write a normal plane definition.
