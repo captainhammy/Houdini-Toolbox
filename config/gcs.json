@@ -1,0 +1,125 @@
+
+{
+    "constants": {
+	"DEFAULT": {
+	    "type": "RGB",
+	    "color": 0.8,
+	    "comment": "Default node color."
+	}, 
+
+	"BLACK": {
+	    "type": "RGB",
+	    "color": 0
+	},
+
+	"DARKGREY": {
+	    "type": "RGB",
+	    "color": 0.36
+	},
+
+	"ORANGE": {
+	    "type": "RGB",
+	    "color": [0.8, 0.6, 0]
+	},
+
+	"PURPLE": {
+	    "type": "RGB",
+	    "color": [0.4, 0.2, 0.6]
+	},
+
+	"PINK": {
+	    "type": "HSV",
+	    "color": [300, 0.59, 0.9]
+	}
+    },
+
+    "nodes": {
+
+	"all": {
+	    "generator": {
+		    "type": "RGB",
+		    "color": [0.4, 1 ,1]
+	    },
+
+	    "manager": {
+		"type": "RGB",
+		"color": [0.4, 1, 0.4]
+	    },
+
+	    "null": {
+		"type": "constant",
+		"constant": "BLACK"
+	    },
+
+	    "switch": {
+		"type": "constant",
+		"constant": "DARKGREY"
+	    },
+
+	    "subnet": {
+		"type": "constant",
+		"constant": "ORANGE"
+	    },
+
+	    "merge": {
+		"type": "constant",
+		"constant": "DARKGREY"
+	    },
+
+	    "dopnet": {
+		"type": "RGB",
+		"color": [0, 0.4, 1]
+	    }
+	},
+
+
+	"Object": {
+	    "generator": {
+		    "type": "constant",
+		    "constant": "DEFAULT",
+		    "comment": "Since all objects are generators, leave them the default color."
+	    },
+
+	    "geo": {
+		"type": "RGB",
+		"color": [0, 0.4, 0]
+	    },
+
+	    "cam": {
+		"type": "RGB",
+		"color": 1
+	    },
+
+	    "light": {
+		"type": "RGB",
+		"color": [1, 0.8, 0]
+	    }
+	},
+
+	"Vop": {
+	    "global": {
+		"type": "constant",
+		"constant": "PURPLE"
+	    }
+	}
+    },
+
+    "tools" : {
+	"Vop": {
+	    "Utility": {
+		"type": "RGB",
+		"color": [1, 0.8, 0]
+	    }
+	}
+    },
+
+    "names": {
+	"all": {
+	    "OUT": {
+		"type": "RGB",
+		"color": [0, 0.8, 0]
+	    }
+	}
+    }
+}
+
