@@ -9,6 +9,11 @@
 # Comments: Perform tasks when a Houdini node is created.
 # 
 
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Houdini Toolbox Imports
 import ht.nodes.colors
 
 node = kwargs["node"]
