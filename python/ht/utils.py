@@ -1,4 +1,4 @@
-"""THis module contains utility functions for the ht package.
+"""This module contains utility functions for the ht package.
 
 Synopsis
 --------
@@ -42,6 +42,8 @@ def convertFromUnicode(data):
     # If the data is a dictionary we need to convert the key/value pairs
     # and return a new dictionary.
     if isinstance(data, dict):
+        #TODO: This can be changed to use Python 2.7's dictionary
+        # comprehensions at some point.
         return dict(
             [
                 (convertFromUnicode(key), convertFromUnicode(value))

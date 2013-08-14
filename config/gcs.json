@@ -34,7 +34,6 @@
     },
 
     "nodes": {
-
 	"all": {
 	    "generator": {
 		    "type": "RGB",
@@ -71,7 +70,6 @@
 		"color": [0, 0.4, 1]
 	    }
 	},
-
 
 	"Object": {
 	    "generator": {

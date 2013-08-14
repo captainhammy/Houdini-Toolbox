@@ -19,6 +19,8 @@ Functions:
         Create a session ColorManager object.
 
 """
+__author__ = "Graham Thompson"
+__email__ = "captainhammy@gmail.com"
 
 # =============================================================================
 # IMPORTS

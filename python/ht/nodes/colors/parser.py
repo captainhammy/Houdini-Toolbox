@@ -20,6 +20,8 @@ Functions:
         Build mappings into a ColorManager.
 
 """
+__author__ = "Graham Thompson"
+__email__ = "captainhammy@gmail.com"
 
 # =============================================================================
 # IMPORTS
