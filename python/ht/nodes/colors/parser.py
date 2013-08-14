@@ -119,7 +119,7 @@ def _readFile():
     # Open the target file.
     with open(path) as f:
         # Load the json data and convert the data from unicde.
-        data = json.load(f, objecthook=ht.utils.convertFromUnicode)
+        data = json.load(f, object_hook=ht.utils.convertFromUnicode)
 
     return data
 
