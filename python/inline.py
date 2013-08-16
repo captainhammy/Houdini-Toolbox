@@ -17,6 +17,10 @@ __email__ = "captainhammy@gmail.com"
 import hou
 import inlinecpp
 
+# =============================================================================
+# CONSTANTS
+# =============================================================================
+
 # Mapping between hou.attribTypes and corresponding GA_AttributeOwner values.
 _ATTRIB_TYPE_MAP = {
     hou.attribType.Vertex: 0,
@@ -25,248 +29,9 @@ _ATTRIB_TYPE_MAP = {
     hou.attribType.Global: 3,
 }
 
-# =============================================================================
-# NON-PUBLIC FUNCTIONS
-# =============================================================================
+_HMAJOR = hou.applicationVersion()[0]
 
-# -----------------------------------------------------------------------------
-#    Name: _buildBoundingBox
-#    Args: bounds : (hutil.cppinline.BoundingBox)
-#              An inlinecpp bounding box object.
-#  Raises: N/A
-# Returns: hou.BoundingBox
-#              A HOM style bounding box.
-#    Desc: Convert an inlinecpp returned bounding box to a hou.BoundingBox.
-# -----------------------------------------------------------------------------
-def _buildBoundingBox(bounds):
-    # Construct a new HOM bounding box from the name members of the class.
-    return hou.BoundingBox(
-        bounds.xmin,
-        bounds.ymin,
-        bounds.zmin,
-        bounds.xmax,
-        bounds.ymax,
-        bounds.zmax
-    )
-
-
-# -----------------------------------------------------------------------------
-#    Name: _buildCFloatArray
-#    Args: values : ([float])
-#              A list of floats to convert.
-#  Raises: N/A
-# Returns: c_float_Array
-#              A ctypes float array.
-#    Desc: Convert a list of numbers to a ctypes float array.
-# -----------------------------------------------------------------------------
-def _buildCFloatArray(values):
-    import ctypes
-    arr = (ctypes.c_float * len(values))()
-    arr[:] = values
-
-    return arr
-
-
-# -----------------------------------------------------------------------------
-#    Name: _buildCIntArray
-#    Args: values : ([int])
-#              A list of ints to convert.
-#  Raises: N/A
-# Returns: c_int_Array
-#              A ctypes int array.
-#    Desc: Convert a list of numbers to a ctypes int array.
-# -----------------------------------------------------------------------------
-def _buildCIntArray(values):
-    import ctypes
-    arr = (ctypes.c_int * len(values))()
-    arr[:] = values
-
-    return arr
-
-
-# -----------------------------------------------------------------------------
-#    Name: _buildCStringArray
-#    Args: values : ([str])
-#              A list of strings.
-#  Raises: N/A
-# Returns: c_char_p_Array
-#              A ctypes char * array.
-#    Desc: Convert a list of strings to a ctypes char * array.
-# -----------------------------------------------------------------------------
-def _buildCStringArray(values):
-    import ctypes
-    arr = (ctypes.c_char_p * len(values))()
-    arr[:] = values
-
-    return arr
-
-
-# -----------------------------------------------------------------------------
-#    Name: _cleanStringValues
-#    Args: values : ([str]|(str))
-#              A list of strings.
-#  Raises: N/A
-# Returns: (str)
-#              A tuple of cleaned string values.
-#    Desc: Process a string list, removing empty strings.
-# -----------------------------------------------------------------------------
-def _cleanStringValues(values):
-    return tuple([val for val in values if val])
-
-
-# -----------------------------------------------------------------------------
-#    Name: _getNodesFromPaths
-#    Args: paths : ([str]|(str))
-#              A list of string node paths.
-#  Raises: N/A
-# Returns: (hou.Node)
-#              A tuple of hou.Node objects.
-#    Desc: Convert a list of string paths to hou.Node objects.
-# -----------------------------------------------------------------------------
-def _getNodesFromPaths(paths):
-    return tuple([hou.node(path) for path in paths if path])
-
-
-# -----------------------------------------------------------------------------
-#    Name: _getParmsFromPaths
-#    Args: paths : ([str]|(str))
-#              A list of string parameter paths.
-#  Raises: N/A
-# Returns: (hou.Parm)
-#              A tuple of hou.Parm objects.
-#    Desc: Convert a list of string paths to hou.Parm objects.
-# -----------------------------------------------------------------------------
-def _getParmsFromPaths(paths):
-    return tuple([hou.parm(path) for path in paths if path])
-
-
-# -----------------------------------------------------------------------------
-#    Name: _getPointsFromList
-#    Args: geometry : (hou.Geometry)
-#              The geometry the points belongs to.
-#          point_list : ([int]|(int))
-#              A list of integers representing point numbers.
-#  Raises: N/A
-# Returns: (hou.Point)
-#              A tuple of hou.Point objects.
-#    Desc: Convert a list of point numbers to hou.Point objects.
-# -----------------------------------------------------------------------------
-def _getPointsFromList(geometry, point_list):
-    # Return a empty tuple if the point list is empty.
-    if not point_list:
-        return ()
-
-    # Convert the list of integers to a space separated string.
-    point_str = ' '.join([str(i) for i in point_list])
-
-    # Glob for the specified points.
-    return geometry.globPoints(point_str)
-
-
-# -----------------------------------------------------------------------------
-#    Name: _getPrimsFromList
-#    Args: geometry : (hou.Geometry)
-#              The geometry the primitives belongs to.
-#          prim_list : ([int]|(int))
-#              A list of integers representing primitive numbers.
-#  Raises: N/A
-# Returns: (hou.Prim)
-#              A tuple of hou.Prim objects.
-#    Desc: Convert a list of primitive numbers to hou.Prim objects.
-# -----------------------------------------------------------------------------
-def _getPrimsFromList(geometry, prim_list):
-    # Return a empty tuple if the prim list is empty.
-    if not prim_list:
-        return ()
-
-    # Convert the list of integers to a space separated string.
-    prim_str = ' '.join([str(i) for i in prim_list])
-
-    # Glob for the specified prims.
-    return geometry.globPrims(prim_str)
-
-
-# -----------------------------------------------------------------------------
-#    Name: _getTimeFromOpInfo
-#    Args: node : (hou.Node)
-#              A Houdini node.
-#          prefix : (str)
-#              An opinfo line prefix containing a date and time.
-#  Raises: N/A
-# Returns: datetime.datetime|None
-#              The datetime matching the opinfo line, if it exists, otherwise
-#              None.
-#    Desc: Extract a datetime.datetime from the opinfo of a node.
-# -----------------------------------------------------------------------------
-def _getTimeFromOpInfo(node, prefix):
-    import datetime
-
-    # Get the operator info and split info rows.
-    info = hou.hscript("opinfo -n {0}".format(node.path()))[0].split('\n')
-
-    # Check each row.
-    for row in info:
-        #  If the row doesn't start with our prefix, ignore it.
-        if not row.startswith(prefix):
-            continue
-
-        # Strip the prefix and any leading whitespace.
-        time_str = row[len(prefix):].strip()
-
-        # Construct a datetime object.
-        return datetime.datetime.strptime(time_str, "%d %b %Y %I:%M %p")
-
-    return None
-
-
-# Create the library as a private object.
-_cpp_methods = inlinecpp.createLibrary(
-    "cpp_methods",
-    acquire_hom_lock=True,
-    catch_crashes=True,
-    includes="""
-#include <GA/GA_AttributeRefMap.h>
-#include <GEO/GEO_Face.h>
-#include <GQ/GQ_Detail.h>
-#include <GU/GU_Detail.h>
-#include <OP/OP_CommandManager.h>
-#include <OP/OP_Director.h>
-#include <OP/OP_Node.h>
-#include <OP/OP_OTLDefinition.h>
-#include <OP/OP_OTLManager.h>
-#include <PRM/PRM_Parm.h>
-#include <UT/UT_WorkArgs.h>
-
-// Validate a vector of strings so that it can be returned as a StringArray.
-// Currently we cannot return an empty vector.
-void validateStringVector(std::vector<std::string> &string_vec)
-{
-    // Check for an empty vector.
-    if (string_vec.size() == 0)
-    {
-        // An an empty string.
-        string_vec.push_back("");
-    }
-}
-
-""",
-    structs=[
-        ("IntArray", "*i"),
-        ("StringArray", "**c"),
-        ("StringTuple", "*StringArray"),
-        ("VertexMap", (("prims", "*i"), ("indices", "*i"))),
-        ("Position3D", (("x", "d"), ("y", "d"), ("z", "d"))),
-        ("BoundingBox", (
-            ("xmin", "d"),
-            ("ymin", "d"),
-            ("zmin", "d"),
-            ("xmax", "d"),
-            ("ymax", "d"),
-            ("zmax", "d")
-            )
-        ),
-    ],
-    function_sources=[
+_FUNCTION_SOURCES = [
 """
 const char *
 getVariable(const char *name)
@@ -509,24 +274,6 @@ sortAlongAxis(GU_Detail *gdp, int element_type, int axis)
     else
     {
         gdp->sortPointList(axis_type);
-    }
-}
-""",
-
-"""
-void
-sortByValues(GU_Detail *gdp, int element_type, float *values)
-{
-    // Sort primitives.
-    if (element_type)
-    {
-        gdp->sortPrimitiveList(values);
-    }
-
-    // Sort points.
-    else
-    {
-        gdp->sortPointList(values);
     }
 }
 """,
@@ -2462,9 +2209,294 @@ isDummyDefinition(const char *filename,
     // Couldn't find the library or definition inside is, so return false.
     return false;
 }
-""",
-    ]
+"""
+]
+
+
+# Handle function definition change between 12.5 and 13.
+_FUNCTION_SOURCES.append(
+"""
+void
+sortByValues(GU_Detail *gdp, int element_type, {signature} *values)
+{{
+    // Sort primitives.
+    if (element_type)
+    {{
+        gdp->sortPrimitiveList(values);
+    }}
+
+    // Sort points.
+    else
+    {{
+        gdp->sortPointList(values);
+    }}
+}}
+""".format(signature=("float", "fpreal")[_HMAJOR > 12])
 )
+
+
+# Create the library as a private object.
+_cpp_methods = inlinecpp.createLibrary(
+    "cpp_methods",
+    acquire_hom_lock=True,
+    catch_crashes=True,
+    includes="""
+#include <GA/GA_AttributeRefMap.h>
+#include <GEO/GEO_Face.h>
+#include <GQ/GQ_Detail.h>
+#include <GU/GU_Detail.h>
+#include <OP/OP_CommandManager.h>
+#include <OP/OP_Director.h>
+#include <OP/OP_Node.h>
+#include <OP/OP_OTLDefinition.h>
+#include <OP/OP_OTLManager.h>
+#include <PRM/PRM_Parm.h>
+#include <UT/UT_WorkArgs.h>
+
+// Validate a vector of strings so that it can be returned as a StringArray.
+// Currently we cannot return an empty vector.
+void validateStringVector(std::vector<std::string> &string_vec)
+{
+    // Check for an empty vector.
+    if (string_vec.size() == 0)
+    {
+        // An an empty string.
+        string_vec.push_back("");
+    }
+}
+
+""",
+    structs=[
+        ("IntArray", "*i"),
+        ("StringArray", "**c"),
+        ("StringTuple", "*StringArray"),
+        ("VertexMap", (("prims", "*i"), ("indices", "*i"))),
+        ("Position3D", (("x", "d"), ("y", "d"), ("z", "d"))),
+        ("BoundingBox", (
+            ("xmin", "d"),
+            ("ymin", "d"),
+            ("zmin", "d"),
+            ("xmax", "d"),
+            ("ymax", "d"),
+            ("zmax", "d")
+            )
+        ),
+    ],
+    function_sources=_FUNCTION_SOURCES
+)
+
+# =============================================================================
+# NON-PUBLIC FUNCTIONS
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+#    Name: _buildBoundingBox
+#    Args: bounds : (hutil.cppinline.BoundingBox)
+#              An inlinecpp bounding box object.
+#  Raises: N/A
+# Returns: hou.BoundingBox
+#              A HOM style bounding box.
+#    Desc: Convert an inlinecpp returned bounding box to a hou.BoundingBox.
+# -----------------------------------------------------------------------------
+def _buildBoundingBox(bounds):
+    # Construct a new HOM bounding box from the name members of the class.
+    return hou.BoundingBox(
+        bounds.xmin,
+        bounds.ymin,
+        bounds.zmin,
+        bounds.xmax,
+        bounds.ymax,
+        bounds.zmax
+    )
+
+
+# -----------------------------------------------------------------------------
+#    Name: _buildCDoubleArray
+#    Args: values : ([double])
+#              A list of doubles to convert.
+#  Raises: N/A
+# Returns: c_double_Array
+#              A ctypes double array.
+#    Desc: Convert a list of numbers to a ctypes double array.
+# -----------------------------------------------------------------------------
+def _buildCDoubleArray(values):
+    import ctypes
+    arr = (ctypes.c_double * len(values))()
+    arr[:] = values
+
+    return arr
+
+
+# -----------------------------------------------------------------------------
+#    Name: _buildCFloatArray
+#    Args: values : ([float])
+#              A list of floats to convert.
+#  Raises: N/A
+# Returns: c_float_Array
+#              A ctypes float array.
+#    Desc: Convert a list of numbers to a ctypes float array.
+# -----------------------------------------------------------------------------
+def _buildCFloatArray(values):
+    import ctypes
+    arr = (ctypes.c_float * len(values))()
+    arr[:] = values
+
+    return arr
+
+
+# -----------------------------------------------------------------------------
+#    Name: _buildCIntArray
+#    Args: values : ([int])
+#              A list of ints to convert.
+#  Raises: N/A
+# Returns: c_int_Array
+#              A ctypes int array.
+#    Desc: Convert a list of numbers to a ctypes int array.
+# -----------------------------------------------------------------------------
+def _buildCIntArray(values):
+    import ctypes
+    arr = (ctypes.c_int * len(values))()
+    arr[:] = values
+
+    return arr
+
+
+# -----------------------------------------------------------------------------
+#    Name: _buildCStringArray
+#    Args: values : ([str])
+#              A list of strings.
+#  Raises: N/A
+# Returns: c_char_p_Array
+#              A ctypes char * array.
+#    Desc: Convert a list of strings to a ctypes char * array.
+# -----------------------------------------------------------------------------
+def _buildCStringArray(values):
+    import ctypes
+    arr = (ctypes.c_char_p * len(values))()
+    arr[:] = values
+
+    return arr
+
+
+# -----------------------------------------------------------------------------
+#    Name: _cleanStringValues
+#    Args: values : ([str]|(str))
+#              A list of strings.
+#  Raises: N/A
+# Returns: (str)
+#              A tuple of cleaned string values.
+#    Desc: Process a string list, removing empty strings.
+# -----------------------------------------------------------------------------
+def _cleanStringValues(values):
+    return tuple([val for val in values if val])
+
+
+# -----------------------------------------------------------------------------
+#    Name: _getNodesFromPaths
+#    Args: paths : ([str]|(str))
+#              A list of string node paths.
+#  Raises: N/A
+# Returns: (hou.Node)
+#              A tuple of hou.Node objects.
+#    Desc: Convert a list of string paths to hou.Node objects.
+# -----------------------------------------------------------------------------
+def _getNodesFromPaths(paths):
+    return tuple([hou.node(path) for path in paths if path])
+
+
+# -----------------------------------------------------------------------------
+#    Name: _getParmsFromPaths
+#    Args: paths : ([str]|(str))
+#              A list of string parameter paths.
+#  Raises: N/A
+# Returns: (hou.Parm)
+#              A tuple of hou.Parm objects.
+#    Desc: Convert a list of string paths to hou.Parm objects.
+# -----------------------------------------------------------------------------
+def _getParmsFromPaths(paths):
+    return tuple([hou.parm(path) for path in paths if path])
+
+
+# -----------------------------------------------------------------------------
+#    Name: _getPointsFromList
+#    Args: geometry : (hou.Geometry)
+#              The geometry the points belongs to.
+#          point_list : ([int]|(int))
+#              A list of integers representing point numbers.
+#  Raises: N/A
+# Returns: (hou.Point)
+#              A tuple of hou.Point objects.
+#    Desc: Convert a list of point numbers to hou.Point objects.
+# -----------------------------------------------------------------------------
+def _getPointsFromList(geometry, point_list):
+    # Return a empty tuple if the point list is empty.
+    if not point_list:
+        return ()
+
+    # Convert the list of integers to a space separated string.
+    point_str = ' '.join([str(i) for i in point_list])
+
+    # Glob for the specified points.
+    return geometry.globPoints(point_str)
+
+
+# -----------------------------------------------------------------------------
+#    Name: _getPrimsFromList
+#    Args: geometry : (hou.Geometry)
+#              The geometry the primitives belongs to.
+#          prim_list : ([int]|(int))
+#              A list of integers representing primitive numbers.
+#  Raises: N/A
+# Returns: (hou.Prim)
+#              A tuple of hou.Prim objects.
+#    Desc: Convert a list of primitive numbers to hou.Prim objects.
+# -----------------------------------------------------------------------------
+def _getPrimsFromList(geometry, prim_list):
+    # Return a empty tuple if the prim list is empty.
+    if not prim_list:
+        return ()
+
+    # Convert the list of integers to a space separated string.
+    prim_str = ' '.join([str(i) for i in prim_list])
+
+    # Glob for the specified prims.
+    return geometry.globPrims(prim_str)
+
+
+# -----------------------------------------------------------------------------
+#    Name: _getTimeFromOpInfo
+#    Args: node : (hou.Node)
+#              A Houdini node.
+#          prefix : (str)
+#              An opinfo line prefix containing a date and time.
+#  Raises: N/A
+# Returns: datetime.datetime|None
+#              The datetime matching the opinfo line, if it exists, otherwise
+#              None.
+#    Desc: Extract a datetime.datetime from the opinfo of a node.
+# -----------------------------------------------------------------------------
+def _getTimeFromOpInfo(node, prefix):
+    import datetime
+
+    # Get the operator info and split info rows.
+    info = hou.hscript("opinfo -n {0}".format(node.path()))[0].split('\n')
+
+    # Check each row.
+    for row in info:
+        #  If the row doesn't start with our prefix, ignore it.
+        if not row.startswith(prefix):
+            continue
+
+        # Strip the prefix and any leading whitespace.
+        time_str = row[len(prefix):].strip()
+
+        # Construct a datetime object.
+        return datetime.datetime.strptime(time_str, "%d %b %Y %I:%M %p")
+
+    return None
+
+
+
 
 # =============================================================================
 # FUNCTIONS
@@ -2853,8 +2885,13 @@ def sortByValues(self, geometry_type, values):
                 "Length of values must equal the number of points."
             )
 
-        # Construct a ctypes float array to pass the values.
-        arr = _buildCFloatArray(values)
+        if _HMAJOR > 12:
+            # Construct a ctypes double array to pass the values.
+            arr = _buildCDoubleArray(values)
+
+        else:
+            # Construct a ctypes float array to pass the values.
+            arr = _buildCFloatArray(values)
 
         _cpp_methods.sortByValues(self, 0, arr)
 
@@ -2865,8 +2902,13 @@ def sortByValues(self, geometry_type, values):
                 "Length of values must equal the number of prims."
             )
 
-        # Construct a ctypes float array to pass the values.
-        arr = _buildCFloatArray(values)
+        if _HMAJOR > 12:
+            # Construct a ctypes double array to pass the values.
+            arr = _buildCDoubleArray(values)
+
+        else:
+            # Construct a ctypes float array to pass the values.
+            arr = _buildCFloatArray(values)
 
         _cpp_methods.sortByValues(self, 1, arr)
 
