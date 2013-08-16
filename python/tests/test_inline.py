@@ -121,7 +121,7 @@ class TestInlineCpp(unittest.TestCase):
         hou.setVariable("awesome", value)
 
         self.assertEqual(hou.getVariable("awesome"), 22)
-    
+
     def test_getVariableNames(self):
         variableNames = hou.getVariableNames()
 
@@ -843,7 +843,7 @@ class TestInlineCpp(unittest.TestCase):
 
     def test_sharedEdges(self):
         geo = getObjGeo("test_sharedEdges")
-    
+
         pr0, pr1 = geo.prims()
 
         edges = pr0.sharedEdges(pr1)
@@ -2001,7 +2001,13 @@ class TestInlineCpp(unittest.TestCase):
 
 if __name__ == '__main__':
     # Load the testing hip file.
-    hou.hipFile.load("test_inline.hip")
+    try:
+        hou.hipFile.load("test_inline.hip")
+
+    # Catch any load warnings and ignore.
+    except hou.LoadWarning:
+        pass
+
     # Run the tests.
     unittest.main()
 
