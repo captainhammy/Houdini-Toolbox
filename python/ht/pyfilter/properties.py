@@ -66,8 +66,7 @@ class PropertySetting(object):
         """
         logging.debug("Creating property {0}.".format(name))
 
-        # Remove unicode.
-        self._name = str(name)
+        self._name = name
 
         # Store the raw value object.
         self._value = propertyBlock["value"]
@@ -103,12 +102,9 @@ class PropertySetting(object):
 
     # -------------------------------------------------------------------------
     #    Name: _processValue
-    #    Args: values : ([str])
-    #              A list of strings.
     #  Raises: N/A
-    # Returns: c_char_p_Array
-    #              A ctypes char * array.
-    #    Desc: Convert a list of strings to a ctypes char * array.
+    # Returns: None
+    #    Desc: Perform any operations or cleanup on our data.
     # -------------------------------------------------------------------------
     def _processValue(self):
         # Skip normal types.
@@ -123,10 +119,6 @@ class PropertySetting(object):
         if len(self.value) == 1:
             self.value = self.value[0]
 
-        # If the object is a unicode string, convert to a normal string.
-        if isinstance(self.value, unicode):
-            self.value = str(self.value)
-
         # If the value is actually a relative file, search for it in the
         # Houdini path.
         if self.findFile:
@@ -138,8 +130,8 @@ class PropertySetting(object):
             containsStrings = False
 
             for val in self.value:
-                # If the value is a string or unicode, flag it.
-                if isinstance(val, (str, unicode)):
+                # If the value is a string, flag it.
+                if isinstance(val, str):
                     containsStrings = True
                     break
 

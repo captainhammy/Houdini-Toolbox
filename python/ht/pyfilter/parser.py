@@ -26,6 +26,7 @@ import logging
 
 # Houdini Toolbox Imports
 from ht.pyfilter.properties import MaskedPropertySetting, PropertySetting
+import ht.utils
 
 # =============================================================================
 # EXPORTS
@@ -193,9 +194,8 @@ def buildPropertyInformation():
             logging.debug("Reading properties from {0}".format(path))
 
             # Load json data from the file.
-            f = open(path)
-            data = json.load(f)
-            f.close()
+            with open(path) as f:
+                data = json.load(f, object_hook=ht.utils.convertFromUnicode)
 
             # Process each filter stage name and it's data.
             for stageName, stageData in data.iteritems():
