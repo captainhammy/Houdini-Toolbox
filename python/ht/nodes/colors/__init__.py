@@ -163,7 +163,7 @@ class ColorManager(object):
 
         # Check for entries for the node type category.
         if categoryName in self.names:
-            # Check if the location matches any of the category entries.
+            # Check if the name matches any of the category entries.
             for pattern, color in self.names[categoryName].iteritems():
                 if hou.patternMatch(pattern, name):
                     return color
