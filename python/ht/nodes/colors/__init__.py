@@ -163,10 +163,10 @@ class ColorManager(object):
 
         # Check for entries for the node type category.
         if categoryName in self.names:
-            # Check if the node name is in the mapping.
-            if name in self.names[categoryName]:
-                # Return the found object's color object.
-                return self.names[categoryName][name]
+            # Check if the location matches any of the category entries.
+            for pattern, color in self.names[categoryName].iteritems():
+                if hou.patternMatch(pattern, name):
+                    return color
 
         return None
 
@@ -216,9 +216,11 @@ class ColorManager(object):
             # Process the locations, looking for the first match.
             for location in menuLocations:
                 # Check if the node name is in the mapping.
-                if location in self.tools[categoryName]:
-                    # Return the found object's color object.
-                    return self.tools[categoryName][location]
+
+                # Check if the location matches any of the category entries.
+                for pattern, color in self.tools[categoryName].iteritems():
+                    if hou.patternMatch(pattern, location):
+                        return color
 
         return None
 
@@ -259,14 +261,14 @@ class ColorManager(object):
         if categoryName is None:
             categoryName = nodeType.category().name()
 
-        typeName = nodeType.name()
+        typeName = nodeType.nameComponents()[2]
 
         # Check if the category has any entries.
         if categoryName in self.nodes:
-            # Check if the node type name is in the category entries.
-            if typeName in self.nodes[categoryName]:
-                # Return the found color.
-                return self.nodes[categoryName][typeName]
+            # Check if the node type name matches any of the category entries.
+            for pattern, color in self.nodes[categoryName].iteritems():
+                if hou.patternMatch(pattern, typeName):
+                    return color
 
         return None
 
@@ -358,6 +360,17 @@ class ColorManager(object):
         if color is not None:
             node.setColor(color)
 
+    def reload(self):
+        """Reload all color mappings.
+
+        Raises:
+            N/A
+
+        Returns:
+            None
+
+        """
+        ht.nodes.colors.parser.buildMappings(self)
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS

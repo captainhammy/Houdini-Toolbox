@@ -88,7 +88,7 @@
 		"color": 1
 	    },
 
-	    "light": {
+	    "*light*": {
 		"type": "RGB",
 		"color": [1, 0.8, 0]
 	    }
@@ -108,6 +108,13 @@
 		"type": "RGB",
 		"color": [1, 0.8, 0]
 	    }
+	},
+
+	"all": {
+	    "*Assets*": {
+		"type": "RGB",
+		"color": [0, 0.8, 0.3]
+	    }
 	}
     },
 
@@ -116,6 +123,13 @@
 	    "OUT": {
 		"type": "RGB",
 		"color": [0, 0.8, 0]
+	    }
+	},
+
+	"Object": {
+	    "*TEST*": {
+		"type": "RGB",
+		"color": [1, 0, 0.5]
 	    }
 	}
     }
