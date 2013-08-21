@@ -33,7 +33,7 @@ _HMAJOR = hou.applicationVersion()[0]
 
 _FUNCTION_SOURCES = [
 """
-const char *
+char *
 getVariable(const char *name)
 {
     OP_CommandManager           *cmd;
@@ -49,7 +49,7 @@ getVariable(const char *name)
 
     cmd->getVariable(name, value);
 
-    return value.buffer();
+    return strdup(value.buffer());
 }
 """,
 
