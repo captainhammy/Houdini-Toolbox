@@ -9,7 +9,7 @@
  *	point number.
  *
  * Name: SOP_IdAttribCopy.C
- * 
+ *
 */
 
 #include "SOP_IdAttribCopy.h"
@@ -61,8 +61,10 @@ public:
                 {
                     // Get the id value for this point.
                     id = id_ph.get(pt);
+
                     // Try to find the corresponding id.
                     map_it = myIdMap->find(id);
+
                     // If the iterator isn't at the end, copy the value.
                     if (map_it != myIdMap->end())
                     {
@@ -90,7 +92,7 @@ private:
 
 };
 
-void 
+void
 newSopOperator(OP_OperatorTable *table)
 {
     table->addOperator(
@@ -105,24 +107,24 @@ newSopOperator(OP_OperatorTable *table)
 }
 
 OP_Node *
-SOP_IdAttribCopy::myConstructor(OP_Network *net, 
-                                const char *name, 
+SOP_IdAttribCopy::myConstructor(OP_Network *net,
+                                const char *name,
                                 OP_Operator *op)
 {
     return new SOP_IdAttribCopy(net, name, op);
 }
 
 SOP_IdAttribCopy::SOP_IdAttribCopy(OP_Network *net,
-                                   const char *name, 
+                                   const char *name,
                                    OP_Operator *op):
     SOP_Node(net, name, op), myGroup(0) {}
 
 unsigned
 SOP_IdAttribCopy::disableParms()
 {
-    fpreal	t = CHgetEvalTime();
-    unsigned 	changed;
-    bool 	group;
+    fpreal	                t = CHgetEvalTime();
+    unsigned 	                changed;
+    bool 	                group;
 
 
     // Are we grouping the matched points?
@@ -260,15 +262,13 @@ OP_ERROR
 SOP_IdAttribCopy::cookMySop(OP_Context &context)
 {
     bool                        group_matched;
+    exint                       id;
     fpreal 		        now;
-    exint                       id; 
-
-    GA_Offset                   start, end;
-
-    GA_PointGroup               *group;
 
     const GA_Attribute          *source_attr;
     const GA_AttributeDict      *dict;
+    GA_Offset                   start, end;
+    GA_PointGroup               *group;
     GA_ROAttributeRef           id_gah, srcid_gah, attr_gah;
     GA_ROPageHandleI            srcid_ph;
 
@@ -277,7 +277,7 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
     UT_BitArray                 matches;
     UT_String                   attribute_name, pattern, group_name;
     UT_WorkArgs                 tokens;
-    
+
     IdOffsetMap                 id_map;
 
     now = context.getTime();
@@ -299,7 +299,7 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
 
         // Get the attribute selection string.
         ATTRIBUTES(pattern, now);
-        
+
         // Try to find the 'id' point attribute on the 1st input geometry.
         id_gah = gdp->findPointAttribute(GA_SCOPE_PUBLIC, "id");
         // If it doesn't exist, display a node error message and exit.
@@ -312,6 +312,7 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
 
         // Try to find the 'id' point attribute on the 2nd input geometry.
         srcid_gah = src_geo->findPointAttribute(GA_SCOPE_PUBLIC, "id");
+
         // If it doesn't exist, display a node error message and exit.
         if (srcid_gah.isInvalid())
         {
@@ -352,6 +353,7 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
 
                 // Try to find the attribute on the first input geometry.
                 attr_gah = gdp->findPointAttrib(*source_attr);
+
                 // If it doesn't exist, create a new attribute.
                 if (attr_gah.isInvalid())
                 {
@@ -367,6 +369,7 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
             if (COPYP(now))
             {
                 attribute_name = "P";
+
                 // If 'P' matches our pattern, add it to the map.
                 if (attribute_name.matchPattern(tokens))
                     hmap.append(gdp->getP(), src_geo->getP());
@@ -384,12 +387,13 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
         {
             // Set the page handle to the start of this page.
             srcid_ph.setPage(start);
-            
+
             // Iterate over all the points in the page.
             for (GA_Offset pt = start; pt < end; ++pt)
             {
                 // Get the 'id' value for the point.
                 id = srcid_ph.get(pt);
+
                 // Store a mapping from the 'id' to the point.
                 id_map[id] = pt;
             }
@@ -403,9 +407,10 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
             // Resize the bit array to match the number of points in
             // the detail.
             matches.resize(gdp->getNumPoints());
-            
+
             // Get the group name to use.
             GROUPNAME(group_name, now);
+
             // Create a new point group.
             group = gdp->newPointGroup(group_name);
         }
@@ -426,11 +431,10 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
         // indices to the new group.
         if (group_matched)
         {
-            int i=0;
-            for (matches.iterateInit(i); i >= 0; i = matches.iterateNext(i))
+            exint i=0;
+            for (matches.iterateInit(i); i >= 0; i=matches.iterateNext(i))
             {
-                if (matches(i))
-                    group->addOffset(gdp->pointOffset(i));
+                group->addOffset(gdp->pointOffset(i));
             }
         }
     }

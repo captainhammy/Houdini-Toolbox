@@ -7,7 +7,7 @@
  * Description:
  *      Copy point attributes based on the 'id' attribute instead of the
  *	point number.
- * 
+ *
  * Name: SOP_IdAttribCopy.h
  *
 */
@@ -27,8 +27,8 @@ typedef boost::unordered_map<exint, GA_Offset> IdOffsetMap;
 class SOP_IdAttribCopy: public SOP_Node
 {
 public:
-    static OP_Node      *myConstructor(OP_Network *, 
-				       const char *, 
+    static OP_Node      *myConstructor(OP_Network *,
+				       const char *,
 				       OP_Operator *);
     static PRM_Template myTemplateList[];
     static void		buildMenu(void *,
@@ -38,11 +38,11 @@ public:
 				  const PRM_Parm *);
     static bool	        validateAttrib(const GA_Attribute *,
 				       void *);
-    virtual OP_ERROR             cookInputGroups(OP_Context &context, 
+    virtual OP_ERROR             cookInputGroups(OP_Context &context,
                                                 int alone = 0);
 protected:
-			SOP_IdAttribCopy(OP_Network *, 
-					 const char *, 
+			SOP_IdAttribCopy(OP_Network *,
+					 const char *,
 					 OP_Operator *);
     virtual		~SOP_IdAttribCopy() {};
     virtual OP_ERROR	cookMySop(OP_Context &);
