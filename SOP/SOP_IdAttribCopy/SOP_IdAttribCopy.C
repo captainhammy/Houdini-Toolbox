@@ -258,6 +258,28 @@ SOP_IdAttribCopy::cookInputGroups(OP_Context &context, int alone)
     return error();
 }
 
+int
+SOP_IdAttribCopy::copyLocalVariables(const char *attr,
+                                     const char *varname,
+                                     void *data)
+{
+    GA_ROAttributeRef           gah;
+
+    GU_Detail                   *gdp;
+
+    // Extract the detail.
+    gdp = (GU_Detail *)data;
+
+    // Try to find the attribute we are processing.
+    gah = gdp->findPointAttribute(attr);
+
+    // If a point attribute exists then we can copy this variable mapping.
+    if (gah.isValid())
+        gdp->addVariableName(attr, varname);
+
+    return 1;
+}
+
 OP_ERROR
 SOP_IdAttribCopy::cookMySop(OP_Context &context)
 {
@@ -426,6 +448,13 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
                                         &id_map,
                                         group_matched ? &matches : 0)
                      );
+
+        // Traverse the variable names on the input geometry and attempt to
+        // copy any that match to our new geometry.
+        src_geo->traverseVariableNames(
+            SOP_IdAttribCopy::copyLocalVariables,
+            gdp
+        );
 
         // If we are grouping, check the bit array and add the corresponding
         // indices to the new group.

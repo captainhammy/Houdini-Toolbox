@@ -40,6 +40,10 @@ public:
 				       void *);
     virtual OP_ERROR             cookInputGroups(OP_Context &context,
                                                 int alone = 0);
+    static int          copyLocalVariables(const char *,
+                                           const char *,
+                                           void *);
+
 protected:
 			SOP_IdAttribCopy(OP_Network *,
 					 const char *,
