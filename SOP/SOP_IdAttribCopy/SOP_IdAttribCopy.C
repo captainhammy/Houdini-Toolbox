@@ -6,7 +6,7 @@
  *
  * Description:
  *      Copy point attributes based on the 'id' attribute instead of the
- *	point number.
+ *      point number.
  *
  * Name: SOP_IdAttribCopy.C
  *
@@ -122,9 +122,9 @@ SOP_IdAttribCopy::SOP_IdAttribCopy(OP_Network *net,
 unsigned
 SOP_IdAttribCopy::disableParms()
 {
-    fpreal	                t = CHgetEvalTime();
-    unsigned 	                changed;
-    bool 	                group;
+    fpreal                      t = CHgetEvalTime();
+    unsigned                    changed;
+    bool                        group;
 
 
     // Are we grouping the matched points?
@@ -198,7 +198,7 @@ SOP_IdAttribCopy::buildMenu(void *data,
 
 
 OP_ERROR
-SOP_IdAttribCopy::cookInputGroups(OP_Context &context, int alone)
+SOP_IdAttribCopy::cookInputGroups(OP_Context &context, int alone=0)
 {
     // If we are called by the handle, then "alone" equals 1.  In that
     // case, we have to lock the inputs oursevles, and unlock them
@@ -285,7 +285,7 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
 {
     bool                        group_matched;
     exint                       id;
-    fpreal 		        now;
+    fpreal                      now;
 
     const GA_Attribute          *source_attr;
     const GA_AttributeDict      *dict;
