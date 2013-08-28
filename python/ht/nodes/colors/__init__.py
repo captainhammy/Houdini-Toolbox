@@ -66,10 +66,10 @@ class ColorManager(object):
             N/A
 
         """
-	self._constants = {}
-	self._names = {}
-	self._nodes = {}
-	self._tools = {}
+        self._constants = {}
+        self._names = {}
+        self._nodes = {}
+        self._tools = {}
 
         # Build mappings for this object.
         ht.nodes.colors.parser.buildMappings(self)
@@ -279,22 +279,22 @@ class ColorManager(object):
     @property
     def constants(self):
         """(dict) A dictionary of constant colors."""
-	return self._constants
+        return self._constants
 
     @property
     def names(self):
         """(dict) A dictionary of node name colors."""
-	return self._names
+        return self._names
 
     @property
     def nodes(self):
         """(dict) A dictionary of node type name colors."""
-	return self._nodes
+        return self._nodes
 
     @property
     def tools(self):
         """(dict) A dictionary of tool menu location colors."""
-	return self._tools
+        return self._tools
 
     # =========================================================================
     # METHODS
