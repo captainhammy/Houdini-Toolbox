@@ -1,13 +1,7 @@
-#
-# Produced by:
-#       Graham Thompson
-#       captainhammy@gmail.com
-#       www.captainhammy.com
-#
-# Name: 456.py
-#
-# Comments: Perform tasks when a .hip file is loaded.
-# 
+"""Perform tasks when a .hip file is loaded."""
+
+__author__ = "Graham Thompson"
+__email__ = "captainhammy@gmail.com"
 
 # =============================================================================
 # IMPORTS

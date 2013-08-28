@@ -1,13 +1,7 @@
-#
-# Produced by:
-#       Graham Thompson
-#       captainhammy@gmail.com
-#       www.captainhammy.com
-#
-# Name: OnCreated.py
-#
-# Comments: Perform tasks when a Houdini node is created.
-# 
+"""Perform tasks when a Houdini node is created."""
+
+__author__ = "Graham Thompson"
+__email__ = "captainhammy@gmail.com"
 
 # =============================================================================
 # IMPORTS
