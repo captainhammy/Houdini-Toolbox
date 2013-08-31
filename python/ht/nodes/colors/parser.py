@@ -3,6 +3,10 @@
 Synopsis
 --------
 
+Classes:
+    ColorEntry
+        This class represents a color bound to a name.
+
 Exceptions:
     ConstantDoesNotExistError
         Exception raised when a color attempts to reference a non-existent
@@ -41,11 +45,74 @@ import hou
 # =============================================================================
 
 __all__ = [
+    "ColorEntry",
     "ConstantDoesNotExistError",
     "InvalidColorTypeError",
     "buildColor",
     "buildMappings",
 ]
+
+# =============================================================================
+# CLASSES
+# =============================================================================
+
+class ColorEntry(object):
+    """This class represents a color bound to a name.
+
+    """
+
+    # =========================================================================
+    # CONSTRUCTORS
+    # =========================================================================
+
+    def __init__(self, name, color):
+        """Initialize a ColorEntry object.
+
+        Args:
+            name : (str)
+                The name the color is mapped to.
+
+            color : (hou.Color)
+                The color.
+
+        Raises:
+            N/A
+
+        Returns:
+            N/A
+
+        """
+        self._name = name
+        self._color = color
+
+    # =========================================================================
+    # SPECIAL METHODS
+    # =========================================================================
+
+    def __eq__(self, entry):
+        # For our purposes we only care if the names match.
+        return self.name == entry.name
+
+    def __repr__(self):
+        return "<ColorEntry {name} ({color})>".format(
+            name=self.name,
+            color=self.color
+        )
+
+    # =========================================================================
+    # INSTANCE PROPERTIES
+    # =========================================================================
+
+    @property
+    def color(self):
+        """(hou.Color) The mapped color."""
+        return self._color
+
+    @property
+    def name(self):
+        """(str) The name the color is mapped to."""
+        return self._name
+
 
 # =============================================================================
 # EXCEPTIONS
@@ -215,14 +282,17 @@ def buildMappings(manager):
             # Get the mapping dictionary from the manager.
             colorTypeMap = getattr(manager, assignmentType)
 
-            # Process each context in the data.
-            for contextName, entries in data[assignmentType].iteritems():
-                # Get a mapping dictionary for the context name.
-                contextMap = colorTypeMap.setdefault(contextName, {})
+            # Process each category in the data.
+            for categoryName, entries in data[assignmentType].iteritems():
+                # Get a mapping list for the category name.
+                categoryList = colorTypeMap.setdefault(categoryName, [])
 
                 # Process each entry.  The entry name can be a node type name,
                 # Tab menu folder name, or manager/generator.
-                for entryName, entry in entries.iteritems():
+                for entry in entries:
+                    # Get the entry name and remove it from the data.
+                    entryName = entry.pop("name")
+
                     # Is the color type a constant?
                     if entry["type"] == "constant":
                         # Get the constant name.
@@ -239,6 +309,24 @@ def buildMappings(manager):
                     else:
                         color = buildColor(entry)
 
-                    # Add the color to the context map.
-                    contextMap[entryName] = color
+                    # Add a ColorEntry to the list.
+                    categoryList.append(ColorEntry(entryName, color))
+
+        # Look for "all" entries.  If there are any then we want to integrate
+        # them into all categories if they don't exist there already.
+        if "all" in colorTypeMap:
+            # Remove the entries from the map.
+            allEntries = colorTypeMap.pop("all")
+
+            # Process each available node type category.
+            for categoryName in hou.nodeTypeCategories():
+                # Get the list of the category.
+                categoryList = colorTypeMap.setdefault(categoryName, [])
+
+                # Process each of the all entries for the current category.
+                # If no entry with the same name exists, add the color to the
+                # category.
+                for entry in allEntries:
+                    if entry not in categoryList:
+                        categoryList.append(entry)
 

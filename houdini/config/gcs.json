@@ -34,104 +34,126 @@
     },
 
     "nodes": {
-	"all": {
-	    "generator": {
+	"all": [
+	    {
+		"name": "generator",
 		    "type": "RGB",
 		    "color": [0.4, 1 ,1]
 	    },
 
-	    "manager": {
+	    {
+		"name": "manager",
 		"type": "RGB",
 		"color": [0.4, 1, 0.4]
 	    },
 
-	    "null": {
+	    {
+		"name": "null",
 		"type": "constant",
 		"constant": "BLACK"
 	    },
 
-	    "switch": {
+	    {
+		"name": "switch",
 		"type": "constant",
 		"constant": "DARKGREY"
 	    },
 
-	    "subnet": {
+	    {
+		"name": "subnet",
 		"type": "constant",
 		"constant": "ORANGE"
 	    },
 
-	    "merge": {
+	    {
+		"name": "merge",
 		"type": "constant",
 		"constant": "DARKGREY"
 	    },
 
-	    "dopnet": {
+	    {
+		"name": "dopnet",
 		"type": "RGB",
 		"color": [0, 0.4, 1]
 	    }
-	},
+	],
 
-	"Object": {
-	    "generator": {
-		    "type": "constant",
-		    "constant": "DEFAULT",
-		    "comment": "Since all objects are generators, leave them the default color."
+	"Object": [
+	    {
+		"name": "generator",
+		"type": "constant",
+		"constant": "DEFAULT",
+		"comment": "Since all objects are generators, leave them the default color."
 	    },
 
-	    "geo": {
+	    {
+		"name": "geo",
 		"type": "RGB",
 		"color": [0, 0.4, 0]
 	    },
 
-	    "cam": {
+	    {	
+		"name": "cam",
 		"type": "RGB",
 		"color": 1
 	    },
 
-	    "*light*": {
+	    {
+		"name": "light",
+		"type": "RGB",
+		"color": [1, 0, 0]
+	    },
+
+	    {
+		"name": "*light*",
 		"type": "RGB",
 		"color": [1, 0.8, 0]
 	    }
-	},
+	],
 
-	"Vop": {
-	    "global": {
+	"Vop": [
+	    {
+		"name": "global",
 		"type": "constant",
 		"constant": "PURPLE"
 	    }
-	}
+	]
     },
 
     "tools" : {
-	"Vop": {
-	    "Utility": {
+	"Vop": [
+	    {
+		"name": "Utility",
 		"type": "RGB",
 		"color": [1, 0.8, 0]
 	    }
-	},
+	],
 
-	"all": {
-	    "*Assets*": {
+	"all": [
+	    {
+		"name": "*Assets*",
 		"type": "RGB",
 		"color": [0, 0.8, 0.3]
 	    }
-	}
+	]
     },
 
     "names": {
-	"all": {
-	    "OUT": {
+	"all": [
+	    {
+		"name": "OUT",
 		"type": "RGB",
 		"color": [0, 0.8, 0]
 	    }
-	},
+	],
 
-	"Object": {
-	    "*TEST*": {
+	"Object": [
+	    {
+		"name": "*TEST*",
 		"type": "RGB",
 		"color": [1, 0, 0.5]
 	    }
-	}
+	]
     }
 }
 

@@ -96,32 +96,7 @@ class ColorManager(object):
     #          or generator type.
     # -------------------------------------------------------------------------
     def _getManagerGeneratorColor(self, nodeType):
-        # Try to get a color match for the exact node type and category.
-        color = self._getManagerGeneratorEntry(nodeType)
-
-        # Look for an entry in the generic category.
-        if color is None:
-            color = self._getManagerGeneratorEntry(nodeType, "all")
-
-        return color
-
-    # -------------------------------------------------------------------------
-    #    Name: _getManagerGeneratorEntry
-    #    Args: nodeType : (hou.NodeType)
-    #              The node type to get a node type name match for.
-    #          categoryName=None : (str)
-    #              An optional node type category name.  If None, use the node
-    #              type category from the node.
-    #  Raises: N/A
-    # Returns: hou.Color|None
-    #              Returns the matching color, if any, otherwise None.
-    #    Desc: Look for a color match based on the node type category being a
-    #          manager or generator type.
-    # -------------------------------------------------------------------------
-    def _getManagerGeneratorEntry(self, nodeType, categoryName=None):
-        # Get the category name from the node.
-        if categoryName is None:
-            categoryName = nodeType.category().name()
+        categoryName = nodeType.category().name()
 
         # Check if the category has any entries.
         if categoryName in self.nodes:
@@ -130,14 +105,16 @@ class ColorManager(object):
             # The node type is a manager.
             if nodeType.isManager():
                 # Check for a manager entry under the category.
-                if "manager" in categoryEntries:
-                    return categoryEntries["manager"]
+                for colorEntry in categoryEntries:
+                    if colorEntry.name == "manager":
+                        return colorEntry.color
 
             # The node type is a generator.
             elif nodeType.isGenerator():
                 # Check for a generator entry under the category.
-                if "generator" in categoryEntries:
-                    return categoryEntries["generator"]
+                for colorEntry in categoryEntries:
+                    if colorEntry.name == "generator":
+                        return colorEntry.color
 
         return None
 
@@ -145,18 +122,14 @@ class ColorManager(object):
     #    Name: _getNameEntry
     #    Args: node: (hou.Node)
     #              The node to look for a name match for.
-    #          categoryName=None : (str)
-    #              An optional node type category name.  If None, use the node
-    #              type category from the node.
     #  Raises: N/A
     # Returns: hou.Color|None
     #              Returns the matching color, if any, otherwise None.
     #    Desc: Look for a color match based on the node name.
     # -------------------------------------------------------------------------
-    def _getNameEntry(self, node, categoryName=None):
+    def _getNameEntry(self, node):
         # Get the category name from the node.
-        if categoryName is None:
-            categoryName = node.type().category().name()
+        categoryName = node.type().category().name()
 
         # The node name.
         name = node.name()
@@ -164,9 +137,9 @@ class ColorManager(object):
         # Check for entries for the node type category.
         if categoryName in self.names:
             # Check if the name matches any of the category entries.
-            for pattern, color in self.names[categoryName].iteritems():
-                if hou.patternMatch(pattern, name):
-                    return color
+            for colorEntry in self.names[categoryName]:
+                if hou.patternMatch(colorEntry.name, name):
+                    return colorEntry.color
 
         return None
 
@@ -181,32 +154,8 @@ class ColorManager(object):
     #          locations.
     # -------------------------------------------------------------------------
     def _getToolColor(self, nodeType):
-        # Try to get a color match for the exact node type and category.
-        color = self._getToolEntry(nodeType)
-
-        # Look for an entry in the generic category.
-        if color is None:
-            color = self._getToolEntry(nodeType, "all")
-
-        return color
-
-    # -------------------------------------------------------------------------
-    #    Name: _getToolEntry
-    #    Args: nodeType : (hou.NodeType)
-    #              The node type to get a tool menu location match for.
-    #          categoryName=None : (str)
-    #              An optional node type category name.  If None, use the node
-    #              type category from the node.
-    #  Raises: N/A
-    # Returns: hou.Color|None
-    #              Returns the matching color, if any, otherwise None.
-    #    Desc: Look for a color match based on the node type's category and
-    #          Tab menu locations.
-    # -------------------------------------------------------------------------
-    def _getToolEntry(self, nodeType, categoryName=None):
         # Get the category name from the node.
-        if categoryName is None:
-            categoryName = nodeType.category().name()
+        categoryName = nodeType.category().name()
 
         # Check for entries for the node type category.
         if categoryName in self.tools:
@@ -218,9 +167,9 @@ class ColorManager(object):
                 # Check if the node name is in the mapping.
 
                 # Check if the location matches any of the category entries.
-                for pattern, color in self.tools[categoryName].iteritems():
-                    if hou.patternMatch(pattern, location):
-                        return color
+                for colorEntry in self.tools[categoryName]:
+                    if hou.patternMatch(colorEntry.name, location):
+                        return colorEntry.color
 
         return None
 
@@ -234,41 +183,17 @@ class ColorManager(object):
     #    Desc: Look for a color match based on the node type's name.
     # -------------------------------------------------------------------------
     def _getTypeColor(self, nodeType):
-        # Try to get a color match for the exact node type and category.
-        color = self._getTypeEntry(nodeType)
-
-        # Look for an entry in the generic category.
-        if color is None:
-            color = self._getTypeEntry(nodeType, "all")
-
-        return color
-
-    # -------------------------------------------------------------------------
-    #    Name: _getTypeEntry
-    #    Args: nodeType : (hou.NodeType)
-    #              The node type to get a node type name match for.
-    #          categoryName=None : (str)
-    #              An optional node type category name.  If None, use the node
-    #              type category from the node.
-    #  Raises: N/A
-    # Returns: hou.Color|None
-    #              Returns the matching color, if any, otherwise None.
-    #    Desc: Look for a color match based on the node type's category and
-    #          name.
-    # -------------------------------------------------------------------------
-    def _getTypeEntry(self, nodeType, categoryName=None):
         # Get the category name from the node.
-        if categoryName is None:
-            categoryName = nodeType.category().name()
+        categoryName = nodeType.category().name()
 
         typeName = nodeType.nameComponents()[2]
 
         # Check if the category has any entries.
         if categoryName in self.nodes:
             # Check if the node type name matches any of the category entries.
-            for pattern, color in self.nodes[categoryName].iteritems():
-                if hou.patternMatch(pattern, typeName):
-                    return color
+            for colorEntry in self.nodes[categoryName]:
+                if hou.patternMatch(colorEntry.name, typeName):
+                    return colorEntry.color
 
         return None
 
@@ -316,10 +241,6 @@ class ColorManager(object):
         """
         # Look for a name entry for the node's type category.
         color = self._getNameEntry(node)
-
-        # Look for a name entry in the generic category.
-        if color is None:
-            color = self._getNameEntry(node, "all")
 
         # If a color was found, set the node to it.
         if color is not None:
