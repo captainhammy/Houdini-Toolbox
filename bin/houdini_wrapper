@@ -1,0 +1,83 @@
+#!/usr/bin/python
+"""Launch Houdini related applications.
+
+"""
+__author__ = "Graham Thompson"
+__email__ = "captainhammy@gmail.com"
+
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Standard Library Imports
+import os
+import signal
+import sys
+
+# Houdini Toolbox Imports
+import ht.houdini.wrapper
+
+# =============================================================================
+# CONSTANTS
+# =============================================================================
+
+# Signals we want to handle and their names.
+SIGNALS = {
+    signal.SIGHUP: "HUP",
+    signal.SIGINT: "INT",
+    signal.SIGQUIT: "QUIT",
+    signal.SIGTERM: "TERM"
+}
+
+# =============================================================================
+# FUNCTIONS
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+#    Name: _handler
+#    Args: signalNum : (int)
+#              The signal number.
+#          frame : (object)
+#              The current stack frame.
+#  Raises: N/A
+# Returns: None
+#    Desc: Signal handler to catch incoming signals and kill the process
+#          group.  This allows things like the Render Scheduler to kill
+#          Mantra renders.
+# -----------------------------------------------------------------------------
+def _handler(signalNum, frame):
+    signalName = SIGNALS[signalNum]
+    print "Houdini wrapper caught sig SIG{0}".format(signalName)
+
+    # Ignore further signals.
+    for sig in SIGNALS:
+        signal.signal(sig, signal.SIG_DFL)
+
+    # Get the current process group id.
+    gid = os.getpgid(0)
+
+    # Kill all the processes in the group.
+    os.killpg(gid, 15)
+
+    # Exit with non-default status.
+    sys.exit(1)
+
+# -----------------------------------------------------------------------------
+#    Name: main
+#  Raises: N/A
+# Returns: None
+#    Desc: Main function.
+# -----------------------------------------------------------------------------
+def main():
+    # Handle specified signals.
+    for sig in SIGNALS:
+        signal.signal(sig, _handler)
+
+    # Construct and run the wrapper object.
+    ht.houdini.wrapper.HoudiniWrapper()
+
+# =============================================================================
+
+if __name__ == "__main__":
+    main()
+

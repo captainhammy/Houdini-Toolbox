@@ -1,0 +1,160 @@
+#!/usr/bin/python
+"""Handle creating and removing symlinks for custom Houdini wrapper.
+
+"""
+
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Standard Library Imports
+import os
+
+# Houdini Toolbox Imports
+import ht.argument
+
+# =============================================================================
+# CONSTANTS
+# =============================================================================
+
+# Default applications to install.
+_DEFAULT_APPS = [
+    "gplay",
+    "hbatch",
+    "hconfig",
+    "hcustom",
+    "hexpand",
+    "hescape",
+    "hkey",
+    "hmake",
+    "hmaster",
+    "hotl",
+    "houdini",
+    "hscript",
+    "hython",
+    "mantra",
+    "mplay",
+    "vcc",
+]
+
+# =============================================================================
+# FUNCTIONS
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+#    Name: _buildParser
+#  Raises: N/A
+# Returns: ht.argument.ArgumentParser
+#              The application argument parser.
+#    Desc: Build an argument parser to handle input.
+# -----------------------------------------------------------------------------
+def _buildParser():
+    parser = ht.argument.ArgumentParser()
+
+    parser.add_argument(
+        "-apps",
+        nargs="+",
+        default=_DEFAULT_APPS,
+        help="An optional list of applications to install/uninstall."
+    )
+
+    parser.add_argument(
+        "-directory",
+        required=True,
+        help="Directory to install symlinks to."
+    )
+
+    parser.add_argument(
+        "-wrapper",
+        required=True,
+        help="Wrapper file to link to."
+    )
+
+    # Create an exclusive group since we can only either install or uninstall
+    # at the same time.
+    installGroup = parser.add_mutually_exclusive_group()
+
+    installGroup.add_argument(
+        "-install",
+        action="store_true",
+        default=False,
+        help="Install symlinks."
+    )
+
+    installGroup.add_argument(
+        "-uninstall",
+        action="store_true",
+        default=False,
+        help="Remove symlinks."
+    )
+
+    return parser
+
+# -----------------------------------------------------------------------------
+#    Name: main
+#  Raises: N/A
+# Returns: None
+#    Desc: Main function.
+# -----------------------------------------------------------------------------
+def main():
+    # Build the parser and parse the args.
+    parser = _buildParser()
+    arguments = parser.parse_args()
+
+    wrapper = arguments.wrapper
+    directory = arguments.directory
+
+    # If neither install or uninstall was specified we can't do anything.
+    if not (arguments.install or arguments.uninstall):
+        print "Nothing to do: Please specify -install or -uninstall."
+        return
+
+    # Verify the target directory exists.
+    if not os.path.isdir(directory):
+        raise os.error("Not a valid target directory")
+
+    # Handle pointing to a wrapper relative to this install script.
+    wrapper = os.path.realpath(wrapper)
+
+    # Verify the wrapper exists.
+    if not os.path.isfile(wrapper):
+        raise os.error("Not a valid wrapper file")
+
+    # Process each application to handle.
+    for application in arguments.apps:
+        # Build the link path.
+        linkPath = os.path.join(directory, application)
+
+        # Create the link.
+        if arguments.install:
+	    print "Creating {link} -> {target}".format(
+		link=linkPath,
+		target=wrapper
+	    )
+
+            os.symlink(wrapper, linkPath)
+        
+        # Try to remove the link.
+        elif arguments.uninstall:
+            # If the link isn't pointing to the specified wrapper we can't
+            # remove it.
+            if os.path.realpath(linkPath) != wrapper:
+                print "Warning: Cannot remove {0}.  Not linked to {1}".format(
+                    linkPath,
+                    wrapper
+                )
+
+                continue
+
+	    print "Removing {link} -> {target}".format(
+		link=linkPath,
+		target=wrapper
+	    )
+            # Remove the link.
+            os.unlink(linkPath)
+
+# =============================================================================
+
+if __name__ == "__main__":
+    main()
+
