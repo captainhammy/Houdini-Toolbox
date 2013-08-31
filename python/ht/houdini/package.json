@@ -17,9 +17,9 @@
     "environment": {
         "variables": {
             "HOUDINI_EXPERIMENTAL": 1,
-            "HOUDINI_EXTERNAL_HELP_BROWSER": 1
+            "HOUDINI_EXTERNAL_HELP_BROWSER": 1,
             "HOUDINI_NODE_WIDTH": 0,
-            "HOUDINI_NO_SPLASH": 1,
+            "HOUDINI_NO_SPLASH": 1
         },
 
         "paths": {
