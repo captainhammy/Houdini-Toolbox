@@ -1,0 +1,35 @@
+
+{
+    "system": {
+	"installation": {
+	    "directory": "/opt",
+	    "prefix": "hfs"
+	},
+
+	"plugins": {
+	    "directory": "${HOUDINI_PLUGIN_DIR}",
+	    "prefix": ""
+	},
+
+	"locations": ["${HOME}/Downloads"]
+    },
+
+    "environment": {
+	"variables": {
+	    "HOUDINI_EXPERIMENTAL": 1,
+	    "HOUDINI_EXTERNAL_HELP_BROWSER": 1
+	    "HOUDINI_NODE_WIDTH": 0,
+	    "HOUDINI_NO_SPLASH": 1,
+	},
+
+	"paths": {
+	    "HOUDINI_PATH": [
+		"${HOME}/Houdini-Toolbox/houdini",
+		"${HOME}/tooldev",
+		"${HOUDINI_PLUGIN_PATH}",
+		"&"
+	    ]
+	}
+    }
+}
+
