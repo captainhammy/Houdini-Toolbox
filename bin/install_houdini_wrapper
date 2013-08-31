@@ -127,10 +127,10 @@ def main():
 
         # Create the link.
         if arguments.install:
-	    print "Creating {link} -> {target}".format(
-		link=linkPath,
-		target=wrapper
-	    )
+            print "Creating {link} -> {target}".format(
+                link=linkPath,
+                target=wrapper
+            )
 
             os.symlink(wrapper, linkPath)
         
@@ -146,10 +146,10 @@ def main():
 
                 continue
 
-	    print "Removing {link} -> {target}".format(
-		link=linkPath,
-		target=wrapper
-	    )
+            print "Removing {link} -> {target}".format(
+                link=linkPath,
+                target=wrapper
+            )
             # Remove the link.
             os.unlink(linkPath)
 
