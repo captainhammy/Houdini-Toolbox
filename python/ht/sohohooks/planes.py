@@ -74,7 +74,7 @@ __all__ = [
 # Allowable values for various settings.
 _ALLOWABLE_VALUES = {
     "lightexport": ("per-category", "per-light", "single"),
-    "quantization": ('8', '16', 'half', 'float'),
+    "quantization": ("8", "16", "half", "float"),
     "vextype": ("float", "vector", "vector4")
 }
 
