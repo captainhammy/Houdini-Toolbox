@@ -1,5 +1,6 @@
 
-SUBDIRS = SOP_IdAttribCopy \
+SUBDIRS = SOP_DopImpactPoints \
+	  SOP_IdAttribCopy \
 	  SOP_IdBlast \
 	  SOP_PointsFromVoxels \
 	  SOP_PrimCentroid \

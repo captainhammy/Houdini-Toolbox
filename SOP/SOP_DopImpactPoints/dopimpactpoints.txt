@@ -1,0 +1,51 @@
+#type: node
+#context: sop
+#internal: sop_dopimpactpoints
+#icon: POP/hitinfo
+
+= DOP Impact Points =
+
+"""Generates points based on Impact record data from DOP objects."""
+
+This operation creates points at the location of impacts of DOP objects.  These points can contain
+useful data about the collision as well as be filtered based on object ids and collision impulse.
+
+== Using Dop Impact Points ==
+
+    # Envoke the [Icon:POP/hitinfo][Dop Impact Points|Node:sop/dopimpactpoints] tool from the __tab__ menu.
+
+    # Select the Dop object(s) to create impact data for and press ((Enter)) to complete.
+
+@parameters
+    DOP Network:
+        The DOP Network to extract the impact information from.
+
+    Normal:
+        The direction of the impact at the point of impact.
+
+    Impulse:
+        The intensity of the impact.
+
+    Source ID:
+        The object id of the object that is impacting.
+
+    Other Object ID:
+        The object id of the object that is being collided against.
+
+    == Number of Configurations ==
+        The number of individual configurations to generate points.
+
+        Enable n:
+            Controls whether the node uses this line. This can be useful if you only want to temporarily
+            disable a merge instead of removing it completely.
+
+        Object Mask:
+            Specifies the objects within the DOP Network to extract the impacts from.
+
+        Impact Mask:
+            Specifies the objects which the objects in the Object Mask will generate impact points for.
+
+        Impulse Threshold:
+            Specifies the minimum impulse value to create impact points. This setting allows for the
+            trimming of impacts points once an object has decreased speed or come to rest.
+

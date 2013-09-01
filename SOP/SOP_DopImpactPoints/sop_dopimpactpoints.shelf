@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shelfDocument>
+  <!-- This file contains definitions of shelves, toolbars, and tools.
+ It should not be hand-edited when it is being used by the application.
+ Note, that two definitions of the same element are not allowed in
+ a single file. -->
+
+  <tool name="sop_dopimpactpoints" label="DopImpactPoints" icon="POP_hitinfo">
+    <helpURL>operator:Sop/dopimpactpoints</helpURL>
+    <toolMenuContext name="viewer">
+      <contextNetType>SOP</contextNetType>
+    </toolMenuContext>
+    <toolMenuContext name="network">
+      <contextOpType>Sop/dopimpactpoints</contextOpType>
+    </toolMenuContext>
+    <toolSubmenu>Sourcing</toolSubmenu>
+    <toolSubmenu>Houdini Toolbox</toolSubmenu>
+    <script scriptType="python"><![CDATA[
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Houdini Impocts
+import doptoolutils
+import soptoolutils
+import toolutils
+
+# Get the pane tab the tool was invoked from.
+activepane = toolutils.activePane(kwargs)
+
+# Tool was invoked interactively in the viewer.
+if isinstance(activepane, hou.SceneViewer):
+    # Create a prompt to select dynamics objects.
+    prompt = toolutils.selectionPrompt(hou.dopNodeTypeCategory())
+
+    # Current directory of the viewer.
+    cwd = activepane.pwd()
+
+    # Select DOP objects.
+    dopobjects = activepane.selectDynamics(prompt)
+
+    # Set the viewer directory back to the previous value.  This
+    # prevents the creation of the Geo objects in the DOP network
+    # when Create In Context is enabled.
+    activepane.setPwd(cwd)
+
+    if len(dopobjects) > 0:
+        # Find the DOP network the objects belong to.
+        dopnet = dopobjects[0].dopNetNode()
+
+        # Force the container to be placed at the origin by
+        # overriding the Ctrl and Cmd click options.
+        kwargs["ctrlclick"] = True
+        kwargs["cmdclick"] = True
+    
+        # Create an instance of this asset.
+        sopnode = soptoolutils.genericTool(kwargs, 'dopimpactpoints')
+
+        # Set the DOP Network path.
+        sopnode.parm("doppath").set(dopnet.path())
+
+        # Add a parameter instance.
+        sopnode.parm("num_configs").set(1)
+
+        # Get the group string for our selected DOP objects.
+        group_string = doptoolutils.getGroupString(dopobjects, False)
+
+        # Set the Object Mask to the group string.
+        sopnode.parm("objpattern1").set(group_string)
+
+        sopnode.setCurrent(True, True)
+
+else:
+    soptoolutils.genericTool(kwargs, 'dopimpactpoints')]]></script>
+  </tool>
+</shelfDocument>
