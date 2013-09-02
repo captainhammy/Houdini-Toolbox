@@ -10,7 +10,22 @@ __email__ = "captainhammy@gmail.com"
 # Houdini Toolbox Imports
 import ht.nodes.colors
 
-node = kwargs["node"]
+# =============================================================================
+# FUNCTIONS
+# =============================================================================
 
-ht.nodes.colors.colorNodeByName(node)
+# -----------------------------------------------------------------------------
+#    Name: main()
+#  Raises: N/A
+# Returns: None
+#    Desc: Main function.
+# -----------------------------------------------------------------------------
+def main():
+    node = kwargs["node"]
+
+    ht.nodes.colors.colorNodeByName(node)
+
+# =============================================================================
+
+main()
 
