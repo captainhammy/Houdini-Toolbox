@@ -107,7 +107,7 @@ class IntegratedEventLoop(object):
         return self._eventLoop
 
     # =========================================================================
-    # PUBLIC METHODS
+    # METHODS
     # =========================================================================
 
     def exec_(self):
