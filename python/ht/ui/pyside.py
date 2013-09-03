@@ -17,6 +17,8 @@ Functions:
         Find or create an IntegratedEventLoop in hou.session.
 
 """
+__author__ = "Graham Thompson"
+__email__ = "captainhammy@gmail.com"
 
 # =============================================================================
 # IMPORTS
