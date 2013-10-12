@@ -430,7 +430,7 @@ class HoudiniBase(object):
 
         # Add the candidate number if necessary.
         if self.candidate is not None:
-            return version.append(self.candidate)
+            version.append(self.candidate)
 
         return tuple(version)
 
