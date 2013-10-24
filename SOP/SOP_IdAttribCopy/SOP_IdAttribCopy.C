@@ -21,7 +21,6 @@
 #include <OP/OP_Operator.h>
 #include <OP/OP_OperatorTable.h>
 #include <PRM/PRM_Include.h>
-#include <UT/UT_BitArray.h>
 #include <UT/UT_DSOVersion.h>
 #include <UT/UT_WorkArgs.h>
 
@@ -31,8 +30,8 @@ public:
     AttributeIdCopier(const GA_AttributeRefMap *hmap,
                       const GA_Attribute *id,
                       const IdOffsetMap *id_map,
-                      UT_BitArray *matches):
-        myAttribMap(hmap), myId(id), myIdMap(id_map), myMatches(matches) {}
+                      GA_PointGroup *group):
+        myAttribMap(hmap), myId(id), myIdMap(id_map), myGroup(group) {}
 
     // The function that is called by UTparallelFor to do the work.
     void operator()(const GA_SplittableRange &range) const
@@ -57,7 +56,7 @@ public:
             for (GA_Iterator it(pit.begin()); it.blockAdvance(start, end); )
             {
                 // Iterate over the offsets in the page.
-                for (GA_Offset pt = start; pt < end; ++pt)
+                for (GA_Offset pt=start; pt<end; ++pt)
                 {
                     // Get the id value for this point.
                     id = id_ph.get(pt);
@@ -75,9 +74,9 @@ public:
                                                GA_ATTRIB_POINT,
                                                (*map_it).second);
 
-                        // If the bit array is valid, set this index to true.
-                        if (myMatches)
-                            myMatches->setBit(dest->pointIndex(pt), true);
+                        // If the group is valid, add the offset to it.
+                        if (myGroup)
+                            myGroup->addOffset(pt);
                     }
                 }
             }
@@ -88,7 +87,7 @@ private:
     const GA_AttributeRefMap    *myAttribMap;
     const GA_Attribute          *myId;
     const IdOffsetMap           *myIdMap;
-    UT_BitArray                 *myMatches;
+    GA_PointGroup               *myGroup;
 
 };
 
@@ -191,7 +190,7 @@ SOP_IdAttribCopy::buildMenu(void *data,
     // aren't the 'id' attribute.
     me->fillAttribNameMenu(menu,
                            100,
-                           GEO_POINT_DICT,
+                           GA_ATTRIB_POINT,
                            1,
                            &SOP_IdAttribCopy::validateAttrib);
 }
@@ -283,20 +282,18 @@ SOP_IdAttribCopy::copyLocalVariables(const char *attr,
 OP_ERROR
 SOP_IdAttribCopy::cookMySop(OP_Context &context)
 {
-    bool                        group_matched;
     exint                       id;
     fpreal                      now;
 
     const GA_Attribute          *source_attr;
     const GA_AttributeDict      *dict;
     GA_Offset                   start, end;
-    GA_PointGroup               *group;
+    GA_PointGroup               *group=0;
     GA_ROAttributeRef           id_gah, srcid_gah, attr_gah;
     GA_ROPageHandleI            srcid_ph;
 
     const GU_Detail             *src_geo;
 
-    UT_BitArray                 matches;
     UT_String                   attribute_name, pattern, group_name;
     UT_WorkArgs                 tokens;
 
@@ -422,14 +419,8 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
         }
 
         // Check if we are supposed to group the matched points.
-        group_matched = GROUPMATCHED(now);
-
-        if (group_matched)
+        if (GROUPMATCHED(now))
         {
-            // Resize the bit array to match the number of points in
-            // the detail.
-            matches.resize(gdp->getNumPoints());
-
             // Get the group name to use.
             GROUPNAME(group_name, now);
 
@@ -440,13 +431,12 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
         // Get the range to act on.
         GA_SplittableRange parallel_range(gdp->getPointRange(myGroup));
 
-        // Engage attribute copying across threads.  If we are grouping
-        // matched points, pass the bit array.  If not, pass 0.
+        // Engage attribute copying across threads.
         UTparallelFor(parallel_range,
                       AttributeIdCopier(&hmap,
                                         id_gah.getAttribute(),
                                         &id_map,
-                                        group_matched ? &matches : 0)
+                                        group)
                      );
 
         // Traverse the variable names on the input geometry and attempt to
@@ -456,15 +446,11 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
             gdp
         );
 
-        // If we are grouping, check the bit array and add the corresponding
-        // indices to the new group.
-        if (group_matched)
+        // If we are grouping we need to invalidate the group entries since the
+        // entry count will be incorrect due to threading.
+        if (group)
         {
-            exint i=0;
-            for (matches.iterateInit(i); i >= 0; i=matches.iterateNext(i))
-            {
-                group->addOffset(gdp->pointOffset(i));
-            }
+            group->invalidateGroupEntries();
         }
     }
 
