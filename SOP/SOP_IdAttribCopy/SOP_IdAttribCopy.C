@@ -38,13 +38,10 @@ public:
     {
         exint                   id;
 
-        GA_Detail               *dest;
         GA_Offset               start, end;
         GA_ROPageHandleI        id_ph(myId);
 
         IdOffsetMap::const_iterator map_it;
-
-        dest = myAttribMap->getDestDetail();
 
         // Iterate over the pages.
         for (GA_PageIterator pit = range.beginPages(); !pit.atEnd(); ++pit)
