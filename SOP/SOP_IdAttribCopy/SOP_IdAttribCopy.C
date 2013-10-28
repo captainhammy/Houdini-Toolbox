@@ -76,7 +76,9 @@ public:
 
                         // If the group is valid, add the offset to it.
                         if (myGroup)
+                        {
                             myGroup->addOffset(pt);
+                        }
                     }
                 }
             }
@@ -171,7 +173,9 @@ SOP_IdAttribCopy::validateAttrib(const GA_Attribute *attribute, void *data)
 {
     // If the attribute's name is 'id', return false.
     if(strcmp(attribute->getName(), "id") == 0)
+    {
         return false;
+    }
 
     return true;
 }
@@ -203,8 +207,12 @@ SOP_IdAttribCopy::cookInputGroups(OP_Context &context, int alone=0)
     // case, we have to lock the inputs oursevles, and unlock them
     // before exiting this method.
     if (alone)
+    {
         if (lockInputs(context) >= UT_ERROR_ABORT)
+        {
             return error();
+        }
+    }
 
     UT_String    grp_name;
 
@@ -274,7 +282,9 @@ SOP_IdAttribCopy::copyLocalVariables(const char *attr,
 
     // If a point attribute exists then we can copy this variable mapping.
     if (gah.isValid())
+    {
         gdp->addVariableName(attr, varname);
+    }
 
     return 1;
 }
@@ -302,7 +312,9 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
     now = context.getTime();
 
     if (lockInputs(context) >= UT_ERROR_ABORT)
+    {
         return error();
+    }
 
     // Duplicate the incoming geometry.
     duplicateSource(0, context);
@@ -321,6 +333,7 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
 
         // Try to find the 'id' point attribute on the 1st input geometry.
         id_gah = gdp->findPointAttribute(GA_SCOPE_PUBLIC, "id");
+
         // If it doesn't exist, display a node error message and exit.
         if (id_gah.isInvalid())
         {
@@ -339,6 +352,7 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
             unlockInputs();
             return error();
         }
+
         // Bind the page handle to the attribute.
         srcid_ph.bind(srcid_gah.getAttribute());
 
@@ -364,11 +378,15 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
 
                 // Skip the 'id' attribute.
                 if (attribute_name == "id")
+                {
                     continue;
+                }
 
                 // If the name doesn't match our pattern, skip it.
                 if (!attribute_name.matchPattern(tokens))
+                {
                     continue;
+                }
 
                 // Try to find the attribute on the first input geometry.
                 attr_gah = gdp->findPointAttrib(*source_attr);
@@ -391,7 +409,9 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
 
                 // If 'P' matches our pattern, add it to the map.
                 if (attribute_name.matchPattern(tokens))
+                {
                     hmap.append(gdp->getP(), src_geo->getP());
+                }
             }
         }
         // Selected nothing so don't do anything.
@@ -408,7 +428,7 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
             srcid_ph.setPage(start);
 
             // Iterate over all the points in the page.
-            for (GA_Offset pt = start; pt < end; ++pt)
+            for (GA_Offset pt=start; pt<end; ++pt)
             {
                 // Get the 'id' value for the point.
                 id = srcid_ph.get(pt);
