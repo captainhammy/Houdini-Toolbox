@@ -134,13 +134,13 @@ SOP_PrimGroupCentroid::buildMenu(void *data,
     // Not binding, so use primitive attributes from input 0.
     if (bind_input == NULL)
     {
-        owner = GEO_PRIMITIVE_DICT;
+        owner = GA_ATTRIB_PRIMITIVE;
         input_index = 0;
     }
     // We are binding, so use point attributes from input 1.
     else
     {
-        owner = GEO_POINT_DICT;
+        owner = GA_ATTRIB_POINT;
         input_index = 1;
     }
 

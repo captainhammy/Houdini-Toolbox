@@ -98,7 +98,7 @@ SOP_PrimCentroid::buildMenu(void *data,
     SOP_PrimCentroid *me = (SOP_PrimCentroid *)data;
 
     // Populate the menu with primitive attribute names.
-    me->fillAttribNameMenu(menu, 100, GEO_PRIMITIVE_DICT , 0);
+    me->fillAttribNameMenu(menu, 100, GA_ATTRIB_PRIMITIVE , 0);
 }
 
 OP_ERROR

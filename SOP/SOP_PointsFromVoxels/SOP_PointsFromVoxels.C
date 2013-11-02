@@ -120,7 +120,7 @@ SOP_PointsFromVoxels::cookMySop(OP_Context &context)
     if (primnum < input_geo->getNumPrimitives())
     {
         // Get the primitive we need.
-        prim = input_geo->primitives()(primnum);
+        prim = input_geo->getGEOPrimitive(primnum);
 
         // The primitive is a volume primitive.
         if (prim->getTypeId().get() == GEO_PRIMVOLUME)
