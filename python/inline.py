@@ -1867,7 +1867,7 @@ getReferencingParms(OP_Node *node, const char *parm_name)
     PRM_Parm                    *parm_tuple;
 
     UT_IntArray                 component_indices;
-    UT_PtrArray<PRM_Parm *>     parm_tuples;
+    UT_ValArray<PRM_Parm *>     parm_tuples;
     UT_String                   path, chan;
 
     // Get an array of parameter objects and their component indices
@@ -2095,14 +2095,6 @@ void
 getDual(const UT_Vector3D *vec, UT_DMatrix3 *mat)
 {
     vec->getDual(*mat);
-}
-""",
-
-"""
-bool
-canCreateDigitalAsset(OP_Node *node)
-{
-    return node->canCreateNewOpType();
 }
 """,
 
@@ -6227,22 +6219,6 @@ def isDigitalAsset(self):
 
     """
     return self.type().definition() is not None
-
-
-@addToClass(hou.Node)
-def canCreateDigitalAsset(self):
-    """Determine if this node can be used to create a new operator type.
-
-    Raises:
-        N/A
-
-    Returns:
-        bool
-            Returns True if this node can be turned into a digital asset,
-            otherwise False.
-
-    """
-    return _cpp_methods.canCreateDigitalAsset(self)
 
 
 @addToModule(hou.hda)
