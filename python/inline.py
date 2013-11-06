@@ -33,6 +33,22 @@ _HMAJOR = hou.applicationVersion()[0]
 
 _FUNCTION_SOURCES = [
 """
+void
+makeConstantFloatAttr(GU_Detail *gdp)
+{
+    GA_RWAttributeRef           attr;
+
+    attr = gdp->addFloatTuple(GA_ATTRIB_POINT, "foo", 1);
+
+    GA_RWHandleF handle(attr);
+
+    handle.makeConstant(1.5);
+
+
+}
+""",
+
+"""
 char *
 getVariable(const char *name)
 {
@@ -357,6 +373,24 @@ void
 sortByVertexOrder(GU_Detail *gdp)
 {
     gdp->sortByVertexOrder();
+}
+""",
+
+"""
+void
+sortByValues(GU_Detail *gdp, int element_type, fpreal *values)
+{
+    // Sort primitives.
+    if (element_type)
+    {
+        gdp->sortPrimitiveList(values);
+    }
+
+    // Sort points.
+    else
+    {
+        gdp->sortPointList(values);
+    }
 }
 """,
 
@@ -1842,59 +1876,6 @@ boundingBoxVolume(const UT_BoundingBoxD *bbox)
 """,
 
 """
-bool
-isParmDefault(OP_Node *node, const char *parm_name, int index)
-{
-    PRM_Parm &parm = node->getParm(parm_name);
-
-    // If we have a specific index, check if that parm is at its default.
-    if (index != -1)
-    {
-        return parm.isDefault(index);
-    }
-
-    // If not we check if the entire parm is at the default value.
-    return parm.isDefault();
-}
-""",
-
-"""
-StringArray
-getReferencingParms(OP_Node *node, const char *parm_name)
-{
-    std::vector<std::string>    result;
-
-    PRM_Parm                    *parm_tuple;
-
-    UT_IntArray                 component_indices;
-    UT_ValArray<PRM_Parm *>     parm_tuples;
-    UT_String                   path, chan;
-
-    // Get an array of parameter objects and their component indices
-    // that reference the parameter.
-    node->getParmsThatReference(parm_name, parm_tuples, component_indices);
-
-    for (int i=0; i < parm_tuples.entries(); ++i)
-    {
-        parm_tuple = parm_tuples[i];
-        parm_tuple->getParmOwner()->getFullPath(path);
-        path += "/";
-
-        parm_tuple->getTemplatePtr()->getChannelToken(chan,
-                                                      component_indices[i]);
-        path += chan;
-
-        result.push_back(path.toStdString());
-    }
-
-    // Check for an empty vector.
-    validateStringVector(result);
-
-    return result;
-}
-""",
-
-"""
 void
 disconnectAllInputs(OP_Node *node)
 {
@@ -2203,29 +2184,6 @@ isDummyDefinition(const char *filename,
 }
 """
 ]
-
-
-# Handle function definition change between 12.5 and 13.
-_FUNCTION_SOURCES.append(
-"""
-void
-sortByValues(GU_Detail *gdp, int element_type, {signature} *values)
-{{
-    // Sort primitives.
-    if (element_type)
-    {{
-        gdp->sortPrimitiveList(values);
-    }}
-
-    // Sort points.
-    else
-    {{
-        gdp->sortPointList(values);
-    }}
-}}
-""".format(signature=("float", "fpreal")[_HMAJOR > 12])
-)
-
 
 # Create the library as a private object.
 _cpp_methods = inlinecpp.createLibrary(
@@ -5283,70 +5241,6 @@ def boundingBoxVolume(self):
 
     """
     return _cpp_methods.boundingBoxVolume(self)
-
-
-@addToClass(hou.Parm, name="isDefault")
-def isParmDefault(self):
-    """Check if this parameter is at its default value.
-
-    Raises:
-        N/A
-
-    Returns:
-        bool
-            Returns if the parameter is at its default value.
-
-    """
-    # Get the node the parameter belongs to.
-    node = self.node()
-
-    # Get the index of the parameter.
-    index = self.componentIndex()
-
-    # Pass in the tuple name since we have to access the actual parm index.
-    return _cpp_methods.isParmDefault(node, self.tuple().name(), index)
-
-
-@addToClass(hou.ParmTuple, name="isDefault")
-def isParmTupleDefault(self):
-    """Check if this parameter tuple is at its default values.
-
-    Raises:
-        N/A
-
-    Returns:
-        bool
-            Returns if the parameter tuple is at its default values.
-
-    """
-    # Get the node the parm tuple belongs to.
-    node = self.node()
-
-    # Pass in an index of -1 to say we care about the entire parameter, not
-    # just a specific index.
-    return _cpp_methods.isParmDefault(node, self.name(), -1)
-
-
-@addToClass(hou.Parm)
-def getReferencingParms(self):
-    """Returns a tuple of parameters that reference this parameter.
-
-    Raises:
-        N/A
-
-    Returns:
-        (hou.Parm)
-            A tuple of referencing hou.Parm objects.
-
-    """
-    # Get the node.
-    node = self.node()
-
-    # Get any paths to referencing parms.
-    result = _cpp_methods.getReferencingParms(node, self.name())
-
-    # Create a tuple of parms.
-    return _getParmsFromPaths(result)
 
 
 @addToClass(hou.Parm, hou.ParmTuple)
