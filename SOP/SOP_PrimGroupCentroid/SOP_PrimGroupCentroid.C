@@ -789,7 +789,7 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
     UT_Vector3                  pos;
 
     UT_Array<GA_Range>          range_array;
-    UT_Array<GA_Range>::const_iterator  array_it;
+    UT_Array<GA_Range>::iterator  array_it;
     UT_StringArray              string_values;
     UT_IntArray                 int_values;
 
@@ -862,6 +862,8 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
             return 1;
     }
 
+    exint index = 0;
+
     // Iterate over each of the primitive ranges we found.
     for (array_it=range_array.begin(); !array_it.atEnd(); ++array_it)
     {
@@ -899,14 +901,14 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
             // 'class', so get the integer value at this iterator index.
             if (mode == MODE_CLASS)
             {
-                int_value = int_values(array_it.index());
+                int_value = int_values(index);
                 class_h.set(ptOff, int_value);
             }
             // 'name' or by group, so get the string value at this iterator
             // index.
             else
             {
-                str_value = string_values(array_it.index());
+                str_value = string_values(index);
                 ident_t->setString(ident_attrib, ptOff, str_value, 0);
             }
         }
@@ -937,6 +939,8 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
                            ptOff,
                            1.0/(*array_it).getEntries());
         }
+
+        index++;
     }
 
     return 0;
