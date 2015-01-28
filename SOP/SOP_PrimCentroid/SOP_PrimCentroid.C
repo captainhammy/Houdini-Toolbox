@@ -107,11 +107,11 @@ SOP_PrimCentroid::cookMySop(OP_Context &context)
     fpreal                      now;
     int                         method;
 
-    const GA_Attribute          *source_attr;
+    GA_Attribute                *n_attrib;
+    const GA_Attribute          *attrib;
     const GA_AttributeDict      *dict;
     GA_AttributeDict::iterator  a_it;
     GA_Offset                   ptOff;
-    GA_RWAttributeRef           n_gah;
     GA_RWHandleV3               n_h;
 
     const GEO_Primitive         *prim;
@@ -138,10 +138,10 @@ SOP_PrimCentroid::cookMySop(OP_Context &context)
     method = METHOD(now);
 
     // Create the standard point normal (N) attribute.
-    n_gah = gdp->addNormalAttribute(GA_ATTRIB_POINT);
+    n_attrib = gdp->addNormalAttribute(GA_ATTRIB_POINT);
 
     // Bind a read/write attribute handle to the normal attribute.
-    n_h.bind(n_gah.getAttribute());
+    n_h.bind(n_attrib);
 
     // Construct an attribute reference map to map attributes.
     GA_AttributeRefMap hmap(*gdp, input_geo);
@@ -162,10 +162,10 @@ SOP_PrimCentroid::cookMySop(OP_Context &context)
         for (a_it=dict->begin(GA_SCOPE_PUBLIC); !a_it.atEnd(); ++a_it)
         {
             // The current attribute.
-            source_attr = a_it.attrib();
+            attrib = a_it.attrib();
 
             // Get the attribute name.
-            attr_name = source_attr->getName();
+            attr_name = attrib->getName();
 
             // If the name doesn't match our pattern, skip it.
             if (!attr_name.matchPattern(tokens))
@@ -174,8 +174,8 @@ SOP_PrimCentroid::cookMySop(OP_Context &context)
             // Create a new point attribute on the current geometry
             // that is the same as the source attribute.  Append it and
             // the source to the map.
-            hmap.append(gdp->addPointAttrib(source_attr).getAttribute(),
-                        source_attr);
+            hmap.append(gdp->addPointAttrib(attrib),
+                        attrib);
         }
 
         // Copy local variables.

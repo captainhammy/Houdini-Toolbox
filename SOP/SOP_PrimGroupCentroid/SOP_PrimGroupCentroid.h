@@ -77,14 +77,12 @@ private:
                                        UT_StringArray &);
     void                boundingBox(const GU_Detail *,
                                     GA_Range &,
-                                    const GA_PrimitiveList &,
                                     UT_Vector3 &);
-    void                centerOfMass(GA_Range &,
-                                     const GA_PrimitiveList &,
+    void                centerOfMass(const GU_Detail *,
+                                     GA_Range &,
                                      UT_Vector3 &);
     void                baryCenter(const GU_Detail *,
                                    GA_Range &,
-                                   const GA_PrimitiveList &,
                                    UT_Vector3 &);
     void                buildTransform(UT_Matrix4 &,
                                        const GU_Detail *,

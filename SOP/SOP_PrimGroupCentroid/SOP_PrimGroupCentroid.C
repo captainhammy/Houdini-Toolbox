@@ -239,8 +239,8 @@ SOP_PrimGroupCentroid::buildAttribData(int mode,
     int                         unique_count;
     exint                       int_value;
 
+    const GA_Attribute          *attrib;
     GA_Range                    pr_range;
-
     GA_ROAttributeRef           source_gah;
 
     UT_String                   attr_name, str_value;
@@ -249,14 +249,16 @@ SOP_PrimGroupCentroid::buildAttribData(int mode,
     attr_name = (mode == MODE_NAME) ? MODENAME_NAME: MODENAME_CLASS;
 
     // Find the attribute.
-    source_gah = input_geo->findPrimitiveAttribute(attr_name);
+    attrib = input_geo->findPrimitiveAttribute(attr_name);
 
     // If there is no attribute, add an error message and quit.
-    if (source_gah.isInvalid())
+    if (!attrib)
     {
         addError(SOP_ATTRIBUTE_INVALID, attr_name);
         return 1;
     }
+
+    source_gah = GA_ROAttributeRef(attrib);
 
     // If the 'name' attribute isn't a string, add an error and quit.
     if (mode == MODE_NAME && !source_gah.isString())
@@ -319,7 +321,7 @@ SOP_PrimGroupCentroid::copyLocalVariables(const char *attr,
                                           const char *varname,
                                           void *data)
 {
-    GA_ROAttributeRef           gah;
+    const GA_Attribute          *attrib;
 
     GU_Detail                   *gdp;
 
@@ -327,10 +329,10 @@ SOP_PrimGroupCentroid::copyLocalVariables(const char *attr,
     gdp = (GU_Detail *)data;
 
     // Try to find the attribute we are processing.
-    gah = gdp->findPointAttribute(attr);
+    attrib = gdp->findPointAttribute(attr);
 
     // If a point attribute exists then we can copy this variable mapping.
-    if (gah.isValid())
+    if (attrib)
         gdp->addVariableName(attr, varname);
 
     return 1;
@@ -348,8 +350,7 @@ SOP_PrimGroupCentroid::buildRefMap(fpreal t,
     const GA_AttributeDict      *dict;
     GA_AttributeDict::iterator  a_it;
 
-    const GA_Attribute          *source_attr;
-    GA_ROAttributeRef           attr_gah;
+    const GA_Attribute          *attrib, *source_attrib;
 
     UT_String                   attr_name;
     UT_WorkArgs                 tokens;
@@ -372,9 +373,10 @@ SOP_PrimGroupCentroid::buildRefMap(fpreal t,
         for (a_it=dict->begin(GA_SCOPE_PUBLIC); !a_it.atEnd(); ++a_it)
         {
             // The current attribute.
-            source_attr = a_it.attrib();
+            source_attrib = a_it.attrib();
+
             // Get the attribute name.
-            attr_name = source_attr->getName();
+            attr_name = source_attrib->getName();
 
             // If the name doesn't match our pattern, skip it.
             if (!attr_name.matchPattern(tokens))
@@ -396,7 +398,7 @@ SOP_PrimGroupCentroid::buildRefMap(fpreal t,
             if (owner == GA_ATTRIB_PRIMITIVE)
             {
                 // Try to find the point attribute on the geometry.
-                attr_gah = gdp->findPointAttrib(*source_attr);
+                attrib = gdp->findPointAttrib(*source_attrib);
             }
 
             // GA_ATTRIB_POINT
@@ -407,19 +409,19 @@ SOP_PrimGroupCentroid::buildRefMap(fpreal t,
                     continue;
 
                 // Try to find the primitive attribute on the geometry.
-                attr_gah = gdp->findPrimAttrib(*source_attr);
+                attrib = gdp->findPrimAttrib(*source_attrib);
             }
 
             // If it doesn't exist, create a new attribute.
-            if (attr_gah.isInvalid())
+            if (!attrib)
             {
                 if (owner == GA_ATTRIB_PRIMITIVE)
                 {
                     // Create a new point attribute on the current geometry
                     // that is the same as the source attribute.  Append it and
                     // the source to the map.
-                    hmap.append(gdp->addPointAttrib(source_attr).getAttribute(),
-                                source_attr);
+                    hmap.append(gdp->addPointAttrib(source_attrib),
+                                source_attrib);
                 }
 
                 else
@@ -427,8 +429,8 @@ SOP_PrimGroupCentroid::buildRefMap(fpreal t,
                     // Create a new point attribute on the current geometry
                     // that is the same as the source attribute.  Append it and
                     // the source to the map.
-                    hmap.append(gdp->addPrimAttrib(source_attr).getAttribute(),
-                                source_attr);
+                    hmap.append(gdp->addPrimAttrib(source_attrib),
+                                source_attrib);
                 }
             }
         }
@@ -452,9 +454,9 @@ SOP_PrimGroupCentroid::buildGroupData(UT_String &pattern,
                                       UT_Array<GA_Range> &range_array,
                                       UT_StringArray &string_values)
 {
-    GA_Range                    pr_range;
-    const GA_PrimitiveGroup     *group;
     GA_ElementGroupTable::ordered_iterator group_it;
+    const GA_PrimitiveGroup     *group;
+    GA_Range                    pr_range;
 
     UT_String                   group_name;
     UT_WorkArgs                 tokens;
@@ -496,7 +498,6 @@ SOP_PrimGroupCentroid::buildGroupData(UT_String &pattern,
 void
 SOP_PrimGroupCentroid::boundingBox(const GU_Detail *input_geo,
                                    GA_Range &pr_range,
-                                   const GA_PrimitiveList &prim_list,
                                    UT_Vector3 &pos)
 {
     GA_Range                    pt_range;
@@ -507,26 +508,18 @@ SOP_PrimGroupCentroid::boundingBox(const GU_Detail *input_geo,
     // no position.
     bbox.initBounds();
 
-    // Iterate over each primitive in the range.
-    for (GA_Iterator pr_it(pr_range); !pr_it.atEnd(); ++pr_it)
-    {
-        // Get the range of points for the primitive using the
-        // offset from the primitive list.
-        pt_range = prim_list.get(*pr_it)->getPointRange();
+    pt_range = GA_Range(*input_geo, pr_range, GA_ATTRIB_POINT, GA_Range::primitiveref(), false);
 
-        // For each point in the primitive, enlarge the bounding
-        // box to contain it.
-        for (GA_Iterator pt_it(pt_range); !pt_it.atEnd(); ++pt_it)
-            bbox.enlargeBounds(input_geo->getPos3(*pt_it));
-    }
+    for (GA_Iterator it(pt_range.begin()); !it.atEnd(); ++it)
+        bbox.enlargeBounds(input_geo->getPos3(*it));
 
     // Extract the center.
     pos = bbox.center();
 }
 
 void
-SOP_PrimGroupCentroid::centerOfMass(GA_Range &pr_range,
-                                    const GA_PrimitiveList &prim_list,
+SOP_PrimGroupCentroid::centerOfMass(const GU_Detail *input_geo,
+                                    GA_Range &pr_range,
                                     UT_Vector3 &pos)
 {
     fpreal                      area, total_area;
@@ -541,7 +534,7 @@ SOP_PrimGroupCentroid::centerOfMass(GA_Range &pr_range,
     for (GA_Iterator it(pr_range); !it.atEnd(); ++it)
     {
         // Get the primitive.
-        prim = (const GEO_Primitive *) prim_list.get(*it);
+        prim = (const GEO_Primitive *) input_geo->getPrimitive(*it);
 
         // Calculate the area of the primitive.
         area = prim->calcArea();
@@ -561,36 +554,20 @@ SOP_PrimGroupCentroid::centerOfMass(GA_Range &pr_range,
 void
 SOP_PrimGroupCentroid::baryCenter(const GU_Detail *input_geo,
                                   GA_Range &pr_range,
-                                  const GA_PrimitiveList &prim_list,
                                   UT_Vector3 &pos)
 {
     GA_Range                    pt_range;
 
-    GA_OffsetArray              points;
-    GA_OffsetArray::const_iterator points_it;
-
-    // We need to iterate over each primitive in the range and
-    // find out which points it references.
-    for (GA_Iterator pr_it(pr_range); !pr_it.atEnd(); ++pr_it)
-    {
-        // Get the range of points for the primitive using the
-        // offset from the primitive list.
-        pt_range = prim_list.get(*pr_it)->getPointRange();
-
-        // Add each point's offset to the array, checking for duplicates.
-        for (GA_Iterator pt_it(pt_range); !pt_it.atEnd(); ++pt_it)
-            points.append(*pt_it, true);
-    }
-
     // Reset the position.
     pos.assign(0,0,0);
 
-    // Add the positions for all the points.
-    for (points_it = points.begin(); !points_it.atEnd(); ++points_it)
-        pos += input_geo->getPos3(*points_it);
+    pt_range = GA_Range(*input_geo, pr_range, GA_ATTRIB_POINT, GA_Range::primitiveref(), false);
+
+    for (GA_Iterator it(pt_range.begin()); !it.atEnd(); ++it)
+        pos += input_geo->getPos3(*it);
 
     // Store the average position for all the points we found.
-    pos /= points.entries();
+    pos /= pt_range.getEntries();
 }
 
 void
@@ -602,7 +579,9 @@ SOP_PrimGroupCentroid::buildTransform(UT_Matrix4 &mat,
     bool                        use_orient = false;
     fpreal                      pscale = 1;
 
-    GA_ROAttributeRef           dir_gah, orient_gah, pscale_gah, rot_gah, scale_gah, trans_gah, up_gah;
+
+    const GA_Attribute          *dir_attrib, *orient_attrib, *pscale_attrib, *rot_attrib, *scale_attrib, *trans_attrib, *up_attrib;
+
     GA_ROHandleF                pscale_h;
     GA_ROHandleV3               dir_h, scale_h, trans_h, up_h;
     GA_ROHandleV4               orient_h, rot_h;
@@ -618,16 +597,16 @@ SOP_PrimGroupCentroid::buildTransform(UT_Matrix4 &mat,
     pre_xform.invert();
 
     // Try to find the specific attribute.
-    orient_gah = input_geo->findFloatTuple(GA_ATTRIB_POINT,
-                                      GA_SCOPE_PUBLIC,
-                                      "orient",
-                                      4,
-                                      4);
+    orient_attrib = input_geo->findFloatTuple(GA_ATTRIB_POINT,
+                                              GA_SCOPE_PUBLIC,
+                                              "orient",
+                                              4,
+                                              4);
 
     // Found the attribute.
-    if (orient_gah.isValid())
+    if (orient_attrib)
     {
-        orient_h.bind(orient_gah.getAttribute());
+        orient_h.bind(orient_attrib);
 
         // Get the attribute value.
         UT_Vector4 value = orient_h.get(ptOff);
@@ -638,17 +617,17 @@ SOP_PrimGroupCentroid::buildTransform(UT_Matrix4 &mat,
     }
 
     // Try to find the 'trans' point attribute.
-    trans_gah = input_geo->findFloatTuple(GA_ATTRIB_POINT,
-                                          GA_SCOPE_PUBLIC,
-                                          "trans",
-                                          3,
-                                          3);
+    trans_attrib = input_geo->findFloatTuple(GA_ATTRIB_POINT,
+                                             GA_SCOPE_PUBLIC,
+                                             "trans",
+                                             3,
+                                             3);
 
     // We found it.
-    if (trans_gah.isValid())
+    if (trans_attrib)
     {
         // Bind the handle to the attribute..
-        trans_h.bind(trans_gah.getAttribute());
+        trans_h.bind(trans_attrib);
 
         // Get the attribute value.
         trans = trans_h.get(ptOff);
@@ -657,30 +636,30 @@ SOP_PrimGroupCentroid::buildTransform(UT_Matrix4 &mat,
         trans.assign(0, 0, 0);
 
     // Try to find the scale attribute.
-    scale_gah = input_geo->findFloatTuple(GA_ATTRIB_POINT,
-                                          GA_SCOPE_PUBLIC,
-                                          "scale",
-                                          3,
-                                          3);
+    scale_attrib = input_geo->findFloatTuple(GA_ATTRIB_POINT,
+                                             GA_SCOPE_PUBLIC,
+                                             "scale",
+                                             3,
+                                             3);
 
     // Try to find the pscale attribute.
-    pscale_gah = input_geo->findFloatTuple(GA_ATTRIB_POINT,
-                                           GA_SCOPE_PUBLIC,
-                                           "pscale",
-                                           1,
-                                           1);
+    pscale_attrib = input_geo->findFloatTuple(GA_ATTRIB_POINT,
+                                              GA_SCOPE_PUBLIC,
+                                              "pscale",
+                                              1,
+                                              1);
 
     //  If the pscale attribute exists, get the value.
-    if (pscale_gah.isValid())
+    if (pscale_attrib)
     {
-        pscale_h.bind(pscale_gah.getAttribute());
+        pscale_h.bind(pscale_attrib);
         pscale = pscale_h.get(ptOff);
     }
 
     // The scale attribute exists.
-    if (scale_gah.isValid())
+    if (scale_attrib)
     {
-        scale_h.bind(scale_gah.getAttribute());
+        scale_h.bind(scale_attrib);
         // Get the scale.
         scale = scale_h.get(ptOff);
     }
@@ -691,16 +670,17 @@ SOP_PrimGroupCentroid::buildTransform(UT_Matrix4 &mat,
     }
 
     // Try to find the specific attribute.
-    rot_gah = input_geo->findFloatTuple(GA_ATTRIB_POINT,
-                                        GA_SCOPE_PUBLIC,
-                                        "rot",
-                                        4,
-                                        4);
+    rot_attrib = input_geo->findFloatTuple(GA_ATTRIB_POINT,
+                                           GA_SCOPE_PUBLIC,
+                                           "rot",
+                                           4,
+                                           4);
 
     // Found the attribute.
-    if (rot_gah.isValid())
+    if (rot_attrib)
     {
-        rot_h.bind(rot_gah.getAttribute());
+        rot_h.bind(rot_attrib);
+
         // Get the attribute value.
         UT_Vector4 value = rot_h.get(ptOff);
 
@@ -724,20 +704,20 @@ SOP_PrimGroupCentroid::buildTransform(UT_Matrix4 &mat,
     else
     {
         // Try to find the point Normal attribute.
-        dir_gah = input_geo->findNormalAttribute(GA_ATTRIB_POINT);
+        dir_attrib = input_geo->findNormalAttribute(GA_ATTRIB_POINT);
 
         // We couldn't find the Normal attribute.
-        if (dir_gah.isInvalid())
+        if (!dir_attrib)
         {
             // Try to find the velocity attribute.
-            dir_gah = input_geo->findVelocityAttribute(GA_ATTRIB_POINT);
+            dir_attrib = input_geo->findVelocityAttribute(GA_ATTRIB_POINT);
         }
 
         // We found either the normal or velocity attributes.
-        if (dir_gah.isValid())
+        if (!dir_attrib)
         {
             // Bind the direction handle to the found attribute.
-            dir_h.bind(dir_gah.getAttribute());
+            dir_h.bind(dir_attrib);
 
             dir = dir_h.get(ptOff);
         }
@@ -746,16 +726,17 @@ SOP_PrimGroupCentroid::buildTransform(UT_Matrix4 &mat,
             dir = UT_Vector3(0,0,1);
 
         // Try to find the upvector ('up') attribute.
-        up_gah = input_geo->findFloatTuple(GA_ATTRIB_POINT,
-                                           GA_SCOPE_PUBLIC,
-                                           "up",
-                                           3,
-                                           3);
+        up_attrib = input_geo->findFloatTuple(GA_ATTRIB_POINT,
+                                              GA_SCOPE_PUBLIC,
+                                              "up",
+                                              3,
+                                              3);
 
         // We found the up vector.
-        if (up_gah.isValid())
+        if (up_attrib)
         {
-            up_h.bind(up_gah.getAttribute());
+            up_h.bind(up_attrib);
+
             // Get the up vector.
             up = up_h.get(ptOff);
         }
@@ -779,7 +760,6 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
     const GA_AIFStringTuple     *ident_t;
     GA_Attribute                *ident_attrib;
     GA_Offset                   ptOff;
-    GA_RWAttributeRef           ident_gah;
     GA_RWHandleI                class_h;
 
     const GU_Detail             *input_geo;
@@ -808,10 +788,10 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
         if (mode == MODE_CLASS)
         {
             // Add the int tuple.
-            ident_gah = gdp->addIntTuple(GA_ATTRIB_POINT, MODENAME_CLASS, 1);
+            ident_attrib = gdp->addIntTuple(GA_ATTRIB_POINT, MODENAME_CLASS, 1);
 
             // Bind the handle.
-            class_h.bind(ident_gah.getAttribute());
+            class_h.bind(ident_attrib);
         }
         // Using the 'name' attribute or groups, so create a new string
         // attribute.
@@ -820,11 +800,10 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
             attr_name = (mode == MODE_GROUP) ? MODENAME_GROUP : MODENAME_NAME;
 
             // Create a new string attribute.
-            ident_gah = gdp->addStringTuple(GA_ATTRIB_POINT, attr_name, 1);
-            ident_attrib = ident_gah.getAttribute();
+            ident_attrib = gdp->addStringTuple(GA_ATTRIB_POINT, attr_name, 1);
 
             // Get the string tuple so we can set values.
-            ident_t = ident_gah.getAIFStringTuple();
+            ident_t = ident_attrib->getAIFStringTuple();
         }
     }
 
@@ -838,9 +817,6 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
 
     // Build the reference map.
     buildRefMap(t, hmap, pattern, input_geo, mode, GA_ATTRIB_PRIMITIVE, copy);
-
-    // The list of GA_Primitives in the input geometry.
-    const GA_PrimitiveList &prim_list = input_geo->getPrimitiveList();
 
     // Creating by groups.
     if (mode == MODE_GROUP)
@@ -874,7 +850,7 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
         if (method == 1)
         {
             // Calculate the bouding box center for this range.
-            boundingBox(input_geo, *array_it, prim_list, pos);
+            boundingBox(input_geo, *array_it, pos);
             // Set the point's position to the center of the box.
             gdp->setPos3(ptOff, pos);
         }
@@ -882,7 +858,7 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
         else if (method == 2)
         {
             // Calculate the center of mass for this range.
-            centerOfMass(*array_it, prim_list, pos);
+            centerOfMass(input_geo, *array_it, pos);
             // Set the point's position to the center of mass.
             gdp->setPos3(ptOff, pos);
         }
@@ -890,7 +866,7 @@ SOP_PrimGroupCentroid::buildCentroids(fpreal t, int mode, int method)
         else
         {
             // Calculate the barycenter for this range.
-            baryCenter(input_geo, *array_it, prim_list, pos);
+            baryCenter(input_geo, *array_it, pos);
             // Set the point's position to the barycenter.
             gdp->setPos3(ptOff, pos);
         }
@@ -952,10 +928,11 @@ SOP_PrimGroupCentroid::bindToCentroids(fpreal t, int mode, int method)
     int                         behavior;
     exint                       int_value;
 
+    const GA_Attribute          *attrib, *prim_attrib;
     const GA_PrimitiveGroup     *group;
     GA_PrimitiveGroup           *all_prims, *temp_group;
     GA_Range                    pr_range;
-    GA_ROAttributeRef           attr_gah, primattr_gah;
+    GA_ROAttributeRef           primattr_gah;
     GA_ROHandleI                class_h;
     GA_ROHandleS                str_h;
 
@@ -981,9 +958,6 @@ SOP_PrimGroupCentroid::bindToCentroids(fpreal t, int mode, int method)
     // Build the reference map.
     buildRefMap(t, hmap, pattern, input_geo, mode, GA_ATTRIB_POINT);
 
-    // The list of GA_Primitives in the input geometry.
-    const GA_PrimitiveList &prim_list = gdp->getPrimitiveList();
-
     // Create a temporary primitive group so we can keep track of all the
     // primitives we have modified.
     all_prims = createAdhocPrimGroup(*gdp, "allprims");
@@ -1006,10 +980,10 @@ SOP_PrimGroupCentroid::bindToCentroids(fpreal t, int mode, int method)
     }
 
     // Find the attribute.
-    attr_gah = input_geo->findPointAttribute(attr_name);
+    attrib = input_geo->findPointAttribute(attr_name);
 
     // If there is no attribute, add an error message and quit.
-    if (attr_gah.isInvalid())
+    if (!attrib)
     {
         addError(SOP_ATTRIBUTE_INVALID, attr_name);
         return 1;
@@ -1020,22 +994,24 @@ SOP_PrimGroupCentroid::bindToCentroids(fpreal t, int mode, int method)
     if (mode != MODE_GROUP)
     {
         // Try to find the attribute.
-        primattr_gah = gdp->findPrimitiveAttribute(attr_name);
+        prim_attrib = gdp->findPrimitiveAttribute(attr_name);
 
         // If there is no attribute, add an error message and quit.
-        if (primattr_gah.isInvalid())
+        if (!prim_attrib)
         {
             addError(SOP_ATTRIBUTE_INVALID, attr_name);
             return 1;
         }
+
+        primattr_gah = GA_ROAttributeRef(prim_attrib);
     }
 
     // 'class' uses the int handle.
     if (mode == MODE_CLASS)
-        class_h.bind(attr_gah.getAttribute());
+        class_h.bind(attrib);
     // Groups and 'name' use the string handle.
     else
-        str_h.bind(attr_gah.getAttribute());
+        str_h.bind(attrib);
 
     for (GA_Iterator it(input_geo->getPointRange()); !it.atEnd(); ++it)
     {
@@ -1086,19 +1062,19 @@ SOP_PrimGroupCentroid::bindToCentroids(fpreal t, int mode, int method)
         if (method == 1)
         {
             // Calculate the bouding box center for this range.
-            boundingBox(gdp, pr_range, prim_list, pos);
+            boundingBox(gdp, pr_range, pos);
         }
         // Center of Mass
         else if (method == 2)
         {
             // Calculate the center of mass for this attribute value.
-            centerOfMass(pr_range, prim_list, pos);
+            centerOfMass(gdp, pr_range, pos);
         }
         // Barycenter
         else
         {
             // Calculate the barycenter for this attribute value.
-            baryCenter(gdp, pr_range, prim_list, pos);
+            baryCenter(gdp, pr_range, pos);
         }
 
         // Build the transform from the point information.

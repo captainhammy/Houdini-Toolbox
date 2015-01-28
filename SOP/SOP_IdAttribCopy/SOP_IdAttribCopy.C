@@ -16,6 +16,7 @@
 
 #include <CH/CH_Manager.h>
 #include <GA/GA_AttributeRefMap.h>
+#include <GA/GA_PageHandle.h>
 #include <GA/GA_PageIterator.h>
 #include <GA/GA_SplittableRange.h>
 #include <OP/OP_Operator.h>
@@ -292,11 +293,11 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
     exint                       id;
     fpreal                      now;
 
-    const GA_Attribute          *source_attr;
+    const GA_Attribute          *source_attr, *source_id_attrib;
     const GA_AttributeDict      *dict;
     GA_Offset                   start, end;
     GA_PointGroup               *group=0;
-    GA_ROAttributeRef           id_gah, srcid_gah, attr_gah;
+    GA_ROAttributeRef           id_gah, attr_gah;
     GA_ROPageHandleI            srcid_ph;
 
     const GU_Detail             *src_geo;
@@ -340,10 +341,10 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
         }
 
         // Try to find the 'id' point attribute on the 2nd input geometry.
-        srcid_gah = src_geo->findPointAttribute(GA_SCOPE_PUBLIC, "id");
+        source_id_attrib = src_geo->findPointAttribute(GA_SCOPE_PUBLIC, "id");
 
         // If it doesn't exist, display a node error message and exit.
-        if (srcid_gah.isInvalid())
+        if (!source_id_attrib)
         {
             addError(SOP_MESSAGE, "Input 2 has no 'id' attribute.");
             unlockInputs();
@@ -351,7 +352,7 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
         }
 
         // Bind the page handle to the attribute.
-        srcid_ph.bind(srcid_gah.getAttribute());
+        srcid_ph.bind(source_id_attrib);
 
         // Make sure we entered something.
         if (pattern.length() > 0)
@@ -394,7 +395,7 @@ SOP_IdAttribCopy::cookMySop(OP_Context &context)
                     // Create a new point attribute on the current geometry
                     // that is the same as the source attribute.  Append it and
                     // the source to the map.
-                    hmap.append(gdp->addPointAttrib(source_attr).getAttribute(),
+                    hmap.append(gdp->addPointAttrib(source_attr),
                                 source_attr);
                 }
             }

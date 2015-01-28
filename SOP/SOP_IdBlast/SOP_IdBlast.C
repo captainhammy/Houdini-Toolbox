@@ -13,6 +13,7 @@
 
 #include "SOP_IdBlast.h"
 
+#include <GA/GA_PageHandle.h>
 #include <OP/OP_Operator.h>
 #include <OP/OP_OperatorTable.h>
 #include <PRM/PRM_Include.h>
