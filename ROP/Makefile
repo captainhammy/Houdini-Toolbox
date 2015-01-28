@@ -1,5 +1,5 @@
 
-SUBDIRS = ROP SOP
+SUBDIRS = ROP_Script
 
 INSTALLDIRS = $(SUBDIRS:%=install-%)
 CLEANDIRS = $(SUBDIRS:%=clean-%)
