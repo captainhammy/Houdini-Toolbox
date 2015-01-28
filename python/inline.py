@@ -29,22 +29,60 @@ _ATTRIB_TYPE_MAP = {
     hou.attribType.Global: 3,
 }
 
-_HMAJOR = hou.applicationVersion()[0]
-
 _FUNCTION_SOURCES = [
 """
-void
-makeConstantFloatAttr(GU_Detail *gdp)
+bool
+isGeometryType(OBJ_Node *node)
 {
-    GA_RWAttributeRef           attr;
+    return node->getObjectType() == OBJ_GEOMETRY;
+}
 
-    attr = gdp->addFloatTuple(GA_ATTRIB_POINT, "foo", 1);
+""",
 
-    GA_RWHandleF handle(attr);
+"""
+int
+getNearestPoint(const GU_Detail *gdp, const UT_Vector3D *pos, float dist)
+{
+    GEO_PointTreeGAOffset     tree;
 
-    handle.makeConstant(1.5);
+    tree.build(gdp);
+
+    GA_Offset           ptOff = tree.findNearestIdx(*pos, dist);
+
+    return gdp->pointIndex(ptOff);
+}
+""",
 
 
+"""
+StringArray
+getGlobalVariables(int dirty=0)
+{
+    std::vector<std::string>    result;
+
+    CMD_VariableTable           *table;
+
+    OP_CommandManager           *cmd;
+    OP_Director                 *director;
+
+    UT_StringArray              names;
+
+    // Get the scene director.
+    director = OPgetDirector();
+
+    // Get the command manager.
+    cmd = director->getCommandManager();
+
+    table = cmd->getGlobalVariables();
+
+    table->getVariableNames(names, dirty);
+
+    names.toStdVectorOfStrings(result);
+
+    // Check for an empty vector.
+    validateStringVector(result);
+
+    return result;
 }
 """,
 
@@ -243,6 +281,15 @@ expandRange(const char *pattern)
     }
 
     return values;
+}
+""",
+
+"""
+const char *
+getAuthor(OP_Node *node)
+{
+    const OP_Stat &stat = node->getStat();
+    return stat.getAuthor();
 }
 """,
 
@@ -462,22 +509,18 @@ void
 setVarmap(GU_Detail *gdp, const char **strings, int num_strings)
 {
     GA_Attribute                *attrib;
-    GA_RWAttributeRef           attrib_gah;
     const GA_AIFSharedStringTuple       *s_t;
 
     UT_String                   value;
 
     // Try to find the string attribute.
-    attrib_gah = gdp->findStringTuple(GA_ATTRIB_GLOBAL, "varmap");
+    attrib = gdp->findStringTuple(GA_ATTRIB_GLOBAL, "varmap");
 
     // If it doesn't exist, add it.
-    if (attrib_gah.isInvalid())
+    if (!attrib)
     {
-        attrib_gah = gdp->createStringAttribute(GA_ATTRIB_GLOBAL, "varmap");
+        attrib = gdp->createStringAttribute(GA_ATTRIB_GLOBAL, "varmap");
     }
-
-    // Get the actual attribute.
-    attrib = attrib_gah.getAttribute();
 
     // Get a shared string tuple from the attribute.
     s_t = attrib->getAIFSharedStringTuple();
@@ -548,7 +591,7 @@ findPrimitiveByName(const GU_Detail *gdp,
     // If one was found, return its number.
     if (prim)
     {
-        return prim->getNum();
+        return prim->getMapIndex();
     }
 
     // Return -1 to indicate that no prim was found.
@@ -564,8 +607,8 @@ findAllPrimitivesByName(const GU_Detail *gdp,
 {
     std::vector<int>            prim_nums;
 
-    GEO_ConstPrimitivePtrArray  prims;
-    GEO_ConstPrimitivePtrArray::const_iterator prims_it;
+    UT_Array<const GEO_Primitive *> prims;
+    UT_Array<const GEO_Primitive *>::const_iterator prims_it;
 
     // Try to find all the primitives given the name.
     gdp->findAllPrimitivesByName(
@@ -578,7 +621,7 @@ findAllPrimitivesByName(const GU_Detail *gdp,
     // Add any found prims to the array.
     for (prims_it = prims.begin(); !prims_it.atEnd(); ++prims_it)
     {
-        prim_nums.push_back((*prims_it)->getNum());
+        prim_nums.push_back((*prims_it)->getMapIndex());
     }
 
     return prim_nums;
@@ -648,10 +691,9 @@ copyPointAttributeValues(GU_Detail *dest_gdp,
                          const char **attribute_names,
                          int num_attribs)
 {
-    const GA_Attribute          *attr;
+    GA_Attribute                *dest_attrib;
+    const GA_Attribute          *attrib;
     GA_Offset                   srcOff, destOff;
-    GA_ROAttributeRef           src_gah;
-    GA_RWAttributeRef           dest_gah;
 
     UT_String                   attr_name;
 
@@ -665,24 +707,21 @@ copyPointAttributeValues(GU_Detail *dest_gdp,
         attr_name = attribute_names[i];
 
         // Get the attribute reference from the source geometry.
-        src_gah = src_gdp->findPointAttribute(attr_name);
+        attrib = src_gdp->findPointAttribute(attr_name);
 
-        if (src_gah.isValid())
+        if (attrib)
         {
-            // Get the actual attribute.
-            attr = src_gah.getAttribute();
-
             // Try to find the same attribute on the destination geometry.
-            dest_gah = dest_gdp->findPointAttrib(*attr);
+            dest_attrib = dest_gdp->findPointAttrib(*attrib);
 
             // If it doesn't exist, create it.
-            if (dest_gah.isInvalid())
+            if (!dest_attrib)
             {
-                dest_gah = dest_gdp->addPointAttrib(attr);
+                dest_attrib = dest_gdp->addPointAttrib(attrib);
             }
 
             // Add a mapping between the source and dest attributes.
-            hmap.append(dest_gah.getAttribute(), attr);
+            hmap.append(dest_attrib, attrib);
         }
     }
 
@@ -704,10 +743,9 @@ copyPrimAttributeValues(GU_Detail *dest_gdp,
                         const char **attribute_names,
                         int num_attribs)
 {
-    const GA_Attribute          *attr;
+    GA_Attribute                *dest_attrib;
+    const GA_Attribute          *attrib;
     GA_Offset                   srcOff, destOff;
-    GA_ROAttributeRef           src_gah;
-    GA_RWAttributeRef           dest_gah;
 
     UT_String                   attr_name;
 
@@ -721,24 +759,21 @@ copyPrimAttributeValues(GU_Detail *dest_gdp,
         attr_name = attribute_names[i];
 
         // Get the attribute reference from the source geometry.
-        src_gah = src_gdp->findPrimitiveAttribute(attr_name);
+        attrib = src_gdp->findPrimitiveAttribute(attr_name);
 
-        if (src_gah.isValid())
+        if (attrib)
         {
-            // Get the actual attribute.
-            attr = src_gah.getAttribute();
-
             // Try to find the same attribute on the destination geometry.
-            dest_gah = dest_gdp->findPrimAttrib(*attr);
+            dest_attrib = dest_gdp->findPrimAttrib(*attrib);
 
             // If it doesn't exist, create it.
-            if (dest_gah.isInvalid())
+            if (!dest_attrib)
             {
-                dest_gah = dest_gdp->addPrimAttrib(attr);
+                dest_attrib = dest_gdp->addPrimAttrib(attrib);
             }
 
             // Add a mapping between the source and dest attributes.
-            hmap.append(dest_gah.getAttribute(), attr);
+            hmap.append(dest_attrib, attrib);
         }
     }
 
@@ -930,13 +965,9 @@ primStringAttribValues(const GU_Detail *gdp, const char *attrib_name)
 
     const GA_AIFSharedStringTuple       *s_t;
     const GA_Attribute          *attrib;
-    GA_ROAttributeRef           attrib_gah;
 
     // Try to find the string attribute.
-    attrib_gah = gdp->findStringTuple(GA_ATTRIB_PRIMITIVE, attrib_name);
-
-    // Get the actual attribute.
-    attrib = attrib_gah.getAttribute();
+    attrib = gdp->findStringTuple(GA_ATTRIB_PRIMITIVE, attrib_name);
 
     // Get a shared string tuple from the attribute.
     s_t = attrib->getAIFSharedStringTuple();
@@ -959,13 +990,9 @@ setPrimStringAttribValues(GU_Detail *gdp,
 {
     const GA_AIFSharedStringTuple       *s_t;
     GA_Attribute                *attrib;
-    GA_RWAttributeRef           attrib_gah;
 
     // Try to find the string attribute.
-    attrib_gah = gdp->findStringTuple(GA_ATTRIB_PRIMITIVE, attrib_name);
-
-    // Get the actual attribute.
-    attrib = attrib_gah.getAttribute();
+    attrib = gdp->findStringTuple(GA_ATTRIB_PRIMITIVE, attrib_name);
 
     // Get a shared string tuple from the attribute.
     s_t = attrib->getAIFSharedStringTuple();
@@ -990,7 +1017,6 @@ setSharedPrimStringAttrib(GU_Detail *gdp,
     const GA_AIFSharedStringTuple       *s_t;
     GA_Attribute                *attrib;
     GA_PrimitiveGroup           *group = 0;
-    GA_RWAttributeRef           attrib_gah;
 
     // Find the primitive group if necessary.
     if (group_name)
@@ -999,16 +1025,13 @@ setSharedPrimStringAttrib(GU_Detail *gdp,
     }
 
     // Try to find the string attribute.
-    attrib_gah = gdp->findStringTuple(GA_ATTRIB_PRIMITIVE, attrib_name);
+    attrib = gdp->findStringTuple(GA_ATTRIB_PRIMITIVE, attrib_name);
 
     // If it doesn't exist, return 1 to indicate we have an invalid attribute.
-    if (attrib_gah.isInvalid())
+    if (!attrib)
     {
         return 1;
     }
-
-    // Get the actual attribute.
-    attrib = attrib_gah.getAttribute();
 
     // Get a shared string tuple from the attribute.
     s_t = attrib->getAIFSharedStringTuple();
@@ -1018,6 +1041,7 @@ setSharedPrimStringAttrib(GU_Detail *gdp,
         // Set all the primitives in the group to the value.
         s_t->setString(attrib, GA_Range(*group), value, 0);
     }
+
     else
     {
         // Set all the primitives in the detail to the value.
@@ -1037,13 +1061,9 @@ pointStringAttribValues(const GU_Detail *gdp, const char *attrib_name)
 
     const GA_AIFSharedStringTuple       *s_t;
     const GA_Attribute          *attrib;
-    GA_ROAttributeRef           attrib_gah;
 
     // Try to find the string attribute.
-    attrib_gah = gdp->findStringTuple(GA_ATTRIB_POINT, attrib_name);
-
-    // Get the actual attribute.
-    attrib = attrib_gah.getAttribute();
+    attrib = gdp->findStringTuple(GA_ATTRIB_POINT, attrib_name);
 
     // Get a shared string tuple from the attribute.
     s_t = attrib->getAIFSharedStringTuple();
@@ -1068,13 +1088,9 @@ setPointStringAttribValues(GU_Detail *gdp,
 
     const GA_AIFSharedStringTuple       *s_t;
     GA_Attribute                *attrib;
-    GA_RWAttributeRef           attrib_gah;
 
     // Try to find the string attribute.
-    attrib_gah = gdp->findStringTuple(GA_ATTRIB_POINT, attrib_name);
-
-    // Get the actual attribute.
-    attrib = attrib_gah.getAttribute();
+    attrib = gdp->findStringTuple(GA_ATTRIB_POINT, attrib_name);
 
     // Get a shared string tuple from the attribute.
     s_t = attrib->getAIFSharedStringTuple();
@@ -1097,7 +1113,6 @@ setSharedPointStringAttrib(GU_Detail *gdp,
     const GA_AIFSharedStringTuple       *s_t;
     GA_Attribute                *attrib;
     GA_PointGroup               *group = 0;
-    GA_RWAttributeRef           attrib_gah;
 
     // Find the point group if necessary.
     if (group_name)
@@ -1106,16 +1121,13 @@ setSharedPointStringAttrib(GU_Detail *gdp,
     }
 
     // Try to find the string attribute.
-    attrib_gah = gdp->findStringTuple(GA_ATTRIB_POINT, attrib_name);
+    attrib = gdp->findStringTuple(GA_ATTRIB_POINT, attrib_name);
 
     // If it doesn't exist, return 1 to indicate we have an invalid attribute.
-    if (attrib_gah.isInvalid())
+    if (!attrib)
     {
         return 1;
     }
-
-    // Get the actual attribute.
-    attrib = attrib_gah.getAttribute();
 
     // Get a shared string tuple from the attribute.
     s_t = attrib->getAIFSharedStringTuple();
@@ -1125,6 +1137,7 @@ setSharedPointStringAttrib(GU_Detail *gdp,
         // Set all the points in the group to the value.
         s_t->setString(attrib, GA_Range(*group), value, 0);
     }
+
     else
     {
         // Set all the points in the detail to the value.
@@ -1389,12 +1402,12 @@ pointGroupBoundingBox(const GU_Detail *gdp, const char *group_name)
 bool
 addNormalAttribute(GU_Detail *gdp)
 {
-    GA_RWAttributeRef           n_gah;
+    GA_Attribute                *attrib;
 
-    n_gah = gdp->addNormalAttribute(GA_ATTRIB_POINT);
+    attrib = gdp->addNormalAttribute(GA_ATTRIB_POINT);
 
     // Return true if the attribute was created.
-    if (n_gah.isValid())
+    if (attrib)
     {
         return true;
     }
@@ -1408,12 +1421,12 @@ addNormalAttribute(GU_Detail *gdp)
 bool
 addVelocityAttribute(GU_Detail *gdp)
 {
-    GA_RWAttributeRef           v_gah;
+    GA_Attribute                *attrib;
 
-    v_gah = gdp->addVelocityAttribute(GA_ATTRIB_POINT);
+    attrib = gdp->addVelocityAttribute(GA_ATTRIB_POINT);
 
     // Return true if the attribute was created.
-    if (v_gah.isValid())
+    if (attrib)
     {
         return true;
     }
@@ -1427,14 +1440,14 @@ addVelocityAttribute(GU_Detail *gdp)
 bool
 addDiffuseAttribute(GU_Detail *gdp, int attribute_type)
 {
-    GA_RWAttributeRef           diff_gah;
+    GA_Attribute                *attrib;
 
     GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
 
-    diff_gah = gdp->addDiffuseAttribute(owner);
+    attrib = gdp->addDiffuseAttribute(owner);
 
     // Return true if the attribute was created.
-    if (diff_gah.isValid())
+    if (attrib)
     {
         return true;
     }
@@ -1505,22 +1518,19 @@ consolidatePoints(GU_Detail *gdp, double distance, const char *group_name)
 void
 uniquePoints(GU_Detail *gdp, const char *group_name, int group_type)
 {
-    GA_ElementGroup             *group = 0;
-
     GA_GroupType type = static_cast<GA_GroupType>(group_type);
 
     switch (type)
     {
         case GA_GROUP_POINT:
-            group = gdp->findPointGroup(group_name);
+            gdp->uniquePoints(gdp->findPointGroup(group_name));
             break;
-
+/*
         case GA_GROUP_PRIMITIVE:
-            group = gdp->findPrimitiveGroup(group_name);
+            gdp->uniquePoints(gdp->findPrimitiveGroup(group_name));
             break;
+*/
     }
-
-    gdp->uniquePoints(group);
 }
 """,
 
@@ -2191,10 +2201,13 @@ _cpp_methods = inlinecpp.createLibrary(
     acquire_hom_lock=True,
     catch_crashes=True,
     includes="""
+#include <CMD/CMD_Variable.h>
 #include <GA/GA_AttributeRefMap.h>
 #include <GEO/GEO_Face.h>
+#include <GEO/GEO_PointTree.h>
 #include <GQ/GQ_Detail.h>
 #include <GU/GU_Detail.h>
+#include <OBJ/OBJ_Node.h>
 #include <OP/OP_CommandManager.h>
 #include <OP/OP_Director.h>
 #include <OP/OP_Node.h>
@@ -2413,41 +2426,6 @@ def _getPrimsFromList(geometry, prim_list):
     return geometry.globPrims(prim_str)
 
 
-# -----------------------------------------------------------------------------
-#    Name: _getTimeFromOpInfo
-#    Args: node : (hou.Node)
-#              A Houdini node.
-#          prefix : (str)
-#              An opinfo line prefix containing a date and time.
-#  Raises: N/A
-# Returns: datetime.datetime|None
-#              The datetime matching the opinfo line, if it exists, otherwise
-#              None.
-#    Desc: Extract a datetime.datetime from the opinfo of a node.
-# -----------------------------------------------------------------------------
-def _getTimeFromOpInfo(node, prefix):
-    import datetime
-
-    # Get the operator info and split info rows.
-    info = hou.hscript("opinfo -n {0}".format(node.path()))[0].split('\n')
-
-    # Check each row.
-    for row in info:
-        #  If the row doesn't start with our prefix, ignore it.
-        if not row.startswith(prefix):
-            continue
-
-        # Strip the prefix and any leading whitespace.
-        time_str = row[len(prefix):].strip()
-
-        # Construct a datetime object.
-        return datetime.datetime.strptime(time_str, "%d %b %Y %I:%M %p")
-
-    return None
-
-
-
-
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
@@ -2520,6 +2498,30 @@ def addToModule(module):
 
     return decorator
 
+
+@addToModule(hou)
+def getGlobalVariableNames(dirty=False):
+    """Get a tuple of all global variable names.
+
+    Args:
+        dirty=False : (bool)
+            Return only 'dirty' variables.  A dirty variable is a variable
+            that has been created or modified but not updated throughout the
+            session by something like the 'varchange' hscript command.
+
+    Raises:
+        N/A
+
+    Returns:
+        (str)
+            A tuple of any global variable names.
+
+    """
+    # Get all the valid variable names.
+    var_names =  _cpp_methods.getGlobalVariables(dirty)
+
+    # Remove any empty names.
+    return _cleanStringValues(var_names)
 
 @addToModule(hou)
 def getVariable(name):
@@ -2835,13 +2837,8 @@ def sortByValues(self, geometry_type, values):
                 "Length of values must equal the number of points."
             )
 
-        if _HMAJOR > 12:
-            # Construct a ctypes double array to pass the values.
-            arr = _buildCDoubleArray(values)
-
-        else:
-            # Construct a ctypes float array to pass the values.
-            arr = _buildCFloatArray(values)
+        # Construct a ctypes double array to pass the values.
+        arr = _buildCDoubleArray(values)
 
         _cpp_methods.sortByValues(self, 0, arr)
 
@@ -2852,13 +2849,8 @@ def sortByValues(self, geometry_type, values):
                 "Length of values must equal the number of prims."
             )
 
-        if _HMAJOR > 12:
-            # Construct a ctypes double array to pass the values.
-            arr = _buildCDoubleArray(values)
-
-        else:
-            # Construct a ctypes float array to pass the values.
-            arr = _buildCFloatArray(values)
+        # Construct a ctypes double array to pass the values.
+        arr = _buildCDoubleArray(values)
 
         _cpp_methods.sortByValues(self, 1, arr)
 
@@ -5731,33 +5723,18 @@ def getOpDependents(self, recurse=False):
 
 
 @addToClass(hou.Node)
-def creationTime(self):
-    """Get the date and time the node was created.
+def authorName(self):
+    """Get the name of the node creator.
 
     Raises:
         N/A
 
     Returns:
-        datetime.datetime
-            A datetime object representing the creation date and time.
+        str
+            The user who created the node.
 
     """
-    return _getTimeFromOpInfo(self, "Created  Time:")
-
-
-@addToClass(hou.Node)
-def modifiedTime(self):
-    """Get the date and time the node was last modified.
-
-    Raises:
-        N/A
-
-    Returns:
-        datetime.datetime
-            A datetime object representing the modification date and time.
-
-    """
-    return _getTimeFromOpInfo(self, "Modified Time:")
+    return _cpp_methods.getAuthor(self)
 
 
 @addToClass(hou.NodeType)
