@@ -477,7 +477,7 @@ class HoudiniBuildManager(object):
 
         # We need to glob in each directory for houdini installation packages.
         for directory in _SETTINGS.system.locations:
-            filePath = os.path.join(directory, "houdini-*.*.*.tar.gz")
+            filePath = os.path.join(directory, "houdini*-*.*.*.tar.gz")
 
             # Add any found files to the list.
             files += glob.glob(os.path.expandvars(filePath))
@@ -726,7 +726,7 @@ class HoudiniPackage(HoudiniBase):
             N/A
 
         """
-        result = re.match("houdini-([0-9\.]*)-", os.path.basename(path))
+        result = re.match("houdini.*-([0-9\.]*)-", os.path.basename(path))
 
         versionString = result.group(1)
 
