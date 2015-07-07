@@ -9,6 +9,7 @@
 
 # Standard Library Imports
 import os
+import stat
 
 # Houdini Toolbox Imports
 import ht.argument
@@ -133,6 +134,10 @@ def main():
             )
 
             os.symlink(wrapper, linkPath)
+
+	    # Set links to be executable.
+	    st = os.stat(linkPath)
+	    os.chmod(linkPath, st.st_mode | stat.S_IEXEC)
         
         # Try to remove the link.
         elif arguments.uninstall:

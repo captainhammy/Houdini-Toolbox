@@ -9,3 +9,8 @@ available versions and allow you to run specific versions.
 The install_houdini_wrapper script is used to automatically generate symlinks
 for Houdini application names to houdini_wrapper.  It allows you to easily
 create and remove them.
+
+Example:
+
+./install_houdini_wrapper -directory /usr/bin/ -wrapper /home/gthompson/Houdini-Toolbox/bin/houdini_wrapper -install
+
