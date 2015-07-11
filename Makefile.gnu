@@ -9,6 +9,8 @@ ifndef INSTDIR
     INSTDIR = $(HOME)/houdini$(HOUDINI_MAJOR_RELEASE).$(HOUDINI_MINOR_RELEASE)
 endif
 
+CXXFLAGS := -std=c++11
+
 OBJECTS = $(SOURCES:.C=.o)
 OBJECTS := $(OBJECTS:.cpp=.o)
 
@@ -17,6 +19,10 @@ TAGINFO = $(shell (echo -n "Compiled on:" `date`"\n         by:" `whoami`@`hostn
 %.o:		%.C
 	$(CC) $(CXXFLAGS) $(OBJFLAGS) -DMAKING_DSO $(TAGINFO) \
 	    $< $(OBJOUTPUT) $@
+
+%.o:		%.cpp
+	$(CC) $(CXXFLAGS) $(OBJFLAGS) -DMAKING_DSO $(TAGINFO) \
+	    $< $(OBJOUTPUT)$@
 
 $(DSONAME):	$(OBJECTS)
 	$(LINK) $(LDFLAGS) $(SHAREDFLAG) $(OBJECTS) $(DSOFLAGS) \
@@ -53,7 +59,7 @@ install:	default	help icons tools
 	@cp $(DSONAME) $(INSTDIR)/dso
 
 clean:
-	rm -f $(OBJECTS) $(APPNAME) $(DSONAME) $(MBSD_GC_OBJ)
+	rm -f $(OBJECTS) $(APPNAME) $(DSONAME)
 
 clobber:
 	rm -f $(INSTDIR)/dso/$(DSONAME)
