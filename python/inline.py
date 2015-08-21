@@ -32,6 +32,16 @@ _ATTRIB_TYPE_MAP = {
 _FUNCTION_SOURCES = [
 """
 bool
+isRendering()
+{
+    ROP_RenderManager           *manager = ROP_RenderManager::getManager();
+
+    return manager && manager->isActive();
+}
+""",
+
+"""
+bool
 isGeometryType(OBJ_Node *node)
 {
     return node->getObjectType() == OBJ_GEOMETRY;
@@ -52,7 +62,6 @@ getNearestPoint(const GU_Detail *gdp, const UT_Vector3D *pos, float dist)
     return gdp->pointIndex(ptOff);
 }
 """,
-
 
 """
 StringArray
@@ -2498,6 +2507,19 @@ def addToModule(module):
 
     return decorator
 
+@addToModule(hou)
+def isRendering():
+    """Check if Houdini is rendering or not.
+
+    Raises:
+        N/A
+
+    Returns:
+        bool
+            Returns True if Houdini is currently rendering, otherwise False.
+
+    """
+    return _cpp_methods.isRendering()
 
 @addToModule(hou)
 def getGlobalVariableNames(dirty=False):
