@@ -7,10 +7,6 @@
 	    "enabled": false
 	},
 
-	"image:filename": {
-	    "value": "ip"
-	},
-
 	"image:resolution": {
 	    "value": [1280, 720]
 	},
