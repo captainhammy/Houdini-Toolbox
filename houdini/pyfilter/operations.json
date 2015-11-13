@@ -1,0 +1,8 @@
+{
+    "operations":
+    [
+        ["ht.pyfilter.operations.setproperties", "SetProperties"],
+        ["ht.pyfilter.operations.setdeeppath", "SetDeepResolverPath"],
+        ["ht.pyfilter.operations.zdepth", "ZDepthPass"]
+    ]
+}
