@@ -1,0 +1,2 @@
+# This script compiles icons into the python/ht/ui folder.
+pyside-rcc -o ../python/ht/ui/icons.py icons.qrc

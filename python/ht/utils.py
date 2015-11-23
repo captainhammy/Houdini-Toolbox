@@ -42,14 +42,16 @@ def convertFromUnicode(data):
     # If the data is a dictionary we need to convert the key/value pairs
     # and return a new dictionary.
     if isinstance(data, dict):
-        #TODO: This can be changed to use Python 2.7's dictionary
-        # comprehensions at some point.
-        return dict(
-            [
-                (convertFromUnicode(key), convertFromUnicode(value))
-                 for key, value in data.iteritems()
-            ]
-        )
+        return {convertFromUnicode(key): convertFromUnicode(value)
+                for key, value in data.iteritems()}
+
+        # Python 2.6 compatible workaround for no dictionary comprehensions.
+#        return dict(
+#            [
+#                (convertFromUnicode(key), convertFromUnicode(value))
+#                 for key, value in data.iteritems()
+#            ]
+#        )
 
     # Convert any elements in a list.
     elif isinstance(data, list):

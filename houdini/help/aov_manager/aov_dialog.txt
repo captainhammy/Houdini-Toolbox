@@ -1,0 +1,40 @@
+
+#largeicon: /images/aov_manager/aov.png
+
+= AOV Dialog =
+
+"""Create and edit AOVs."""
+
+The __Create/Edit AOV__ dialog is used to create new or modify existing AOVs.
+
+[Image:/images/aov_manager/aov_dialog.png]
+
+NOTE:
+    When adding new AOVs to existing .json files or modifying AOVs, the .json
+    file will be appended to/rewritten in place.  Given the nature of json
+    data this may result of the internal order of elements in the file to
+    change.
+
+== Creating AOVs ==
+
+    To create a new AOV you must specify a __VEX Variable__, __VEX Type__, and
+    __File Path__.  All other settings are optional and will only be written to
+    the definition if the default values are changed.
+
+    NOTE:
+	Default values corresponding to internal SOHO default values.
+
+
+== Editing AOVs ==
+
+    When editing an AOV you are able to change any values except the __VEX
+    Variable__, __VEX Type__, and __File Path__.  If you wish to change these
+    then you must currently modify them manually in the source file.
+
+    NOTE:
+	Hit the __Reset__ button to revert any changes.
+
+== Deleting AOVs ==
+
+    To delete an AOV definition you must currently remove the definition from
+    the source file.

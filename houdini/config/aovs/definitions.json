@@ -1,0 +1,288 @@
+{
+    "definitions": [
+        {
+            "variable": "Cf",
+            "vextype": "vector",
+            "comment": "color"
+        },
+
+        {
+            "variable": "Of",
+            "vextype": "vector",
+            "comment": "opacity"
+        },
+
+        {
+            "variable": "Af",
+            "vextype": "float",
+            "comment": "alpha"
+        },
+
+        {
+            "variable": "P",
+            "vextype": "vector",
+            "quantize": "float",
+            "comment": "position"
+        },
+
+        {
+            "variable": "P",
+            "vextype": "vector",
+            "channel": "Pworld",
+            "quantize": "float",
+            "comment": "position"
+        },
+
+        {
+            "variable": "Pz",
+            "vextype": "float",
+            "quantize": "float",
+            "comment": "position-z"
+        },
+
+        {
+            "variable": "N",
+            "vextype": "vector",
+            "comment": "normal"
+        },
+
+        {
+            "variable": "Nt",
+            "vextype": "vector",
+            "comment": "tangent-space normal"
+        },
+
+        {
+            "variable": "Ce",
+            "vextype": "vector",
+            "sfilter": "fullopacity",
+            "comment": "emission"
+        },
+
+        {
+            "variable": "direct_comp",
+            "vextype": "vector",
+            "channel": "direct",
+            "componentexport": true,
+            "comment": "Direct Lighting (per component)"
+        },
+
+        {
+            "variable": "direct_emission",
+            "vextype": "vector",
+            "sfilter": "fullopacity",
+            "comment": "Direct emission"
+        },
+
+        {
+            "variable": "direct_noshadow",
+            "vextype": "vector",
+            "comment": "Direct unshadowed"
+        },
+
+        {
+            "variable": "direct_noshadow_comp",
+            "vextype": "vector",
+            "channel": "direct_noshadow",
+            "componentexport": true,
+            "comment": "Direct unshadowed (per-component)"
+        },
+
+        {
+            "variable": "direct_shadow",
+            "vextype": "vector",
+            "comment": "Direct shadow matte"
+        },
+
+        {
+            "variable": "direct_reflectivity",
+            "vextype": "vector",
+            "comment": "Direct reflectivity"
+        },
+
+        {
+            "variable": "indirect_comp",
+            "vextype": "vector",
+            "channel": "indirect",
+            "componentexport": true,
+            "comment": "Indirect lighting (per-component)"
+        },
+
+        {
+            "variable": "indirect_emission",
+            "vextype": "vector",
+            "comment": "Indirect emission"
+        },
+
+        {
+            "variable": "indirect_noshadow",
+            "vextype": "vector",
+            "comment": "Indirect unshadowed"
+        },
+
+        {
+            "variable": "indirect_noshadow_comp",
+            "vextype": "vector",
+            "channel": "indirect_noshadow",
+            "componentexport": true,
+            "comment": "Indirect unshadowed (per-component)"
+        },
+
+        {
+            "variable": "indirect_shadow",
+            "vextype": "vector",
+            "comment": "Indirect shadow matte"
+        },
+
+        {
+            "variable": "all_comp",
+            "vextype": "vector",
+            "channel": "all",
+            "componentexport": true,
+            "comment": "Combined lighting (per-component)"
+        },
+
+        {
+            "variable": "all",
+            "vextype": "vector",
+            "lightexport": "per-light",
+            "lightexport_scope": "*",
+            "lightexport_select": "*",
+            "comment": "Combined lighting (per-light)"
+        },
+
+        {
+            "variable": "all_emission",
+            "vextype": "vector",
+            "comment": "Combined emission"
+        },
+
+        {
+            "variable": "direct",
+            "vextype": "vector",
+            "comment": "Combined direct lighting"
+        },
+
+        {
+            "variable": "indirect",
+            "vextype": "vector",
+            "comment": "Combined indirect lighting"
+        },
+
+        {
+            "variable": "sss_single",
+            "vextype": "vector",
+            "comment": "Single scattering"
+        },
+
+        {
+            "variable": "sss_multi",
+            "vextype": "vector",
+            "comment": "Multi scattering"
+        },
+
+
+        {
+            "variable": "level",
+            "vextype": "float",
+            "comment": "Ray-level"
+        },
+
+        {
+            "variable": "diffuselevel",
+            "vextype": "float",
+            "comment": "Diffuse ray-level"
+        },
+
+        {
+            "variable": "specularlevel",
+            "vextype": "float",
+            "comment": "Specular ray-level"
+        },
+
+        {
+            "variable": "volumelevel",
+            "vextype": "vector",
+            "comment": "Volume ray-level"
+        },
+
+        {
+            "variable": "direct_samples",
+            "vextype": "float",
+            "comment": "Direct ray samples"
+        },
+
+        {
+            "variable": "indirect_samples",
+            "vextype": "float",
+            "comment": "Indirect ray samples"
+        },
+
+
+        {
+            "variable": "Render_Time",
+            "vextype": "float",
+            "quantize": "float",
+            "comment": "Diagnostic: Render Time"
+        },
+        
+        {
+            "variable": "Op_Id",
+            "vextype": "float",
+            "quantize": "float",
+            "comment": "Diagnostic: Node Id"
+        },
+        
+        {
+            "variable": "Prim_Id",
+            "vextype": "float",
+            "quantize": "float",
+            "comment": "Diagnostic: Primitive Id"
+        },
+        
+        {
+            "variable": "Shading_Samples",
+            "vextype": "float",
+            "comment": "Diagnostic: Shading Samples"
+        },
+          
+        {
+            "variable": "Opacity_Samples",
+            "vextype": "float",
+            "comment": "Diagnostic: Opacity Samples"
+        },
+          
+        {
+            "variable": "Pixel_Samples",
+            "vextype": "float",
+            "comment": "Diagnostic: Pixel Samples"
+        },
+          
+
+        {
+            "variable": "ray:nts",
+            "vextype": "float",
+            "comment": "Diagnostic: Ray tracing accelerator traversal steps"
+        },
+          
+
+        {
+            "variable": "ray:nets",
+            "vextype": "float",
+            "comment": "Diagnostic: Ray tracing accelerator leaf traversal steps"
+        },
+          
+        {
+            "variable": "ray:nobjs",
+            "vextype": "float",
+            "comment": "Diagnostic: Instance intersection count"
+        },
+          
+        {
+            "variable": "ray:nprims",
+            "vextype": "float",
+            "comment": "Diagnostic: Primitive intersection count"
+        }
+    ]
+}
+

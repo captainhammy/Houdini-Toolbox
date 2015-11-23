@@ -1,0 +1,39 @@
+
+#largeicon: /images/aov_manager/group.png
+
+= AOV Group Dialog =
+
+"""Create and edit AOV groups."""
+
+The __Create/Edit AOV Group__ dialog is used to create new or modify existing
+AOV groups.
+
+[Image:/images/aov_manager/group_dialog.png]
+
+NOTE:
+    When adding new groups to existing .json files or modifying groups, the
+    .json file will be appended to/rewritten in place.  Given the nature of
+    json data this may result of the internal order of elements in the file to
+    change.
+
+== Creating Groups ==
+
+    To create a new group you must specify a __Group Name__, __File Path__ and
+    have at least one member AOV selected.  All other settings are optional and
+    will only be written to the definition if the default values are changed.
+
+== Editing Groups ==
+
+    When editing a group you are able to change the group membership, as well
+    as any values except the __Group Name__ and __File Path__.  If you wish to
+    change these then you must currently modify them manually in the source
+    file.
+
+    NOTE:
+	Hit the __Reset__ button to revert any changes.
+
+== Deleting Groups ==
+
+    To delete a group definition you must currently remove the definition from 
+    the source file.
+

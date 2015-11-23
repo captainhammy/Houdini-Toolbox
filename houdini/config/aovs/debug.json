@@ -1,0 +1,12 @@
+{
+    "groups": {
+        "debug": {
+            "include": [
+                "P",
+                "N",
+                "Render_Time"
+            ]
+        }
+    }
+}
+

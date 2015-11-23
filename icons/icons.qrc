@@ -1,0 +1,33 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource prefix="/ht/rsc/">
+        <file>icons/aovs/asparameters.png</file>
+        <file>icons/aovs/button_down.png</file>
+        <file>icons/aovs/button_up.png</file>
+        <file>icons/aovs/chooser_file.png</file>
+        <file>icons/aovs/clear.png</file>
+        <file>icons/aovs/create_aov.png</file>
+        <file>icons/aovs/create_group.png</file>
+        <file>icons/aovs/dialog_info.png</file>
+        <file>icons/aovs/delete.png</file>
+        <file>icons/aovs/edit.png</file>
+        <file>icons/aovs/edit_aov.png</file>
+        <file>icons/aovs/edit_group.png</file>
+        <file>icons/aovs/error.png</file>
+        <file>icons/aovs/file.png</file>
+        <file>icons/aovs/float.png</file>
+        <file>icons/aovs/folder.png</file>
+        <file>icons/aovs/from_node.png</file>
+        <file>icons/aovs/group.png</file>
+        <file>icons/aovs/help.png</file>
+        <file>icons/aovs/info.png</file>
+        <file>icons/aovs/move_to_left.png</file>
+        <file>icons/aovs/move_to_right.png</file>
+        <file>icons/aovs/reload.png</file>
+        <file>icons/aovs/rendertime.png</file>
+        <file>icons/aovs/root.png</file>
+        <file>icons/aovs/unitvector.png</file>
+        <file>icons/aovs/vector.png</file>
+        <file>icons/aovs/vector4.png</file>
+        <file>icons/aovs/warning.png</file>
+    </qresource>
+</RCC>

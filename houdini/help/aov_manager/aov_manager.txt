@@ -1,0 +1,99 @@
+
+#icon: PANETYPES/viewer_cop
+
+= AOV Manager =
+
+"""Easily manage groups of AOVs at rendertime."""
+
+The __AOV Manager__ panel is a graphical interface for the __Automatic AOV__
+system.  See it's documentation for implementation details.
+
+== Loading AOVs ==
+
+Files that are not automatically picked up by the manager's searching can
+manually be added.
+
+:task:Load a .json file:
+    Click [Icon:COMMON/file] in the __AOVs and Groups__ toolbar and select one
+    or more files to load.
+
+
+== Creating and Editing ==
+
+    == AOVs ==
+    	See [Create/Edit AOV Dialog|/aov_manager/aov_dialog] for help on creating
+    	and editing AOVs.
+
+        :task:Create a new AOV:
+            Click [Image:/images/aov_manager/create_aov.png] in the __AOVs and
+            Groups__ toolbar.
+
+	:task:Edit existing AOVs:
+	    Select one or more AOVs and click [Image:/images/aov_manager/edit_aov.png]
+	    in the __AOVs and Groups__ toolbar.
+
+    == Groups ==
+        See [Create/Edit AOV Group Dialog|/aov_manager/group_dialog] for help on
+        creating and editing groups.
+
+        :task:Create a new group:
+            Click [Image:/images/aov_manager/create_group.png] in the __AOVs
+	    and Groups__ toolbar.
+
+            TIP:
+                Select AOVs in the tree before clicking to automatically have
+                those AOVs selected in the New Group dialog.
+
+        :task:Edit existing Groups:
+            Select one or more groups and click [Image:/images/aov_manager/edit_group.png]
+            in the __AOVs and Groups__ toolbar.
+
+        :task:Create a new group from specified AOVs
+            Click [Image:/images/aov_manager/create_group.png] in the __AOVs
+	    to Apply__ toolbar.
+
+== Inspecting AOVs and Groups ==
+    To view the settings of AOVs and groups you can select them and click
+    [Icon:BUTTONS/info], ((RMB)) and select __Info__, press ((i)), or hover over
+    an item and view the tooltip help.
+
+== Selecting AOVs to Apply ==
+    AOVs and groups can be added in a number of ways.
+
+    TIP:
+        Use ((SHIFT)) to select ranges and ((CTRL)) to toggle selection of items.
+
+    === Drag & Drop ===
+        To drag & drop one or more AOVs/groups use ((LMB)) to select them and
+	then drag to the right.
+
+        If you hold ((CTRL)) while dropping, any selected groups will be
+	automatically flattened.
+
+    === Add Selected (Install) Button ===
+        With items selected, press the [Icon:BUTTONS/move_to_right] button to
+	"install" them.
+
+        Pressing [Icon:BUTTONS/move_to_left] with an installed item selected
+	will uninstall it.
+
+    === Context Menu / Hotkeys ===
+        If you ((RMB)) on any items a context sensitive menu will appear.  You
+	can choose Install & Uninstall, or use the ((Y)) & ((U)) keys to
+	perform the actions.
+
+
+== Applying AOVs to a Mantra ROP ==
+
+    :task:Apply at rendertime:
+	Select the node(s) and click [Icon:BUTTONS/render].  An __Automatic
+	AOVs__ parameter wil the specified AOVs/groups set.
+
+    :task:Apply as parameters:
+	Select the node(s) and click [Icon:PANETYPES/parameters].  The __Images
+	> Extra Image Planes__ multiparm will be populated with entries for
+	the specified AOVs/groups.
+
+    	NOTE:
+	   Some settings cannot be adequately represented as multiparms, such
+	   as per-aov component export settings.

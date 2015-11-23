@@ -13,7 +13,7 @@ import traceback
 from IFDapi import ray_comment
 
 # Houdini Toolbox Imports
-import ht.sohohooks.planes
+from ht.sohohooks.aovs import manager
 
 # =============================================================================
 # CONSTANTS
@@ -21,7 +21,7 @@ import ht.sohohooks.planes
 
 _HOOK_FUNCTIONS = {
     # Called after wrangling the camera.
-    "post_cameraDisplay": (ht.sohohooks.planes.addRenderPlanes,),
+    "post_cameraDisplay": (manager.AOVManager.addAOVsToIfd,),
 }
 
 # =============================================================================
