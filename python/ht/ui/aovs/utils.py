@@ -261,11 +261,10 @@ def getIconFromGroup(group):
 
 def getIconFromVexType(vextype):
     """Get the icon corresponding to a VEX type."""
-    return QtGui.QIcon(
-        ":ht/rsc/icons/aovs/{}.png".format(
-            vextype
-        )
-    )
+    if vextype == "unitvector":
+        vextype = "vector"
+
+    return hou.ui.createQtIcon("DATATYPES_{}".format(vextype))
 
 
 def getLightExportMenuIndex(lightexport):

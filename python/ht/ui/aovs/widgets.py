@@ -577,9 +577,7 @@ class AOVInstallBarWidget(QtGui.QWidget):
         layout.addWidget(self.reload)
 
         self.reload.setIcon(
-            QtGui.QIcon(
-                ":ht/rsc/icons/aovs/reload.png"
-            )
+            hou.ui.createQtIcon("BUTTONS_reload")
         )
         self.reload.setIconSize(QtCore.QSize(14, 14))
         self.reload.setMaximumSize(QtCore.QSize(20, 20))
@@ -596,9 +594,7 @@ class AOVInstallBarWidget(QtGui.QWidget):
         layout.addWidget(self.install_button, alignment=QtCore.Qt.AlignVCenter)
 
         self.install_button.setIcon(
-            QtGui.QIcon(
-                ":ht/rsc/icons/aovs/move_to_right.png"
-            )
+            hou.ui.createQtIcon("BUTTONS_move_to_right")
         )
         self.install_button.setIconSize(QtCore.QSize(14, 14))
         self.install_button.setMaximumSize(QtCore.QSize(20, 20))
@@ -614,9 +610,7 @@ class AOVInstallBarWidget(QtGui.QWidget):
         layout.addWidget(self.uninstall_button, alignment=QtCore.Qt.AlignVCenter)
 
         self.uninstall_button.setIcon(
-            QtGui.QIcon(
-                ":ht/rsc/icons/aovs/move_to_left.png"
-            )
+            hou.ui.createQtIcon("BUTTONS_move_to_left")
         )
         self.uninstall_button.setIconSize(QtCore.QSize(14, 14))
         self.uninstall_button.setMaximumSize(QtCore.QSize(20, 20))
@@ -738,7 +732,7 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
         self.addWidget(load_file_button)
 
         load_file_action = QtGui.QAction(
-            QtGui.QIcon(":ht/rsc/icons/aovs/file.png"),
+            hou.ui.createQtIcon("COMMON_file"),
             "Load AOVs from .json files.",
             self,
             triggered=manager.loadJsonFiles
@@ -760,7 +754,7 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
         self.addWidget(self.info_button)
 
         info_action = QtGui.QAction(
-            QtGui.QIcon(":ht/rsc/icons/aovs/info.png"),
+            hou.ui.createQtIcon("BUTTONS_info"),
             "Display information about the AOV or group.",
             self,
             triggered=self.displayInfoSignal.emit
@@ -1252,7 +1246,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
         self.addWidget(self.apply_button)
 
         apply_action = QtGui.QAction(
-            QtGui.QIcon(":ht/rsc/icons/aovs/rendertime.png"),
+            hou.ui.createQtIcon("NETWORKS_rop"),
             "Apply",
             self,
             triggered=self.applyAtRenderTimeSignal.emit
@@ -1271,7 +1265,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
         self.addWidget(self.apply_as_parms_button)
 
         parms_action = QtGui.QAction(
-            QtGui.QIcon(":ht/rsc/icons/aovs/asparameters.png"),
+            hou.ui.createQtIcon("PANETYPES_parameters"),
             "Apply AOVs to selected nodes as parameters.",
             self,
             triggered=self.applyToParmsSignal.emit
@@ -1312,7 +1306,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
         self.addWidget(load_button)
 
         load_action = QtGui.QAction(
-            QtGui.QIcon(":ht/rsc/icons/aovs/from_node.png"),
+            hou.ui.createQtIcon("DATATYPES_node_path"),
             "Load AOVs from a node.",
             self,
             triggered=self.loadFromNode
@@ -1334,7 +1328,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
         self.addWidget(self.clear_button)
 
         clear_action = QtGui.QAction(
-            QtGui.QIcon(":ht/rsc/icons/aovs/clear.png"),
+            hou.ui.createQtIcon("BUTTONS_clear"),
             "Clear all AOVs.",
             self,
             triggered=self.clearAOVsSignal.emit
@@ -1672,7 +1666,7 @@ class FileChooser(QtGui.QWidget):
         # =====================================================================
 
         self.button = QtGui.QPushButton(
-            QtGui.QIcon(":ht/rsc/icons/aovs/chooser_file.png"),
+            hou.ui.createQtIcon("BUTTONS_chooser_file"),
             ""
         )
         layout.addWidget(self.button)
@@ -1761,7 +1755,7 @@ class HelpButton(QtGui.QPushButton):
 
     def __init__(self, name, parent=None):
         super(HelpButton, self).__init__(
-            QtGui.QIcon(":ht/rsc/icons/aovs/help.png"),
+            hou.ui.createQtIcon("BUTTONS_help"),
             "",
             parent=parent
         )
@@ -1912,9 +1906,9 @@ class StatusMessageWidget(QtGui.QWidget):
 
         layout.setContentsMargins(0, 0, 0, 0)
 
-        self.info_pixmap = QtGui.QIcon(":/ht/rsc/icons/aovs/dialog_info.png").pixmap(24, 24)
-        self.warning_pixmap = QtGui.QIcon(":/ht/rsc/icons/aovs/warning.png").pixmap(24, 24)
-        self.error_pixmap = QtGui.QIcon(":/ht/rsc/icons/sohohooks/aovs/error.png").pixmap(24, 24)
+        self.info_pixmap = hou.ui.createQtIcon("DIALOG_info").pixmap(24, 24)
+        self.warning_pixmap = hou.ui.createQtIcon("DIALOG_warning").pixmap(24, 24)
+        self.error_pixmap = hou.ui.createQtIcon("DIALOG_error").pixmap(24, 24)
 
         # =====================================================================
 

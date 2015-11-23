@@ -14,6 +14,9 @@ from ht.sohohooks.aovs.aov import AOV, AOVGroup
 from ht.ui.aovs import utils
 import ht.ui.icons
 
+# Houdini Imports
+import hou
+
 # =============================================================================
 # TREE NODES
 # =============================================================================
@@ -60,7 +63,7 @@ class TreeNode(object):
     @property
     def icon(self):
         """Icon for this node."""
-        return QtGui.QIcon(":ht/rsc/icons/aovs/root.png")
+        return hou.ui.createQtIcon("NETWORKS_root")
 
     @property
     def name(self):

@@ -903,7 +903,7 @@ class AOVInfoDialog(QtGui.QDialog):
         self.button_box.accepted.connect(self.accept)
 
         edit_button = QtGui.QPushButton(
-            QtGui.QIcon(":/ht/rsc/icons/aovs/edit.png"),
+            hou.ui.createQtIcon("BUTTONS_edit"),
             "Edit"
         )
 
@@ -915,7 +915,7 @@ class AOVInfoDialog(QtGui.QDialog):
         # =====================================================================
 
         delete_button = QtGui.QPushButton(
-            QtGui.QIcon(":ht/rsc/icons/aovs/delete.png"),
+            hou.ui.createQtIcon("COMMON_delete"),
             "Delete"
         )
 
@@ -1045,7 +1045,7 @@ class AOVGroupInfoDialog(QtGui.QDialog):
 
         # Button to launch the Edit dialog on the current group.
         edit_button = QtGui.QPushButton(
-            QtGui.QIcon(":/ht/rsc/icons/aovs/edit.png"),
+            hou.ui.createQtIcon("BUTTONS_edit"),
             "Edit"
         )
 
