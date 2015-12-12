@@ -1,15 +1,12 @@
-"""This module contains utility functions for the ht package.
+"""This module contains utility functions for the ht package."""
 
-Synopsis
---------
+# =============================================================================
+# IMPORTS
+# =============================================================================
 
-Functions:
-    convertFromUnicode
-	Convert any unicode members to normal strings.
-
-"""
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
+# Standard Library Imports
+import contextlib
+import time
 
 # =============================================================================
 # EXPORTS
@@ -17,6 +14,7 @@ __email__ = "captainhammy@gmail.com"
 
 __all__ = [
     "convertFromUnicode",
+    "timer",
 ]
 
 # =============================================================================
@@ -63,4 +61,29 @@ def convertFromUnicode(data):
 
     # Return the untouched data.
     return data
+
+
+@contextlib.contextmanager
+def timer(label=None):
+    """Context manager for outputing timing information.
+
+>>> with ht.utils.timer("sleeping"):
+...     time.sleep(2)
+...
+sleeping - 2.00206804276
+
+    """
+    # Start time.
+    t = time.time()
+
+    try:
+        yield
+
+    finally:
+        duration = time.time() - t
+
+        if label is not None:
+            print "{0} - {1}".format(label, duration)
+        else:
+            print duration
 
