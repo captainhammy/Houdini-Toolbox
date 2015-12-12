@@ -51,6 +51,22 @@ isGeometryType(OBJ_Node *node)
 
 """
 int
+getNumPoints(const GU_Detail *gdp)
+{
+    return gdp->getNumPoints();
+}
+""",
+
+"""
+int
+getNumPrimitives(const GU_Detail *gdp)
+{
+    return gdp->getNumPrimitives();
+}
+""",
+
+"""
+int
 getNearestPoint(const GU_Detail *gdp, const UT_Vector3D *pos, float dist)
 {
     GEO_PointTreeGAOffset     tree;
@@ -2223,6 +2239,7 @@ _cpp_methods = inlinecpp.createLibrary(
 #include <OP/OP_OTLDefinition.h>
 #include <OP/OP_OTLManager.h>
 #include <PRM/PRM_Parm.h>
+#include <ROP/ROP_RenderManager.h>
 #include <UT/UT_WorkArgs.h>
 
 // Validate a vector of strings so that it can be returned as a StringArray.
@@ -2716,6 +2733,36 @@ def isReadOnly(self):
     handle.destroy()
 
     return result
+
+
+@addToClass(hou.Geometry)
+def numPoints(self):
+    """Get the number of points in the geometry.
+
+    Raises:
+        N/A
+
+    Returns:
+        int
+            The number of points in the geometry.
+
+    """
+    return _cpp_methods.getNumPoints(self)
+
+
+@addToClass(hou.Geometry)
+def numPrims(self):
+    """Get the number of primitives in the geometry.
+
+    Raises:
+        N/A
+
+    Returns:
+        int
+            The number of primitives in the geometry.
+
+    """
+    return _cpp_methods.getNumPrimitives(self)
 
 
 @addToClass(hou.Geometry)

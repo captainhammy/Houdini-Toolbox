@@ -114,7 +114,7 @@ class TestInlineCpp(unittest.TestCase):
     def test_getVariable(self):
         hipName = hou.getVariable("HIPNAME")
 
-        self.assertEqual(hipName, os.path.basename(hou.hipFile.path()))
+        self.assertEqual(hipName, os.path.splitext(os.path.basename(hou.hipFile.path()))[0])
 
     def test_setVariable(self):
         value = 22
@@ -177,6 +177,16 @@ class TestInlineCpp(unittest.TestCase):
     def test_isReadOnlyFalse(self):
         geo = hou.Geometry()
         self.assertFalse(geo.isReadOnly())
+
+    def test_numPoints(self):
+        geo = getObjGeo("test_numPoints")
+
+        self.assertEqual(geo.numPoints(), 5000)
+
+    def test_numPrims(self):
+        geo = getObjGeo("test_numPrims")
+
+        self.assertEqual(geo.numPrims(), 12)
 
     def test_sortByAttribute(self):
         geo = getObjGeoCopy("test_sortByAttribute")
@@ -1481,39 +1491,6 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(bbox.volume(), 42)
 
-    def test_parmIsDefault(self):
-        node = OBJ.createNode("geo")
-        p = node.parm("tx")
-
-        self.assertTrue(p.isDefault())
-
-    def test_parmIsNotDefault(self):
-        node = OBJ.createNode("geo")
-        p = node.parm("tx")
-        p.set(5)
-
-        self.assertFalse(p.isDefault())
-
-    def test_parmTupleIsDefault(self):
-        node = OBJ.createNode("geo")
-        pt = node.parmTuple("t")
-
-        self.assertTrue(pt.isDefault())
-
-    def test_parmTupleNotIsDefault(self):
-        node = OBJ.createNode("geo")
-        pt = node.parmTuple("t")
-        pt.set((1,2,3))
-
-        self.assertFalse(pt.isDefault())
-
-    def test_getReferencingParms(self):
-        node = OBJ.node("test_getReferencingParms")
-
-        parm = node.parm("file1/file")
-
-        self.assertEquals(len(parm.getReferencingParms()), 2)
-
     def test_isMultiParm(self):
         node = OBJ.node("test_isMultiParm/object_merge")
         parm = node.parm("numobj")
@@ -1721,18 +1698,6 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(len(node.getOpDependents()), 0)
 
         self.assertEqual(len(node.getOpDependents(True)), 1)
-
-    def test_creationTime(self):
-        ts = datetime.datetime.now().strftime("%d %m %y %H:%M")
-        date = datetime.datetime.strptime(ts, "%d %m %y %H:%M")
-
-        node = OBJ.createNode("geo")
-
-        self.assertEqual(date, node.creationTime())
-
-    def test_modifiedTime(self):
-        # TODO Figure out a way to test this that doesn't break randomly.
-        pass
 
     def test_typeSetIcon(self):
         nodeType = hou.nodeType(hou.objNodeTypeCategory(), "geo")
@@ -1949,13 +1914,13 @@ class TestInlineCpp(unittest.TestCase):
         )
 
     def test_metaSource(self):
-        TARGET = "Scanned OTL Directories"
-        path = hou.expandString("$HH/otls/OPlibSop.otl")
+        TARGET = "Scanned Asset Library Directories"
+        path = hou.expandString("$HH/otls/OPlibSop.hda")
 
         self.assertEqual(hou.hda.metaSource(path), TARGET)
 
     def test_getMetaSource(self):
-        TARGET = "Scanned OTL Directories"
+        TARGET = "Scanned Asset Library Directories"
 
         node_type = hou.nodeType(hou.sopNodeTypeCategory(), "explodedview")
 
@@ -1973,7 +1938,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertTrue(len(libs) < num_libs)
 
     def test_librariesInMetaSource(self):
-        libs = hou.hda.librariesInMetaSource("Scanned OTL Directories")
+        libs = hou.hda.librariesInMetaSource("Scanned Asset Library Directories")
         self.assertTrue(len(libs) > 0)
 
     def test_isDummy(self):
