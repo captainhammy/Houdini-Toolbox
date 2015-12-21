@@ -1,11 +1,8 @@
 
 SUBDIRS = SOP_DopImpactPoints \
-	  SOP_IdAttribCopy \
-	  SOP_IdBlast \
 	  SOP_PointsFromVoxels \
 	  SOP_PrimCentroid \
-	  SOP_PrimGroupCentroid \
-	  SOP_Varmap
+	  SOP_PrimGroupCentroid 
 
 INSTALLDIRS = $(SUBDIRS:%=install-%)
 CLEANDIRS = $(SUBDIRS:%=clean-%)
