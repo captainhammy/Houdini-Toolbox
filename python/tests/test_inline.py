@@ -423,39 +423,6 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(len(geo.iterPrims()), len(prims))
 
-    def test_varmap(self):
-        TARGET = {'test': 'TEST', 'attribute1': 'ATTRIBUTE1', 'that': 'THING'}
-
-        geo = getObjGeo("test_varmap")
-
-        self.assertEqual(geo.varmap(), TARGET)
-
-    def test_setVarmap(self):
-        TARGET = {'who': 'WHO', 'attribute2': 'ATTRIBUTE2', 'him': 'HER'}
-
-        geo = hou.Geometry()
-        geo.setVarmap(TARGET)
-
-        self.assertEqual(geo.varmap(), TARGET)
-
-    def test_addVariableName(self):
-        TARGET = {'attribute1': 'ATTRIBUTE1', 'attribute1': 'TEST'}
-
-        geo = getObjGeoCopy("test_addVariableName")
-
-        attribute = geo.findPointAttrib("attribute1")
-
-        geo.addVariableName(attribute, "TEST")
-
-        self.assertEqual(geo.varmap(), TARGET)
-
-    def test_removeVariableName(self):
-        geo = getObjGeoCopy("test_removeVariableName")
-
-        geo.removeVariableName("ATTRIBUTE1")
-
-        self.assertEqual(geo.varmap(), {})
-
     def test_renameAttributeVertex(self):
         geo = getObjGeoCopy("test_renameAttributeVertex")
         attrib = geo.findVertexAttrib("goodbye")
@@ -705,7 +672,7 @@ class TestInlineCpp(unittest.TestCase):
         geo.createPoints(5)
         attr = geo.addAttrib(hou.attribType.Point, "test", "")
 
-        geo.setSharedPointStringAttrib(attr, "point0")
+        geo.setSharedPointStringAttrib(attr.name(), "point0")
 
         vals = [point.attribValue(attr) for point in geo.points()]
 
@@ -726,7 +693,7 @@ class TestInlineCpp(unittest.TestCase):
 
         geo.createPoints(5)
 
-        geo.setSharedPointStringAttrib(attr, "point0", group)
+        geo.setSharedPointStringAttrib(attr.name(), "point0", group)
 
         vals = [point.attribValue(attr) for point in geo.points()]
 
@@ -810,7 +777,7 @@ class TestInlineCpp(unittest.TestCase):
 
         attr = geo.findPrimAttrib("test")
 
-        geo.setSharedPrimStringAttrib(attr, "value")
+        geo.setSharedPrimStringAttrib(attr.name(), "value")
 
         vals = [prim.attribValue(attr) for prim in geo.prims()]
 
@@ -825,7 +792,7 @@ class TestInlineCpp(unittest.TestCase):
 
         group = geo.findPrimGroup("group1")
 
-        geo.setSharedPrimStringAttrib(attr, "value", group)
+        geo.setSharedPrimStringAttrib(attr.name(), "value", group)
 
         vals = [prim.attribValue(attr) for prim in geo.prims()]
 
@@ -1192,14 +1159,6 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(len(geo.iterPoints()), 195)
 
-    def test_uniquePointsPrimGroup(self):
-        geo = getObjGeoCopy("test_uniquePointsPrimGroup")
-
-        group = geo.primGroups()[0]
-        geo.uniquePoints(group)
-
-        self.assertEqual(len(geo.iterPoints()), 195)
-
     def test_groupBoundingBoxPoint(self):
         TARGET = hou.BoundingBox(-4, 0, -1, -2, 0, 2)
 
@@ -1546,29 +1505,6 @@ class TestInlineCpp(unittest.TestCase):
             hou.OperationFailed,
             parmTuple.getMultiParmInstanceIndex
         )
-
-    def test_insertMultiParmItem(self):
-        TARGET = "/obj/test_hasEdge"
-
-        node = OBJ.node("test_insertMultiParmItem/object_merge")
-        parmTuple = node.parmTuple("numobj")
-
-        parmTuple.insertMultiParmItem(0)
-
-        path = node.evalParm("objpath2")
-        self.assertEqual(path, TARGET)
-
-    def test_removeMultiParmItem(self):
-        TARGET = "/obj/test_insertVertex"
-
-        node = OBJ.node("test_removeMultiParmItem/object_merge")
-        parmTuple = node.parmTuple("numobj")
-
-        parmTuple.removeMultiParmItem(0)
-
-        path = node.evalParm("objpath1")
-        self.assertEqual(path, TARGET)
-
     def test_getMultiParmInstances(self):
         node = OBJ.node("test_getMultiParmInstances/object_merge")
 
@@ -1658,20 +1594,6 @@ class TestInlineCpp(unittest.TestCase):
         node = OBJ.createNode("geo")
 
         self.assertFalse(node.isContainedBy(hou.node("/shop")))
-
-    def test_isEditable(self):
-        fur = OBJ.createNode("fur")
-
-        clumps = fur.node("clumps")
-
-        self.assertTrue(clumps.isEditable())
-
-    def test_isEditableFalse(self):
-        fur = OBJ.createNode("fur")
-
-        clumps = fur.node("input_skin")
-
-        self.assertFalse(clumps.isEditable())
 
     def test_isCompiled(self):
         # TODO: Figure out how to test this.
@@ -1925,17 +1847,6 @@ class TestInlineCpp(unittest.TestCase):
         node_type = hou.nodeType(hou.sopNodeTypeCategory(), "explodedview")
 
         self.assertEqual(node_type.definition().metaSource(), TARGET)
-
-    def test_removeMetaSource(self):
-        libs = hou.hda.librariesInMetaSource("Current HIP File")
-
-        num_libs = len(libs)
-        self.assertTrue(num_libs > 0)
-
-        hou.hda.removeMetaSource("Current HIP File")
-
-        libs = hou.hda.librariesInMetaSource("Current HIP File")
-        self.assertTrue(len(libs) < num_libs)
 
     def test_librariesInMetaSource(self):
         libs = hou.hda.librariesInMetaSource("Scanned Asset Library Directories")
