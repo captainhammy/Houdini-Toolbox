@@ -8,6 +8,9 @@
 import contextlib
 import time
 
+# Houdini Imports
+import hou
+
 # =============================================================================
 # EXPORTS
 # =============================================================================
@@ -65,7 +68,7 @@ def convertFromUnicode(data):
 
 @contextlib.contextmanager
 def timer(label=None):
-    """Context manager for outputing timing information.
+    """Context manager for outputting timing information.
 
 >>> with ht.utils.timer("sleeping"):
 ...     time.sleep(2)
@@ -86,4 +89,21 @@ sleeping - 2.00206804276
             print "{0} - {1}".format(label, duration)
         else:
             print duration
+
+
+@contextlib.contextmanager
+def updateMode(mode=hou.updateMode.Manual):
+    """Context manager for setting the interface's update mode."""
+    # Get the current update mode so it can be restored.
+    current = hou.updateModeSetting()
+
+    # Set the desired mode.
+    hou.ui.setUpdateMode(mode)
+
+    try:
+        yield
+
+    finally:
+        # Restore the update mode.
+        hou.ui.setUpdateMode(current)
 
