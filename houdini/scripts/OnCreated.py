@@ -9,6 +9,7 @@ __email__ = "captainhammy@gmail.com"
 
 # Houdini Toolbox Imports
 import ht.nodes.colors
+import ht.nodes.naming
 
 # =============================================================================
 # FUNCTIONS
@@ -24,6 +25,9 @@ def main():
     node = kwargs["node"]
 
     ht.nodes.colors.colorNode(node)
+
+    if ht.nodes.naming.isNamespacedType(node.type()):
+        ht.nodes.naming.setNamespacedFormattedName(node)
 
 # =============================================================================
 
