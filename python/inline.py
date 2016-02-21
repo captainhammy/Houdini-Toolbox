@@ -29,6 +29,12 @@ _ATTRIB_TYPE_MAP = {
     hou.attribType.Global: 3,
 }
 
+# Mapping between group types and corresponding GA_AttributeOwner values.
+_GROUP_ATTRIB_MAP = {
+    hou.PointGroup: 1,
+    hou.PrimGroup: 2,
+}
+
 # Mapping between group types and corresponding GA_GroupType values.
 _GROUP_TYPE_MAP = {
     hou.PointGroup: 0,
@@ -525,63 +531,6 @@ renameAttribute(GU_Detail *gdp,
 
     // Rename the attribute.
     return gdp->renameAttribute(owner, GA_SCOPE_PUBLIC, from_name, to_name);
-}
-""",
-
-"""
-int
-findPrimitiveByName(const GU_Detail *gdp,
-                    const char *name_to_match,
-                    const char *name_attribute,
-                    int match_number)
-{
-    const GEO_Primitive         *prim;
-
-    // Try to find a primitive.
-    prim = gdp->findPrimitiveByName(
-        name_to_match,
-        GEO_PrimTypeCompat::GEOPRIMALL,
-        name_attribute,
-        match_number
-    );
-
-    // If one was found, return its number.
-    if (prim)
-    {
-        return prim->getMapIndex();
-    }
-
-    // Return -1 to indicate that no prim was found.
-    return -1;
-}
-""",
-
-"""
-IntArray
-findAllPrimitivesByName(const GU_Detail *gdp,
-                        const char *name_to_match,
-                        const char *name_attribute)
-{
-    std::vector<int>            prim_nums;
-
-    UT_Array<const GEO_Primitive *> prims;
-    UT_Array<const GEO_Primitive *>::const_iterator prims_it;
-
-    // Try to find all the primitives given the name.
-    gdp->findAllPrimitivesByName(
-        prims,
-        name_to_match,
-        GEO_PrimTypeCompat::GEOPRIMALL,
-        name_attribute
-    );
-
-    // Add any found prims to the array.
-    for (prims_it = prims.begin(); !prims_it.atEnd(); ++prims_it)
-    {
-        prim_nums.push_back((*prims_it)->getMapIndex());
-    }
-
-    return prim_nums;
 }
 """,
 
@@ -1523,7 +1472,7 @@ copyGroup(GU_Detail *gdp,
     GA_ElementGroup             *new_group;
     const GA_ElementGroup       *group;
 
-    owner = group_type ? GA_ATTRIB_PRIMITIVE : GA_ATTRIB_POINT;
+    owner = static_cast<GA_AttributeOwner>(group_type);
 
     // Find the current group.
     group = gdp->findElementGroup(owner, group_name);
@@ -1843,6 +1792,38 @@ getExistingOpDependents(OP_Node *node, bool recurse)
 """,
 
 """
+int
+getMultiParmInstancesPerItem(OP_Node *node, const char *parm_name)
+{
+    int                         instances;
+
+    PRM_Parm                    *parm;
+
+    PRM_Parm &multiparm = node->getParm(parm_name);
+
+    instances = multiparm.getMultiParmNumItems();
+
+    return instances;
+}
+""",
+
+"""
+int
+getMultiParmStartOffset(OP_Node *node, const char *parm_name)
+{
+    int                         offset;
+
+    PRM_Parm                    *parm;
+
+    PRM_Parm &multiparm = node->getParm(parm_name);
+
+    offset = multiparm.getMultiStartOffset();
+
+    return offset;
+}
+""",
+
+"""
 IntArray
 getMultiParmInstanceIndex(OP_Node *node, const char *parm_name)
 {
@@ -2054,6 +2035,8 @@ _cpp_methods = inlinecpp.createLibrary(
 #include <ROP/ROP_RenderManager.h>
 #include <UT/UT_WorkArgs.h>
 
+using namespace std;
+
 // Validate a vector of strings so that it can be returned as a StringArray.
 // Currently we cannot return an empty vector.
 void validateStringVector(std::vector<std::string> &string_vec)
@@ -2157,6 +2140,24 @@ def _cleanStringValues(values):
 # -----------------------------------------------------------------------------
 def _getAttribOwner(attribute_type):
     return _ATTRIB_TYPE_MAP[attribute_type]
+
+
+# -----------------------------------------------------------------------------
+#    Name: _getGroupAttribOwner
+#    Args: values : (hou.PointGroup|hou.PrimGroup)
+#              A geometry group.
+#  Raises: hou.OperationFailed
+#              This exception is raised if an invalid group type is passed.
+# Returns: int
+#              The corresponding group attribute type (according to HDK).
+#    Desc: Get an HDK compatible group attribute type value.
+# -----------------------------------------------------------------------------
+def _getGroupAttribOwner(group):
+    try:
+        return _GROUP_ATTRIB_MAP[type(group)]
+
+    except KeyError:
+        raise hou.OperationFailed("Invalid group type")
 
 
 # -----------------------------------------------------------------------------
@@ -3254,80 +3255,6 @@ def renameAttribute(self, new_name):
             return geometry.findGlobalAttrib(new_name)
 
     return None
-
-
-@addToClass(hou.Geometry)
-def findPrimByName(self, name_to_match, name_attribute="name", match_number=0):
-    """Find a primitive with a matching name attribute value.
-
-    Args:
-        name_to_match : (str)
-            The name attribute value to match.
-
-        name_attribute="name" : (str)
-            The attribute name to use.
-
-        match_number=0 : (int)
-            The match_numberth matching primitive to return.
-
-    Raises:
-        N/A
-
-    Returns:
-        hou.Primitive|None
-            A matching primitive, if found.  If no primitive is found, returns
-            None.  None is also returned if match_number is greater than the
-            number of matches found.
-
-    """
-    # Try to find a primitive matching the name.
-    result = _cpp_methods.findPrimitiveByName(
-        self,
-        name_to_match,
-        name_attribute,
-        match_number
-    )
-
-    # If the result is -1, no prims were found so return None.
-    if result == -1:
-        return None
-
-    #  Return the primitive.
-    return self.iterPrims()[result]
-
-
-@addToClass(hou.Geometry)
-def findAllPrimsByName(self, name_to_match, name_attribute="name"):
-    """Find all primitives with a matching name attribute value.
-
-    Args:
-        name_to_match : (str)
-            The name attribute value to match.
-
-        name_attribute="name" : (str)
-            The attribute name to use.
-
-    Raises:
-        N/A
-
-    Returns:
-        (hou.Prim)
-            A tuple of hou.Prim objects whose attribute values match.
-
-    """
-    # Try to find matching primitives.
-    result = _cpp_methods.findAllPrimitivesByName(
-        self,
-        name_to_match,
-        name_attribute
-    )
-
-    # Return a tuple of the matching primitives if any were found.
-    if result:
-        return _getPrimsFromList(self, result)
-
-    # If none were found, return an empty tuple.
-    return ()
 
 
 @addToClass(hou.Point, name="copyAttribValues")
@@ -4691,7 +4618,14 @@ def togglePoint(self, point):
     if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    _cpp_methods.toggleMembership(geometry, self.name(), 0, point.number())
+    group_type = _getGroupType(self)
+
+    _cpp_methods.toggleMembership(
+        geometry,
+        self.name(),
+        group_type,
+        point.number()
+    )
 
 
 @addToClass(hou.PrimGroup, name="toggle")
@@ -4719,7 +4653,14 @@ def togglePrim(self, prim):
     if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    _cpp_methods.toggleMembership(geometry, self.name(), 1, prim.number())
+    group_type = _getGroupType(self)
+
+    _cpp_methods.toggleMembership(
+        geometry,
+        self.name(),
+        group_type,
+        prim.number()
+    )
 
 
 @addToClass(hou.PointGroup, hou.PrimGroup)
@@ -4786,8 +4727,10 @@ def copyPointGroup(self, new_group_name):
             "Point group '{0}' already exists.".format(new_group_name)
         )
 
+    attrib_owner = _getGroupAttribOwner(self)
+
     # Copy the group.
-    _cpp_methods.copyGroup(geometry, 0, self.name(), new_group_name)
+    _cpp_methods.copyGroup(geometry, attrib_owner, self.name(), new_group_name)
 
     # Return the new group.
     return geometry.findPointGroup(new_group_name)
@@ -4831,8 +4774,10 @@ def copyPrimGroup(self, new_group_name):
             "Primitive group '{0}' already exists.".format(new_group_name)
         )
 
+    attrib_owner = _getGroupAttribOwner(self)
+
     # Copy the group.
-    _cpp_methods.copyGroup(geometry, 1, self.name(), new_group_name)
+    _cpp_methods.copyGroup(geometry, attrib_owner, self.name(), new_group_name)
 
     # Return the new group.
     return geometry.findPrimGroup(new_group_name)
@@ -4857,7 +4802,9 @@ def pointGroupContainsAny(self, group):
     """
     geometry = self.geometry()
 
-    return _cpp_methods.containsAny(geometry, self.name(), group.name(), 0)
+    group_type = _getGroupType(self)
+
+    return _cpp_methods.containsAny(geometry, self.name(), group.name(), group_type)
 
 
 @addToClass(hou.PrimGroup, name="containsAny")
@@ -4879,7 +4826,9 @@ def primGroupContainsAny(self, group):
     """
     geometry = self.geometry()
 
-    return _cpp_methods.containsAny(geometry, self.name(), group.name(), 1)
+    group_type = _getGroupType(self)
+
+    return _cpp_methods.containsAny(geometry, self.name(), group.name(), group_type)
 
 
 @addToClass(hou.PrimGroup)
@@ -5140,6 +5089,62 @@ def boundingBoxVolume(self):
     return _cpp_methods.boundingBoxVolume(self)
 
 
+@addToClass(hou.ParmTuple)
+def isVector(self):
+    parm_template = self.parmTemplate()
+
+    return parm_template.namingScheme() == hou.parmNamingScheme.XYZW
+
+
+@addToClass(hou.ParmTuple)
+def evalAsVector(self):
+    if not self.isVector():
+        raise hou.Error("Parameter is not a vector")
+
+    value = self.eval()
+    size = len(value)
+
+    if size == 2:
+        return hou.Vector2(value)
+
+    elif size == 3:
+        return hou.Vector3(value)
+
+    return hou.Vector4(value)
+
+
+@addToClass(hou.ParmTuple)
+def isColor(self):
+    parm_template = self.parmTemplate()
+
+    return parm_template.look() == hou.parmLook.ColorSquare
+
+
+@addToClass(hou.ParmTuple)
+def evalAsColor(self):
+    if not self.isColor():
+        raise hou.Error("Parameter is not a color chooser")
+
+    return hou.Color(self.eval())
+
+
+@addToClass(hou.Parm)
+def getReferencedNode(self):
+    """Get the referenced node, if any, for this parameter."""
+    parm_template = self.parmTemplate()
+
+    # Parameter must be a string parameter.
+    if not isinstance(parm_template, hou.StringParmTemplate):
+        raise hou.Error("Parameter is not a string type")
+
+    # String parameter must be a node reference.
+    if parm_template.stringType() != hou.stringParmType.NodeReference:
+        raise hou.Error("Parameter is not a node reference")
+
+    # Look for the pointed to node, relative to the parameter's node.
+    return self.node().node(self.eval())
+
+
 @addToClass(hou.Parm, hou.ParmTuple)
 def isMultiParm(self):
     """Check if this parameter is a multiparm.
@@ -5175,6 +5180,42 @@ def isMultiParm(self):
 
 
 @addToClass(hou.Parm)
+def getMultiParmInstancesPerItem(self):
+    """Get the number of items in a multiparm instance."""
+    return self.tuple().getMultiParmInstancesPerItem()
+
+
+@addToClass(hou.ParmTuple, name="getMultiParmInstancesPerItem")
+def getTupleMultiParmInstancesPerItem(self):
+    """Get the number of items in a multiparm instance."""
+    if not self.isMultiParm():
+        raise hou.OperationFailed("Parameter tuple is not a multiparm.")
+
+    return _cpp_methods.getMultiParmInstancesPerItem(
+        self.node(),
+        self.name()
+    )
+
+
+@addToClass(hou.Parm)
+def getMultiParmStartOffset(self):
+    """Get the start offset of items in the multiparm."""
+    return self.tuple().getMultiParmStartOffset()
+
+
+@addToClass(hou.ParmTuple, name="getMultiParmStartOffset")
+def getTupleMultiParmStartOffset(self):
+    """Get the start offset of items in the multiparm."""
+    if not self.isMultiParm():
+        raise hou.OperationFailed("Parameter tuple is not a multiparm.")
+
+    return _cpp_methods.getMultiParmStartOffset(
+        self.node(),
+        self.name()
+    )
+
+
+@addToClass(hou.Parm)
 def getMultiParmInstanceIndex(self):
     """Get the multiparm instance indices for this parameter.
 
@@ -5194,15 +5235,7 @@ def getMultiParmInstanceIndex(self):
     the tuple.
 
     """
-    if not self.isMultiParmInstance():
-        raise hou.OperationFailed("Parameter is not in a multiparm.")
-
-    result = _cpp_methods.getMultiParmInstanceIndex(
-        self.node(),
-        self.tuple().name()
-    )
-
-    return tuple(result)
+    return self.tuple().getMultiParmInstanceIndex()
 
 
 @addToClass(hou.ParmTuple, name="getMultiParmInstanceIndex")
@@ -5265,12 +5298,27 @@ def getMultiParmInstances(self):
 
     # Iterate over each multiparm instance.
     for block in result:
+        parms = []
         # Build a list of parameters in the instance.
-        parms = [node.parm(parm_name) for parm_name in block if parm_name]
+        for parm_name in block:
+            if not parm_name:
+                continue
+
+            # Assume hou.ParmTuple by default.
+            parm_tuple = node.parmTuple(parm_name)
+
+            # If tuple only has one element then use that hou.Parm.
+            if len(parm_tuple) == 1:
+                parm_tuple = parm_tuple[0]
+
+            parms.append(parm_tuple)
+
         multi_parms.append(tuple(parms))
 
     return tuple(multi_parms)
 
+
+# TODO: Function to get sibling parameters
 
 @addToClass(hou.Parm, hou.ParmTuple)
 def getMultiParmInstanceValues(self):
@@ -5298,7 +5346,6 @@ def getMultiParmInstanceValues(self):
 
     # Iterate over each multiparm instance.
     for block in parms:
-        # Build a list of parameter values.
         values = [parm.eval() for parm in block]
         all_values.append(tuple(values))
 

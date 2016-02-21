@@ -465,49 +465,6 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(new_attrib.name(), "getlost")
 
-    def test_findPrimByName(self):
-        geo = getObjGeo("test_findPrimByName")
-
-        prim = geo.findPrimByName("piece2")
-
-        self.assertEqual(prim.number(), 2)
-
-    def test_findPrimByNameMatch2(self):
-        geo = getObjGeo("test_findPrimByNameMatch2")
-
-        prim = geo.findPrimByName("piece3", match_number=2)
-
-        self.assertEqual(prim.number(), 21)
-
-    def test_findPrimByName(self):
-        geo = getObjGeo("test_findPrimByNameOtherName")
-
-        prim = geo.findPrimByName("piece4", "thinger")
-
-        self.assertEqual(prim.number(), 4)
-
-    def test_findAllPrimsByName(self):
-        TARGET = [5, 13, 21, 29, 37, 45, 53, 61, 69, 77]
-
-        geo = getObjGeo("test_findAllPrimsByName")
-
-        prims = geo.findAllPrimsByName("piece5")
-
-        values = [prim.number() for prim in prims]
-
-        self.assertEqual(values, TARGET)
-
-    def test_findAllPrimsByNameOtherName(self):
-        TARGET = [2, 16, 30, 44, 58, 72]
-
-        geo = getObjGeo("test_findAllPrimsByNameOtherName")
-
-        prims = geo.findAllPrimsByName("piece2", "something")
-
-        values = [prim.number() for prim in prims]
-
-        self.assertEqual(values, TARGET)
-
     def test_copyPointAttributeValues(self):
         source = getObjGeo("test_copyPointAttributeValues")
 
@@ -1505,49 +1462,46 @@ class TestInlineCpp(unittest.TestCase):
             hou.OperationFailed,
             parmTuple.getMultiParmInstanceIndex
         )
+
     def test_getMultiParmInstances(self):
-        node = OBJ.node("test_getMultiParmInstances/object_merge")
+        node = OBJ.node("test_getMultiParmInstances/null1")
 
         TARGET = (
             (
-                node.parm("enable1"),
-                node.parm("objpath1"),
-                node.parm("group1"),
-                node.parm("expand1")
+                node.parm("foo1"),
+                node.parmTuple("bar1"),
+                node.parm("hello1")
             ),
             (
-                node.parm("enable2"),
-                node.parm("objpath2"),
-                node.parm("group2"),
-                node.parm("expand2")
-            )
+                node.parm("foo2"),
+                node.parmTuple("bar2"),
+                node.parm("hello2")
+            ),
         )
 
-        parmTuple = node.parmTuple("numobj")
+        parmTuple = node.parmTuple("things")
 
         instances = parmTuple.getMultiParmInstances()
 
         self.assertEqual(instances, TARGET)
 
     def test_getMultiParmInstanceValues(self):
-        node = OBJ.node("test_getMultiParmInstanceValues/object_merge")
+        node = OBJ.node("test_getMultiParmInstanceValues/null1")
 
         TARGET = (
             (
                 1,
-                "/obj/test_hasEdge",
-                "group2",
-                1
+                (2.0, 3.0, 4.0),
+                "foo"
             ),
             (
-                1,
-                "/obj/test_insertVertex",
-                "",
-                0
-            )
+                5,
+                (6.0, 7.0, 8.0),
+                "bar"
+            ),
         )
 
-        parmTuple = node.parmTuple("numobj")
+        parmTuple = node.parmTuple("things")
 
         values = parmTuple.getMultiParmInstanceValues()
 
