@@ -397,7 +397,7 @@ class LeafFilterProxyModel(QtGui.QSortFilterProxyModel):
             source_parent
         )
 
-    def hasAcceptedChildren_children(self, row_num, parent):
+    def hasAcceptedChildren(self, row_num, parent):
         """Starting from the current node as root, traverse all the
         descendants and test if any of the children match.
 

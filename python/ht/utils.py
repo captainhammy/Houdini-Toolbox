@@ -8,9 +8,6 @@
 import contextlib
 import time
 
-# Houdini Imports
-import hou
-
 # =============================================================================
 # EXPORTS
 # =============================================================================
@@ -18,6 +15,7 @@ import hou
 __all__ = [
     "convertFromUnicode",
     "timer",
+    "updateMode",
 ]
 
 # =============================================================================
@@ -92,8 +90,14 @@ sleeping - 2.00206804276
 
 
 @contextlib.contextmanager
-def updateMode(mode=hou.updateMode.Manual):
-    """Context manager for setting the interface's update mode."""
+def updateMode(update_mode):
+    """Context manager for setting the interface's update mode.
+
+    update_mode should be one of hou.updateMode
+
+    """
+    import hou
+
     # Get the current update mode so it can be restored.
     current = hou.updateModeSetting()
 
