@@ -1,12 +1,6 @@
 """This module contains classes to define AOVs and groups of AOVs."""
 
 # =============================================================================
-# IMPORTS
-# =============================================================================
-
-import json
-
-# =============================================================================
 # CONSTANTS
 # =============================================================================
 
@@ -60,10 +54,10 @@ class AOV(object):
                 setattr(self, name, value)
 
         if self.variable is None:
-            raise MissingVariableError(variable)
+            raise MissingVariableError()
 
         if self.vextype is None:
-            raise MissingVexTypeError(variable)
+            raise MissingVexTypeError(self.variable)
 
     # =========================================================================
     # SPECIAL METHODS
@@ -77,7 +71,7 @@ class AOV(object):
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self._key() == other._key()
+            return (self.variable, self.channel) == (other.variable, other.channel)
 
         return False
 
@@ -96,21 +90,25 @@ class AOV(object):
 
     @property
     def channel(self):
-        """(str) The name of the output aov's channel."""
+        """The name of the output aov's channel."""
         return self._channel
 
     @channel.setter
     def channel(self, channel):
         self._channel = channel
 
+    # =========================================================================
+
     @property
     def comment(self):
-        """(str) Optional comment about this AOV."""
+        """Optional comment about this AOV."""
         return self._comment
 
     @comment.setter
     def comment(self, comment):
         self._comment = comment
+
+    # =========================================================================
 
     @property
     def componentexport(self):
@@ -121,6 +119,8 @@ class AOV(object):
     def componentexport(self, componentexport):
         self._componentexport = componentexport
 
+    # =========================================================================
+
     @property
     def components(self):
         """List of components to export."""
@@ -130,59 +130,73 @@ class AOV(object):
     def components(self, components):
         self._components = components
 
+    # =========================================================================
+
     @property
     def lightexport(self):
-        """(str) The light output mode."""
+        """The light output mode."""
         return self._lightexport
 
     @lightexport.setter
     def lightexport(self, lightexport):
         self._lightexport = lightexport
 
+    # =========================================================================
+
     @property
     def lightexport_scope(self):
-        """(str) The light mask."""
+        """The light mask."""
         return self._lightexport_scope
 
     @lightexport_scope.setter
     def lightexport_scope(self, lightexport_scope):
         self._lightexport_scope = lightexport_scope
 
+    # =========================================================================
+
     @property
     def lightexport_select(self):
-        """(str) The light selection (categories)."""
+        """The light selection (categories)."""
         return self._lightexport_select
 
     @lightexport_select.setter
     def lightexport_select(self, lightexport_select):
         self._lightexport_select = lightexport_select
 
+    # =========================================================================
+
     @property
     def path(self):
-        """(str) The path containing the aov definition."""
+        """The path containing the aov definition."""
         return self._path
 
     @path.setter
     def path(self, path):
         self._path = path
 
+    # =========================================================================
+
     @property
     def pfilter(self):
-        """(str) The name of the output aov's pixel filter."""
+        """The name of the output aov's pixel filter."""
         return self._pfilter
 
     @pfilter.setter
     def pfilter(self, pfilter):
         self._pfilter = pfilter
 
+    # =========================================================================
+
     @property
     def planefile(self):
-        """(str) The name of the output aov's specific file, if any."""
+        """The name of the output aov's specific file, if any."""
         return self._planefile
 
     @planefile.setter
     def planefile(self, planefile):
         self._planefile = planefile
+
+    # =========================================================================
 
     @property
     def priority(self):
@@ -193,36 +207,44 @@ class AOV(object):
     def priority(self, priority):
         self._priority = priority
 
+    # =========================================================================
+
     @property
     def quantize(self):
-        """(str) The type of quantization for the output aov."""
+        """The type of quantization for the output aov."""
         return self._quantize
 
     @quantize.setter
     def quantize(self, quantize):
         self._quantize = quantize
 
+    # =========================================================================
+
     @property
     def sfilter(self):
-        """(str) The name of the output aov's sample filter."""
+        """The name of the output aov's sample filter."""
         return self._sfilter
 
     @sfilter.setter
     def sfilter(self, sfilter):
         self._sfilter = sfilter
 
+    # =========================================================================
+
     @property
     def variable(self):
-        """(str) The name of the output aov's vex variable."""
+        """The name of the output aov's vex variable."""
         return self._variable
 
     @variable.setter
     def variable(self, variable):
         self._variable = variable
 
+    # =========================================================================
+
     @property
     def vextype(self):
-        """(str) The data type of the output aov."""
+        """The data type of the output aov."""
         return self._vextype
 
     @vextype.setter
@@ -233,98 +255,10 @@ class AOV(object):
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    def _key(self):
-        return (self.variable, self.channel)
-
-    # =========================================================================
-    # METHODS
-    # =========================================================================
-
-    def data(self):
-        """Get a dictionary representing the AOV."""
-        d = {
-            "variable": self.variable,
-            "vextype": self.vextype,
-        }
-
-        if self.channel is not None:
-            d["channel"] = self.channel
-
-        if self.quantize is not None:
-            d["quantize"] = self.quantize
-
-        if self.sfilter is not None:
-            d["sfilter"] = self.sfilter
-
-        if self.pfilter is not None:
-            d["pfilter"] = self.pfilter
-
-        if self.componentexport is not None:
-            d["componentexport"] = self.componentexport
-
-            if self.components:
-                d["components"] = self.components
-
-        if self.lightexport is not None:
-            d["lightexport"] = self.lightexport
-
-            if self.lightexport != "per-category":
-                d["lightexport_scope"] = self.lightexport_scope
-                d["lightexport_select"] = self.lightexport_select
-
-        if self.comment is not None:
-            d["comment"] = self.comment
-
-        if self.priority > -1:
-            d["priority"] = self.priority
-
-        return d
-
-    def writeToIfd(self, wrangler, cam, now):
-        """Output the AOV."""
+    def _lightExportPlanes(self, data, wrangler, cam, now):
+        """Handle exporting the image planes based on their export settings."""
         import soho
 
-        # The base data to pass along.
-        data = self.data()
-
-        channel = self.channel
-
-        # If there is no explicit channel set, use the variable name.
-        if channel is None:
-            channel = self.variable
-
-        # Handle exporting of multiple components
-        if self.componentexport:
-            components = self.components
-
-            # If no components are explicitly set on the AOV, use the
-            # vm_exportcomponents parameter from the Mantra ROP.
-            if not components:
-                parms =  {
-                    "components": soho.SohoParm("vm_exportcomponents", "str", [""], skipdefault=False),
-                }
-
-                plist = cam.wrangle(wrangler, parms, now)
-
-                if plist:
-                    components = plist["vm_exportcomponents"].Value[0]
-                    components = components.split()
-
-            # Create a unique channel for each component and output the block.
-            for component in components:
-                data["channel"] = "{}_{}".format(channel, component)
-                data["component"] = component
-
-                self.lightExportPlanes(data, wrangler, cam, now)
-
-        else:
-            # Update the data with the channel.
-            data["channel"] = channel
-
-            self.lightExportPlanes(data, wrangler, cam, now)
-
-    def lightExportPlanes(self, data, wrangler, cam, now):
-        """Handle exporting the image planes based on their export settings."""
         base_channel = data["channel"]
 
         # Handle any light exporting.
@@ -397,7 +331,7 @@ class AOV(object):
 
             elif self.lightexport == "per-category":
                 # A mapping between category names and their member lights.
-                categoryMap = {}
+                category_map = {}
 
                 # Process each selected light.
                 for light in lights:
@@ -420,18 +354,18 @@ class AOV(object):
                     # If the categories list was empty, put the light in a fake
                     # category.
                     if not categories:
-                        noCatLights = categoryMap.setdefault("__none__", [])
-                        noCatLights.append(light)
+                        no_category_lights = category_map.setdefault("__none__", [])
+                        no_category_lights.append(light)
 
                     else:
                         # For each category the light belongs to, add it to
                         # the list.
                         for category in categories:
-                            catLights = categoryMap.setdefault(category, [])
-                            catLights.append(light)
+                            category_lights = category_map.setdefault(category, [])
+                            category_lights.append(light)
 
                 # Process all the found categories and their member lights.
-                for category, lights in categoryMap.iteritems():
+                for category, lights in category_map.iteritems():
                     # Construct the export string to contain all the member
                     # lights.
                     lightexport = ' '.join(
@@ -451,30 +385,13 @@ class AOV(object):
             # Write a normal aov definition.
             self.writeDataToIfd(data, wrangler, cam, now)
 
+    # =========================================================================
+    # STATIC METHODS
+    # =========================================================================
+
     @staticmethod
     def writeDataToIfd(data, wrangler, cam, now):
-        """Write aov data to the ifd.
-
-        Args:
-            data : (dict)
-                The data dictionary containing output information.
-
-            wrangler : (Object)
-                A wrangler object.
-
-            cam : (soho.SohoObject)
-                The camera being rendered.
-
-            now : (float)
-                The parameter evaluation time.
-
-        Raises:
-            N/A
-
-        Returns:
-            None
-
-        """
+        """Write aov data to the ifd."""
         import IFDapi
 
         # Call the 'pre_defplane' hook.  If the function returns True,
@@ -519,15 +436,106 @@ class AOV(object):
         # End the plane definition block.
         IFDapi.ray_end()
 
+    # =========================================================================
+    # METHODS
+    # =========================================================================
+
+    def data(self):
+        """Get a dictionary representing the AOV."""
+        d = {
+            "variable": self.variable,
+            "vextype": self.vextype,
+        }
+
+        if self.channel is not None:
+            d["channel"] = self.channel
+
+        if self.quantize is not None:
+            d["quantize"] = self.quantize
+
+        if self.sfilter is not None:
+            d["sfilter"] = self.sfilter
+
+        if self.pfilter is not None:
+            d["pfilter"] = self.pfilter
+
+        if self.componentexport is not None:
+            d["componentexport"] = self.componentexport
+
+            if self.components:
+                d["components"] = self.components
+
+        if self.lightexport is not None:
+            d["lightexport"] = self.lightexport
+
+            if self.lightexport != "per-category":
+                d["lightexport_scope"] = self.lightexport_scope
+                d["lightexport_select"] = self.lightexport_select
+
+        if self.comment is not None:
+            d["comment"] = self.comment
+
+        if self.priority > -1:
+            d["priority"] = self.priority
+
+        return d
+
+    # =========================================================================
+
+    def writeToIfd(self, wrangler, cam, now):
+        """Output the AOV."""
+        import soho
+
+        # The base data to pass along.
+        data = self.data()
+
+        channel = self.channel
+
+        # If there is no explicit channel set, use the variable name.
+        if channel is None:
+            channel = self.variable
+
+        # Handle exporting of multiple components
+        if self.componentexport:
+            components = self.components
+
+            # If no components are explicitly set on the AOV, use the
+            # vm_exportcomponents parameter from the Mantra ROP.
+            if not components:
+                parms = {
+                    "components": soho.SohoParm(
+                        "vm_exportcomponents",
+                        "str",
+                        [""],
+                        skipdefault=False
+                    ),
+                }
+
+                plist = cam.wrangle(wrangler, parms, now)
+
+                if plist:
+                    components = plist["vm_exportcomponents"].Value[0]
+                    components = components.split()
+
+            # Create a unique channel for each component and output the block.
+            for component in components:
+                data["channel"] = "{}_{}".format(channel, component)
+                data["component"] = component
+
+                self._lightExportPlanes(data, wrangler, cam, now)
+
+        else:
+            # Update the data with the channel.
+            data["channel"] = channel
+
+            self._lightExportPlanes(data, wrangler, cam, now)
+
+# =============================================================================
 
 class AOVGroup(object):
     """This class represents a group of AOV definitions.
 
     """
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self, name):
         self._aovs = []
@@ -555,13 +563,15 @@ class AOVGroup(object):
         )
 
     # =========================================================================
-    # INSTANCE PROPERTIES
+    # PROPERTIES
     # =========================================================================
 
     @property
     def aovs(self):
         """A list of AOVs in the group."""
         return self._aovs
+
+    # =========================================================================
 
     @property
     def comment(self):
@@ -572,6 +582,8 @@ class AOVGroup(object):
     def comment(self, comment):
         self._comment = comment
 
+    # =========================================================================
+
     @property
     def icon(self):
         """Optional path to an icon for this group."""
@@ -581,10 +593,14 @@ class AOVGroup(object):
     def icon(self, icon):
         self._icon = icon
 
+    # =========================================================================
+
     @property
     def includes(self):
         """List of AOV names belonging to the group."""
         return self._includes
+
+    # =========================================================================
 
     @property
     def path(self):
@@ -595,10 +611,14 @@ class AOVGroup(object):
     def path(self, path):
         self._path = path
 
+    # =========================================================================
+
     @property
     def name(self):
         """The name of the group."""
         return self._name
+
+    # =========================================================================
 
     @property
     def priority(self):
@@ -610,12 +630,14 @@ class AOVGroup(object):
         self._priority = priority
 
     # =========================================================================
-    # PUBLIC FUNCTIONS
+    # METHODS
     # =========================================================================
 
     def clear(self):
         """Clear the list of AOVs belonging to this group."""
         self._aovs = []
+
+    # =========================================================================
 
     def data(self):
         """Get a dictionary representing the group."""
@@ -630,6 +652,8 @@ class AOVGroup(object):
 
         return d
 
+    # =========================================================================
+
     def writeToIfd(self, wrangler, cam, now):
         """Write all AOVs in the group to the ifd."""
         for aov in self.aovs:
@@ -639,10 +663,12 @@ class AOVGroup(object):
 # EXCEPTIONS
 # =============================================================================
 
-class InvalidAOVValueError(Exception):
-    """Exception for invalid aov setting values.
+class AOVError(Exception):
+    """AOV exception base class."""
+    pass
 
-    """
+class InvalidAOVValueError(AOVError):
+    """Exception for invalid aov setting values."""
 
     def __init__(self, name, value, allowable):
         super(InvalidAOVValueError, self).__init__()
@@ -658,25 +684,15 @@ class InvalidAOVValueError(Exception):
         )
 
 
-class MissingVariable(Exception):
-    """Exception for missing 'variable' information.
-
-    """
-
-    def __init__(self, variable):
-        super(MissingVariableError, self).__init__()
-        self.variable = variable
+class MissingVariableError(AOVError):
+    """Exception for missing 'variable' information."""
 
     def __str__(self):
-        return "Cannot create aov {0}: missing 'variable'.".format(
-            self.variable
-        )
+        return "Cannot create aov: missing 'variable' value."
 
 
-class MissingVexTypeError(Exception):
-    """Exception for missing 'vextype' information.
-
-    """
+class MissingVexTypeError(AOVError):
+    """Exception for missing 'vextype' information."""
 
     def __init__(self, vextype):
         super(MissingVexTypeError, self).__init__()
@@ -722,3 +738,4 @@ def _callPreDefPlane(data, wrangler, cam, now):
         data.get("planefile"),
         data.get("lightexport")
     )
+

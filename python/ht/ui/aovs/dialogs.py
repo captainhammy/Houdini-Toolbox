@@ -8,9 +8,9 @@ AOVGroups.
 # =============================================================================
 
 # Python Imports
-from PySide import QtCore, QtGui
 import os
 import re
+from PySide import QtCore, QtGui
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import manager
@@ -24,6 +24,8 @@ import hou
 # CLASSES
 # =============================================================================
 
+# TODO: This should be replaced this with python enum34 but don't want to
+# add an external dependency
 class DialogOperation(object):
     """Fake enum class for dialog operations."""
     New = 1
@@ -1142,3 +1144,4 @@ def createNewGroup(aovs=()):
     )
 
     new_group_dialog.show()
+
