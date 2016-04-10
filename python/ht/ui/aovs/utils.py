@@ -5,14 +5,12 @@
 # =============================================================================
 
 # Python Imports
-from PySide import QtCore, QtGui
-import json
 import os
+from PySide import QtCore, QtGui
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, ALLOWABLE_VALUES
 from ht.ui.aovs import uidata
-from ht.utils import convertFromUnicode
 
 # Houdini Imports
 import hou
@@ -73,41 +71,14 @@ def applyElementsAsString(elements, nodes):
     value = listAsString(elements)
 
     for node in nodes:
-        # Need to create the auto_aovs parameter if it doesn't exist.
-        if not node.parm("auto_aovs"):
-            ptg = node.parmTemplateGroup()
-
-            # Toggle to enable/disable AOVs.
-            parm_template = hou.ToggleParmTemplate(
-                "enable_auto_aovs",
-                "Automatic AOVs",
-                1,
-                help="Enable automatically adding AOVs."
+        # Need to add the automatic aov parameters if they doesn't exist.
+        if node.parm("auto_aovs") is None:
+            # Add the parameters from the .ds file.
+            hou.hscript(
+                'opproperty -f -F "Extra Image Planes" {0} ht_parms ht_automatic_aovs'.format(
+                    node.path()
+                )
             )
-
-            parm_template.hideLabel(True)
-            parm_template.setJoinWithNext(True)
-
-            ptg.append(parm_template)
-
-            # String parameter complete with group/AOV menu.
-            parm_template = hou.StringParmTemplate(
-                "auto_aovs",
-                "Automatic AOVs",
-                1,
-                item_generator_script="from ht.sohohooks.aovs import manager\n\nreturn manager.buildMenuScript()",
-                item_generator_script_language=hou.scriptLanguage.Python,
-                menu_type=hou.menuType.StringToggle,
-                help="Automatically add AOVs at IFD generation time."
-            )
-
-            parm_template.setConditional(
-                hou.parmCondType.DisableWhen,
-                "{ enable_auto_aovs == 0 }"
-            )
-
-            ptg.append(parm_template)
-            node.setParmTemplateGroup(ptg)
 
         parm = node.parm("auto_aovs")
         parm.set(value)

@@ -1,0 +1,45 @@
+/*
+ *  Houdini Toolbox parameters for nodes
+ */
+
+#include "$HFS/houdini/soho/parameters/CommonMacros.ds"
+
+{
+    name ht_parms
+    label "Houdini Toolbox Properties"
+    parmtag { spare_category "Houdini Toolbox Properties" }
+
+    collection {
+        name    ht_automatic_aovs
+        label   "Automatic AOVs"
+        parmtag { spare_category "Automatic AOVs" }
+
+        parm {
+	    name	"enable_auto_aovs"
+	    label	"Enable Automatic AOVs"
+	    type	toggle
+	    nolabel
+	    joinnext
+	    default	{ "1" }
+	    help	"Enable automatically adding AOVs."
+	    range	{ 0 1 }
+	    export	none
+        }
+        parm {
+            name	"auto_aovs"
+            label	"Automatic AOVs"
+            type	string
+            default	{ "" }
+            help	"Automatically add AOVs at IFD generation time."
+            disablewhen	"{ enable_auto_aovs == 0 }"
+            menutoggle	{
+                [ "from ht.sohohooks.aovs import manager" ]
+                [ "" ]
+                [ "return manager.buildMenuScript()" ]
+                language	python
+            }
+            range	{ 0 1 }
+            export	none
+        }
+    }
+}

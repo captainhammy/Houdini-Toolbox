@@ -1,0 +1,11 @@
+#ifndef __HT_SOHO_PARAMETERS__
+#define __HT_SOHO_PARAMETERS__
+
+// Include system parameters as per above
+#include "$HFS/houdini/soho/parameters/SOHOparameters"
+
+// Houdini Toolbox SOHO Parameters
+#include "HT.ds"
+
+#endif
+
