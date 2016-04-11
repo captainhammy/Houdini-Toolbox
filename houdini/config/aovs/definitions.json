@@ -42,7 +42,8 @@
 
         {
             "variable": "N",
-            "vextype": "vector",
+            "vextype": "unitvector",
+            "pfilter": "minmax edge",
             "comment": "normal"
         },
 
