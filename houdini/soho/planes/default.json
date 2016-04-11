@@ -1,9 +1,0 @@
-{
-    "name": "default",
-
-    "include": {
-	"Pz": true,
-	"Render_Time": true
-    }
-}
-
