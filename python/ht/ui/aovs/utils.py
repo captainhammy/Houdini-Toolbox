@@ -83,6 +83,9 @@ def applyElementsAsString(elements, nodes):
         parm = node.parm("auto_aovs")
         parm.set(value)
 
+        if node.parm("enable_auto_aovs") is not None:
+            node.parm("enable_auto_aovs").set(True)
+
 
 def applyToNodeAsParms(node, aovs):
     """Apply a list of AOVs to a Mantra node using multiparm entries."""
