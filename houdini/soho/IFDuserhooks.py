@@ -6,74 +6,16 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-import traceback
-
-# Houdini Imports
-from IFDapi import ray_comment
-
 # Houdini Toolbox Imports
-from ht.sohohooks.aovs import manager
-
-# =============================================================================
-# CONSTANTS
-# =============================================================================
-
-_HOOK_FUNCTIONS = {
-    # Called after wrangling the camera.
-    "post_cameraDisplay": (manager.AOVManager.addAOVsToIfd,),
-}
+import ht.sohohooks.manager
 
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
 
-def call(hookName="", *args, **kwargs):
-    """Hook callback function.
+def call(hook_name="", *args, **kwargs):
+    """Hook callback function."""
+    manager = ht.sohohooks.manager.getManager()
 
-    Args:
-        hookName="" : (str)
-            SOHO hook function name.
-
-        args : (list)
-            Arguments passed to the hook function call.
-
-        kwargs : (dict)
-            Keyword arguments passed to the hook function call.
-
-    Raises:
-        N/A
-
-    Returns:
-        bool
-            The result of the hook call.
-
-    """
-    # Try to get methods to call for this hook.
-    methods = _HOOK_FUNCTIONS.get(hookName, ())
-
-    result = False
-
-    for method in methods:
-        # Try to call the function.
-        try:
-            result = method(*args, **kwargs)
-
-        # Catch any exceptions.
-        except Exception as e:
-            # Write error information into the ifd.
-            ray_comment(
-                "Hook Error[{0}]: {1} {2}".format(hookName, __file__, str(e))
-            )
-
-            ray_comment(
-                "Traceback:\n# {0}\n".format(
-                        "\n#".join(traceback.format_exc().split('\n'))
-                )
-            )
-
-        if result:
-            return True
-
-    return False
+    return manager.callHook(hook_name, *args, **kwargs)
 

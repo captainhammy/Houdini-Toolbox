@@ -13,7 +13,7 @@ import json
 import os
 
 # Houdini Toolbox Imports
-import ht.sohohooks.aovs.aov
+from ht.sohohooks.aovs.aov import AOV, AOVGroup
 from ht.utils import convertFromUnicode
 
 # Houdini Imports
@@ -262,14 +262,14 @@ class AOVFileReader(object):
             definition["path"] = self.path
 
             # Construct a new AOV and add it to our list.
-            aov = ht.sohohooks.aovs.aov.AOV(definition)
+            aov = AOV(definition)
             self.aovs.append(aov)
 
     def createGroups(self, definitions):
         """Create AOVGroups based on definitions."""
         for name, group_data in definitions.iteritems():
             # Create a new AOVGroup.
-            group = ht.sohohooks.aovs.aov.AOVGroup(name)
+            group = AOVGroup(name)
 
             # Process its list of AOVs to include.
             if "include" in group_data:
