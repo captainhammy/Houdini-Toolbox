@@ -6,7 +6,6 @@
 
 from ht.sohohooks.manager import getManager
 
-import ht.sohohooks.aovs.aov
 from ht.sohohooks.aovs.manager import AOVManager
 
 # =============================================================================
