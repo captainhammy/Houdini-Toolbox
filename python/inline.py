@@ -21,6 +21,28 @@ import inlinecpp
 # CONSTANTS
 # =============================================================================
 
+# Tuple of all valid attribute data types.
+_ALL_ATTRIB_DATA_TYPES = (
+    hou.attribData.Float,
+    hou.attribData.Int,
+    hou.attribData.String
+)
+
+# Tuple of all valid attribute types.
+_ALL_ATTRIB_TYPES = (
+    hou.attribType.Global,
+    hou.attribType.Point,
+    hou.attribType.Prim,
+    hou.attribType.Vertex,
+)
+
+# Mapping between hou.attribData and corresponding GA_StorageClass values.
+_ATTRIB_STORAGE_MAP = {
+    hou.attribData.Int: 0,
+    hou.attribData.Float: 1,
+    hou.attribData.String: 2,
+}
+
 # Mapping between hou.attribTypes and corresponding GA_AttributeOwner values.
 _ATTRIB_TYPE_MAP = {
     hou.attribType.Vertex: 0,
@@ -43,6 +65,464 @@ _GROUP_TYPE_MAP = {
 }
 
 _FUNCTION_SOURCES = [
+
+"""
+bool
+isNumericArrayAttribute(const GU_Detail *gdp,
+                        int attribute_type,
+                        const char *attrib_name)
+{
+
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
+
+    const GA_Attribute *attrib = gdp->findNumericArray(
+        owner,
+        attrib_name,
+        -1
+    );
+
+    if (!attrib)
+    {
+        return false;
+    }
+
+    const GA_AIFNumericArray *aif = attrib->getAIFNumericArray();
+
+    if (!aif)
+    {
+        return false;
+    }
+
+    return true;
+}
+""",
+
+"""
+bool
+isStringArrayAttribute(const GU_Detail *gdp,
+                       int attribute_type,
+                       const char *attrib_name)
+{
+
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
+
+    const GA_Attribute *attrib = gdp->findStringArray(
+        owner,
+        attrib_name,
+        -1
+    );
+
+    if (!attrib)
+    {
+        return false;
+    }
+
+    const GA_AIFSharedStringArray *aif = attrib->getAIFSharedStringArray();
+
+    if (!aif)
+    {
+        return false;
+    }
+
+    return true;
+}
+""",
+
+"""
+bool
+addArrayAttribute(GU_Detail *gdp, int attribute_type, int data_type, const char *attrib_name)
+{
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
+
+    GA_StorageClass storage = static_cast<GA_StorageClass>(data_type);
+
+    GA_Attribute *attrib;
+
+    switch (storage)
+    {
+        case GA_STORECLASS_INT:
+            attrib = gdp->addIntArray(
+                owner,
+                attrib_name,
+                1
+            );
+
+            break;
+
+        case GA_STORECLASS_REAL:
+            attrib = gdp->addFloatArray(
+                owner,
+                attrib_name,
+                1
+            );
+
+            break;
+
+        case GA_STORECLASS_STRING:
+            attrib = gdp->addStringArray(
+                owner,
+                attrib_name,
+                1
+            );
+
+            break;
+    }
+
+    if (!attrib)
+    {
+        return false;
+    }
+
+    // TODO: Add AIF verification;
+
+    return true;
+}
+""",
+
+"""
+void
+clearArrayAttribute(GU_Detail *gdp,
+                    int attribute_type,
+                    int data_type,
+                    const char *attrib_name)
+{
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
+
+    GA_StorageClass storage = static_cast<GA_StorageClass>(data_type);
+
+    GA_Attribute *attrib;
+
+    switch (storage)
+    {
+        case GA_STORECLASS_INT:
+        case GA_STORECLASS_REAL:
+        {
+            attrib = gdp->findNumericArray(
+                owner,
+                attrib_name,
+                -1
+            );
+
+            const GA_AIFNumericArray *aif = attrib->getAIFNumericArray();
+
+            if (!aif)
+            {
+                return;
+            }
+
+
+            aif->clear(attrib);
+
+            break;
+        }
+
+        // TODO: Doesn't currently do anything
+        case GA_STORECLASS_STRING:
+        {
+            attrib = gdp->findStringArray(
+                owner,
+                attrib_name,
+                -1
+            );
+
+            const GA_AIFSharedStringArray *s_aif = attrib->getAIFSharedStringArray();
+
+            if (!s_aif)
+            {
+                return;
+            }
+
+            break;
+        }
+    }
+}
+""",
+
+"""
+FloatArray
+getFloatArrayValue(GU_Detail *gdp,
+                   int attribute_type,
+                   const char *attrib_name,
+                   int entity_num)
+{
+    std::vector<double>         result;
+
+    GA_Attribute                *attrib;
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
+
+    GA_Offset                   entoff;
+
+    UT_FprealArray              data;
+
+    switch (owner)
+    {
+//        case GA_ATTRIB_VERTEX:
+//            entoff = gdp->vertexOffset(entity_num);
+//            break;
+
+        case GA_ATTRIB_POINT:
+            entoff = gdp->pointOffset(entity_num);
+            break;
+
+        case GA_ATTRIB_PRIMITIVE:
+            entoff = gdp->primitiveOffset(entity_num);
+            break;
+    }
+
+    attrib = gdp->findFloatArray(
+        owner,
+        attrib_name,
+        -1
+    );
+
+    const GA_AIFNumericArray *aif = attrib->getAIFNumericArray();
+
+    aif->get(attrib, entoff, data);
+
+    data.toStdVector(result);
+
+    return result;
+}
+""",
+
+"""
+void
+setFloatArrayValue(GU_Detail *gdp,
+                   int attribute_type,
+                   const char *attrib_name,
+                   int entity_num,
+                   fpreal *vals,
+                   int num_vals)
+{
+    GA_Attribute                *attrib;
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
+
+    GA_Offset                   entoff;
+
+    UT_FprealArray              data;
+
+    switch (owner)
+    {
+//        case GA_ATTRIB_VERTEX:
+//            entoff = gdp->vertexOffset(entity_num);
+//            break;
+
+        case GA_ATTRIB_POINT:
+            entoff = gdp->pointOffset(entity_num);
+            break;
+
+        case GA_ATTRIB_PRIMITIVE:
+            entoff = gdp->primitiveOffset(entity_num);
+            break;
+    }
+
+    attrib = gdp->findFloatArray(
+        owner,
+        attrib_name,
+        -1
+    );
+
+    const GA_AIFNumericArray *aif = attrib->getAIFNumericArray();
+
+    std::vector<fpreal> vect {vals, vals + num_vals};
+
+    data.fromStdVector(vect);
+
+    aif->set(attrib, entoff, data);
+}
+""",
+
+"""
+IntArray
+getIntArrayValue(GU_Detail *gdp,
+                 int attribute_type,
+                 const char *attrib_name,
+                 int entity_num)
+{
+    std::vector<int>            result;
+
+    GA_Attribute                *attrib;
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
+
+    GA_Offset                   entoff;
+
+    UT_IntArray                 data;
+
+    switch (owner)
+    {
+//        case GA_ATTRIB_VERTEX:
+//            entoff = gdp->vertexOffset(entity_num);
+//            break;
+
+        case GA_ATTRIB_POINT:
+            entoff = gdp->pointOffset(entity_num);
+            break;
+
+        case GA_ATTRIB_PRIMITIVE:
+            entoff = gdp->primitiveOffset(entity_num);
+            break;
+    }
+
+    attrib = gdp->findIntArray(
+        owner,
+        attrib_name,
+        -1
+    );
+
+    const GA_AIFNumericArray *aif = attrib->getAIFNumericArray();
+
+    aif->get(attrib, entoff, data);
+
+    data.toStdVector(result);
+
+    return result;
+}
+""",
+
+"""
+void
+setIntArrayValue(GU_Detail *gdp,
+                 int attribute_type,
+                 const char *attrib_name,
+                 int entity_num,
+                 int *vals,
+                 int num_vals)
+{
+    GA_Attribute                *attrib;
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
+
+    GA_Offset                   entoff;
+
+    UT_IntArray                 data;
+
+    switch (owner)
+    {
+//        case GA_ATTRIB_VERTEX:
+//            entoff = gdp->vertexOffset(entity_num);
+//            break;
+
+        case GA_ATTRIB_POINT:
+            entoff = gdp->pointOffset(entity_num);
+            break;
+
+        case GA_ATTRIB_PRIMITIVE:
+            entoff = gdp->primitiveOffset(entity_num);
+            break;
+    }
+
+    attrib = gdp->findIntArray(
+        owner,
+        attrib_name,
+        -1
+    );
+
+    const GA_AIFNumericArray *aif = attrib->getAIFNumericArray();
+
+    std::vector<int> vect {vals, vals + num_vals};
+
+    data.fromStdVector(vect);
+
+    aif->set(attrib, entoff, data);
+}
+""",
+
+"""
+StringArray
+getStringArrayValue(GU_Detail *gdp,
+                    int attribute_type,
+                    const char *attrib_name,
+                    int entity_num)
+{
+    std::vector<std::string>    result;
+
+    GA_Attribute                *attrib;
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
+
+    GA_Offset                   entoff;
+
+    UT_StringArray              data;
+
+    switch (owner)
+    {
+//        case GA_ATTRIB_VERTEX:
+//            entoff = gdp->vertexOffset(entity_num);
+//            break;
+
+        case GA_ATTRIB_POINT:
+            entoff = gdp->pointOffset(entity_num);
+            break;
+
+        case GA_ATTRIB_PRIMITIVE:
+            entoff = gdp->primitiveOffset(entity_num);
+            break;
+    }
+
+    attrib = gdp->findStringArray(
+        owner,
+        attrib_name,
+        -1
+    );
+
+    const GA_AIFSharedStringArray *aif = attrib->getAIFSharedStringArray();
+
+    aif->get(attrib, entoff, data);
+
+    data.toStdVectorOfStrings(result);
+
+    // Check for an empty vector.
+    validateStringVector(result);
+
+    return result;
+}
+""",
+
+"""
+void
+setStringArrayValue(GU_Detail *gdp,
+                    int attribute_type,
+                    const char *attrib_name,
+                    int entity_num,
+                    const char **values,
+                    int num_vals)
+{
+    GA_Attribute                *attrib;
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
+
+    GA_Offset                   entoff;
+
+    UT_StringArray              data;
+
+    switch (owner)
+    {
+//        case GA_ATTRIB_VERTEX:
+//            entoff = gdp->vertexOffset(entity_num);
+//            break;
+
+        case GA_ATTRIB_POINT:
+            entoff = gdp->pointOffset(entity_num);
+            break;
+
+        case GA_ATTRIB_PRIMITIVE:
+            entoff = gdp->primitiveOffset(entity_num);
+            break;
+    }
+
+    attrib = gdp->findStringArray(
+        owner,
+        attrib_name,
+        -1
+    );
+
+    const GA_AIFSharedStringArray *aif = attrib->getAIFSharedStringArray();
+
+    std::vector<std::string> vect (values, values + num_vals);
+
+    data.fromStdVectorOfStrings(vect);
+
+    aif->set(attrib, entoff, data);
+}
+""",
+
 """
 bool
 isRendering()
@@ -2065,16 +2545,8 @@ void validateStringVector(std::vector<std::string> &string_vec)
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-#    Name: _buildCDoubleArray
-#    Args: values : ([double])
-#              A list of doubles to convert.
-#  Raises: N/A
-# Returns: c_double_Array
-#              A ctypes double array.
-#    Desc: Convert a list of numbers to a ctypes double array.
-# -----------------------------------------------------------------------------
 def _buildCDoubleArray(values):
+    """Convert a list of numbers to a ctypes double array."""
     import ctypes
     arr = (ctypes.c_double * len(values))()
     arr[:] = values
@@ -2082,33 +2554,16 @@ def _buildCDoubleArray(values):
     return arr
 
 
-# -----------------------------------------------------------------------------
-#    Name: _buildCIntArray
-#    Args: values : ([int])
-#              A list of ints to convert.
-#  Raises: N/A
-# Returns: c_int_Array
-#              A ctypes int array.
-#    Desc: Convert a list of numbers to a ctypes int array.
-# -----------------------------------------------------------------------------
 def _buildCIntArray(values):
+    """Convert a list of numbers to a ctypes int array."""
     import ctypes
     arr = (ctypes.c_int * len(values))()
     arr[:] = values
 
     return arr
 
-
-# -----------------------------------------------------------------------------
-#    Name: _buildCStringArray
-#    Args: values : ([str])
-#              A list of strings.
-#  Raises: N/A
-# Returns: c_char_p_Array
-#              A ctypes char * array.
-#    Desc: Convert a list of strings to a ctypes char * array.
-# -----------------------------------------------------------------------------
 def _buildCStringArray(values):
+    """Convert a list of numbers to a ctypes char * array."""
     import ctypes
     arr = (ctypes.c_char_p * len(values))()
     arr[:] = values
@@ -2116,43 +2571,22 @@ def _buildCStringArray(values):
     return arr
 
 
-# -----------------------------------------------------------------------------
-#    Name: _cleanStringValues
-#    Args: values : ([str]|(str))
-#              A list of strings.
-#  Raises: N/A
-# Returns: (str)
-#              A tuple of cleaned string values.
-#    Desc: Process a string list, removing empty strings.
-# -----------------------------------------------------------------------------
 def _cleanStringValues(values):
+    """Process a string list, removing empty strings."""
     return tuple([val for val in values if val])
 
 
-# -----------------------------------------------------------------------------
-#    Name: _getAttribOwner
-#    Args: attrib_type : (hou.attribType)
-#              An attribute type.
-#  Raises: N/A
-# Returns: int
-#              The corresponding attribute owner value (according to HDK).
-#    Desc: Get an HDK compatible attribute owner value.
-# -----------------------------------------------------------------------------
+def _getAttribStorage(data_type):
+    """Get an HDK compatible attribute storage class value."""
+    return _ATTRIB_STORAGE_MAP[data_type]
+
 def _getAttribOwner(attribute_type):
+    """Get an HDK compatible attribute owner value."""
     return _ATTRIB_TYPE_MAP[attribute_type]
 
 
-# -----------------------------------------------------------------------------
-#    Name: _getGroupAttribOwner
-#    Args: values : (hou.PointGroup|hou.PrimGroup)
-#              A geometry group.
-#  Raises: hou.OperationFailed
-#              This exception is raised if an invalid group type is passed.
-# Returns: int
-#              The corresponding group attribute type (according to HDK).
-#    Desc: Get an HDK compatible group attribute type value.
-# -----------------------------------------------------------------------------
 def _getGroupAttribOwner(group):
+    """Get an HDK compatible group attribute type value."""
     try:
         return _GROUP_ATTRIB_MAP[type(group)]
 
@@ -2160,17 +2594,8 @@ def _getGroupAttribOwner(group):
         raise hou.OperationFailed("Invalid group type")
 
 
-# -----------------------------------------------------------------------------
-#    Name: _getGroupType
-#    Args: values : (hou.PointGroup|hou.PrimGroup|hou.EdgeGroup)
-#              A geometry group.
-#  Raises: hou.OperationFailed
-#              This exception is raised if an invalid group type is passed.
-# Returns: int
-#              The corresponding group type (according to HDK).
-#    Desc: Get an HDK compatible group type value.
-# -----------------------------------------------------------------------------
 def _getGroupType(group):
+    """Get an HDK compatible group type value."""
     try:
         return _GROUP_TYPE_MAP[type(group)]
 
@@ -2178,31 +2603,13 @@ def _getGroupType(group):
         raise hou.OperationFailed("Invalid group type")
 
 
-# -----------------------------------------------------------------------------
-#    Name: _getNodesFromPaths
-#    Args: paths : ([str]|(str))
-#              A list of string node paths.
-#  Raises: N/A
-# Returns: (hou.Node)
-#              A tuple of hou.Node objects.
-#    Desc: Convert a list of string paths to hou.Node objects.
-# -----------------------------------------------------------------------------
 def _getNodesFromPaths(paths):
+    """Convert a list of string paths to hou.Node objects."""
     return tuple([hou.node(path) for path in paths if path])
 
 
-# -----------------------------------------------------------------------------
-#    Name: _getPointsFromList
-#    Args: geometry : (hou.Geometry)
-#              The geometry the points belongs to.
-#          point_list : ([int]|(int))
-#              A list of integers representing point numbers.
-#  Raises: N/A
-# Returns: (hou.Point)
-#              A tuple of hou.Point objects.
-#    Desc: Convert a list of point numbers to hou.Point objects.
-# -----------------------------------------------------------------------------
 def _getPointsFromList(geometry, point_list):
+    """Convert a list of point numbers to hou.Point objects."""
     # Return a empty tuple if the point list is empty.
     if not point_list:
         return ()
@@ -2214,18 +2621,8 @@ def _getPointsFromList(geometry, point_list):
     return geometry.globPoints(point_str)
 
 
-# -----------------------------------------------------------------------------
-#    Name: _getPrimsFromList
-#    Args: geometry : (hou.Geometry)
-#              The geometry the primitives belongs to.
-#          prim_list : ([int]|(int))
-#              A list of integers representing primitive numbers.
-#  Raises: N/A
-# Returns: (hou.Prim)
-#              A tuple of hou.Prim objects.
-#    Desc: Convert a list of primitive numbers to hou.Prim objects.
-# -----------------------------------------------------------------------------
 def _getPrimsFromList(geometry, prim_list):
+    """Convert a list of primitive numbers to hou.Prim objects."""
     # Return a empty tuple if the prim list is empty.
     if not prim_list:
         return ()
@@ -3255,6 +3652,194 @@ def renameAttribute(self, new_name):
             return geometry.findGlobalAttrib(new_name)
 
     return None
+
+
+@addToClass(hou.Attrib)
+def isArrayAttribute(self):
+    """Check if an attribute is an array attribute."""
+    if self.dataType() == hou.attribData.String:
+        return _cpp_methods.isStringArrayAttribute(
+            self.geometry(),
+            _getAttribOwner(self.type()),
+            self.name()
+        )
+
+    else:
+        return _cpp_methods.isNumericArrayAttribute(
+            self.geometry(),
+            _getAttribOwner(self.type()),
+            self.name()
+        )
+
+
+@addToClass(hou.Geometry)
+def addArrayAttrib(self, attrib_type, data_type, name):
+    """Create an array attribute."""
+    # Make sure the geometry is not read only.
+    if self.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    if attrib_type not in _ALL_ATTRIB_TYPES:
+        raise hou.OperationFailed("Invalid attribute type.")
+
+    if data_type not in _ALL_ATTRIB_DATA_TYPES:
+        raise hou.OperationFailed("Invalid data type.")
+
+    if not name:
+        raise hou.OperationFailed("Invalid attribute name: {0}".format(name))
+
+    result = _cpp_methods.addArrayAttribute(
+        self,
+        attrib_type,
+        data_type,
+        name
+    )
+
+    if result:
+        if attrib_type == hou.attribType.Vertex:
+            return self.findVertexAttrib(name)
+
+        elif attrib_type == hou.attribType.Point:
+            return self.findPointAttrib(name)
+
+        elif attrib_type == hou.attribType.Prim:
+            return self.findPrimAttrib(name)
+
+        else:
+            return self.findGlobal(name)
+
+
+    raise hou.OperationFailed("Could not create attribute: {0}".format(name))
+
+
+@addToClass(hou.Geometry)
+def clearArrayAttrib(self, attribute):
+    """Clear all the values of an array attribute for every entity.
+
+    Note: Currently only works for numerical attributes.
+
+    """
+    if not attribute.isArrayAttribute():
+        raise hou.OperationFailed("Attribute is not an array attribute")
+
+    # Make sure the geometry is not read only.
+    if self.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    # TODO: Make work
+    if attribute.dataType() == hou.attribData.String:
+        raise hou.OperationFailed("Cannot clear string arrays")
+
+    _cpp_methods.clearArrayAttribute(
+        self,
+        _getAttribOwner(attribute.type()),
+        _getAttribStorage(attribute.dataType()),
+        attribute.name()
+    )
+
+
+@addToClass(hou.Point, hou.Prim)#, hou.Vertex):
+def arrayAttribValue(self, attribute):
+    """Get the value of an array attribute for an entity."""
+    geometry = self.geometry()
+
+    if not isinstance(attribute, hou.Attrib):
+        raise hou.OperationFailed("Must pass a hou.Attrib object")
+
+    if not attribute.isArrayAttribute():
+        raise hou.OperationFailed("Attribute is not an array attribute")
+
+    data_type = attribute.dataType()
+
+    if data_type not in _ALL_ATTRIB_DATA_TYPES:
+        raise hou.OperationFailed("Invalid attribute data type")
+
+    if data_type == hou.attribData.Float:
+        result = _cpp_methods.getFloatArrayValue(
+            geometry,
+            _getAttribOwner(attribute.type()),
+            attribute.name(),
+            self.number(),
+        )
+
+        return tuple(result)
+
+    elif data_type == hou.attribData.Int:
+        result = _cpp_methods.getIntArrayValue(
+            geometry,
+            _getAttribOwner(attribute.type()),
+            attribute.name(),
+            self.number(),
+        )
+
+        return tuple(result)
+
+    else:
+        result = _cpp_methods.getStringArrayValue(
+            geometry,
+            _getAttribOwner(attribute.type()),
+            attribute.name(),
+            self.number(),
+        )
+
+        return _cleanStringValues(result)
+
+
+@addToClass(hou.Point, hou.Prim)#, hou.Vertex):
+def setArrayAttribValue(self, attribute, values):
+    """Set an entities array attribute value."""
+    geometry = self.geometry()
+
+    # Make sure the geometry is not read only.
+    if geometry.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    if not isinstance(attribute, hou.Attrib):
+        raise hou.OperationFailed("Must pass a hou.Attrib object")
+
+    if not attribute.isArrayAttribute():
+        raise hou.OperationFailed("Attribute is not an array attribute")
+
+    data_type = attribute.dataType()
+
+    if data_type not in _ALL_ATTRIB_DATA_TYPES:
+        raise hou.OperationFailed("Invalid attribute data type")
+
+    if data_type == hou.attribData.Float:
+        arr = _buildCDoubleArray(values)
+
+        _cpp_methods.setFloatArrayValue(
+            geometry,
+            _getAttribOwner(attribute.type()),
+            attribute.name(),
+            self.number(),
+            arr,
+            len(values)
+        )
+
+    elif data_type == hou.attribData.Int:
+        arr = _buildCIntArray(values)
+
+        _cpp_methods.setIntArrayValue(
+            geometry,
+            _getAttribOwner(attribute.type()),
+            attribute.name(),
+            self.number(),
+            arr,
+            len(values)
+        )
+
+    else:
+        arr = _buildCStringArray(values)
+
+        _cpp_methods.setStringArrayValue(
+            geometry,
+            _getAttribOwner(attribute.type()),
+            attribute.name(),
+            self.number(),
+            arr,
+            len(values)
+        )
 
 
 @addToClass(hou.Point, name="copyAttribValues")
