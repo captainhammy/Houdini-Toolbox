@@ -2,7 +2,7 @@
 before, during and after rendertime.
 
 For more information, please see:
-    http://www.sidefx.com/docs/houdini12.5/rendering/python
+    http://www.sidefx.com/docs/houdini15.0/rendering/python
 
 """
 __author__ = "Graham Thompson"
@@ -50,7 +50,7 @@ def filterCamera():
     """
     logger.info("filterCamera")
 
-    PYFILTER_MANAGER.execute("filterCamera")
+    PYFILTER_MANAGER.runFilters("filterCamera")
 
 
 def filterCameraSegment():
@@ -68,7 +68,7 @@ def filterCameraSegment():
     """
     logger.info("filterCameraSegment")
 
-    PYFILTER_MANAGER.execute("filterCameraSegment")
+    PYFILTER_MANAGER.runFilters("filterCameraSegment")
 
 
 def filterEndRender():
@@ -83,7 +83,7 @@ def filterEndRender():
     """
     logger.info("filterEndRender")
 
-    PYFILTER_MANAGER.execute("filterEndRender")
+    PYFILTER_MANAGER.runFilters("filterEndRender")
 
 
 def filterError(level, message, prefix=""):
@@ -112,7 +112,7 @@ def filterError(level, message, prefix=""):
     """
     logger.info("filterError")
 
-    PYFILTER_MANAGER.execute("filterError")
+    PYFILTER_MANAGER.runFilters("filterError")
 
     return False
 
@@ -132,7 +132,7 @@ def filterFog():
     """
     logger.info("filterFog ({0})".format(mantra.property("object:name")[0]))
 
-    PYFILTER_MANAGER.execute("filterFog")
+    PYFILTER_MANAGER.runFilters("filterFog")
 
 
 def filterGeometry():
@@ -151,7 +151,7 @@ def filterGeometry():
     """
     logger.info("filterGeometry")
 
-    PYFILTER_MANAGER.execute("filterGeometry")
+    PYFILTER_MANAGER.runFilters("filterGeometry")
 
 
 def filterInstance():
@@ -169,7 +169,7 @@ def filterInstance():
 
     """
     logger.info("filterInstance ({0})".format(mantra.property("object:name")[0]))
-    PYFILTER_MANAGER.execute("filterInstance")
+    PYFILTER_MANAGER.runFilters("filterInstance")
 
 
 def filterLight():
@@ -188,7 +188,7 @@ def filterLight():
     """
     logger.info("filterLight ({0})".format(mantra.property("object:name")[0]))
 
-    PYFILTER_MANAGER.execute("filterLight")
+    PYFILTER_MANAGER.runFilters("filterLight")
 
 
 def filterMaterial():
@@ -207,7 +207,7 @@ def filterMaterial():
     """
     logger.info("filterMaterial")
 
-    PYFILTER_MANAGER.execute("filterMaterial")
+    PYFILTER_MANAGER.runFilters("filterMaterial")
 
 
 def filterOutputAssets(assets):
@@ -229,7 +229,7 @@ def filterOutputAssets(assets):
     """
     logger.info("filterOutputAssets")
 
-    PYFILTER_MANAGER.execute("filterOutputAssets")
+    PYFILTER_MANAGER.runFilters("filterOutputAssets")
 
 
 def filterPlane():
@@ -250,7 +250,7 @@ def filterPlane():
     else:
         logger.info("filterPlane ({0} -> {1})".format(variable, channel))
 
-    PYFILTER_MANAGER.execute("filterPlane")
+    PYFILTER_MANAGER.runFilters("filterPlane")
 
 
 def filterQuit():
@@ -265,7 +265,7 @@ def filterQuit():
     """
     logger.info("filterQuit")
 
-    PYFILTER_MANAGER.execute("filterQuit")
+    PYFILTER_MANAGER.runFilters("filterQuit")
 
 
 def filterRender():
@@ -284,7 +284,7 @@ def filterRender():
     """
     logger.info("filterRender")
 
-    PYFILTER_MANAGER.execute("filterRender")
+    PYFILTER_MANAGER.runFilters("filterRender")
 
 
 def main():
@@ -301,8 +301,7 @@ def main():
 
     PYFILTER_MANAGER = PyFilterManager()
 
-
-
+# =============================================================================
 
 if __name__ == "__main__":
     main()

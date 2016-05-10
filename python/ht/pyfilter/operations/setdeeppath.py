@@ -1,66 +1,94 @@
+"""This module contains an operation to set the deep resolver path."""
 
+__author__ = "Graham Thompson"
+__email__ = "captainhammy@gmail.com"
+
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Houdini Toolbox Imports
+from ht.pyfilter.logger import logger
 from ht.pyfilter.operations.operation import PyFilterOperation, logFilter
-
 from ht.pyfilter.property import setProperty
 
-from ht.pyfilter.logger import logger
+# =============================================================================
+# CLASSES
+# =============================================================================
 
 class SetDeepResolverPath(PyFilterOperation):
+    """Operation to set the deepresolver path.
+
+    This operation creates and uses the -deeppath arg.
+
+    """
 
     def __init__(self):
-	super(SetDeepResolverPath, self).__init__()
+    	super(SetDeepResolverPath, self).__init__()
 
-	self._filepath = None
+    	self._filepath = None
+
+    # =========================================================================
+    # PROPERTIES
+    # =========================================================================
 
     @property
     def filepath(self):
-	return self._filepath
+        """The path to set to."""
+        return self._filepath
 
     @filepath.setter
     def filepath(self, filepath):
-	self._filepath = filepath
+        self._filepath = filepath
 
+    # =========================================================================
+    # STATIC METHODS
+    # =========================================================================
 
     @staticmethod
     def registerParserArgs(parser):
-	parser.add_argument(
-	    "-deeppath",
-	    nargs="?",
-	    default=None,
-	    action="store",
-	    help="Specify the deepresolver filepath."
-	)
+        """Register interested parser args for this operation."""
+        parser.add_argument(
+            "-deeppath",
+            nargs="?",
+            default=None,
+            action="store",
+            help="Specify the deepresolver filepath."
+        )
 
-
-    def processParsedArgs(self, filter_args):
-	if filter_args.deeppath is not None:
-	    self.filepath = filter_args.deeppath
-
-    def shouldRun(self):
-	return self.filepath is not None
+    # =========================================================================
+    # METHODS
+    # =========================================================================
 
     @logFilter
     def filterCamera(self):
-	import mantra
+        """Apply camera properties."""
+        import mantra
 
-	# Look for existing args.
-	deepresolver = mantra.property("image:deepresolver")
+        # Look for existing args.
+        deepresolver = mantra.property("image:deepresolver")
 
-        print mantra.property("image:deepresolver")
-        print mantra.property("image:filename")
+        if deepresolver:
+            args = list(deepresolver[0].split())
 
-	if deepresolver:
-	    args = list(deepresolver[0].split())
+            try:
+        	    idx = args.index("filename")
 
-	    try:
-		idx = args.index("filename")
+            except ValueError as inst:
+        	    logger.exception(inst)
+                return
 
-	    except ValueError as inst:
-		logger.exception(inst)
+            else:
+        	    args[idx + 1] = self.filepath
 
-	    else:
-		args[idx + 1] = self.filepath
+        	# Set the new list as the property value
+        	setProperty("image:deepresolver", args)
 
-		# Set the new list as the property value
-		setProperty("image:deepresolver", args)
+    def processParsedArgs(self, filter_args):
+        """Process any of our interested arguments if they were passed."""
+        if filter_args.deeppath is not None:
+            self.filepath = filter_args.deeppath
 
+    def shouldRun(self):
+        """Only run if a target path was passed."""
+	    return self.filepath is not None

@@ -1,16 +1,5 @@
-"""This module defines objects used to set Mantra render properties.
+"""This module defines objects used to set Mantra render properties."""
 
-Synopsis
---------
-
-Classes:
-    MaskedPropertySetter
-        A PropertySetter that supports masking againt other properties.
-
-    PropertySetter
-        An object representing a Mantra property being set by PyFilter.
-
-"""
 __author__ = "Graham Thompson"
 __email__ = "captainhammy@gmail.com"
 
@@ -28,16 +17,6 @@ from ht.pyfilter.logger import logger
 
 # Houdini Imports
 import hou
-#import mantra
-
-# =============================================================================
-# EXPORTS
-# =============================================================================
-
-__all__ = [
-    "MaskedPropertySetter",
-    "PropertySetter",
-]
 
 # =============================================================================
 # CLASSES
@@ -50,55 +29,64 @@ class PropertySetterManager(object):
         self._properties = {}
 
     # =========================================================================
+    # NON-PUBLIC METHODS
+    # =========================================================================
 
     def _loadFromData(self, data):
+        """Build PropertySetter objects from data."""
         # Process each filter stage name and it's data.
-        for stageName, stageData in data.iteritems():
+        for stage_name, stage_data in data.iteritems():
             # A list of properties for this stage.
-            properties = self.properties.setdefault(stageName, [])
+            properties = self.properties.setdefault(stage_name, [])
 
             # Check if the stage should be disabled.
-            if "disabled" in stageData:
-                if stageData["disabled"]:
+            if "disabled" in stage_data:
+                if stage_data["disabled"]:
                     logger.debug(
-                        "Stage entry disabled: {0}".format(stageName)
+                        "Stage entry disabled: {0}".format(stage_name)
                     )
 
                     continue
 
                 # If not, remove the disabled entry.
-                del(stageData["disabled"])
+                del(stage_data["disabled"])
 
             # The data is stored by property name.
-            for propertyName, propertyBlock in stageData.iteritems():
+            for property_name, property_block in stage_data.iteritems():
                 # If we want to set the same property with different
                 # settings multiple times (eg. different masks) we can
                 # have a list of objects instead.  In the case where we
                 # just have a single one (really a dictionary) then add it
                 # to a list so we can process it in a loop.
-                if isinstance(propertyBlock, dict):
-                    propertyBlock = [propertyBlock]
+                if isinstance(property_block, dict):
+                    property_block = [property_block]
 
-                if isinstance(propertyBlock, Iterable):
+                if isinstance(property_block, Iterable):
                     # Process any properties in the block.
-                    for propertyElem in propertyBlock:
+                    for property_elem in property_block:
                         prop = _createPropertySetter(
-                            stageName,
-                            propertyName,
-                            propertyElem
+                            stage_name,
+                            property_name,
+                            property_elem
                         )
 
                         properties.append(prop)
 
     # =========================================================================
+    # PROPERTIES
+    # =========================================================================
 
     @property
     def properties(self):
+        """Dictionary containing properties."""
         return self._properties
 
     # =========================================================================
+    # METHODS
+    # =========================================================================
 
     def loadFromFile(self, filepath):
+        """Load properties from a file."""
         logger.debug("Reading properties from {0}".format(filepath))
 
         # Load json data from the file.
@@ -107,18 +95,17 @@ class PropertySetterManager(object):
 
         self._loadFromData(data)
 
-
     def parseFromString(self, property_string):
+        """Load properties from a string."""
         data = json.loads(property_string, object_hook=ht.utils.conveertFromUnicode)
 
         self._loadFromData(data)
 
-
     def setProperties(self, stage):
+        """Apply properties."""
         if stage in self.properties:
             for prop in self.properties[stage]:
                 prop.setProperty()
-
 
 # =============================================================================
 
@@ -131,36 +118,20 @@ class PropertySetter(object):
     # CONSTRUCTORS
     # =========================================================================
 
-    def __init__(self, name, propertyBlock):
-        """Initialize a PropertySetter object.
-
-        Args:
-            name : (str)
-                The name of the property.
-
-            propertyBlock : (dict)
-                A dictionary containing property settings.
-
-        Raises:
-            N/A
-
-        Returns:
-            N/A
-
-        """
+    def __init__(self, name, property_block):
         self._name = name
 
         # Store the raw value object.
-        self._value = propertyBlock["value"]
+        self._value = property_block["value"]
 
         self._enabled = True
-        self._findFile = False
+        self._find_file = False
 
-        if "findFile" in propertyBlock:
-            self.findFile = propertyBlock["findFile"]
+        if "findFile" in property_block:
+            self.find_file = property_block["findFile"]
 
-        if "enabled" in propertyBlock:
-            self.enabled = propertyBlock["enabled"]
+        if "enabled" in property_block:
+            self.enabled = property_block["enabled"]
 
         # Perform any value cleanup.
         self._processValue()
@@ -182,13 +153,8 @@ class PropertySetter(object):
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    # -------------------------------------------------------------------------
-    #    Name: _processValue
-    #  Raises: N/A
-    # Returns: None
-    #    Desc: Perform any operations or cleanup on our data.
-    # -------------------------------------------------------------------------
     def _processValue(self):
+        """Perform operations and cleanup of the value data."""
         # Skip normal types.
         if isinstance(self.value, (bool, float, int)):
             return
@@ -203,32 +169,32 @@ class PropertySetter(object):
 
         # If the value is actually a relative file, search for it in the
         # Houdini path.
-        if self.findFile:
+        if self.find_file:
             self.value = hou.findFile(self.value)
 
         # Object is a list (possibly numbers or strings or both).
         if isinstance(self.value, list):
             # Does the list contain any strings.
-            containsStrings = False
+            contains_string = False
 
             for val in self.value:
                 # If the value is a string, flag it.
                 if isinstance(val, str):
-                    containsStrings = True
+                    contains_string = True
                     break
 
             # If at least one value is a string then we need to convert them
             # all to strings.
-            if containsStrings:
+            if contains_string:
                 self.value = [str(val) for val in self.value]
 
     # =========================================================================
-    # INSTANCE ATTRIBUTES
+    # PROPERTIES
     # =========================================================================
 
     @property
     def enabled(self):
-        """(bool) Is the property setting enabled."""
+        """Is the property setting enabled."""
         return self._enabled
 
     @enabled.setter
@@ -236,22 +202,22 @@ class PropertySetter(object):
         self._enabled = enabled
 
     @property
-    def findFile(self):
-        """(bool) Is the value the name of a file to find."""
-        return self._findFile
+    def find_file(self):
+        """Is the value the name of a file to find."""
+        return self._find_file
 
-    @findFile.setter
-    def findFile(self, findFile):
-        self._findFile = findFile
+    @find_file.setter
+    def find_file(self, find_file):
+        self._find_file = find_file
 
     @property
     def name(self):
-        """(str) The name of the property to set."""
+        """The name of the property to set."""
         return self._name
 
     @property
     def value(self):
-        """(str|[str]|[int]|[float]) The value to set the property."""
+        """The value to set the property."""
         return self._value
 
     @value.setter
@@ -263,15 +229,7 @@ class PropertySetter(object):
     # =========================================================================
 
     def setProperty(self):
-        """Set the property to the value.
-
-        Raises:
-            N/A
-
-        Returns:
-            None
-
-        """
+        """Set the property to the value."""
         # Don't do anything if the property isn't enabled.
         if not self.enabled:
             return
@@ -284,6 +242,7 @@ class PropertySetter(object):
         import mantra
         mantra.setproperty(self.name, self.value)
 
+# =============================================================================
 
 class MaskedPropertySetter(PropertySetter):
     """A PropertySetter that supports masking againt other properties.
@@ -294,32 +253,13 @@ class MaskedPropertySetter(PropertySetter):
     # CONSTRUCTORS
     # =========================================================================
 
-    def __init__(self, name, propertyBlock, maskPropertyName):
-        """Initialize a MaskedPropertySetter object.
-
-        Args:
-            name : (str)
-                The name of the property.
-
-            propertyBlock : (dict)
-                A dictionary containing property settings.
-
-            maskPropertyName : (str)
-                A property name to compare a mask value against.
-
-        Raises:
-            N/A
-
-        Returns:
-            N/A
-
-        """
-        super(MaskedPropertySetter, self).__init__(name, propertyBlock)
+    def __init__(self, name, property_block, mask_property_name):
+        super(MaskedPropertySetter, self).__init__(name, property_block)
 
         # Look for a mask property.
-        self._mask = str(propertyBlock["mask"])
+        self._mask = str(property_block["mask"])
 
-        self._maskPropertyName = maskPropertyName
+        self._mask_property_name = mask_property_name
 
 
     # =========================================================================
@@ -341,59 +281,60 @@ class MaskedPropertySetter(PropertySetter):
         )
 
     # =========================================================================
-    # INSTANCE ATTRIBUTES
+    # PROPERTIES
     # =========================================================================
 
     @property
     def mask(self):
-        """(str) A mask value."""
+        """A mask value."""
         return self._mask
 
     @property
-    def maskPropertyName(self):
-        """(str) The property name to compare the mask against."""
-        return self._maskPropertyName
+    def mask_property_name(self):
+        """The property name to compare the mask against."""
+        return self._mask_property_name
 
     # =========================================================================
     # METHODS
     # =========================================================================
 
     def setProperty(self):
+        """Set the property under mantra."""
         import mantra
 
         # Is this property being applied using a name mask.
         if self.mask is not None:
             # Get the name of the item that is currently being filtered.
-            filteredItem = mantra.property(self.maskPropertyName)[0]
+            filtered_item = mantra.property(self.mask_property_name)[0]
 
             # If the mask pattern doesn't match, abort.
-            if not hou.patternMatch(self.mask, filteredItem):
+            if not hou.patternMatch(self.mask, filtered_item):
                 return
 
         # Call the super class function to set the property.
         super(MaskedPropertySetter, self).setProperty()
 
-
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
 
-def _createPropertySetter(stageName, propertyName, propertyBlock):
+def _createPropertySetter(stage_name, property_name, property_block):
+    """Create a PropertySetter based on data."""
     # Handle masked properties.
-    if "mask" in propertyBlock:
+    if "mask" in property_block:
         # Filter a plane.
-        if stageName == "plane":
+        if stage_name == "plane":
             return MaskedPropertySetter(
-                propertyName,
-                propertyBlock,
+                property_name,
+                property_block,
                 "plane:variable"
             )
 
         # Something involving an actual object.
-        elif stageName in ("fog", "light", "instance"):
+        elif stage_name in ("fog", "light", "instance"):
             return MaskedPropertySetter(
-                propertyName,
-                propertyBlock,
+                property_name,
+                property_block,
                 "object:name"
             )
 
@@ -403,11 +344,10 @@ def _createPropertySetter(stageName, propertyName, propertyBlock):
         else:
             logger.warning(
                 "No masking available for {0}:{1}.".format(
-                    stageName,
-                    propertyName
+                    stage_name,
+                    property_name
                 )
             )
 
     # Generic property setter.
-    return PropertySetter(propertyName, propertyBlock)
-
+    return PropertySetter(property_name, property_block)
