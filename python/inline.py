@@ -2580,6 +2580,7 @@ def _getAttribStorage(data_type):
     """Get an HDK compatible attribute storage class value."""
     return _ATTRIB_STORAGE_MAP[data_type]
 
+
 def _getAttribOwner(attribute_type):
     """Get an HDK compatible attribute owner value."""
     return _ATTRIB_TYPE_MAP[attribute_type]
@@ -2632,7 +2633,6 @@ def _getPrimsFromList(geometry, prim_list):
 
     # Glob for the specified prims.
     return geometry.globPrims(prim_str)
-
 
 # =============================================================================
 # FUNCTIONS
