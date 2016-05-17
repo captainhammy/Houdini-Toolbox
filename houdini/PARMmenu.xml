@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<menuDocument>
+    <menu>
+        <scriptItem id="revert_ramp">
+            <insertBefore>revert_defs</insertBefore>
+            <label>Revert Ramp to Defaults</label>
+            <context>
+                <expression><![CDATA[parms = kwargs["parms"]
+
+# If there is a ramp parameter in the selected parms then we want to display
+# the menu item.
+for parm in parms:
+    if isinstance(parm.parmTemplate(), hou.RampParmTemplate):
+        return True
+
+return False
+]]></expression>
+            </context>
+            <scriptCode><![CDATA[parms = kwargs["parms"]
+
+for parm in parms:
+    parm_template = parm.parmTemplate()
+
+    # Skip any non-ramps that might have been selected.
+    if not isinstance(parm_template, hou.RampParmTemplate):
+        continue
+
+    node = parm.node()
+    name = parm.name()
+
+    # Set the multiparm to the default number of points.
+    parm.set(parm_template.defaultValue())
+
+    # Default point data is stored as a parameter tag.
+    tags = parm_template.tags()
+
+    # Process float ramps.
+    if "rampfloatdefault" in tags:
+        default_string = tags["rampfloatdefault"]
+
+        data = default_string.replace("(", "").replace(")", "").split()
+
+	# For each ramp control point there exist 6 data points for a float ramp:
+	# pos parm name + value, color parm name + value, interp parm name + value
+        for i in range(0, len(data), 6):
+            point_data = data[i:i+6]
+            
+            for y in range(0, len(point_data), 2):
+                node.parm("{}{}".format(name, point_data[y])).set(point_data[y+1])
+
+    # Process color ramps.
+    elif "rampcolordefault" in tags:
+        default_string = tags["rampcolordefault"]
+
+        data = default_string.replace("(", "").replace(")", "").split()
+	
+	# For each ramp control point there exist 8 data points for a color ramp:
+	# pos parm name + value, color parm name + RGB values, interp parm name + value
+        for i in range(0, len(data), 8):
+            point_data = data[i:i+8]
+            
+	    # Set the point position.
+            node.parm("{}{}".format(name, point_data[0])).set(point_data[1])
+
+	    # Set the point color.
+            node.parmTuple("{}{}".format(name, point_data[2])).set(point_data[3:6])
+
+	    # Set the point interpolation.
+            node.parm("{}{}".format(name, point_data[6])).set(point_data[7])
+]]>
+            </scriptCode>
+        </scriptItem>
+
+    </menu>
+</menuDocument>
