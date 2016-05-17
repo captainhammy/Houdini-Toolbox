@@ -1,0 +1,33 @@
+{
+    "system": {
+        "installation": {
+            "target": "/opt",
+            "folder": "hfs{version}"
+        },
+
+        "plugins": {
+        },
+
+        "archive_locations": [
+            "${HOME}/Downloads"
+        ]
+    },
+
+    "environment": {
+        "variables": {
+        },
+
+        "paths": {
+            "HOUDINI_PATH": [
+                "${HOME}/Houdini-Toolbox/houdini",
+                "&"
+            ]
+        },
+
+        "test_variables": {
+        },
+
+        "test_paths": {
+        }
+    }
+}

@@ -1,25 +1,13 @@
 """This module contains a class to set up an environment and launch Houdini
 related applications based on arguments.
 
-Synopsis
---------
-
-Classes:
-    HoudiniWrapper
-        Initialize the environment and run Houdini related applications.
-
 """
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
-
 # =============================================================================
 # IMPORTS
 # =============================================================================
 
 # Standard Library Imports
-import json
 import os
-import signal
 import subprocess
 import sys
 
@@ -28,14 +16,6 @@ import ht.argument
 import ht.houdini.package
 import ht.output
 import ht.utils
-
-# =============================================================================
-# EXPORTS
-# =============================================================================
-
-__all__ = [
-    "HoudiniWrapper"
-]
 
 # =============================================================================
 # CLASSES
@@ -51,30 +31,19 @@ class HoudiniWrapper(object):
     # =========================================================================
 
     def __init__(self):
-        """Initialize a HoudiniWrapper object.
-
-        Raises:
-            N/A
-
-        Returns:
-            N/A
-
-        Initializing the object will also run the command.
-
-        """
         self._arguments = None
         self._build = None
-        self._programName = None
-        self._programArgs = None
+        self._program_name = None
+        self._program_args = None
 
         # Build a parser.
         self._parser = _buildParser()
 
         # Parse the arguments.
-        self._arguments, self.programArgs = self.parser.parse_known_args()
+        self._arguments, self.program_args = self.parser.parse_known_args()
 
         # Get the name of the executable we are trying to run.
-        self.programName = os.path.basename(sys.argv[0])
+        self.program_name = os.path.basename(sys.argv[0])
 
         self._nojemalloc = self.arguments.nojemalloc
         self._silent = self.arguments.silent
@@ -86,6 +55,12 @@ class HoudiniWrapper(object):
         # exit.
         if not self.arguments.version:
             self._dislayVersions()
+            return
+
+        # We are going to download and install a build so do this before
+        # anything else.
+        if self.arguments.dlinstall:
+            self._downloadAndInstall()
             return
 
         # Try to find a build.
@@ -106,15 +81,11 @@ class HoudiniWrapper(object):
             return
 
         # Set the base environment for the build.
-        self.build.setupEnvironment(allowCustom=not self.testpath)
-
-        if self.testpath:
-            # Use Houdini's internal Python.
-            os.environ["HOUDINI_USE_HFS_PYTHON"] = "1"
+        self.build.setupEnvironment(testpath=self.testpath)
 
         # Handle setting options when the 'hmake' compile command is used.
-        if self.programName == "hmake":
-            self.programName = "make"
+        if self.program_name == "hmake":
+            self.program_name = "make"
 
             # Set the plugin installation directory to the plugin path if
             # the build has one.
@@ -131,8 +102,8 @@ class HoudiniWrapper(object):
         if self.arguments.dumpenv:
             # To display the Houdini configuration, change the program to run
             # hconfig -a.
-            self.programName = "hconfig"
-            self.programArgs = ["-a"]
+            self.program_name = "hconfig"
+            self.program_args = ["-a"]
 
             self._print("Dumping env settings\n", colored="darkyellow")
 
@@ -146,40 +117,32 @@ class HoudiniWrapper(object):
             self._print()
 
         # Start with the name of the program to run.
-        runArgs = [self.programName]
+        run_args = [self.program_name]
 
         # If we don't want to have Houdini use jemalloc we need to replace the
         # run args. For more information, see
-        # http://www.sidefx.com/docs/houdini12.5/ref/panes/perfmon
+        # http://www.sidefx.com/docs/houdini15.0/ref/panes/perfmon
         if self.nojemalloc:
-            runArgs = self._setNoJemalloc()
+            run_args = self._setNoJemalloc()
 
         # Print the Houdini version information.
-        self._print(
-            "\tHoudini {build}: {path}\n".format(
-                build=self.build,
-                path=self.build.path
-            )
-        )
+        self._print("\tHoudini {}: {}\n".format(self.build, self.build.path))
 
         # Print the command being run.
         self._print(
-            "Launching {app} {args} ... ".format(
-                app=" ".join(runArgs),
-                args=" ".join(self.programArgs)
+            "Launching {} {} ... ".format(
+                " ".join(run_args),
+                " ".join(self.program_args)
             ),
             colored="darkyellow"
         )
 
         # Run the application.
-        proc = subprocess.Popen(runArgs + self.programArgs)
+        proc = subprocess.Popen(run_args + self.program_args)
 
         # Display the process id.
         self._print(
-            "{app} process id: {id}".format(
-                app=self.programName,
-                id=proc.pid+2
-            ),
+            "{} process id: {}".format(self.program_name, proc.pid+2),
             colored="blue"
         )
 
@@ -187,43 +150,40 @@ class HoudiniWrapper(object):
         proc.wait()
 
         # Get the return code.
-        returnCode = proc.returncode
+        returncode = proc.returncode
 
         # If the program didn't end clean, print a message.
-        if returnCode != 0:
+        if returncode != 0:
             self._print(
-                "{app} died with signal {sig}.".format(
-                    app=self.programName,
-                    sig=abs(returnCode)
+                "{} died with signal {}.".format(
+                    self.program_name,
+                    abs(returncode)
                 ),
                 colored="darkred"
             )
 
         # Exit with the program's return code.
-        sys.exit(returnCode)
+        sys.exit(returncode)
 
     # =========================================================================
     # SPECIAL METHODS
     # =========================================================================
 
     def __repr__(self):
-        return "<HoudiniWrapper '{app}' ({build})>".format(
-            app=self.programName,
-            build=self.build
+        return "<HoudiniWrapper '{}' ({})>".format(
+            self.program_name,
+            self.build
         )
 
     # =========================================================================
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    # -------------------------------------------------------------------------
-    #    Name: _dislayVersions
-    #  Raises: N/A
-    # Returns: None
-    #    Desc: Display a list of Houdini versions that are available to
-    #          install, run or uninstall.
-    # -------------------------------------------------------------------------
     def _dislayVersions(self):
+        """Display a list of Houdini versions that are available to install,
+        run or uninstall.
+
+        """
         # Construct a HoudiniBuildManager to handle all our available Houdini
         # options.
         manager = ht.houdini.package.HoudiniBuildManager()
@@ -256,28 +216,31 @@ class HoudiniWrapper(object):
 
             self._print()
 
-    # -------------------------------------------------------------------------
-    #    Name: _findBuild
-    #  Raises: N/A
-    # Returns: None
-    #    Desc: Search for the selected build.  If no valid build was selected
-    #          print a message.
-    # -------------------------------------------------------------------------
+    def _downloadAndInstall(self):
+        """Download and automatically install a build."""
+        ht.houdini.package.HoudiniBuildManager.downloadAndInstall(
+            self.arguments.dlinstall
+        )
+
     def _findBuild(self):
+        """Search for the selected build.  If no valid build was selected
+        print a message.
+
+        """
         # Construct a HoudiniBuildManager to handle all our available Houdini
         # options.
         manager = ht.houdini.package.HoudiniBuildManager()
 
         # If trying to install, get any builds that are installable.
         if self.arguments.install:
-            searchBuilds = manager.installable
+            search_builds = manager.installable
 
         # Get the installed builds.
         else:
-            searchBuilds = manager.installed
+            search_builds = manager.installed
 
         # Couldn't find any builds, so print the appropriate message.
-        if not searchBuilds:
+        if not search_builds:
             if self.arguments.install:
                 self._print("No builds found to install.")
 
@@ -291,11 +254,11 @@ class HoudiniWrapper(object):
 
         # Use the last build in the list since it is sorted by version.
         if self.arguments.version == "latest":
-            self.build = searchBuilds[-1]
+            self.build = search_builds[-1]
 
         # Look for a build matching the string.
         else:
-            for installed in searchBuilds:
+            for installed in search_builds:
                 if str(installed) == self.arguments.version:
                     self.build = installed
                     break
@@ -308,18 +271,10 @@ class HoudiniWrapper(object):
                     )
                 )
 
-    # -------------------------------------------------------------------------
-    #    Name: _print
-    #    Args: msg="" : (str)
-    #              The message to print.
-    #          colored=None : (str)
-    #              An optional color to print the message in.
-    #  Raises: N/A
-    # Returns: None
-    #    Desc: Print a message, optionally with color, respecting the -silent
-    #          flag.
-    # -------------------------------------------------------------------------
     def _print(self, msg="", colored=None):
+        """Print a message, optionally with color, respecting the -silent flag.
+
+        """
         # Doing colored output.
         if colored is not None:
             shell = ht.output.ShellOutput()
@@ -330,118 +285,112 @@ class HoudiniWrapper(object):
         # Print the message.
         if not self.silent:
             print msg
-    # -------------------------------------------------------------------------
-    #    Name: _setNoJemalloc
-    #  Raises: N/A
-    # Returns: [str]
-    #              The application run args to launch without jemalloc.
-    #    Desc: Set the environment in order to run without jemalloc.
-    # -------------------------------------------------------------------------
+
     def _setNoJemalloc(self):
-        ldPath = "{hdso}/empty_jemalloc".format(
-            hdso=os.environ["HDSO"]
-        )
+        """Set the environment in order to run without jemalloc."""
+        ld_path = os.path.join(os.environ["HDSO"], "empty_jemalloc")
 
         # See if the LD_LIBRARY_PATH is already set since we need to modify it.
-        existingLdPath = os.getenv("LD_LIBRARY_PATH")
+        current_ld_path = os.getenv("LD_LIBRARY_PATH")
 
         # If the path exists we insert our custom part before the existing
         # values.
-        if existingLdPath is not None:
-            ldPath = "{new}:{existing}".format(
-                new=ldPath,
-                existing=existingLdPath
-            )
+        if current_ld_path is not None:
+            ld_path = ":".join([ld_path, current_ld_path])
 
         # Set the variable to contain our path.
-        os.environ["LD_LIBRARY_PATH"] = ldPath
+        os.environ["LD_LIBRARY_PATH"] = ld_path
 
         # Build the new list of main run arguments and return them.
-        runArgs = [
+        run_args = [
             "/lib64/ld-linux-x86-64.so.2",
             "--inhibit-rpath",
             "''",
-            "{path}/bin/{name}-bin".format(
-                path=self.build.path,
-                name=self.programName
-            )
+            "{}/bin/{}-bin".format(self.build.path, self.program_name)
         ]
 
-        return runArgs
+        return run_args
 
     # =========================================================================
-    # INSTANCE PROPERTIES
+    # PROPERTIES
     # =========================================================================
 
     @property
     def arguments(self):
-        """(argparse.Namespace) The parsed, known wrapper args."""
+        """The parsed, known wrapper args."""
         return self._arguments
+
+    # =========================================================================
 
     @property
     def build(self):
-        """(ht.houdini.package.HoudiniInstall) The Houdini build to run."""
+        """The Houdini build to run."""
         return self._build
 
     @build.setter
     def build(self, build):
         self._build = build
 
+    # =========================================================================
+
     @property
     def nojemalloc(self):
-        """(bool) Launch with out jemalloc."""
+        """Launch with out jemalloc."""
         return self._nojemalloc
+
+    # =========================================================================
 
     @property
     def parser(self):
-        """(ht.argument.ArgumentParser) The wrapper argument parser."""
+        """The wrapper argument parser."""
         return self._parser
 
     @parser.setter
     def parser(self, parser):
         self._parser = parser
 
-    @property
-    def programArgs(self):
-        """([str]) A list of arguments to pass to the application."""
-        return self._programArgs
-
-    @programArgs.setter
-    def programArgs(self, programArgs):
-        self._programArgs = programArgs
+    # =========================================================================
 
     @property
-    def programName(self):
-        """(str) The name of the program to run."""
-        return self._programName
+    def program_args(self):
+        """A list of arguments to pass to the application."""
+        return self._program_args
 
-    @programName.setter
-    def programName(self, programName):
-        self._programName = programName
+    @program_args.setter
+    def program_args(self, program_args):
+        self._program_args = program_args
+
+    # =========================================================================
+
+    @property
+    def program_name(self):
+        """The name of the program to run."""
+        return self._program_name
+
+    @program_name.setter
+    def program_name(self, program_name):
+        self._program_name = program_name
+
+    # =========================================================================
 
     @property
     def silent(self):
-        """(bool) Don't output verbose messages."""
+        """Don't output verbose messages."""
         return self._silent
+
+    # =========================================================================
 
     @property
     def testpath(self):
-        """(bool) Run the application outside of the custom environment."""
+        """Run the application outside of the custom environment."""
         return self._testpath
-
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-#    Name: _buildParser
-#  Raises: N/A
-# Returns: ht.argument.ArgumentParser
-#              The wrapper argument parser.
-#    Desc: Build an ArgumentParser for the wrapper.
-# -----------------------------------------------------------------------------
 def _buildParser():
+    """Build an ArgumentParser for the wrapper."""
     # Don't allow abbreviations since we don't want them to interfere with any
     # flags that might need to be passed through.
     parser = ht.argument.ArgumentParser(
@@ -490,20 +439,26 @@ def _buildParser():
     )
 
     # Exclusive group to handle installs and uninstalls.
-    installGroup = parser.add_mutually_exclusive_group()
+    install_group = parser.add_mutually_exclusive_group()
 
-    installGroup.add_argument(
+    install_group.add_argument(
         "-install",
         action="store_true",
         default=False,
         help="Install a Houdini build."
     )
 
-    installGroup.add_argument(
+    install_group.add_argument(
         "-uninstall",
         action="store_true",
         default=False,
         help="Uninstall a Houdini build."
+    )
+
+    install_group.add_argument(
+        "-dlinstall",
+        nargs=1,
+        help="Download and install today's Houdini build."
     )
 
     return parser

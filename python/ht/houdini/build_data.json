@@ -1,0 +1,42 @@
+{
+    "file_template": "houdini-{version}-{arch}.{ext}",
+
+    "types": {
+        "Linux": {
+            "arch": "linux_x86_64_gcc4.8",
+            "ext": "tar.gz"
+        },
+
+        "Windows": {
+            "arch": "win64-vc14",
+            "ext": "exe"
+        },
+
+        "Darwin": {
+            "arch": "macosx_x86_64_clang6.1_10.10",
+            "ext": "dmg"
+        }
+    },
+
+    "versions": {
+        "15.5": {
+            "date": "24/01/15"
+        },
+
+        "15.0": {
+            "date": "24/01/15"
+        },
+
+        "14.0": {
+            "date": "17/06/14"
+        },
+
+        "13.0": {
+            "types": {
+                "Linux": "linux_x86_64_gcc4.6",
+                "Windows": "win64-vc11"
+            },
+            "date": "28/03/13"
+        }
+    }
+}
