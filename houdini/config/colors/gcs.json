@@ -18,13 +18,18 @@
 	},
 
 	"ORANGE": {
-	    "type": "RGB",
-	    "color": [0.8, 0.6, 0]
+	    "type": "HSV",
+	    "color": [45.0, 1.0, 0.8]
 	},
 
 	"PURPLE": {
 	    "type": "RGB",
 	    "color": [0.4, 0.2, 0.6]
+	},
+
+	"HOLYSHITTHISISAREALLYLONGNAME": {
+	    "type": "RGB",
+	    "color": [0.8, 0.2, 0.2]
 	},
 
 	"PINK": {
@@ -75,7 +80,13 @@
 		"name": "dopnet",
 		"type": "RGB",
 		"color": [0, 0.4, 1]
-	    }
+	    },
+
+            {
+                "name": "file",
+                "type": "HSV",
+                "color": [45.0, 1.0, 0.8]
+            }
 	],
 
 	"Object": [

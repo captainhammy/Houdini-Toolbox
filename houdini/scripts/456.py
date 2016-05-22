@@ -1,8 +1,5 @@
 """Perform tasks when a .hip file is loaded."""
 
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
-
 # =============================================================================
 # IMPORTS
 # =============================================================================
@@ -17,13 +14,8 @@ import hou
 # FUNCTIONS
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-#    Name: main()
-#  Raises: N/A
-# Returns: None
-#    Desc: Main function.
-# -----------------------------------------------------------------------------
 def main():
+    """Main function."""
     # Initialize color settings.
     ht.nodes.colors.createSessionColorManager()
 

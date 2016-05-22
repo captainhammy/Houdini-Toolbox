@@ -1,8 +1,5 @@
 """Perform tasks when a Houdini node has its name changed."""
 
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
-
 # =============================================================================
 # IMPORTS
 # =============================================================================
@@ -14,13 +11,8 @@ import ht.nodes.colors
 # FUNCTIONS
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-#    Name: main()
-#  Raises: N/A
-# Returns: None
-#    Desc: Main function.
-# -----------------------------------------------------------------------------
 def main():
+    """Main function."""
     node = kwargs["node"]
 
     ht.nodes.colors.colorNodeByName(node)

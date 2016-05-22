@@ -1,8 +1,5 @@
 """Perform tasks when a Houdini node is created."""
 
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
-
 # =============================================================================
 # IMPORTS
 # =============================================================================
@@ -15,13 +12,8 @@ import ht.nodes.naming
 # FUNCTIONS
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-#    Name: main()
-#  Raises: N/A
-# Returns: None
-#    Desc: Main function.
-# -----------------------------------------------------------------------------
 def main():
+    """Main function."""
     node = kwargs["node"]
 
     ht.nodes.colors.colorNode(node)
