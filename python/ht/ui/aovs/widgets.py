@@ -31,8 +31,10 @@ class AOVManagerWidget(QtGui.QWidget):
     # CONSTRUCTORS
     # =========================================================================
 
-    def __init__(self, parent=None):
+    def __init__(self, node=None, parent=None):
         super(AOVManagerWidget, self).__init__(parent)
+
+        self.node = node
 
         self.initUI()
 
@@ -109,7 +111,7 @@ class AOVManagerWidget(QtGui.QWidget):
 
         # =====================================================================
 
-        self.to_add_widget = AOVsToAddWidget()
+        self.to_add_widget = AOVsToAddWidget(self.node)
         splitter.addWidget(self.to_add_widget)
 
 
@@ -1341,12 +1343,16 @@ class AOVsToAddToolBar(AOVViewerToolBar):
     # METHODS
     # =========================================================================
 
-    def loadFromNode(self):
+    def loadFromNode(self, node=None):
         """Populate the tree with AOVs and AOVGroups assigned to selected
         nodes.
 
         """
-        nodes = utils.findSelectedMantraNodes()
+        if node is not None:
+            nodes = [node]
+
+        else:
+            nodes = utils.findSelectedMantraNodes()
 
         items = []
 
@@ -1376,8 +1382,10 @@ class AOVsToAddWidget(QtGui.QWidget):
     # CONSTRUCTORS
     # =========================================================================
 
-    def __init__(self, parent=None):
+    def __init__(self, node=None, parent=None):
         super(AOVsToAddWidget, self).__init__(parent)
+
+        self.node = node
 
         layout = QtGui.QVBoxLayout()
         self.setLayout(layout)
@@ -1433,7 +1441,11 @@ class AOVsToAddWidget(QtGui.QWidget):
 
     def applyAsParms(self):
         """Apply AOVs and AOVGroups as multiparms."""
-        nodes = utils.findSelectedMantraNodes()
+        if self.node is not None:
+            nodes = [self.node]
+
+        else:
+            nodes = utils.findSelectedMantraNodes()
 
         if not nodes:
             return
@@ -1444,7 +1456,11 @@ class AOVsToAddWidget(QtGui.QWidget):
 
     def applyAtRenderTime(self):
         """Apply AOVs and AOVGroups at rendertime."""
-        nodes = utils.findSelectedMantraNodes()
+        if self.node is not None:
+            nodes = [self.node]
+
+        else:
+            nodes = utils.findSelectedMantraNodes()
 
         if not nodes:
             return
@@ -2009,3 +2025,50 @@ class StatusMessageWidget(QtGui.QWidget):
             self.display.clear()
             self.display.hide()
             self.icon.hide()
+
+
+class AOVManagerDialog(QtGui.QDialog):
+    """Dialog to display a floating AOV Manager."""
+
+    def __init__(self, node=None, parent=None):
+        super(AOVManagerDialog, self).__init__(parent)
+
+        self.node = node
+
+        title = "AOV Manager"
+
+        if self.node is not None:
+            title = "{} - {}".format(title, self.node.path())
+
+        self.setWindowTitle(title)
+
+        self.manager_widget = AOVManagerWidget(node=node)
+
+        layout = QtGui.QVBoxLayout()
+
+        layout.addWidget(self.manager_widget)
+
+        self.setLayout(layout)
+
+        self.button_box = QtGui.QDialogButtonBox(
+            QtGui.QDialogButtonBox.Close
+        )
+        layout.addWidget(self.button_box)
+
+        self.button_box.rejected.connect(self.close)
+
+        if self.node is not None:
+            self.manager_widget.to_add_widget.toolbar.loadFromNode(self.node)
+
+        self.resize(900, 800)
+
+        self.show()
+
+# =============================================================================
+# FUNCTIONS
+# =============================================================================
+
+def openAOVEditor(node):
+    """Open the AOV Manager dialog based on a node."""
+    AOVManagerDialog(node=node, parent=hou.ui.mainQtWindow())
+
