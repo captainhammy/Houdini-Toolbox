@@ -89,8 +89,8 @@ class HoudiniWrapper(object):
 
             # Set the plugin installation directory to the plugin path if
             # the build has one.
-            if self.build.pluginPath is not None:
-                os.environ["INSTDIR"] = self.build.pluginPath
+            if self.build.plugin_path is not None:
+                os.environ["INSTDIR"] = self.build.plugin_path
 
         # Process any specified argument variables.
         if self.arguments.var is not None:
