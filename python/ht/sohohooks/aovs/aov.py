@@ -650,6 +650,9 @@ class AOVGroup(object):
         if self.comment is not None:
             d[self.name]["comment"] = self.comment
 
+        if self.priority > -1:
+            d[self.name]["priority"] = self.priority
+
         return d
 
     # =========================================================================

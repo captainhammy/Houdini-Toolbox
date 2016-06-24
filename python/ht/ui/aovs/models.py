@@ -1144,6 +1144,10 @@ class AOVGroupInfoTableModel(InfoTableModel):
             self._titles.append("Comment")
             self._values.append(group.comment)
 
+        if group.priority > -1:
+            self._titles.append("Priority")
+            self._values.append(group.priority)
+
         if group.icon:
             self._titles.append("Icon")
             self._values.append(group.icon)

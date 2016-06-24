@@ -279,6 +279,9 @@ class AOVFileReader(object):
             if "comment" in group_data:
                 group.comment = group_data["comment"]
 
+            if "priority" in group_data:
+                group.priority = group_data["priority"]
+
             # Set any icon.
             if "icon" in group_data:
                 group.icon = os.path.expandvars(group_data["icon"])

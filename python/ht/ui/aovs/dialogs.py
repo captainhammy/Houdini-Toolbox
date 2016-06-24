@@ -113,6 +113,11 @@ class AOVDialog(QtGui.QDialog):
                 aov_data["lightexport_scope"] = self.light_mask.text()
                 aov_data["lightexport_select"] = self.light_select.text()
 
+        priority = self.priority.value()
+
+        if priority > -1:
+            aov_data["priority"] = priority
+
         comment = self.comment.text()
 
         if comment:
@@ -179,6 +184,9 @@ class AOVDialog(QtGui.QDialog):
 
             if aov.components:
                 self.components.setText(" ".join(aov.componenets))
+
+        if aov.priority > -1:
+            self.priority.setValue(aov.priority)
 
         if aov.comment:
             self.comment.setText(aov.comment)
@@ -568,6 +576,11 @@ class AOVGroupDialog(QtGui.QDialog):
         if comment:
             group.comment = comment
 
+        priority = self.priority.value()
+
+        if priority > -1:
+            aov_data["priority"] = priority
+
         # Find the AOVs to be in this group.
         aovs = self.aov_list.getSelectedAOVs()
 
@@ -597,6 +610,12 @@ class AOVGroupDialog(QtGui.QDialog):
 
         self.group_name.setText(group.name)
         self.file_widget.setPath(group.path)
+
+        if group.comment:
+            self.comment.setText(group.comment)
+
+        if group.priority > -1:
+            self.priority.setValue(group.priority)
 
         self.setSelectedAOVs(group.aovs)
 
