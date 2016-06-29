@@ -2086,6 +2086,88 @@ pointToPrimGroup(GU_Detail *gdp,
 """,
 
 """
+bool
+hasUngroupedPoints(const GU_Detail *gdp)
+{
+    GA_PointGroup  *all, *group;
+
+    all = gdp->newDetachedPointGroup();
+
+    GA_FOR_ALL_POINTGROUPS(gdp, group)
+    {
+        (*all) |= *group;
+    }
+
+    return all->entries() < gdp->getNumPoints();
+}
+""",
+
+"""
+void
+groupUngroupedPoints(GU_Detail *gdp, const char *ungrouped_name)
+{
+    GA_PointGroup  *all, *group, *ungrouped;
+
+    all = gdp->newDetachedPointGroup();
+
+    GA_FOR_ALL_POINTGROUPS(gdp, group)
+    {
+        (*all) |= *group;
+    }
+
+    if (all->entries() < gdp->getNumPoints())
+    {
+        all->toggleEntries();
+
+        ungrouped = gdp->newPointGroup(ungrouped_name);
+
+        ungrouped->combine(all);
+    }
+}
+""",
+
+"""
+bool
+hasUngroupedPrims(const GU_Detail *gdp)
+{
+    GA_PrimitiveGroup  *all, *group;
+
+    all = gdp->newDetachedPrimitiveGroup();
+
+    GA_FOR_ALL_PRIMGROUPS(gdp, group)
+    {
+        (*all) |= *group;
+    }
+
+    return all->entries() < gdp->getNumPrimitives();
+}
+""",
+
+"""
+void
+groupUngroupedPrims(GU_Detail *gdp, const char *ungrouped_name)
+{
+    GA_PrimitiveGroup  *all, *group, *ungrouped;
+
+    all = gdp->newDetachedPrimitiveGroup();
+
+    GA_FOR_ALL_PRIMGROUPS(gdp, group)
+    {
+        (*all) |= *group;
+    }
+
+    if (all->entries() < gdp->getNumPrimitives())
+    {
+        all->toggleEntries();
+
+        ungrouped = gdp->newPrimitiveGroup(ungrouped_name);
+
+        ungrouped->combine(all);
+    }
+}
+""",
+
+"""
 void
 clip(GU_Detail *gdp,
      UT_DMatrix4 *xform,
@@ -4458,6 +4540,54 @@ def convertToPrimGroup(self, new_group_name=None, destroy=True):
 
     # Return the new group.
     return geometry.findPrimGroup(new_group_name)
+
+
+@addToClass(hou.Geometry)
+def hasUngroupedPoints(self):
+    """Check if the geometry has ungrouped points."""
+    return _cpp_methods.hasUngroupedPoints(self)
+
+
+@addToClass(hou.Geometry)
+def groupUngroupedPoints(self, group_name):
+    """Create a new point group of any points not already in a group."""
+    # Make sure the geometry is not read only.
+    if self.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    if not group_name:
+        raise hou.OperationFailed("Invalid group name: {}".format(group_name))
+
+    if self.findPointGroup(group_name) is not None:
+        raise hou.OperationFailed("Group '{}' already exists".format(group_name))
+
+    _cpp_methods.groupUngroupedPoints(self, group_name)
+
+    return self.findPointGroup(group_name)
+
+
+@addToClass(hou.Geometry)
+def hasUngroupedPrims(self):
+    """Check if the geometry has ungrouped primitives."""
+    return _cpp_methods.hasUngroupedPrims(self)
+
+
+@addToClass(hou.Geometry)
+def groupUngroupedPrims(self, group_name):
+    """Create a new primitive group of any primitives not already in a group."""
+    # Make sure the geometry is not read only.
+    if self.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    if not group_name:
+        raise hou.OperationFailed("Invalid group name: {}".format(group_name))
+
+    if self.findPrimGroup(group_name) is not None:
+        raise hou.OperationFailed("Group '{}' already exists".format(group_name))
+
+    _cpp_methods.groupUngroupedPrims(self, group_name)
+
+    return self.findPrimGroup(group_name)
 
 
 @addToClass(hou.BoundingBox)
