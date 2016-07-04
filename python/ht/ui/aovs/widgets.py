@@ -11,7 +11,7 @@ import pickle
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import manager
-from ht.sohohooks.aovs.aov import AOV, AOVGroup
+from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.ui.aovs import models, uidata, utils
 
 # Houdini Imports
@@ -276,7 +276,7 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         import ht.ui.aovs.dialogs
 
         aovs = [node.item for node in self.getSelectedNodes()
-                if isinstance(node.item, AOV)]
+                if not isinstance(node, models.FolderNode) and isinstance(node.item, AOV)]
 
         for aov in aovs:
             ht.ui.aovs.dialogs.editAOV(aov)
@@ -286,12 +286,15 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         import ht.ui.aovs.dialogs
 
         groups = [node.item for node in self.getSelectedNodes()
-                  if isinstance(node.item, AOVGroup)]
+                  if not isinstance(node, models.FolderNode) and isinstance(node.item, AOVGroup)]
 
         parent = QtGui.QApplication.instance().activeWindow()
 
-        # TODO: Move to function in dialogs and handle group update.
+        # TODO: Move to function in dialogs and handle group update. Like above calls editAOV()
         for group in groups:
+            if isinstance(group, IntrinsicAOVGroup):
+                continue
+
             edit_dialog = ht.ui.aovs.dialogs.EditGroupDialog(
                 group,
                 parent
@@ -403,9 +406,14 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         show_collapse = False
         show_exp_col_all = False
 
+        show_install = False
+        show_uninstall = False
+
+        show_edit = False
         show_info = False
 
         model = self.model()
+        source_model = model.sourceModel()
 
         for index in indexes:
             source_index = model.mapToSource(index)
@@ -423,6 +431,20 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
             # Show into item for AOVs and groups.
             if isinstance(node, (models.AOVNode, models.AOVGroupNode)):
                 show_info = True
+
+                if isinstance(node, models.IntrinsicAOVGroupNode):
+                    show_edit = show_edit or False
+
+                else:
+                    show_edit = True
+
+                is_installed = source_model.isInstalled(node)
+
+                if is_installed:
+                    show_uninstall = True
+
+                else:
+                    show_install = True
 
         if show_collapse:
             menu.addAction(
@@ -468,25 +490,28 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
 
             menu.addSeparator()
 
-        menu.addAction(
-            "Install",
-            self.installSelected,
-            QtGui.QKeySequence(QtCore.Qt.Key_Y),
-        )
+        if show_install:
+            menu.addAction(
+                "Install",
+                self.installSelected,
+                QtGui.QKeySequence(QtCore.Qt.Key_Y),
+            )
 
-        menu.addAction(
-            "Uninstall",
-            self.uninstallSelected,
-            QtGui.QKeySequence(QtCore.Qt.Key_U),
-        )
+        if show_uninstall:
+            menu.addAction(
+                "Uninstall",
+                self.uninstallSelected,
+                QtGui.QKeySequence(QtCore.Qt.Key_U),
+            )
 
-        menu.addSeparator()
+        if show_edit:
+            menu.addSeparator()
 
-        menu.addAction(
-            "Edit",
-            self.editSelected,
-            QtGui.QKeySequence(QtCore.Qt.Key_E),
-        )
+            menu.addAction(
+                "Edit",
+                self.editSelected,
+                QtGui.QKeySequence(QtCore.Qt.Key_E),
+            )
 
         menu.exec_(self.mapToGlobal(position))
 
@@ -924,18 +949,25 @@ class AOVSelectWidget(QtGui.QWidget):
 
         enable_edit_aov = False
         enable_edit_group = False
+        enable_info = False
 
         if nodes:
             for node in nodes:
                 if isinstance(node, models.AOVNode):
                     enable_edit_aov = True
+                    enable_info = True
+
+                elif isinstance(node, models.IntrinsicAOVGroupNode):
+                    enable_edit_group = False
+                    enable_info = True
 
                 elif isinstance(node, models.AOVGroupNode):
                     enable_edit_group = True
+                    enable_info = True
 
         self.enableEditAOVSignal.emit(enable_edit_aov)
         self.enableEditAOVGroupSignal.emit(enable_edit_group)
-        self.enableInfoButtonSignal.emit(enable_edit_aov or enable_edit_group)
+        self.enableInfoButtonSignal.emit(enable_info)
 
 # =============================================================================
 # AOVs to Apply

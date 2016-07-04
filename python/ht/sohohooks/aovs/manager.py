@@ -13,7 +13,7 @@ import json
 import os
 
 # Houdini Toolbox Imports
-from ht.sohohooks.aovs.aov import AOV, AOVGroup
+from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.utils import convertFromUnicode
 
 # Houdini Imports
@@ -42,7 +42,10 @@ class AOVManager(object):
     # =========================================================================
 
     def __repr__(self):
-        return "<AOVManager>"
+        return "<AOVManager aovs:{} groups:{}>".format(
+            len(self.aovs),
+            len(self.groups),
+        )
 
     # =========================================================================
     # PROPERTIES
@@ -53,10 +56,14 @@ class AOVManager(object):
         """Any AOVViewerInterface assigned to the manager."""
         return self._interface
 
+    # =========================================================================
+
     @property
     def aovs(self):
         """Dicionary containing all available AOVs."""
         return self._aovs
+
+    # =========================================================================
 
     @property
     def groups(self):
@@ -67,6 +74,28 @@ class AOVManager(object):
     # NON-PUBLIC METHODS
     # =========================================================================
 
+    def _buildIntrinsicGroups(self):
+        """Build intrinsic groups."""
+        # Process any AOVs that we have to look for any instrinsic groups.
+        for aov in self.aovs.itervalues():
+            if aov.intrinsic is not None:
+                # Intrinsic groups are prefixed with "i:".
+                intrinsic_name = "i:" + aov.intrinsic
+
+                # Group exists so use it.
+                if intrinsic_name in self.groups:
+                    group = self.groups[intrinsic_name]
+
+                # Create the group and add it to our list.
+                else:
+                    group = IntrinsicAOVGroup(intrinsic_name)
+                    self.addGroup(group)
+
+                # Add this AOV to the group.
+                group.aovs.append(aov)
+
+    # =========================================================================
+
     def _initFromFiles(self):
         """Intialize the manager from files on disk."""
         file_paths = _findAOVFiles()
@@ -75,6 +104,10 @@ class AOVManager(object):
 
         self._mergeReaders(readers)
 
+        self._buildIntrinsicGroups()
+
+    # =========================================================================
+
     def _initGroupMembers(self, group):
         """Populate the AOV lists of each group based on available AOVs."""
         # Process each of the group's includes.
@@ -82,6 +115,8 @@ class AOVManager(object):
             # If the AOV name is available, add it to the group.
             if include in self.aovs:
                 group.aovs.append(self.aovs[include])
+
+    # =========================================================================
 
     def _mergeReaders(self, readers):
         """Merge the data of multiple AOVFile objects."""
@@ -178,7 +213,6 @@ class AOVManager(object):
 
         if self.interface is not None:
             self.interface.aovAddedSignal.emit(aov)
-
 
     # =========================================================================
 

@@ -10,7 +10,7 @@ import pickle
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import manager
-from ht.sohohooks.aovs.aov import AOV, AOVGroup
+from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.ui.aovs import utils
 import ht.ui.icons
 
@@ -339,6 +339,18 @@ class AOVGroupNode(AOVBaseNode):
         return '\n'.join(lines)
 
 # =============================================================================
+
+class IntrinsicAOVGroupNode(AOVGroupNode):
+
+    def __init__(self, group, parent=None):
+        super(IntrinsicAOVGroupNode, self).__init__(group, parent)
+
+
+    @property
+    def name(self):
+        return "{} (intrinsic)".format(self.group.name.lstrip("i:"))
+
+# =============================================================================
 # PROXY MODELS
 # =============================================================================
 
@@ -602,7 +614,10 @@ class AOVSelectModel(BaseAOVTreeModel):
             groups = manager.MANAGER.groups
 
             for group in groups.itervalues():
-                AOVGroupNode(group, groups_node)
+                if isinstance(group, IntrinsicAOVGroup):
+                    IntrinsicAOVGroupNode(group, groups_node)
+                else:
+                    AOVGroupNode(group, groups_node)
 
         if manager.MANAGER.aovs:
             aovs = manager.MANAGER.aovs
@@ -699,7 +714,10 @@ class AOVSelectModel(BaseAOVTreeModel):
 
             self.beginInsertRows(index, position, position)
 
-            AOVGroupNode(group, parentNode)
+            if isinstance(group, IntrinsicAOVGroup):
+                IntrinsicAOVGroupNode(group, parentNode)
+            else:
+                AOVGroupNode(group, parentNode)
 
             self.endInsertRows()
 
@@ -890,6 +908,9 @@ class AOVsToAddModel(BaseAOVTreeModel):
         for item in data:
             if isinstance(item, AOV):
                 child_node = AOVNode(item)
+
+            elif isinstance(item, IntrinsicAOVGroup):
+                child_node = IntrinsicAOVGroupNode(item)
 
             else:
                 child_node = AOVGroupNode(item)
@@ -1149,6 +1170,8 @@ class AOVGroupInfoTableModel(InfoTableModel):
 
     def initDataFromGroup(self, group):
         """Initialize table data from an AOVGroup."""
+        is_intrinsic = isinstance(group, IntrinsicAOVGroup)
+
         # Reset data.
         self._titles = []
         self._values = []
@@ -1168,8 +1191,9 @@ class AOVGroupInfoTableModel(InfoTableModel):
             self._titles.append("Icon")
             self._values.append(group.icon)
 
-        self._titles.append("File Path")
-        self._values.append(group.path)
+        if not is_intrinsic:
+            self._titles.append("File Path")
+            self._values.append(group.path)
 
     def rowCount(self, parent):
         return len(self._titles)

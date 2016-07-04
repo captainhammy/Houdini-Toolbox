@@ -13,10 +13,6 @@ ALLOWABLE_VALUES = {
     "vextype": ("float", "unitvector", "vector", "vector4")
 }
 
-# =============================================================================
-# CLASSES
-# =============================================================================
-
 _DEFAULT_AOV_DATA = {
     "variable": None,
     "vextype": None,
@@ -24,6 +20,7 @@ _DEFAULT_AOV_DATA = {
     "componentexport": None,
     "components": [],
     "comment": "",
+    "intrinsic": None,
     "lightexport": None,
     "lightexport_scope": "*",
     "lightexport_select": "*",
@@ -36,13 +33,16 @@ _DEFAULT_AOV_DATA = {
     "variable": None,
 }
 
+# =============================================================================
+# CLASSES
+# =============================================================================
 
 class AOV(object):
     """This class represents an AOV to be exported."""
 
     def __init__(self, data):
 
-        self._data = copy.deepcopy(_DEFAULT_AOV_DATA)
+        self._data = copy.copy(_DEFAULT_AOV_DATA)
 
         self._updateData(data)
 
@@ -87,14 +87,7 @@ class AOV(object):
 
         return -1
 
-#    def __eq__(self, other):
-#        if isinstance(other, self.__class__):
-#            return (self.variable, self.channel) == (other.variable, other.channel)
-
-#        return False
-
     def __hash__(self):
-#        return hash("{}:{}".format(self.variable, str(self.channel)))
         return hash(self.variable)
 
     def __repr__(self):
@@ -148,6 +141,16 @@ class AOV(object):
     @components.setter
     def components(self, components):
         self._data["components"] = components
+
+    # =========================================================================
+
+    @property
+    def intrinsic(self):
+        return self._data["intrinsic"]
+
+    @intrinsic.setter
+    def intrinsic(self, intrinsic):
+        self._data["intrinsic"] = intrinsic
 
     # =========================================================================
 
@@ -552,6 +555,7 @@ class AOV(object):
 
 # =============================================================================
 
+
 class AOVGroup(object):
     """This class represents a group of AOV definitions.
 
@@ -576,8 +580,11 @@ class AOVGroup(object):
 
         return -1
 
+    # =========================================================================
+
     def __repr__(self):
-        return "<AOVGroup {0} ({1} aovs)>".format(
+        return "<{} {} ({} aovs)>".format(
+            self.__class__.__name__,
             self.name,
             len(self.aovs)
         )
@@ -683,12 +690,24 @@ class AOVGroup(object):
             aov.writeToIfd(wrangler, cam, now)
 
 # =============================================================================
+
+class IntrinsicAOVGroup(AOVGroup):
+    """An intrinsic grouping of AOVs."""
+
+    def __init__(self, name):
+        super(IntrinsicAOVGroup, self).__init__(name)
+
+        self.comment = "Automatically generated"
+
+# =============================================================================
 # EXCEPTIONS
 # =============================================================================
 
 class AOVError(Exception):
     """AOV exception base class."""
     pass
+
+# =============================================================================
 
 class InvalidAOVValueError(AOVError):
     """Exception for invalid aov setting values."""
@@ -699,6 +718,8 @@ class InvalidAOVValueError(AOVError):
         self.name = name
         self.value = value
 
+    # =========================================================================
+
     def __str__(self):
         return "Invalid value '{0}' in '{1}': Must be one of {2}".format(
             self.value,
@@ -706,6 +727,7 @@ class InvalidAOVValueError(AOVError):
             self.allowable
         )
 
+# =============================================================================
 
 class MissingVariableError(AOVError):
     """Exception for missing 'variable' information."""
@@ -713,6 +735,7 @@ class MissingVariableError(AOVError):
     def __str__(self):
         return "Cannot create aov: missing 'variable' value."
 
+# =============================================================================
 
 class MissingVexTypeError(AOVError):
     """Exception for missing 'vextype' information."""
@@ -720,6 +743,8 @@ class MissingVexTypeError(AOVError):
     def __init__(self, vextype):
         super(MissingVexTypeError, self).__init__()
         self.vextype = vextype
+
+    # =========================================================================
 
     def __str__(self):
         return "Cannot create aov {0}: missing 'vextype'.".format(

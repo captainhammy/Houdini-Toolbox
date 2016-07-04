@@ -14,7 +14,7 @@ from PySide import QtCore, QtGui
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import manager
-from ht.sohohooks.aovs.aov import AOV, AOVGroup
+from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.ui.aovs import uidata, utils, widgets
 from ht.utils import convertFromUnicode
 
@@ -1247,6 +1247,8 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         self._group = group
 
+        self._is_intrinsic = isinstance(group, IntrinsicAOVGroup)
+
         self.setWindowTitle("View AOV Group Info")
 
         self.initUI()
@@ -1257,6 +1259,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
     @property
     def group(self):
+        """The group being displayed in the dialog."""
         return self._group
 
     # =========================================================================
@@ -1326,6 +1329,9 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         self.button_box.addButton(edit_button, QtGui.QDialogButtonBox.HelpRole)
         edit_button.clicked.connect(self.edit)
 
+        if self._is_intrinsic:
+            edit_button.setDisabled(True)
+
         # =====================================================================
 
         delete_button = QtGui.QPushButton(
@@ -1337,6 +1343,9 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         delete_button.setToolTip("Delete this group.")
         delete_button.clicked.connect(self.delete)
+
+        if self._is_intrinsic:
+            delete_button.setDisabled(True)
 
         # =====================================================================
 
