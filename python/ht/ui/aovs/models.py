@@ -236,7 +236,7 @@ class AOVNode(AOVBaseNode):
             "VEX Type: {0}".format(aov.vextype),
         ]
 
-        if aov.channel is not None:
+        if aov.channel:
             lines.append("Channel Name: {0}".format(aov.channel))
 
         if aov.quantize is not None:
@@ -470,7 +470,7 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
             if isinstance(node, AOVNode):
                 aov = node.item
 
-                if aov.channel is not None:
+                if aov.channel:
                     return "{0} ({1})".format(aov.variable, aov.channel)
 
             return  node.name
@@ -1069,7 +1069,7 @@ class AOVInfoTableModel(InfoTableModel):
         self._titles.append("VEX Type")
         self._values.append(aov.vextype)
 
-        if aov.channel is not None:
+        if aov.channel:
             self._titles.append("Channel Name")
             self._values.append(aov.channel)
 

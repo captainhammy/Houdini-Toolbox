@@ -287,18 +287,17 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         groups = [node.item for node in self.getSelectedNodes()
                 if isinstance(node.item, AOVGroup)]
 
-        active = QtGui.QApplication.instance().activeWindow()
+        parent = QtGui.QApplication.instance().activeWindow()
 
         # TODO: Move to function in dialogs and handle group update.
         for group in groups:
-            dialog = ht.ui.aovs.dialogs.AOVGroupDialog(
-                ht.ui.aovs.dialogs.DialogOperation.Edit,
-                active
+            dialog = ht.ui.aovs.dialogs.EditGroupDialog(
+                group,
+                parent
             )
 
             dialog.groupUpdatedSignal.connect(self.updateGroup)
 
-            dialog.initFromGroup(group)
             dialog.show()
 
     def expandBelow(self):
@@ -508,12 +507,12 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         filtered = [node for node in nodes
                     if isinstance(node, models.AOVNode)]
 
-        active = QtGui.QApplication.instance().activeWindow()
+        parent = QtGui.QApplication.instance().activeWindow()
 
         for node in filtered:
             info_dialog = ht.ui.aovs.dialogs.AOVInfoDialog(
                 node.aov,
-                active
+                parent
             )
 
             info_dialog.show()
@@ -527,13 +526,15 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         filtered = [node for node in nodes
                     if isinstance(node, models.AOVGroupNode)]
 
-        active = QtGui.QApplication.instance().activeWindow()
+        parent = QtGui.QApplication.instance().activeWindow()
 
         for node in filtered:
             info_dialog = ht.ui.aovs.dialogs.AOVGroupInfoDialog(
                 node.group,
-                active
+                parent
             )
+
+            info_dialog.groupUpdatedSignal.connect(self.updateGroup)
 
             info_dialog.show()
 
