@@ -414,7 +414,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
             self.componentexport.setChecked(True)
 
             if aov.components:
-                self.components.setText(" ".join(aov.componenets))
+                self.components.setText(" ".join(aov.components))
 
         if aov.priority != -1:
             self.priority.setValue(aov.priority)
@@ -1086,6 +1086,14 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         self.initUI()
 
     # =========================================================================
+    # PROPERTIES
+    # =========================================================================
+
+    @property
+    def aov(self):
+        return self._aov
+
+    # =========================================================================
     # METHODS
     # =========================================================================
 
@@ -1094,7 +1102,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         self.accept()
 
         choice = hou.ui.displayMessage(
-            "Are you sure you want to delete {}?".format(self._aov.variable),
+            "Are you sure you want to delete {}?".format(self.aov.variable),
             buttons=("Cancel", "OK"),
             severity=hou.severityType.Warning,
             close_choice=0,
@@ -1103,7 +1111,11 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         )
 
         if choice == 1:
-            manager.MANAGER.removeAOV(self._aov)
+            aov_file = manager.AOVFile(self.aov.path)
+            aov_file.removeAOV(self.aov)
+            aov_file.writeToFile()
+
+            manager.MANAGER.removeAOV(self.aov)
 
     # =========================================================================
 
@@ -1115,7 +1127,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         parent = QtGui.QApplication.instance().activeWindow()
 
         self.dialog = EditAOVDialog(
-            self._aov,
+            self.aov,
             parent
         )
 
@@ -1155,7 +1167,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
             )
 
             # The AOV matches our start AOV so set the start index.
-            if aov == self._aov:
+            if aov == self.aov:
                 start_idx = idx
 
         if start_idx != -1:
@@ -1165,7 +1177,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        self.table = widgets.AOVInfoTableView(self._aov)
+        self.table = widgets.AOVInfoTableView(self.aov)
         layout.addWidget(self.table)
 
         # =====================================================================
@@ -1240,6 +1252,14 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         self.initUI()
 
     # =========================================================================
+    # PROPERTIES
+    # =========================================================================
+
+    @property
+    def group(self):
+        return self._group
+
+    # =========================================================================
     # METHODS
     # =========================================================================
 
@@ -1267,7 +1287,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
             )
 
             # The group matches our start group so set the start index.
-            if group == self._group:
+            if group == self.group:
                 start_idx = idx
 
         if start_idx != -1:
@@ -1277,12 +1297,12 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        self.table = widgets.AOVGroupInfoTableWidget(self._group)
+        self.table = widgets.AOVGroupInfoTableWidget(self.group)
         layout.addWidget(self.table)
 
         # =====================================================================
 
-        self.members = widgets.GroupMemberListWidget(self._group)
+        self.members = widgets.GroupMemberListWidget(self.group)
         layout.addWidget(self.members)
 
         # =====================================================================
@@ -1308,12 +1328,44 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
+        delete_button = QtGui.QPushButton(
+            hou.ui.createQtIcon("COMMON_delete"),
+            "Delete"
+        )
+
+        self.button_box.addButton(delete_button, QtGui.QDialogButtonBox.HelpRole)
+
+        delete_button.setToolTip("Delete this group.")
+        delete_button.clicked.connect(self.delete)
+
+        # =====================================================================
+
         self.table.resizeColumnToContents(0)
         self.setMinimumSize(self.table.size())
 
     # =========================================================================
     # METHODS
     # =========================================================================
+
+    def delete(self):
+        """Delete the currently selected AOV."""
+        self.accept()
+
+        choice = hou.ui.displayMessage(
+            "Are you sure you want to delete {}?".format(self.group.name),
+            buttons=("Cancel", "OK"),
+            severity=hou.severityType.Warning,
+            close_choice=0,
+            help="This action cannot be undone.",
+            title="Confirm Group Deletion"
+        )
+
+        if choice == 1:
+            aov_file = manager.AOVFile(self.group.path)
+            aov_file.removeGroup(self.group)
+            aov_file.writeToFile()
+
+            manager.MANAGER.removeGroup(self.group)
 
     def edit(self):
         """Launch the Edit dialog for the currently selected group."""
@@ -1323,7 +1375,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         parent = QtGui.QApplication.instance().activeWindow()
 
         self.dialog = EditGroupDialog(
-            self._group,
+            self.group,
             parent
         )
 

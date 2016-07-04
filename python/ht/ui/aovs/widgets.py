@@ -55,6 +55,7 @@ class AOVManagerWidget(QtGui.QWidget):
         manager.MANAGER.interface.aovAddedSignal.connect(self.select_widget.aov_tree.insertAOV)
         manager.MANAGER.interface.aovRemovedSignal.connect(self.select_widget.aov_tree.removeAOV)
         manager.MANAGER.interface.groupAddedSignal.connect(self.select_widget.aov_tree.insertGroup)
+        manager.MANAGER.interface.groupRemovedSignal.connect(self.select_widget.aov_tree.removeGroup)
 
         self.to_add_widget.tree.model().sourceModel().insertedItemsSignal.connect(
             self.select_widget.markItemsInstalled
@@ -491,8 +492,11 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
 
     def removeAOV(self, aov):
         """Remove an AOV from the model."""
-        print "Removing ", aov.variable
         self.model().sourceModel().removeAOV(aov)
+
+    def removeGroup(self, group):
+        """Remove a group from the model."""
+        self.model().sourceModel().removeGroup(group)
 
     def selectionChangedHandler(self, selected, deselected):
         """Selection change handler."""

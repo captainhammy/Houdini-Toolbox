@@ -758,6 +758,22 @@ class AOVSelectModel(BaseAOVTreeModel):
 
                 break
 
+    def removeGroup(self, group):
+        """Remove a group from the tree."""
+        index = self.findNamedFolder("Groups")
+
+        parentNode = self.getNode(index)
+
+        for row, child in enumerate(parentNode.children):
+            if child.group == group:
+                existing_index = self.index(row, 0, index)
+
+                self.beginRemoveRows(index, row, row)
+                parentNode.removeChild(row)
+                self.endRemoveRows()
+
+                break
+
     def updateGroup(self, group):
         """Update the members of a group.
 
