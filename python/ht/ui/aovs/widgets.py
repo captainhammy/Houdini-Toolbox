@@ -285,20 +285,20 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         import ht.ui.aovs.dialogs
 
         groups = [node.item for node in self.getSelectedNodes()
-                if isinstance(node.item, AOVGroup)]
+                  if isinstance(node.item, AOVGroup)]
 
         parent = QtGui.QApplication.instance().activeWindow()
 
         # TODO: Move to function in dialogs and handle group update.
         for group in groups:
-            dialog = ht.ui.aovs.dialogs.EditGroupDialog(
+            edit_dialog = ht.ui.aovs.dialogs.EditGroupDialog(
                 group,
                 parent
             )
 
-            dialog.groupUpdatedSignal.connect(self.updateGroup)
+            edit_dialog.groupUpdatedSignal.connect(self.updateGroup)
 
-            dialog.show()
+            edit_dialog.show()
 
     def expandBelow(self):
         """Expand all child folders and groups."""

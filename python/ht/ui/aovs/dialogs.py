@@ -591,8 +591,6 @@ class _BaseGroupDialog(QtGui.QDialog):
     def __init__(self, parent=None):
         super(_BaseGroupDialog, self).__init__(parent)
 
-        self._operation = DialogOperation.New
-
         self.setStyleSheet(
             hou.ui.qtStyleSheet() + uidata.TOOLTIP_STYLE
         )
@@ -697,12 +695,6 @@ class _BaseGroupDialog(QtGui.QDialog):
         self.status_widget = widgets.StatusMessageWidget()
         layout.addWidget(self.status_widget)
 
-        # Set default messages for new groups.
-        if self._operation == DialogOperation.New:
-            self.status_widget.addInfo(0, "Enter a group name")
-            self.status_widget.addInfo(1, "Choose a file")
-            self.status_widget.addInfo(2, "Select AOVs for group")
-
         # =====================================================================
 
         self.button_box = QtGui.QDialogButtonBox(
@@ -795,7 +787,7 @@ class _BaseGroupDialog(QtGui.QDialog):
             self.status_widget.addError(0, "Invalid group name")
 
         # Check if the group exists when creating a new group.
-        else:#self._operation == DialogOperation.New:
+        else:
             self._additionalGroupNameValidation(group_name)
 
 
@@ -851,6 +843,11 @@ class NewGroupDialog(_BaseGroupDialog):
     def initUI(self):
         super(NewGroupDialog, self).initUI()
 
+        # Set default messages for new groups.
+        self.status_widget.addInfo(0, "Enter a group name")
+        self.status_widget.addInfo(1, "Choose a file")
+        self.status_widget.addInfo(2, "Select AOVs for group")
+
         self.priority.valueChanged.connect(self.validateGroupName)
 
         self.enableCreation(False)
@@ -886,8 +883,6 @@ class EditGroupDialog(_BaseGroupDialog):
     def __init__(self, group, parent=None):
 
         super(EditGroupDialog, self).__init__(parent)
-
-        self._operation = DialogOperation.Edit
 
         self._group = group
 
