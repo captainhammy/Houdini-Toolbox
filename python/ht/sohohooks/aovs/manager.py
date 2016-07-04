@@ -121,15 +121,8 @@ class AOVManager(object):
                     self.addGroup(group)
 
     # =========================================================================
-    # METHODS
+    # STATIC METHODS
     # =========================================================================
-
-    def addAOV(self, aov):
-        """Add an AOV to the manager."""
-        self._aovs[aov.variable] = aov
-
-        if self.interface is not None:
-            self.interface.aovAddedSignal.emit(aov)
 
     @staticmethod
     def addAOVsToIfd(wrangler, cam, now):
@@ -175,6 +168,20 @@ class AOVManager(object):
 
                     break
 
+    # =========================================================================
+    # METHODS
+    # =========================================================================
+
+    def addAOV(self, aov):
+        """Add an AOV to the manager."""
+        self._aovs[aov.variable] = aov
+
+        if self.interface is not None:
+            self.interface.aovAddedSignal.emit(aov)
+
+
+    # =========================================================================
+
     def addGroup(self, group):
         """Add an AOVGroup to the manager."""
         self.groups[group.name] = group
@@ -182,10 +189,14 @@ class AOVManager(object):
         if self.interface is not None:
             self.interface.groupAddedSignal.emit(group)
 
+    # =========================================================================
+
     def clear(self):
         """Clear all definitions."""
         self._aovs = {}
         self._groups = {}
+
+    # =========================================================================
 
     def getAOVsFromString(self, aov_str):
         """Get a list of AOVs and AOVGroups from a string."""
@@ -206,10 +217,14 @@ class AOVManager(object):
 
         return aovs
 
+    # =========================================================================
+
     def initInterface(self):
         """Initialize an AOVViewerInterface for this manager."""
         from ht.ui.aovs.utils import AOVViewerInterface
         self._interface = AOVViewerInterface()
+
+    # =========================================================================
 
     def load(self, path):
         """Load a file."""
@@ -217,30 +232,43 @@ class AOVManager(object):
 
         self._mergeReaders(readers)
 
+    # =========================================================================
+
     def reload(self):
         """Reload all definitions."""
         self.clear()
         self._initFromFiles()
 
+    # =========================================================================
+
     def removeAOV(self, aov):
         """Remove the specified AOV from the manager."""
-        if aov.variable in self._aovs:
-            self._aovs.pop(aov.variable)
+        if aov.variable in self.aovs:
+            self.aovs.pop(aov.variable)
 
             if self.interface is not None:
                 self.interface.aovRemovedSignal.emit(aov)
 
+    # =========================================================================
 
+    def removeGroup(self, group):
+        """Remove the specified group from the manager."""
+        if group.name in self.groups:
+            self.groups.pop(group.name)
 
+            if self.interface is not None:
+                self.interface.groupRemovedSignal.emit(group)
+
+# =============================================================================
 
 class AOVFile(object):
+    """Class to handle reading and writing AOV .json files."""
 
     def __init__(self, path):
         self._path = path
 
-        self._data = {}
-
         self._aovs = []
+        self._data = {}
         self._groups = []
 
         if self.exists:
@@ -255,23 +283,35 @@ class AOVFile(object):
         """List containing AOVs defined in this file."""
         return self._aovs
 
+    # =========================================================================
+
     @property
     def groups(self):
         """List containing AOVGroups defined in this file."""
         return self._groups
 
+    # =========================================================================
+
     @property
     def path(self):
+        """File path on disk."""
         return self._path
+
+    # =========================================================================
 
     @property
     def exists(self):
+        """Check if the file actually exists."""
         return os.path.isfile(self.path)
+
+    # =========================================================================
+    # NON-PUBLIC METHODS
+    # =========================================================================
 
     def _initFromFile(self):
         """Read data from the file and create the appropriate entities."""
-        with open(self.path) as fp:
-            data = json.load(fp, object_hook=convertFromUnicode)
+        with open(self.path) as handle:
+            data = json.load(handle, object_hook=convertFromUnicode)
 
         if "definitions" in data:
             self._createAOVs(data["definitions"])
@@ -279,6 +319,7 @@ class AOVFile(object):
         if "groups" in data:
             self._createGroups(data["groups"])
 
+    # =========================================================================
 
     def _createAOVs(self, definitions):
         """Create AOVs based on definitions."""
@@ -290,6 +331,7 @@ class AOVFile(object):
             aov = AOV(definition)
             self.aovs.append(aov)
 
+    # =========================================================================
 
     def _createGroups(self, definitions):
         """Create AOVGroups based on definitions."""
@@ -318,35 +360,68 @@ class AOVFile(object):
             # Add the group to the list.
             self.groups.append(group)
 
+    # =========================================================================
+    # METHODS
+    # =========================================================================
 
     def addAOV(self, aov):
         """Add an AOV for writing."""
         self.aovs.append(aov)
 
-    def replaceAOV(self, aov):
-        idx = self.aovs.index(aov)
-
-        self.aovs[idx] = aov
+    # =========================================================================
 
     def addGroup(self, group):
         """Add An AOVGroup for writing."""
         self.groups.append(group)
 
+    # =========================================================================
+
+    def containsAOV(self, aov):
+        """Check if this file contains an AOV with the same variable name."""
+        return aov in self.aovs
+
+    # =========================================================================
+
+    def containsGroup(self, group):
+        """Check if this file contains a group with the same name."""
+        return group in self.groups
+
+    # =========================================================================
+
+    def removeAOV(self, aov):
+        """Remove an AOV from the file."""
+        idx = self.aovs.index(aov)
+
+        del self.aovs[idx]
+
+    # =========================================================================
+
+    def removeGroup(self, group):
+        """Remove a group from the file."""
+        idx = self.groups.index(group)
+
+        del self.groups[idx]
+
+    # =========================================================================
+
+    def replaceAOV(self, aov):
+        """Replace an AOV in the file."""
+        idx = self.aovs.index(aov)
+
+        self.aovs[idx] = aov
+
+    # =========================================================================
+
     def replaceGroup(self, group):
+        """Replace a group in the file."""
         idx = self.groups.index(group)
 
         self.groups[idx] = group
 
-    def containsAOV(self, aov):
-        return aov in self.aovs
-
-    def containsGroup(self, group):
-        return group in self.groups
-
+    # =========================================================================
 
     def writeToFile(self, path=None):
-        """Write added data to file."""
-
+        """Write data to file."""
         data = {}
 
         for group in self.groups:
@@ -362,8 +437,8 @@ class AOVFile(object):
         if path is None:
             path = self.path
 
-        with open(path, 'w') as fp:
-            json.dump(data, fp, indent=4)
+        with open(path, 'w') as handle:
+            json.dump(data, handle, indent=4)
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
