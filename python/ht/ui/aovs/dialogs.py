@@ -25,38 +25,32 @@ import hou
 # CLASSES
 # =============================================================================
 
-# TODO: This should be replaced this with python enum34 but don't want to
-# add an external dependency
-class DialogOperation(object):
-    """Fake enum class for dialog operations."""
-    New = 1
-    Edit = 2
-    Duplicate = 3
-
 # =============================================================================
 # Create/Edit Dialogs
 # =============================================================================
 
-class AOVDialog(QtGui.QDialog):
-    """This dialog is for creating and editing AOVs."""
+class _BaseHoudiniStyleDialog(QtGui.QDialog):
+    """Base dialog for Houdini related dialogs.  Automatically sets the Houdini
+    Qt stylesheet and custom sheets.
 
-    validInputSignal = QtCore.Signal(bool)
-    newAOVSignal = QtCore.Signal(AOV)
+    """
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
-    def __init__(self, operation=DialogOperation.New, parent=None):
-        super(AOVDialog, self).__init__(parent)
-
-        self._operation = operation
-
-        self._aov = None
+    def __init__(self, parent=None):
+        super(_BaseHoudiniStyleDialog, self).__init__(parent)
 
         self.setStyleSheet(
             hou.ui.qtStyleSheet() + uidata.TOOLTIP_STYLE
         )
+
+# =============================================================================
+
+class _BaseAOVDialog(_BaseHoudiniStyleDialog):
+    """Base dialog for creating and editing AOVs."""
+
+    validInputSignal = QtCore.Signal(bool)
+
+    def __init__(self, parent=None):
+        super(_BaseAOVDialog, self).__init__(parent)
 
         # UI elements are valid.
         self._variable_valid = False
@@ -67,30 +61,20 @@ class AOVDialog(QtGui.QDialog):
         self.setMinimumWidth(450)
         self.setFixedHeight(525)
 
-        if self._operation == DialogOperation.New:
-            self.setWindowTitle("Create AOV")
-
-        else:
-            self.setWindowTitle("Edit AOV")
-
     # =========================================================================
-    #  METHODS
+    # NON-PUBLIC METHODS
     # =========================================================================
 
-    def accept(self):
-        """Accept the operation."""
-        aov_data = {}
+    def _additionalAOVVariableValidation(self, variable_name):
+        """Perform additional validation against a variable name."""
+        pass
 
-        if self._operation == DialogOperation.New:
-            aov_data["variable"] = self.variable_name.text()
-            aov_data["vextype"] = self.type_box.itemData(self.type_box.currentIndex())
+    # =========================================================================
+    # METHODS
+    # =========================================================================
 
-        else:
-            aov_data["variable"] = self._aov.variable
-            aov_data["vextype"] = self._aov.vextype
-
-        # =====================================================================
-
+    def buildAOVDataFromUI(self, aov_data):
+        """Set AOV data from UI values."""
         channel_name = self.channel_name.text()
 
         aov_data["channel"] = channel_name
@@ -155,68 +139,26 @@ class AOVDialog(QtGui.QDialog):
 
         # =====================================================================
 
-        file_path = os.path.expandvars(self.file_widget.getPath())
-
-        aov_data["path"] = filepath
+        aov_data["path"] = os.path.expandvars(self.file_widget.getPath())
 
         # =====================================================================
 
         aov_data = convertFromUnicode(aov_data)
 
-        new_aov = AOV(aov_data)
-
-        self.new_aov = new_aov
-
-        # Open file for writing.
-        aov_file = manager.AOVFile(file_path)
-
-        # If editing we just replace the aov in the file.
-        if self._operation == DialogOperation.Edit:
-            aov_file.replaceAOV(new_aov)
-
-        else:
-            if aov_file.exists:
-                if aov_file.containsAOV(new_aov):
-
-                    existing_aov = aov_file.aovs[aov_file.aovs.index(new_aov)]
-
-                    choice = hou.ui.displayMessage(
-                        "{} already exists in file, overwrite?".format(new_aov.variable),
-                        buttons=("Cancel", "OK"),
-                        severity=hou.severityType.Warning,
-                        details=str(existing_aov.getData()),
-                        details_expanded=True,
-                    )
-
-                    if choice == 0:
-                        return
-
-                    aov_file.replaceAOV(new_aov)
-
-                else:
-                    aov_file.addAOV(new_aov)
-
-            else:
-                aov_file.addAOV(new_aov)
-
-        aov_file.writeToFile()
-
-        if self._aov is not None:
-            self._aov._updateData(aov_data)
-
-        else:
-            self.newAOVSignal.emit(new_aov)
-
-        return super(AOVDialog, self).accept()
-
-    def enableCreation(self, enable):
-        """Enable the Ok button."""
-        self.button_box.button(QtGui.QDialogButtonBox.Ok).setEnabled(enable)
+    # =========================================================================
 
     def enableComponents(self, enable):
         """Enable the Export Components field."""
         self.components_label.setEnabled(enable)
         self.components.setEnabled(enable)
+
+    # =========================================================================
+
+    def enableCreation(self, enable):
+        """Enable the Ok button."""
+        self.button_box.button(QtGui.QDialogButtonBox.Ok).setEnabled(enable)
+
+    # =========================================================================
 
     def enableExports(self, value):
         """Enable the Light Mask and Light Selection fields."""
@@ -229,39 +171,7 @@ class AOVDialog(QtGui.QDialog):
         self.light_select_label.setEnabled(enable)
         self.light_select.setEnabled(enable)
 
-    def initFromAOV(self, aov):
-        """Initialize the dialog from an AOV."""
-        self._aov = aov
-
-        self.variable_name.setText(aov.variable)
-
-        self.type_box.setCurrentIndex(utils.getVexTypeMenuIndex(aov.vextype))
-
-        if aov.channel is not None:
-            self.channel_name.setText(aov.channel)
-
-        if aov.quantize is not None:
-            self.quantize_box.setCurrentIndex(utils.getQuantizeMenuIndex(aov.quantize))
-
-        if aov.sfilter is not None:
-            self.sfilter_box.setCurrentIndex(utils.getSFilterMenuIndex(aov.sfilter))
-
-        if aov.pfilter is not None:
-            self.pfilter_widget.set(aov.pfilter)
-
-        if aov.componentexport:
-            self.componentexport.setChecked(True)
-
-            if aov.components:
-                self.components.setText(" ".join(aov.componenets))
-
-        if aov.priority > -1:
-            self.priority.setValue(aov.priority)
-
-        if aov.comment:
-            self.comment.setText(aov.comment)
-
-        self.file_widget.setPath(aov.path)
+    # =========================================================================
 
     def initUI(self):
         """Initialize the UI."""
@@ -289,13 +199,6 @@ class AOVDialog(QtGui.QDialog):
         self.variable_name = QtGui.QLineEdit()
         grid_layout.addWidget(self.variable_name, 1, 1)
 
-        if self._operation == DialogOperation.New:
-            self.variable_name.setFocus()
-            self.variable_name.textChanged.connect(self.validateVariableName)
-
-        else:
-            self.variable_name.setEnabled(False)
-
         # =====================================================================
 
         grid_layout.addWidget(QtGui.QLabel("VEX Type"), 2, 0)
@@ -311,12 +214,6 @@ class AOVDialog(QtGui.QDialog):
                 entry[1],
                 entry[0]
             )
-
-        if self._operation == DialogOperation.New:
-            self.type_box.setCurrentIndex(1)
-
-        else:
-            self.type_box.setEnabled(False)
 
         # =====================================================================
 
@@ -449,9 +346,6 @@ class AOVDialog(QtGui.QDialog):
         self.priority.setMinimum(-1)
         self.priority.setValue(-1)
 
-        if self._operation == DialogOperation.New:
-            self.priority.valueChanged.connect(self.validateVariableName)
-
         # =====================================================================
 
         grid_layout.setRowMinimumHeight(16, 25)
@@ -478,20 +372,10 @@ class AOVDialog(QtGui.QDialog):
         self.file_widget = widgets.FileChooser()
         grid_layout.addWidget(self.file_widget, 19, 1)
 
-        if self._operation == DialogOperation.New:
-            self.file_widget.field.textChanged.connect(self.validateFilePath)
-
-        else:
-            self.file_widget.setEnabled(False)
-
         # =====================================================================
 
         self.status_widget = widgets.StatusMessageWidget()
         layout.addWidget(self.status_widget)
-
-        if self._operation == DialogOperation.New:
-            self.status_widget.addInfo(0, "Enter a variable name")
-            self.status_widget.addInfo(1, "Choose a file")
 
         # =====================================================================
 
@@ -503,22 +387,44 @@ class AOVDialog(QtGui.QDialog):
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
 
-        if self._operation == DialogOperation.New:
-            self.enableCreation(False)
-
-        else:
-            self.enableCreation(True)
-
-            self.button_box.addButton(QtGui.QDialogButtonBox.Reset)
-
-            reset_button = self.button_box.button(QtGui.QDialogButtonBox.Reset)
-            reset_button.clicked.connect(self.reset)
-
         self.validInputSignal.connect(self.enableCreation)
 
-    def reset(self):
-        """Reset any changes made."""
-        self.initFromAOV(self._aov)
+    # =========================================================================
+
+    def initFromAOV(self, aov):
+        """Initialize the dialog from an AOV."""
+
+        self.variable_name.setText(aov.variable)
+
+        self.type_box.setCurrentIndex(utils.getVexTypeMenuIndex(aov.vextype))
+
+        if aov.channel:
+            self.channel_name.setText(aov.channel)
+
+        if aov.quantize is not None:
+            self.quantize_box.setCurrentIndex(utils.getQuantizeMenuIndex(aov.quantize))
+
+        if aov.sfilter is not None:
+            self.sfilter_box.setCurrentIndex(utils.getSFilterMenuIndex(aov.sfilter))
+
+        if aov.pfilter:
+            self.pfilter_widget.set(aov.pfilter)
+
+        if aov.componentexport:
+            self.componentexport.setChecked(True)
+
+            if aov.components:
+                self.components.setText(" ".join(aov.componenets))
+
+        if aov.priority != -1:
+            self.priority.setValue(aov.priority)
+
+        if aov.comment:
+            self.comment.setText(aov.comment)
+
+        self.file_widget.setPath(aov.path)
+
+    # =========================================================================
 
     def validateAllValues(self):
         """Check all the values are valid."""
@@ -532,6 +438,8 @@ class AOVDialog(QtGui.QDialog):
 
         self.validInputSignal.emit(valid)
 
+    # =========================================================================
+
     def validateFilePath(self):
         """Check that the file path is valid."""
         self.status_widget.clear(1)
@@ -544,6 +452,8 @@ class AOVDialog(QtGui.QDialog):
             self.status_widget.addError(1, "Invalid file path")
 
         self.validateAllValues()
+
+    # =========================================================================
 
     def validateVariableName(self):
         """Check that the variable name is valid."""
@@ -560,40 +470,204 @@ class AOVDialog(QtGui.QDialog):
             self._variable_valid = False
             self.status_widget.addError(0, "Invalid variable name")
 
-        elif self._operation == DialogOperation.New:
-            if variable_name in manager.MANAGER.aovs:
-                aov = manager.MANAGER.aovs[variable_name]
-
-                priority = self.priority.value()
-
-                if priority > aov.priority:
-                    msg = "This definition will have priority for {}".format(
-                        variable_name,
-                    )
-
-                    self.status_widget.addInfo(0, msg)
-
-                else:
-                    msg = "Variable {} already exists with priority {}".format(
-                        variable_name,
-                        aov.priority
-                    )
-
-                    self.status_widget.addWarning(0, msg)
+        else:
+            self._additionalAOVVariableValidation(variable_name)
 
         self.validateAllValues()
 
+class NewAOVDialog(_BaseAOVDialog):
+    """Dialog for creating a new AOV."""
 
-class _BaseGroupDialog(QtGui.QDialog):
+    newAOVSignal = QtCore.Signal(AOV)
+
+    def __init__(self, parent=None):
+        super(NewAOVDialog, self).__init__(parent)
+
+        self.setWindowTitle("Create AOV")
+
+    # =========================================================================
+    # NON-PUBLIC METHODS
+    # =========================================================================
+
+    def _additionalAOVVariableValidation(self, variable_name):
+        """Perform additional validation against a variable name."""
+        if variable_name in manager.MANAGER.aovs:
+            aov = manager.MANAGER.aovs[variable_name]
+
+            priority = self.priority.value()
+
+            if priority > aov.priority:
+                msg = "This definition will have priority for {}".format(
+                    variable_name,
+                )
+
+                self.status_widget.addInfo(0, msg)
+
+            else:
+                msg = "Variable {} already exists with priority {}".format(
+                    variable_name,
+                    aov.priority
+                )
+
+                self.status_widget.addWarning(0, msg)
+
+    # =========================================================================
+    # METHODS
+    # =========================================================================
+
+    def accept(self):
+        """Accept the operation."""
+        aov_data = {}
+
+        aov_data["variable"] = self.variable_name.text()
+        aov_data["vextype"] = self.type_box.itemData(self.type_box.currentIndex())
+
+        self.buildAOVDataFromUI(aov_data)
+
+        aov = AOV(aov_data)
+
+        # Open file for writing.
+        aov_file = manager.AOVFile(aov.path)
+
+#        if aov_file.exists:
+#                if aov_file.containsAOV(new_aov):
+
+#                    existing_aov = aov_file.aovs[aov_file.aovs.index(new_aov)]
+
+#                    choice = hou.ui.displayMessage(
+#                        "{} already exists in file, overwrite?".format(new_aov.variable),
+#                        buttons=("Cancel", "OK"),
+#                        severity=hou.severityType.Warning,
+#                        details=str(existing_aov.getData()),
+#                        details_expanded=True,
+#                    )
+#
+#                    if choice == 0:
+#                        return
+
+#                    aov_file.replaceAOV(new_aov)
+
+#                else:
+#                    aov_file.addAOV(new_aov)
+
+#            else:
+#                aov_file.addAOV(new_aov)
+
+        aov_file.addAOV(aov)
+
+        aov_file.writeToFile()
+
+        self.newAOVSignal.emit(aov)
+
+        return super(NewAOVDialog, self).accept()
+
+    # =========================================================================
+
+    def initUI(self):
+        """Initialize the UI."""
+        super(NewAOVDialog, self).initUI()
+
+        self.variable_name.setFocus()
+        self.variable_name.textChanged.connect(self.validateVariableName)
+
+        self.type_box.setCurrentIndex(1)
+
+        self.priority.valueChanged.connect(self.validateVariableName)
+
+        self.file_widget.field.textChanged.connect(self.validateFilePath)
+
+        self.status_widget.addInfo(0, "Enter a variable name")
+        self.status_widget.addInfo(1, "Choose a file")
+
+        self.enableCreation(False)
+
+# =============================================================================
+
+class EditAOVDialog(_BaseAOVDialog):
+    """Dialog for editing an AOV."""
+
+    aovUpdatedSignal = QtCore.Signal(AOV)
+
+    def __init__(self, aov, parent=None):
+        super(EditAOVDialog, self).__init__(parent)
+
+        self._aov = aov
+
+        self.initFromAOV()
+
+        self.setWindowTitle("Edit AOV")
+
+    # =========================================================================
+    # PROPERTIES
+    # =========================================================================
+
+    @property
+    def aov(self):
+        """The AOV being edited."""
+        return self._aov
+
+    # =========================================================================
+    # METHODS
+    # =========================================================================
+
+    def accept(self):
+        """Accept the operation."""
+        aov_data = {}
+
+        self.buildAOVDataFromUI(aov_data)
+
+        self.aov._updateData(aov_data)
+
+        # Open file for writing.
+        aov_file = manager.AOVFile(self.aov.path)
+        aov_file.replaceAOV(self.aov)
+        aov_file.writeToFile()
+
+        self.aovUpdatedSignal.emit(self.aov)
+
+        return super(EditAOVDialog, self).accept()
+
+    # =========================================================================
+
+    def initFromAOV(self):
+        """Initialize the dialog from its AOV."""
+
+        super(EditAOVDialog, self).initFromAOV(self.aov)
+
+    # =========================================================================
+
+    def initUI(self):
+        """Initialize the UI."""
+        super(EditAOVDialog, self).initUI()
+
+        self.variable_name.setEnabled(False)
+
+        self.type_box.setEnabled(False)
+
+        self.file_widget.setEnabled(False)
+
+        self.enableCreation(True)
+
+        self.button_box.addButton(QtGui.QDialogButtonBox.Reset)
+
+        reset_button = self.button_box.button(QtGui.QDialogButtonBox.Reset)
+        reset_button.clicked.connect(self.reset)
+
+    # =========================================================================
+
+    def reset(self):
+        """Reset any changes made."""
+        self.initFromAOV()
+
+# =============================================================================
+
+class _BaseGroupDialog(_BaseHoudiniStyleDialog):
+    """Base dialog for creating and editing groups of AOVs."""
 
     validInputSignal = QtCore.Signal(bool)
 
     def __init__(self, parent=None):
         super(_BaseGroupDialog, self).__init__(parent)
-
-        self.setStyleSheet(
-            hou.ui.qtStyleSheet() + uidata.TOOLTIP_STYLE
-        )
 
         self._group_name_valid = False
         self._file_valid = False
@@ -606,9 +680,41 @@ class _BaseGroupDialog(QtGui.QDialog):
 
         self.validInputSignal.connect(self.enableCreation)
 
+    # =========================================================================
+    # NON-PUBLIC METHODS
+    # =========================================================================
+
+    def _additionalGroupNameValidation(self, group_name):
+        """Perform additional validation against a group name."""
+        pass
+
+    # =========================================================================
+    # METHODS
+    # =========================================================================
+
+    def buildGroupFromUI(self, group):
+        """Set group information from UI values."""
+        comment = str(self.comment.text())
+
+        group.comment = comment
+
+        priority = self.priority.value()
+
+        if priority > -1:
+            group.priority = priority
+
+        # Find the AOVs to be in this group.
+        aovs = self.aov_list.getSelectedAOVs()
+
+        group.aovs.extend(aovs)
+
+    # =========================================================================
+
     def enableCreation(self, enable):
         """Enable the Ok button."""
         self.button_box.button(QtGui.QDialogButtonBox.Ok).setEnabled(enable)
+
+    # =========================================================================
 
     def initUI(self):
         """Intialize the UI."""
@@ -621,7 +727,6 @@ class _BaseGroupDialog(QtGui.QDialog):
         layout.addLayout(help_layout)
 
         help_layout.addStretch(1)
-
 
         help_layout.addWidget(widgets.HelpButton("group_dialog"))
 
@@ -706,6 +811,8 @@ class _BaseGroupDialog(QtGui.QDialog):
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
 
+    # =========================================================================
+
     def setSelectedAOVs(self, aovs):
         """Set a list of AOVs to be selected."""
         source_model = self.aov_list.model().sourceModel()
@@ -727,6 +834,8 @@ class _BaseGroupDialog(QtGui.QDialog):
 
         self.validateAOVs()
 
+    # =========================================================================
+
     def validateAOVs(self):
         """Check that one or more AOVs is selected."""
         self.status_widget.clear(2)
@@ -739,6 +848,8 @@ class _BaseGroupDialog(QtGui.QDialog):
             self.status_widget.addError(2, "No AOVs selected")
 
         self.validateAllValues()
+
+    # =========================================================================
 
     def validateAllValues(self):
         """Check all values are valid."""
@@ -755,6 +866,8 @@ class _BaseGroupDialog(QtGui.QDialog):
 
         self.validInputSignal.emit(valid)
 
+    # =========================================================================
+
     def validateFilePath(self):
         """Check that the file path is valid."""
         self.status_widget.clear(1)
@@ -767,9 +880,7 @@ class _BaseGroupDialog(QtGui.QDialog):
 
         self.validateAllValues()
 
-
-    def _additionalGroupNameValidation(self, group_name):
-        pass
+    # =========================================================================
 
     def validateGroupName(self):
         """Check that the group name is valid."""
@@ -790,26 +901,12 @@ class _BaseGroupDialog(QtGui.QDialog):
         else:
             self._additionalGroupNameValidation(group_name)
 
-
         self.validateAllValues()
 
-    def buildGroupFromUI(self, group):
-        comment = str(self.comment.text())
-
-        group.comment = comment
-
-        priority = self.priority.value()
-
-        if priority > -1:
-            group.priority = priority
-
-        # Find the AOVs to be in this group.
-        aovs = self.aov_list.getSelectedAOVs()
-
-        group.aovs.extend(aovs)
-
+# =============================================================================
 
 class NewGroupDialog(_BaseGroupDialog):
+    """Dialog for creating a new AOV group."""
 
     newAOVGroupSignal = QtCore.Signal(AOVGroup)
 
@@ -819,40 +916,12 @@ class NewGroupDialog(_BaseGroupDialog):
 
         self.setWindowTitle("Create AOV Group")
 
-    def accept(self):
-        """Accept the operation."""
-        group_name = str(self.group_name.text())
-
-        group = AOVGroup(group_name)
-        group.path = os.path.expandvars(self.file_widget.getPath())
-
-        self.buildGroupFromUI(group)
-
-        aov_file = manager.AOVFile(group.path)
-
-        aov_file.addGroup(group)
-
-        aov_file.writeToFile()
-
-        self.newAOVGroupSignal.emit(group)
-
-        return super(NewGroupDialog, self).accept()
-
-
-
-    def initUI(self):
-        super(NewGroupDialog, self).initUI()
-
-        # Set default messages for new groups.
-        self.status_widget.addInfo(0, "Enter a group name")
-        self.status_widget.addInfo(1, "Choose a file")
-        self.status_widget.addInfo(2, "Select AOVs for group")
-
-        self.priority.valueChanged.connect(self.validateGroupName)
-
-        self.enableCreation(False)
+    # =========================================================================
+    # NON-PUBLIC METHODS
+    # =========================================================================
 
     def _additionalGroupNameValidation(self, group_name):
+        """Perform additional validation against a group name."""
         if group_name in manager.MANAGER.groups:
             group = manager.MANAGER.groups[group_name]
 
@@ -875,13 +944,52 @@ class NewGroupDialog(_BaseGroupDialog):
 
         super(NewGroupDialog, self)._additionalGroupNameValidation(group_name)
 
+    # =========================================================================
+    # METHODS
+    # =========================================================================
+
+    def accept(self):
+        """Accept the operation."""
+        group_name = str(self.group_name.text())
+
+        group = AOVGroup(group_name)
+        group.path = os.path.expandvars(self.file_widget.getPath())
+
+        self.buildGroupFromUI(group)
+
+        aov_file = manager.AOVFile(group.path)
+
+        aov_file.addGroup(group)
+
+        aov_file.writeToFile()
+
+        self.newAOVGroupSignal.emit(group)
+
+        return super(NewGroupDialog, self).accept()
+
+    # =========================================================================
+
+    def initUI(self):
+        """Initialize the UI."""
+        super(NewGroupDialog, self).initUI()
+
+        # Set default messages for new groups.
+        self.status_widget.addInfo(0, "Enter a group name")
+        self.status_widget.addInfo(1, "Choose a file")
+        self.status_widget.addInfo(2, "Select AOVs for group")
+
+        self.priority.valueChanged.connect(self.validateGroupName)
+
+        self.enableCreation(False)
+
+# =============================================================================
 
 class EditGroupDialog(_BaseGroupDialog):
+    """Dialog for editing AOV groups."""
 
     groupUpdatedSignal = QtCore.Signal(AOVGroup)
 
     def __init__(self, group, parent=None):
-
         super(EditGroupDialog, self).__init__(parent)
 
         self._group = group
@@ -890,9 +998,18 @@ class EditGroupDialog(_BaseGroupDialog):
 
         self.initFromGroup()
 
+    # =========================================================================
+    # PROPERTIES
+    # =========================================================================
+
     @property
     def group(self):
+        """The group being edited."""
         return self._group
+
+    # =========================================================================
+    # METHODS
+    # =========================================================================
 
     def accept(self):
         """Accept the operation."""
@@ -911,10 +1028,10 @@ class EditGroupDialog(_BaseGroupDialog):
 
         return super(EditGroupDialog, self).accept()
 
-
-
+    # =========================================================================
 
     def initFromGroup(self):
+        """Initialize the UI values from the group."""
         self.group_name.setText(self.group.name)
         self.file_widget.setPath(self.group.path)
 
@@ -926,13 +1043,14 @@ class EditGroupDialog(_BaseGroupDialog):
 
         self.setSelectedAOVs(self.group.aovs)
 
+    # =========================================================================
 
     def initUI(self):
+        """Initialize the UI."""
         super(EditGroupDialog, self).initUI()
 
         self.group_name.setEnabled(False)
         self.file_widget.enable(False)
-
 
         # Add a Reset button.
         self.button_box.addButton(QtGui.QDialogButtonBox.Reset)
@@ -940,25 +1058,23 @@ class EditGroupDialog(_BaseGroupDialog):
         reset_button = self.button_box.button(QtGui.QDialogButtonBox.Reset)
         reset_button.clicked.connect(self.reset)
 
-
         self.enableCreation(True)
+
+    # =========================================================================
 
     def reset(self):
         """Reset any changes made."""
         # Reset the dialog by just calling the initFromGroup function again.
         self.initFromGroup()
 
-
 # =============================================================================
 # Info Dialogs
 # =============================================================================
 
-class AOVInfoDialog(QtGui.QDialog):
+class AOVInfoDialog(_BaseHoudiniStyleDialog):
     """Dialog for displaying information about an AOV."""
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
+    aovUpdatedSignal = QtCore.Signal(AOV)
 
     def __init__(self, aov, parent=None):
         super(AOVInfoDialog, self).__init__(parent)
@@ -966,11 +1082,48 @@ class AOVInfoDialog(QtGui.QDialog):
         self._aov = aov
 
         self.setWindowTitle("View AOV Info")
-        self.setStyleSheet(
-            hou.ui.qtStyleSheet() + uidata.TOOLTIP_STYLE
-        )
 
         self.initUI()
+
+    # =========================================================================
+    # METHODS
+    # =========================================================================
+
+    def delete(self):
+        """Delete the currently selected AOV."""
+        self.accept()
+
+        choice = hou.ui.displayMessage(
+            "Are you sure you want to delete {}?".format(self._aov.variable),
+            buttons=("Cancel", "OK"),
+            severity=hou.severityType.Warning,
+            close_choice=0,
+            help="This action cannot be undone.",
+            title="Confirm AOV Deletion"
+        )
+
+        if choice == 1:
+            manager.MANAGER.removeAOV(self._aov)
+
+    # =========================================================================
+
+    def edit(self):
+        """Launch the Edit dialog for the currently selected AOV."""
+        # Accept the dialog so it closes.
+        self.accept()
+
+        parent = QtGui.QApplication.instance().activeWindow()
+
+        self.dialog = EditAOVDialog(
+            self._aov,
+            parent
+        )
+
+        self.dialog.aovUpdatedSignal.connect(self.updateAOV)
+
+        self.dialog.show()
+
+    # =========================================================================
 
     def initUI(self):
         """Initialize the UI."""
@@ -1051,36 +1204,13 @@ class AOVInfoDialog(QtGui.QDialog):
         self.table.resizeColumnToContents(0)
         self.setMinimumSize(self.table.size())
 
-    def delete(self):
-        """Delete the currently selected AOV."""
-        self.accept()
+    # =========================================================================
 
-        choice = hou.ui.displayMessage(
-            "Are you sure you want to delete {}?".format(self._aov.variable),
-            buttons=("Cancel", "OK"),
-            severity=hou.severityType.Warning,
-            close_choice=0,
-            help="This action cannot be undone.",
-            title="Confirm AOV Deletion"
-        )
+    def updateAOV(self, aov):
+        """Emit a signal that the supplied AOV has been updated."""
+        self.aovUpdatedSignal.emit(aov)
 
-        if choice == 1:
-            manager.MANAGER.removeAOV(self._aov)
-
-    def edit(self):
-        """Launch the Edit dialog for the currently selected AOV."""
-        # Accept the dialog so it closes.
-        self.accept()
-
-        active = QtGui.QApplication.instance().activeWindow()
-
-        self.dialog = AOVDialog(
-            DialogOperation.Edit,
-            active
-        )
-
-        self.dialog.initFromAOV(self._aov)
-        self.dialog.show()
+    # =========================================================================
 
     def updateModel(self, index):
         """Update the data displays with the currently selected AOV."""
@@ -1095,14 +1225,10 @@ class AOVInfoDialog(QtGui.QDialog):
 
 # =============================================================================
 
-class AOVGroupInfoDialog(QtGui.QDialog):
+class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
     """Dialog for displaying information about an AOVGroup."""
 
     groupUpdatedSignal = QtCore.Signal(AOVGroup)
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self, group, parent=None):
         super(AOVGroupInfoDialog, self).__init__(parent)
@@ -1110,11 +1236,12 @@ class AOVGroupInfoDialog(QtGui.QDialog):
         self._group = group
 
         self.setWindowTitle("View AOV Group Info")
-        self.setStyleSheet(
-            hou.ui.qtStyleSheet() + uidata.TOOLTIP_STYLE
-        )
 
         self.initUI()
+
+    # =========================================================================
+    # METHODS
+    # =========================================================================
 
     def initUI(self):
         """Initialize the UI."""
@@ -1204,8 +1331,13 @@ class AOVGroupInfoDialog(QtGui.QDialog):
 
         self.dialog.show()
 
+    # =========================================================================
+
     def updateGroup(self, group):
+        """Emit a signal that the supplied group has been updated."""
         self.groupUpdatedSignal.emit(group)
+
+    # =========================================================================
 
     def updateModel(self, index):
         """Update the data displays with the currently selected group."""
@@ -1229,9 +1361,9 @@ class AOVGroupInfoDialog(QtGui.QDialog):
 
 def createNewAOV(aov=None):
     """Display the Create AOV dialog."""
-    active = QtGui.QApplication.instance().activeWindow()
+    parent = QtGui.QApplication.instance().activeWindow()
 
-    dialog = AOVDialog(parent=active)
+    dialog = NewAOVDialog(parent)
 
     if aov is not None:
         dialog.initFromAOV(aov)
@@ -1245,14 +1377,17 @@ def createNewAOV(aov=None):
 
 def editAOV(aov):
     """Display the Edit AOV dialog for an AOV."""
-    active = QtGui.QApplication.instance().activeWindow()
+    parent = QtGui.QApplication.instance().activeWindow()
 
-    dialog = AOVDialog(
-        DialogOperation.Edit,
-        active
+    dialog = EditAOVDialog(
+        aov,
+        parent
     )
 
-    dialog.initFromAOV(aov)
+    #dialog.aovUpdatedSignal.connect(
+
+    #)
+
     dialog.show()
 
 
