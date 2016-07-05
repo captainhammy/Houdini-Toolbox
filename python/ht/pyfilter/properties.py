@@ -64,7 +64,7 @@ class PropertySetting(object):
             N/A
 
         """
-        logging.debug("Creating property {0}.".format(name))
+        logging.debug("Creating property {}.".format(name))
 
         self._name = name
 
@@ -92,9 +92,9 @@ class PropertySetting(object):
 
         # Wrap string values in single quotes.
         if isinstance(value, str):
-            value = "'{0}'".format(value)
+            value = "'{}'".format(value)
 
-        return "<PropertySetting {0}={1}>".format(self.name, value)
+        return "<PropertySetting {}={}>".format(self.name, value)
 
     # =========================================================================
     # NON-PUBLIC METHODS
@@ -195,7 +195,7 @@ class PropertySetting(object):
             return
 
         logging.debug(
-            "Setting property '{0}' to {1}".format(self.name, self.value)
+            "Setting property '{}' to {}".format(self.name, self.value)
         )
 
         # Update the property value.
@@ -248,9 +248,9 @@ class MaskedPropertySetting(PropertySetting):
 
         # Wrap string values in single quotes.
         if isinstance(value, str):
-            value = "'{0}'".format(value)
+            value = "'{}'".format(value)
 
-        return "<{0} {1}={2} mask='{3}'>".format(
+        return "<{} {}={} mask='{}'>".format(
             self.__class__.__name__,
             self.name,
             value,

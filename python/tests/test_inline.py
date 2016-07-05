@@ -35,7 +35,7 @@ def enableHouModule():
         # Python needs to know where the hou module is.
         path = os.path.join(
             os.getenv("HH"),
-            "python{0}.{1}".format(sys.version_info[0], sys.version_info[1])
+            "python{}.{}".format(sys.version_info[0], sys.version_info[1])
         )
 
         # Append the path.

@@ -2969,7 +2969,7 @@ def sortByAttribute(self, attribute, tuple_index=0, reverse=False):
 
     # Verify the tuple index is valid.
     if tuple_index not in range(attribute.size()):
-        raise IndexError("Invalid tuple index: {0}".format(tuple_index))
+        raise IndexError("Invalid tuple index: {}".format(tuple_index))
 
     attrib_type = attribute.type()
     attrib_name = attribute.name()
@@ -3004,7 +3004,7 @@ def sortAlongAxis(self, geometry_type, axis):
 
     # Verify the axis.
     if axis not in range(3):
-        raise ValueError("Invalid axis: {0}".format(axis))
+        raise ValueError("Invalid axis: {}".format(axis))
 
     # Sort the points along an axis.
     if geometry_type == hou.geometryType.Points:
@@ -3071,7 +3071,7 @@ def sortRandomly(self, geometry_type, seed=0.0):
 
     if not isinstance(seed, (float, int)):
         raise TypeError(
-            "Got '{0}', expected 'float'.".format(type(seed).__name__)
+            "Got '{}', expected 'float'.".format(type(seed).__name__)
         )
 
     # Randomize the point order.
@@ -3103,7 +3103,7 @@ def shiftElements(self, geometry_type, offset):
 
     if not isinstance(offset, int):
         raise TypeError(
-            "Got '{0}', expected 'int'.".format(type(offset).__name__)
+            "Got '{}', expected 'int'.".format(type(offset).__name__)
         )
 
     # Shift the point order.
@@ -3379,7 +3379,7 @@ def addArrayAttrib(self, attrib_type, data_type, name):
         raise hou.OperationFailed("Invalid data type.")
 
     if not name:
-        raise hou.OperationFailed("Invalid attribute name: {0}".format(name))
+        raise hou.OperationFailed("Invalid attribute name: {}".format(name))
 
     success = _cpp_methods.addArrayAttribute(
         self,
@@ -3391,7 +3391,7 @@ def addArrayAttrib(self, attrib_type, data_type, name):
     if success:
         return _findAttrib(self, attrib_type, name)
 
-    raise hou.OperationFailed("Could not create attribute: {0}".format(name))
+    raise hou.OperationFailed("Could not create attribute: {}".format(name))
 
 
 @addToClass(hou.Geometry)
@@ -3662,7 +3662,7 @@ def referencingVertices(self):
 
     # Construct a list of vertex strings.  Each element has the format:
     # {prim_num}v{vertex_index}.
-    vertex_strings = ["{0}v{1}".format(prim, idx)
+    vertex_strings = ["{}v{}".format(prim, idx)
                       for prim, idx in zip(result.prims, result.indices)]
 
     # Glob for the vertices and return them.
@@ -3970,7 +3970,7 @@ def insertVertex(self, point, index):
 
     # If the index is too high it is also invalid.
     if index >= self.numVertices():
-        raise IndexError("Invalid index: {0}".format(index))
+        raise IndexError("Invalid index: {}".format(index))
 
     # Insert the vertex.
     _cpp_methods.insertVertex(geometry, self.number(), point.number(), index)
@@ -3991,7 +3991,7 @@ def deleteVertex(self, index):
 
     # If the index is too high it is also invalid.
     if index >= self.numVertices():
-        raise IndexError("Invalid index: {0}".format(index))
+        raise IndexError("Invalid index: {}".format(index))
 
     # Delete the vertex.
     _cpp_methods.deleteVertex(geometry, self.number(), index)
@@ -4012,7 +4012,7 @@ def setPoint(self, index, point):
 
     # If the index is too high it is also invalid.
     if index >= self.numVertices():
-        raise IndexError("Invalid index: {0}".format(index))
+        raise IndexError("Invalid index: {}".format(index))
 
     # Modify the vertex.
     _cpp_methods.setPoint(geometry, self.number(), index, point.number())
@@ -4413,7 +4413,7 @@ def copyPointGroup(self, new_group_name):
     if geometry.findPointGroup(new_group_name):
         # If one exists, raise an exception.
         raise hou.OperationFailed(
-            "Point group '{0}' already exists.".format(new_group_name)
+            "Point group '{}' already exists.".format(new_group_name)
         )
 
     attrib_owner = _getGroupAttribOwner(self)
@@ -4442,7 +4442,7 @@ def copyPrimGroup(self, new_group_name):
     if geometry.findPrimGroup(new_group_name):
         # If one exists, raise an exception.
         raise hou.OperationFailed(
-            "Primitive group '{0}' already exists.".format(new_group_name)
+            "Primitive group '{}' already exists.".format(new_group_name)
         )
 
     attrib_owner = _getGroupAttribOwner(self)

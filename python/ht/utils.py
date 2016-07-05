@@ -84,7 +84,7 @@ sleeping - 2.00206804276
         duration = time.time() - t
 
         if label is not None:
-            print "{0} - {1}".format(label, duration)
+            print "{} - {}".format(label, duration)
         else:
             print duration
 

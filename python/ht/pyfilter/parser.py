@@ -108,7 +108,7 @@ def _createPropertySetting(stageName, propertyName, propertyBlock):
         # object though.
         else:
             logging.warning(
-                "No masking available for {0}:{1}.".format(
+                "No masking available for {}:{}.".format(
                     stageName,
                     propertyName
                 )
@@ -191,7 +191,7 @@ def buildPropertyInformation():
     # Process custom files.
     if filterArgs.file is not None:
         for path in filterArgs.file:
-            logging.debug("Reading properties from {0}".format(path))
+            logging.debug("Reading properties from {}".format(path))
 
             # Load json data from the file.
             with open(path) as f:
@@ -206,7 +206,7 @@ def buildPropertyInformation():
                 if "disabled" in stageData:
                     if stageData["disabled"]:
                         logging.debug(
-                            "Stage entry disabled: {0}".format(stageName)
+                            "Stage entry disabled: {}".format(stageName)
                         )
 
                         continue

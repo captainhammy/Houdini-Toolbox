@@ -92,7 +92,7 @@ class PointCloud(object):
     # =========================================================================
 
     def __repr__(self):
-        return "<PointCloud from {0}>".format(self._geometry.sopNode().path())
+        return "<PointCloud from {}>".format(self._geometry.sopNode().path())
 
     # =========================================================================
     # NON-PUBLIC METHODS

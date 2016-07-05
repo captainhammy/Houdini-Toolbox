@@ -18,7 +18,7 @@ class SohoHookManager(object):
 	self._hooks = {}
 
     def __repr__(self):
-	return "<SohoHookManager>"
+	return "<SohoHookManager ({} hooks)>".format(len(self.hooks))
 
     # =========================================================================
     # PROPERTIES
@@ -42,11 +42,11 @@ class SohoHookManager(object):
 
 	    except Exception as e:
 		ray_comment(
-		    "Hook Error[{0}]: {1}".format(name, str(e))
+		    "Hook Error[{}]: {1}".format(name, str(e))
 		)
 
 		ray_comment(
-		    "Traceback:\n# {0}\n".format(
+		    "Traceback:\n# {}\n".format(
 			    "\n#".join(traceback.format_exc().split('\n'))
 		    )
 		)

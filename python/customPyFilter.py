@@ -115,7 +115,7 @@ def filterFog():
     a fog object. The function can query fog: settings and possibly alter them.
 
     """
-    logging.info("filterFog ({0})".format(mantra.property("object:name")[0]))
+    logging.info("filterFog ({})".format(mantra.property("object:name")[0]))
     ht.pyfilter.parser.applyProperties(PROPERTIES, "fog")
 
 
@@ -151,7 +151,7 @@ def filterInstance():
     alter them.
 
     """
-    logging.info("filterInstance ({0})".format(mantra.property("object:name")[0]))
+    logging.info("filterInstance ({})".format(mantra.property("object:name")[0]))
     ht.pyfilter.parser.applyProperties(PROPERTIES, "instance")
 
 
@@ -169,7 +169,7 @@ def filterLight():
     them.
 
     """
-    logging.info("filterLight ({0})".format(mantra.property("object:name")[0]))
+    logging.info("filterLight ({})".format(mantra.property("object:name")[0]))
     ht.pyfilter.parser.applyProperties(PROPERTIES, "light")
 
 
@@ -205,9 +205,9 @@ def filterPlane():
     channel = mantra.property("plane:channel")[0]
 
     if variable == channel:
-        logging.info("filterPlane ({0})".format(variable))
+        logging.info("filterPlane ({})".format(variable))
     else:
-        logging.info("filterPlane ({0} -> {1})".format(variable, channel))
+        logging.info("filterPlane ({} -> {})".format(variable, channel))
 
     ht.pyfilter.parser.applyProperties(PROPERTIES, "plane")
 
