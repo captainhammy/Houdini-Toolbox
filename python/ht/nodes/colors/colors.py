@@ -1,5 +1,7 @@
 """Classes representing color entries and mappings."""
 
+import re
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -88,7 +90,7 @@ class ColorEntry(object):
     def __str__(self):
         value = self._getTypedValue()
 
-        strs = ["{:0.3f}".format(val) for val in value]
+        strs = [ re.sub("\.*0+$", "", "{:0.3f}".format(val)) for val in value]
 
         return "(" + ", ".join(strs) + ")"
 
