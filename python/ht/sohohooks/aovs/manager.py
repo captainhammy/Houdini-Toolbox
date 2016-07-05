@@ -531,7 +531,7 @@ def buildMenuScript():
 
     if manager.groups:
         for group in sorted(manager.groups.keys()):
-            menu.extend(["@{0}".format(group), group])
+            menu.extend(["@{}".format(group), group])
 
         menu.extend(["_separator_", "---------"])
 
