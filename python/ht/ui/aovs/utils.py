@@ -9,7 +9,8 @@ import os
 from PySide import QtCore, QtGui
 
 # Houdini Toolbox Imports
-from ht.sohohooks.aovs.aov import AOV, AOVGroup, ALLOWABLE_VALUES
+from ht.sohohooks.aovs.aov import ALLOWABLE_VALUES
+from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.ui.aovs import uidata
 
 # Houdini Imports
@@ -229,6 +230,9 @@ def getIconFromGroup(group):
     # Group has a custom icon path so use. it.
     if group.icon is not None:
         return QtGui.QIcon(group.icon)
+
+    if isinstance(group, IntrinsicAOVGroup):
+        return QtGui.QIcon(":ht/rsc/icons/aovs/intrinsic_group.png")
 
     return QtGui.QIcon(":ht/rsc/icons/aovs/group.png")
 

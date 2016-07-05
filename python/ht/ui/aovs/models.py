@@ -345,10 +345,11 @@ class IntrinsicAOVGroupNode(AOVGroupNode):
     def __init__(self, group, parent=None):
         super(IntrinsicAOVGroupNode, self).__init__(group, parent)
 
+    # =========================================================================
 
     @property
     def name(self):
-        return "{} (intrinsic)".format(self.group.name.lstrip("i:"))
+        return self.group.name.lstrip("i:")
 
 # =============================================================================
 # PROXY MODELS
@@ -1143,6 +1144,10 @@ class AOVInfoTableModel(InfoTableModel):
         if aov.priority > -1:
             self._titles.append("Priority")
             self._values.append(aov.priority)
+
+        if aov.intrinsic:
+            self._titles.append("Intrinsic")
+            self._values.append(aov.intrinsic)
 
         if aov.comment:
             self._titles.append("Comment")

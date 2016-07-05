@@ -91,7 +91,7 @@ class AOV(object):
         return hash(self.variable)
 
     def __repr__(self):
-        return "<AOV {0} ({1})>".format(self.variable, self.vextype)
+        return "<AOV {} ({})>".format(self.variable, self.vextype)
 
     def __str__(self):
         return self.variable
@@ -313,7 +313,7 @@ class AOV(object):
                     # If there is a prefix we construct the channel name using
                     # it and the suffix.
                     if prefix:
-                        channel = "{0}_{1}{2}".format(
+                        channel = "{}_{}{}".format(
                             prefix[0],
                             base_channel,
                             suffix
@@ -322,7 +322,7 @@ class AOV(object):
                     # If not and there is a valid suffix, add it to the channel
                     # name.
                     elif suffix:
-                        channel = "{0}{1}".format(base_channel, suffix)
+                        channel = "{}{}".format(base_channel, suffix)
 
                     # Throw an error because all the per-light channels will
                     # have the same name.
@@ -398,7 +398,7 @@ class AOV(object):
 
                     # The channel is the regular channel named prefixed with
                     # the category name.
-                    data["channel"] = "{0}_{1}".format(category, base_channel)
+                    data["channel"] = "{}_{}".format(category, base_channel)
 
                     # Write the per-category light export to the ifd.
                     self.writeDataToIfd(data, wrangler, cam, now)
@@ -494,6 +494,9 @@ class AOV(object):
             if self.lightexport != "per-category":
                 d["lightexport_scope"] = self.lightexport_scope
                 d["lightexport_select"] = self.lightexport_select
+
+        if self.intrinsic:
+            d["intrinsic"] = self.intrinsic
 
         if self.comment:
             d["comment"] = self.comment
@@ -721,7 +724,7 @@ class InvalidAOVValueError(AOVError):
     # =========================================================================
 
     def __str__(self):
-        return "Invalid value '{0}' in '{1}': Must be one of {2}".format(
+        return "Invalid value '{}' in '{}': Must be one of {}".format(
             self.value,
             self.name,
             self.allowable
@@ -747,7 +750,7 @@ class MissingVexTypeError(AOVError):
     # =========================================================================
 
     def __str__(self):
-        return "Cannot create aov {0}: missing 'vextype'.".format(
+        return "Cannot create aov {}: missing 'vextype'.".format(
             self.vextype
         )
 

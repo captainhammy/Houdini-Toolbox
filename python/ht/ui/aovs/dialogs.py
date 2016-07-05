@@ -133,6 +133,12 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
+        intrinsic = self.intrinsic.text()
+
+        aov_data["intrinsic"] = intrinsic
+
+        # =====================================================================
+
         comment = self.comment.text()
 
         aov_data["comment"] = comment
@@ -348,14 +354,26 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(16, 25)
+        grid_layout.addWidget(QtGui.QLabel("Intrinsic"), 16, 0)
+
+        self.intrinsic = QtGui.QLineEdit()
+        grid_layout.addWidget(self.intrinsic, 16, 1)
+
+        self.intrinsic.setToolTip(
+            "Optional intrinsic group for automatic group addition, eg. Diagnostic"
+        )
+
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("Comment"), 17, 0)
+        grid_layout.setRowMinimumHeight(17, 25)
+
+        # =====================================================================
+
+        grid_layout.addWidget(QtGui.QLabel("Comment"), 18, 0)
 
         self.comment = QtGui.QLineEdit()
-        grid_layout.addWidget(self.comment, 17, 1)
+        grid_layout.addWidget(self.comment, 18, 1)
 
         self.comment.setToolTip(
             "Optional comment, eg. 'This AOV represents X'."
@@ -363,14 +381,14 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(18, 25)
+        grid_layout.setRowMinimumHeight(19, 25)
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("File Path"), 19, 0)
+        grid_layout.addWidget(QtGui.QLabel("File Path"), 20, 0)
 
         self.file_widget = widgets.FileChooser()
-        grid_layout.addWidget(self.file_widget, 19, 1)
+        grid_layout.addWidget(self.file_widget, 20, 1)
 
         # =====================================================================
 
@@ -418,6 +436,9 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         if aov.priority != -1:
             self.priority.setValue(aov.priority)
+
+        if aov.intrinsic:
+            self.intrinsic.setText(aov.intrinsic)
 
         if aov.comment:
             self.comment.setText(aov.comment)
@@ -1375,6 +1396,8 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
             aov_file.writeToFile()
 
             manager.MANAGER.removeGroup(self.group)
+
+    # =========================================================================
 
     def edit(self):
         """Launch the Edit dialog for the currently selected group."""
