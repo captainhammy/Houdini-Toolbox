@@ -34,7 +34,7 @@ class AOVManagerWidget(QtGui.QWidget):
     def __init__(self, node=None, parent=None):
         super(AOVManagerWidget, self).__init__(parent)
 
-        self.node = node
+        self._node = None
 
         self.initUI()
 
@@ -66,6 +66,10 @@ class AOVManagerWidget(QtGui.QWidget):
         )
 
         self.setStyleSheet(uidata.TOOLTIP_STYLE)
+
+        # If a node was passed along, set the UI to use it.
+        if node is not None:
+            self.setNode(node)
 
     # =========================================================================
     # METHODS
@@ -112,8 +116,14 @@ class AOVManagerWidget(QtGui.QWidget):
 
         # =====================================================================
 
-        self.to_add_widget = AOVsToAddWidget(self.node)
+        self.to_add_widget = AOVsToAddWidget()
         splitter.addWidget(self.to_add_widget)
+
+    def setNode(self, node):
+        """Register a node as the target apply node."""
+        self._node = node
+
+        self.to_add_widget.setNode(node)
 
 
 class AOVViewerToolBar(QtGui.QToolBar):
@@ -1422,7 +1432,7 @@ class AOVsToAddWidget(QtGui.QWidget):
     def __init__(self, node=None, parent=None):
         super(AOVsToAddWidget, self).__init__(parent)
 
-        self.node = node
+        self._node = node
 
         layout = QtGui.QVBoxLayout()
         self.setLayout(layout)
@@ -1432,13 +1442,13 @@ class AOVsToAddWidget(QtGui.QWidget):
 
         # =====================================================================
 
-        label = QtGui.QLabel("AOVs to Apply")
-        top_layout.addWidget(label)
+        self.label = QtGui.QLabel("AOVs to Apply")
+        top_layout.addWidget(self.label)
 
         bold_font = QtGui.QFont()
         bold_font.setBold(True)
 
-        label.setFont(bold_font)
+        self.label.setFont(bold_font)
 
         # =====================================================================
 
@@ -1471,6 +1481,14 @@ class AOVsToAddWidget(QtGui.QWidget):
         self.tree.model().sourceModel().rowsInserted.connect(self.dataUpdatedHandler)
         self.tree.model().sourceModel().rowsRemoved.connect(self.dataUpdatedHandler)
         self.tree.model().sourceModel().modelReset.connect(self.dataClearedHandler)
+
+    # =========================================================================
+    # PROPERTIES
+    # =========================================================================
+
+    @property
+    def node(self):
+        return self._node
 
     # =========================================================================
     # METHODS
@@ -1553,6 +1571,17 @@ class AOVsToAddWidget(QtGui.QWidget):
                 items.append(node.item)
 
         self.installItems(items)
+
+    def setNode(self, node):
+        """Register a node as the target apply node."""
+        self._node = node
+
+        # Update the top label to indicate that we are targeting a specific
+        # node when applying.
+        self.label.setText("AOVs to Apply - {}".format(node.path()))
+
+        # Initialize the tree by loading the AOVs from the target node.
+        self.toolbar.loadFromNode(node)
 
     def uninstallListener(self, nodes):
         """Listen for items to be removed."""
@@ -2062,50 +2091,4 @@ class StatusMessageWidget(QtGui.QWidget):
             self.display.clear()
             self.display.hide()
             self.icon.hide()
-
-
-class AOVManagerDialog(QtGui.QDialog):
-    """Dialog to display a floating AOV Manager."""
-
-    def __init__(self, node=None, parent=None):
-        super(AOVManagerDialog, self).__init__(parent)
-
-        self.node = node
-
-        title = "AOV Manager"
-
-        if self.node is not None:
-            title = "{} - {}".format(title, self.node.path())
-
-        self.setWindowTitle(title)
-
-        self.manager_widget = AOVManagerWidget(node=node)
-
-        layout = QtGui.QVBoxLayout()
-
-        layout.addWidget(self.manager_widget)
-
-        self.setLayout(layout)
-
-        self.button_box = QtGui.QDialogButtonBox(
-            QtGui.QDialogButtonBox.Close
-        )
-        layout.addWidget(self.button_box)
-
-        self.button_box.rejected.connect(self.close)
-
-        if self.node is not None:
-            self.manager_widget.to_add_widget.toolbar.loadFromNode(self.node)
-
-        self.resize(900, 800)
-
-        self.show()
-
-# =============================================================================
-# FUNCTIONS
-# =============================================================================
-
-def openAOVEditor(node):
-    """Open the AOV Manager dialog based on a node."""
-    AOVManagerDialog(node=node, parent=hou.ui.mainQtWindow())
 

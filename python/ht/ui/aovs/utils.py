@@ -294,3 +294,22 @@ def listAsString(elements):
             names.append(element.variable)
 
     return " ".join(names)
+
+
+def openAOVEditor(node):
+    """Open the AOV Manager dialog based on a node."""
+    interface = hou.pypanel.interfaceByName("aov_manager")
+
+    desktop = hou.ui.curDesktop()
+
+    tab = desktop.createFloatingPaneTab(
+        hou.paneTabType.PythonPanel,
+        size=(900, 800)
+    )
+
+    tab.showToolbar(False)
+    tab.setActiveInterface(interface)
+
+    widget = tab.activeInterfaceRootWidget()
+    widget.setNode(node)
+
