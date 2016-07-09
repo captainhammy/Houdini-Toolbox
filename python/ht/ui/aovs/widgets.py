@@ -348,7 +348,6 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
 
         return aovs
 
-
     def getSelectedGroups(self, allow_intrinsic=True):
         """Get selected groups."""
         selected = self.getSelectedNodes()
