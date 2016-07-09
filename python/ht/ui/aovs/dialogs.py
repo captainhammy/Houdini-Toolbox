@@ -1112,7 +1112,12 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
 
     @property
     def aov(self):
+        """The currently displayed AOV."""
         return self._aov
+
+    @aov.setter
+    def setter(self, aov):
+        self._aov = aov
 
     # =========================================================================
     # METHODS
@@ -1152,9 +1157,15 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
             parent
         )
 
-        self.dialog.aovUpdatedSignal.connect(self.updateAOV)
+        self.dialog.aovUpdatedSignal.connect(self.emitAOVUpdated)
 
         self.dialog.show()
+
+    # =========================================================================
+
+    def emitAOVUpdated(self, aov):
+        """Emit a signal that the supplied AOV has been updated."""
+        self.aovUpdatedSignal.emit(aov)
 
     # =========================================================================
 
@@ -1194,7 +1205,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         if start_idx != -1:
             self.aov_chooser.setCurrentIndex(start_idx)
 
-        self.aov_chooser.currentIndexChanged.connect(self.updateModel)
+        self.aov_chooser.currentIndexChanged.connect(self.selectionChanged)
 
         # =====================================================================
 
@@ -1239,19 +1250,15 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
 
     # =========================================================================
 
-    def updateAOV(self, aov):
-        """Emit a signal that the supplied AOV has been updated."""
-        self.aovUpdatedSignal.emit(aov)
+    def selectionChanged(self, index):
+        """Update the dialog to display the selected AOV."""
+        # Update the current AOV to the now selected one.
+        self.aov = self.aov_chooser.itemData(index)
 
-    # =========================================================================
-
-    def updateModel(self, index):
-        """Update the data displays with the currently selected AOV."""
-        aov = self.aov_chooser.itemData(index)
-
+        # Update the table data.
         model = self.table.model()
         model.beginResetModel()
-        model.initDataFromAOV(aov)
+        model.initDataFromAOV(self.aov)
         model.endResetModel()
 
         self.table.resizeColumnToContents(0)
@@ -1268,11 +1275,11 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         self._group = group
 
-        self._is_intrinsic = isinstance(group, IntrinsicAOVGroup)
-
         self.setWindowTitle("View AOV Group Info")
 
         self.initUI()
+
+        self.enableEdit(group)
 
     # =========================================================================
     # PROPERTIES
@@ -1280,98 +1287,12 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
     @property
     def group(self):
-        """The group being displayed in the dialog."""
+        """The currently displayed group."""
         return self._group
 
-    # =========================================================================
-    # METHODS
-    # =========================================================================
-
-    def initUI(self):
-        """Initialize the UI."""
-        layout = QtGui.QVBoxLayout()
-        self.setLayout(layout)
-
-        # =====================================================================
-
-        self.group_chooser = QtGui.QComboBox()
-        layout.addWidget(self.group_chooser)
-
-        # Start menu index.
-        start_idx = -1
-
-        # Populate the group chooser with all the existing groups.
-        for idx, group in enumerate(sorted(manager.MANAGER.groups.values())):
-            label = group.name
-
-            self.group_chooser.addItem(
-                utils.getIconFromGroup(group),
-                label,
-                group
-            )
-
-            # The group matches our start group so set the start index.
-            if group == self.group:
-                start_idx = idx
-
-        if start_idx != -1:
-            self.group_chooser.setCurrentIndex(start_idx)
-
-        self.group_chooser.currentIndexChanged.connect(self.updateModel)
-
-        # =====================================================================
-
-        self.table = widgets.AOVGroupInfoTableWidget(self.group)
-        layout.addWidget(self.table)
-
-        # =====================================================================
-
-        self.members = widgets.GroupMemberListWidget(self.group)
-        layout.addWidget(self.members)
-
-        # =====================================================================
-
-        self.button_box = QtGui.QDialogButtonBox(
-            QtGui.QDialogButtonBox.Ok
-        )
-        layout.addWidget(self.button_box)
-
-        self.button_box.accepted.connect(self.accept)
-
-        # Button to launch the Edit dialog on the current group.
-        edit_button = QtGui.QPushButton(
-            hou.ui.createQtIcon("BUTTONS_edit"),
-            "Edit"
-        )
-
-        edit_button.setToolTip("Edit this group.")
-
-        # Use HelpRole to force the button to the left size of the dialog.
-        self.button_box.addButton(edit_button, QtGui.QDialogButtonBox.HelpRole)
-        edit_button.clicked.connect(self.edit)
-
-        if self._is_intrinsic:
-            edit_button.setDisabled(True)
-
-        # =====================================================================
-
-        delete_button = QtGui.QPushButton(
-            hou.ui.createQtIcon("COMMON_delete"),
-            "Delete"
-        )
-
-        self.button_box.addButton(delete_button, QtGui.QDialogButtonBox.HelpRole)
-
-        delete_button.setToolTip("Delete this group.")
-        delete_button.clicked.connect(self.delete)
-
-        if self._is_intrinsic:
-            delete_button.setDisabled(True)
-
-        # =====================================================================
-
-        self.table.resizeColumnToContents(0)
-        self.setMinimumSize(self.table.size())
+    @group.setter
+    def group(self, group):
+        self._group = group
 
     # =========================================================================
     # METHODS
@@ -1411,37 +1332,137 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
             parent
         )
 
-        self.dialog.groupUpdatedSignal.connect(self.updateGroup)
+        self.dialog.groupUpdatedSignal.connect(self.emitGroupUpdated)
 
         self.dialog.show()
 
     # =========================================================================
 
-    def updateGroup(self, group):
+    def emitGroupUpdated(self, group):
         """Emit a signal that the supplied group has been updated."""
         self.groupUpdatedSignal.emit(group)
 
     # =========================================================================
 
-    def updateModel(self, index):
-        """Update the data displays with the currently selected group."""
-        group = self.group_chooser.itemData(index)
+    def enableEdit(self, group):
+        """Enable or disable the edit and delete buttons based on the group."""
+        if isinstance(group, IntrinsicAOVGroup):
+            self.delete_button.setDisabled(True)
+            self.edit_button.setDisabled(True)
 
+        else:
+            self.delete_button.setDisabled(False)
+            self.edit_button.setDisabled(False)
+
+    # =========================================================================
+
+    def initUI(self):
+        """Initialize the UI."""
+        layout = QtGui.QVBoxLayout()
+        self.setLayout(layout)
+
+        # =====================================================================
+
+        self.group_chooser = QtGui.QComboBox()
+        layout.addWidget(self.group_chooser)
+
+        # Start menu index.
+        start_idx = -1
+
+        # Populate the group chooser with all the existing groups.
+        for idx, group in enumerate(sorted(manager.MANAGER.groups.values())):
+            label = group.name
+
+            self.group_chooser.addItem(
+                utils.getIconFromGroup(group),
+                label,
+                group
+            )
+
+            # The group matches our start group so set the start index.
+            if group == self.group:
+                start_idx = idx
+
+        if start_idx != -1:
+            self.group_chooser.setCurrentIndex(start_idx)
+
+        self.group_chooser.currentIndexChanged.connect(self.selectionChanged)
+
+        # =====================================================================
+
+        self.table = widgets.AOVGroupInfoTableWidget(self.group)
+        layout.addWidget(self.table)
+
+        # =====================================================================
+
+        self.members = widgets.GroupMemberListWidget(self.group)
+        layout.addWidget(self.members)
+
+        # =====================================================================
+
+        self.button_box = QtGui.QDialogButtonBox(
+            QtGui.QDialogButtonBox.Ok
+        )
+        layout.addWidget(self.button_box)
+
+        self.button_box.accepted.connect(self.accept)
+
+        # Button to launch the Edit dialog on the current group.
+        self.edit_button = QtGui.QPushButton(
+            hou.ui.createQtIcon("BUTTONS_edit"),
+            "Edit"
+        )
+
+        self.edit_button.setToolTip("Edit this group.")
+
+        # Use HelpRole to force the button to the left size of the dialog.
+        self.button_box.addButton(self.edit_button, QtGui.QDialogButtonBox.HelpRole)
+        self.edit_button.clicked.connect(self.edit)
+
+        # =====================================================================
+
+        self.delete_button = QtGui.QPushButton(
+            hou.ui.createQtIcon("COMMON_delete"),
+            "Delete"
+        )
+
+        self.button_box.addButton(self.delete_button, QtGui.QDialogButtonBox.HelpRole)
+
+        self.delete_button.setToolTip("Delete this group.")
+        self.delete_button.clicked.connect(self.delete)
+
+        # =====================================================================
+
+        self.table.resizeColumnToContents(0)
+        self.setMinimumSize(self.table.size())
+
+    # =========================================================================
+
+    def selectionChanged(self, index):
+        """Update the dialog to display the selected group."""
+        # Update the current group to the now selected one.
+        self.group = self.group_chooser.itemData(index)
+
+        # Update the group information table.
         table_model = self.table.model()
         table_model.beginResetModel()
-        table_model.initDataFromGroup(group)
+        table_model.initDataFromGroup(self.group)
         table_model.endResetModel()
 
+        # Update the group member data.
         member_model = self.members.model().sourceModel()
         member_model.beginResetModel()
-        member_model.initDataFromGroup(group)
+        member_model.initDataFromGroup(self.group)
         member_model.endResetModel()
 
         self.table.resizeColumnToContents(0)
 
-# =========================================================================
+        # Enable/diable editing features.
+        self.enableEdit(self.group)
+
+# =============================================================================
 # FUNCTIONS
-# =========================================================================
+# =============================================================================
 
 def createNewAOV(aov=None):
     """Display the Create AOV dialog."""
@@ -1455,22 +1476,6 @@ def createNewAOV(aov=None):
     dialog.newAOVSignal.connect(
         manager.MANAGER.addAOV
     )
-
-    dialog.show()
-
-
-def editAOV(aov):
-    """Display the Edit AOV dialog for an AOV."""
-    parent = QtGui.QApplication.instance().activeWindow()
-
-    dialog = EditAOVDialog(
-        aov,
-        parent
-    )
-
-    #dialog.aovUpdatedSignal.connect(
-
-    #)
 
     dialog.show()
 
@@ -1489,4 +1494,20 @@ def createNewGroup(aovs=()):
     )
 
     new_group_dialog.show()
+
+
+def editAOV(aov):
+    """Display the Edit AOV dialog for an AOV."""
+    parent = QtGui.QApplication.instance().activeWindow()
+
+    dialog = EditAOVDialog(
+        aov,
+        parent
+    )
+
+    #dialog.aovUpdatedSignal.connect(
+
+    #)
+
+    dialog.show()
 
