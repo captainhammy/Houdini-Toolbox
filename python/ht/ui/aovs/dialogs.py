@@ -1150,7 +1150,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         # Accept the dialog so it closes.
         self.accept()
 
-        parent = QtGui.QApplication.instance().activeWindow()
+        parent = hou.ui.mainQtWindow()
 
         self.dialog = EditAOVDialog(
             self.aov,
@@ -1325,7 +1325,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         # Accept the dialog so it closes.
         self.accept()
 
-        parent = QtGui.QApplication.instance().activeWindow()
+        parent = hou.ui.mainQtWindow()
 
         self.dialog = EditGroupDialog(
             self.group,
@@ -1466,7 +1466,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
 def createNewAOV(aov=None):
     """Display the Create AOV dialog."""
-    parent = QtGui.QApplication.instance().activeWindow()
+    parent = hou.ui.mainQtWindow()
 
     dialog = NewAOVDialog(parent)
 
@@ -1482,7 +1482,7 @@ def createNewAOV(aov=None):
 
 def createNewGroup(aovs=()):
     """Display the Create AOV Group dialog."""
-    parent = QtGui.QApplication.instance().activeWindow()
+    parent = hou.ui.mainQtWindow()
 
     new_group_dialog = NewGroupDialog(parent)
 
@@ -1494,20 +1494,4 @@ def createNewGroup(aovs=()):
     )
 
     new_group_dialog.show()
-
-
-def editAOV(aov):
-    """Display the Edit AOV dialog for an AOV."""
-    parent = QtGui.QApplication.instance().activeWindow()
-
-    dialog = EditAOVDialog(
-        aov,
-        parent
-    )
-
-    #dialog.aovUpdatedSignal.connect(
-
-    #)
-
-    dialog.show()
 

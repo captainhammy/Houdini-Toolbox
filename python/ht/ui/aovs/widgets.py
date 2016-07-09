@@ -285,34 +285,35 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         """Edit selected AOVs."""
         import ht.ui.aovs.dialogs
 
-        aovs = [node.item for node in self.getSelectedNodes()
-                if not isinstance(node, models.FolderNode) and isinstance(node.item, AOV)]
+        aovs = self.getSelectedAOVs()
+
+        parent = hou.ui.mainQtWindow()
 
         for aov in aovs:
-            ht.ui.aovs.dialogs.editAOV(aov)
+            dialog = ht.ui.aovs.dialogs.EditAOVDialog(
+                aov,
+                parent
+            )
+
+            dialog.show()
 
     def editSelectedGroups(self):
-        """Edit selected AOVs."""
+        """Edit selected groups."""
         import ht.ui.aovs.dialogs
 
-        groups = [node.item for node in self.getSelectedNodes()
-                  if not isinstance(node, models.FolderNode) and isinstance(node.item, AOVGroup)]
+        groups = self.getSelectedGroups(allow_intrinsic=False)
 
-        parent = QtGui.QApplication.instance().activeWindow()
+        parent = hou.ui.mainQtWindow()
 
-        # TODO: Move to function in dialogs and handle group update. Like above calls editAOV()
         for group in groups:
-            if isinstance(group, IntrinsicAOVGroup):
-                continue
-
-            edit_dialog = ht.ui.aovs.dialogs.EditGroupDialog(
+            dialog = ht.ui.aovs.dialogs.EditGroupDialog(
                 group,
                 parent
             )
 
-            edit_dialog.groupUpdatedSignal.connect(self.updateGroup)
+            dialog.groupUpdatedSignal.connect(self.updateGroup)
 
-            edit_dialog.show()
+            dialog.show()
 
     def expandBelow(self):
         """Expand all child folders and groups."""
@@ -336,6 +337,31 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
 
         for index in reversed(indexes):
             self.expand(index)
+
+    def getSelectedAOVs(self):
+        """Get selected AOVs."""
+        selected = self.getSelectedNodes()
+
+        aovs = [node.item for node in selected
+                if not isinstance(node, models.FolderNode) and
+                isinstance(node.item, AOV)]
+
+        return aovs
+
+
+    def getSelectedGroups(self, allow_intrinsic=True):
+        """Get selected groups."""
+        selected = self.getSelectedNodes()
+
+        groups = [node.item for node in selected
+                  if not isinstance(node, models.FolderNode) and
+                  isinstance(node.item, AOVGroup)]
+
+        if not allow_intrinsic:
+            groups = [group for group in groups
+                      if not isinstance(group, IntrinsicAOVGroup)]
+
+        return groups
 
     def getSelectedNodes(self):
         """Get a list of selected tree nodes."""
@@ -541,16 +567,13 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         """Show info for selected AOVs."""
         import ht.ui.aovs.dialogs
 
-        nodes = self.getSelectedNodes()
+        aovs = self.getSelectedAOVs()
 
-        filtered = [node for node in nodes
-                    if isinstance(node, models.AOVNode)]
+        parent = hou.ui.mainQtWindow()
 
-        parent = QtGui.QApplication.instance().activeWindow()
-
-        for node in filtered:
+        for aov in aovs:
             info_dialog = ht.ui.aovs.dialogs.AOVInfoDialog(
-                node.aov,
+                aov,
                 parent
             )
 
@@ -560,16 +583,13 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         """Show info for selected AOVGroups."""
         import ht.ui.aovs.dialogs
 
-        nodes = self.getSelectedNodes()
+        groups = self.getSelectedGroups()
 
-        filtered = [node for node in nodes
-                    if isinstance(node, models.AOVGroupNode)]
+        parent = hou.ui.mainQtWindow()
 
-        parent = QtGui.QApplication.instance().activeWindow()
-
-        for node in filtered:
+        for group in groups:
             info_dialog = ht.ui.aovs.dialogs.AOVGroupInfoDialog(
-                node.group,
+                group,
                 parent
             )
 
