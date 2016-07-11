@@ -48,11 +48,11 @@
 	    type	button
 	    nolabel
 	    default	{ "0" }
-	    help	"Open the AOV Manager dialog bound to this node."
+	    help	"Open a floating AOV Manager panel bound to this node."
 	    range	{ 0 1 }
 	    export	none
 	    parmtag	{ "button_icon" "PANETYPES_viewer_cop" }
-	    parmtag	{ "script_callback" "import ht.ui.aovs.widgets; ht.ui.aovs.widgets.openAOVEditor(hou.pwd())" }
+	    parmtag	{ "script_callback" "import ht.ui.aovs.utils; ht.ui.aovs.utils.openAOVEditor(hou.pwd())" }
 	    parmtag	{ "script_callback_language" "python" }
 	}
     }

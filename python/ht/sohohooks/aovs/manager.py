@@ -13,7 +13,7 @@ import json
 import os
 
 # Houdini Toolbox Imports
-from ht.sohohooks.aovs.aov import AOV, AOVGroup
+from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.utils import convertFromUnicode
 
 # Houdini Imports
@@ -42,7 +42,10 @@ class AOVManager(object):
     # =========================================================================
 
     def __repr__(self):
-        return "<AOVManager>"
+        return "<AOVManager aovs:{} groups:{}>".format(
+            len(self.aovs),
+            len(self.groups),
+        )
 
     # =========================================================================
     # PROPERTIES
@@ -53,10 +56,14 @@ class AOVManager(object):
         """Any AOVViewerInterface assigned to the manager."""
         return self._interface
 
+    # =========================================================================
+
     @property
     def aovs(self):
         """Dicionary containing all available AOVs."""
         return self._aovs
+
+    # =========================================================================
 
     @property
     def groups(self):
@@ -67,13 +74,39 @@ class AOVManager(object):
     # NON-PUBLIC METHODS
     # =========================================================================
 
+    def _buildIntrinsicGroups(self):
+        """Build intrinsic groups."""
+        # Process any AOVs that we have to look for any instrinsic groups.
+        for aov in self.aovs.itervalues():
+            if aov.intrinsic is not None:
+                # Intrinsic groups are prefixed with "i:".
+                intrinsic_name = "i:" + aov.intrinsic
+
+                # Group exists so use it.
+                if intrinsic_name in self.groups:
+                    group = self.groups[intrinsic_name]
+
+                # Create the group and add it to our list.
+                else:
+                    group = IntrinsicAOVGroup(intrinsic_name)
+                    self.addGroup(group)
+
+                # Add this AOV to the group.
+                group.aovs.append(aov)
+
+    # =========================================================================
+
     def _initFromFiles(self):
         """Intialize the manager from files on disk."""
         file_paths = _findAOVFiles()
 
-        readers = [AOVFileReader(file_path) for file_path in file_paths]
+        readers = [AOVFile(file_path) for file_path in file_paths]
 
         self._mergeReaders(readers)
+
+        self._buildIntrinsicGroups()
+
+    # =========================================================================
 
     def _initGroupMembers(self, group):
         """Populate the AOV lists of each group based on available AOVs."""
@@ -83,8 +116,10 @@ class AOVManager(object):
             if include in self.aovs:
                 group.aovs.append(self.aovs[include])
 
+    # =========================================================================
+
     def _mergeReaders(self, readers):
-        """Merge the data of multiple AOVFileReader objects."""
+        """Merge the data of multiple AOVFile objects."""
         # We need to handle AOVs first since AOVs in other files may overwrite
         # AOVs in group definition files.
         for reader in readers:
@@ -121,19 +156,14 @@ class AOVManager(object):
                     self.addGroup(group)
 
     # =========================================================================
-    # METHODS
+    # STATIC METHODS
     # =========================================================================
-
-    def addAOV(self, aov):
-        """Add an AOV to the manager."""
-        self._aovs[aov.variable] = aov
-
-        if self.interface is not None:
-            self.interface.aovAddedSignal.emit(aov)
 
     @staticmethod
     def addAOVsToIfd(wrangler, cam, now):
         """Add auto_aovs to the ifd."""
+        import IFDapi
+        import IFDsettings
         import soho
 
         # The parameter that defines which automatic aovs to add.
@@ -162,6 +192,30 @@ class AOVManager(object):
             for aov in aovs:
                 aov.writeToIfd(wrangler, cam, now)
 
+            # If we are generating the "Op_Id" plane we will need to tell SOHO
+            # to generate these properties when outputting object.  Look for
+            # the "Op_Id" variable being exported and if so enable opid
+            # generation
+            for aov in aovs:
+                if aov.variable == "Op_Id":
+                    IFDapi.ray_comment("Forcing object id generation")
+                    IFDsettings._GenerateOpId = True
+
+                    break
+
+    # =========================================================================
+    # METHODS
+    # =========================================================================
+
+    def addAOV(self, aov):
+        """Add an AOV to the manager."""
+        self._aovs[aov.variable] = aov
+
+        if self.interface is not None:
+            self.interface.aovAddedSignal.emit(aov)
+
+    # =========================================================================
+
     def addGroup(self, group):
         """Add an AOVGroup to the manager."""
         self.groups[group.name] = group
@@ -169,10 +223,14 @@ class AOVManager(object):
         if self.interface is not None:
             self.interface.groupAddedSignal.emit(group)
 
+    # =========================================================================
+
     def clear(self):
         """Clear all definitions."""
         self._aovs = {}
         self._groups = {}
+
+    # =========================================================================
 
     def getAOVsFromString(self, aov_str):
         """Get a list of AOVs and AOVGroups from a string."""
@@ -193,44 +251,62 @@ class AOVManager(object):
 
         return aovs
 
+    # =========================================================================
+
     def initInterface(self):
         """Initialize an AOVViewerInterface for this manager."""
         from ht.ui.aovs.utils import AOVViewerInterface
         self._interface = AOVViewerInterface()
 
+    # =========================================================================
+
     def load(self, path):
         """Load a file."""
-        readers = [AOVFileReader(path)]
+        readers = [AOVFile(path)]
 
         self._mergeReaders(readers)
+
+    # =========================================================================
 
     def reload(self):
         """Reload all definitions."""
         self.clear()
         self._initFromFiles()
 
+    # =========================================================================
+
     def removeAOV(self, aov):
         """Remove the specified AOV from the manager."""
-        if aov.variable in self._aovs:
-            self._aovs.pop(aov.variable)
+        if aov.variable in self.aovs:
+            self.aovs.pop(aov.variable)
 
             if self.interface is not None:
                 self.interface.aovRemovedSignal.emit(aov)
 
-
-class AOVFileReader(object):
-    """This class handles reading AOVs and AOVGroups from files."""
-
     # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
+
+    def removeGroup(self, group):
+        """Remove the specified group from the manager."""
+        if group.name in self.groups:
+            self.groups.pop(group.name)
+
+            if self.interface is not None:
+                self.interface.groupRemovedSignal.emit(group)
+
+# =============================================================================
+
+class AOVFile(object):
+    """Class to handle reading and writing AOV .json files."""
 
     def __init__(self, path):
-        self._aovs = []
-        self._groups = []
         self._path = path
 
-        self.readFromFile()
+        self._aovs = []
+        self._data = {}
+        self._groups = []
+
+        if self.exists:
+            self._initFromFile()
 
     # =========================================================================
     # PROPERTIES
@@ -241,21 +317,45 @@ class AOVFileReader(object):
         """List containing AOVs defined in this file."""
         return self._aovs
 
+    # =========================================================================
+
     @property
     def groups(self):
         """List containing AOVGroups defined in this file."""
         return self._groups
 
+    # =========================================================================
+
     @property
     def path(self):
-        """Path of the file being read."""
+        """File path on disk."""
         return self._path
 
     # =========================================================================
-    # METHODS
+
+    @property
+    def exists(self):
+        """Check if the file actually exists."""
+        return os.path.isfile(self.path)
+
+    # =========================================================================
+    # NON-PUBLIC METHODS
     # =========================================================================
 
-    def createAOVs(self, definitions):
+    def _initFromFile(self):
+        """Read data from the file and create the appropriate entities."""
+        with open(self.path) as handle:
+            data = json.load(handle, object_hook=convertFromUnicode)
+
+        if "definitions" in data:
+            self._createAOVs(data["definitions"])
+
+        if "groups" in data:
+            self._createGroups(data["groups"])
+
+    # =========================================================================
+
+    def _createAOVs(self, definitions):
         """Create AOVs based on definitions."""
         for definition in definitions:
             # Insert this file path into the data.
@@ -265,7 +365,9 @@ class AOVFileReader(object):
             aov = AOV(definition)
             self.aovs.append(aov)
 
-    def createGroups(self, definitions):
+    # =========================================================================
+
+    def _createGroups(self, definitions):
         """Create AOVGroups based on definitions."""
         for name, group_data in definitions.iteritems():
             # Create a new AOVGroup.
@@ -292,91 +394,111 @@ class AOVFileReader(object):
             # Add the group to the list.
             self.groups.append(group)
 
-    def readFromFile(self):
-        """Read data from the file and create the appropriate entities."""
-        with open(self.path) as fp:
-            data = json.load(fp, object_hook=convertFromUnicode)
-
-        if "definitions" in data:
-            self.createAOVs(data["definitions"])
-
-        if "groups" in data:
-            self.createGroups(data["groups"])
-
-
-class AOVFileWriter(object):
-    """This class handles writing AOVs and AOVGroups to a file."""
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
-    def __init__(self):
-        self._data = {}
-
-    # =========================================================================
-    # PROPERTIES
-    # =========================================================================
-
-    @property
-    def data(self):
-        """Data dictionary to be written to .json file."""
-        return self._data
-
     # =========================================================================
     # METHODS
     # =========================================================================
 
     def addAOV(self, aov):
         """Add an AOV for writing."""
-        definitions = self.data.setdefault("definitions", [])
+        self.aovs.append(aov)
 
-        definitions.append(aov.data())
+    # =========================================================================
 
     def addGroup(self, group):
         """Add An AOVGroup for writing."""
-        groups = self.data.setdefault("groups", {})
+        self.groups.append(group)
 
-        groups.update(group.data())
+    # =========================================================================
 
-    def writeToFile(self, path):
-        """Write added data to file."""
-        if os.path.exists(path):
-            with open(path, 'r') as fp:
-                file_data = json.load(fp, object_hook=convertFromUnicode)
+    def containsAOV(self, aov):
+        """Check if this file contains an AOV with the same variable name."""
+        return aov in self.aovs
 
-                if "groups" in self.data:
-                    groups = file_data.setdefault("groups", {})
+    # =========================================================================
 
-                    for name, group_data in self.data["groups"].iteritems():
-                        groups[name] = group_data
+    def containsGroup(self, group):
+        """Check if this file contains a group with the same name."""
+        return group in self.groups
 
-                if "definitions" in self.data:
-                    definitions = file_data.setdefault("definitions", [])
+    # =========================================================================
 
-                    for definition in self.data["definitions"]:
-                        definitions.append(definition)
+    def removeAOV(self, aov):
+        """Remove an AOV from the file."""
+        idx = self.aovs.index(aov)
 
-            with open(path, 'w') as fp:
-                json.dump(file_data, fp, indent=4)
+        del self.aovs[idx]
 
-        else:
-            with open(path, 'w') as fp:
-                json.dump(self.data, fp, indent=4)
+    # =========================================================================
+
+    def removeGroup(self, group):
+        """Remove a group from the file."""
+        idx = self.groups.index(group)
+
+        del self.groups[idx]
+
+    # =========================================================================
+
+    def replaceAOV(self, aov):
+        """Replace an AOV in the file."""
+        idx = self.aovs.index(aov)
+
+        self.aovs[idx] = aov
+
+    # =========================================================================
+
+    def replaceGroup(self, group):
+        """Replace a group in the file."""
+        idx = self.groups.index(group)
+
+        self.groups[idx] = group
+
+    # =========================================================================
+
+    def writeToFile(self, path=None):
+        """Write data to file."""
+        data = {}
+
+        for group in self.groups:
+            groups = data.setdefault("groups", {})
+
+            groups.update(group.getData())
+
+        for aov in self.aovs:
+            aovs = data.setdefault("definitions", [])
+
+            aovs.append(aov.getData())
+
+        if path is None:
+            path = self.path
+
+        with open(path, 'w') as handle:
+            json.dump(data, handle, indent=4)
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-# TODO: Use a custom scan path if available?
 def _findAOVFiles():
     """Find any .json files that should be read."""
+    # Look for the specific AOV search path.
+    if "HT_AOV_PATH" in os.environ:
+        # Get the search path.
+        search_path = os.environ["HT_AOV_PATH"]
 
-    try:
-        directories = hou.findDirectories("config/aovs")
+        # If '&' is in the path then following Houdini path conventions we'll
+        # search through the HOUDINI_PATH as well.
+        if '&' in search_path:
+            # Find any config/aovs folders in HOUDINI_PATH.
+            hpath_dirs = _findHoudiniPathAOVFolders()
 
-    except hou.OperationFailed:
-        directories = []
+            # If there are any then we replace the '&' with those paths.
+            if hpath_dirs:
+                search_path = search_path.replace('&', ':'.join(hpath_dirs))
+
+        directories = search_path.split(":")
+
+    else:
+        directories = _findHoudiniPathAOVFolders()
 
     all_files = []
 
@@ -385,6 +507,17 @@ def _findAOVFiles():
 
     return all_files
 
+
+def _findHoudiniPathAOVFolders():
+    """Look for any config/aovs folders in the HOUDINI_PATH."""
+    # Try to find HOUDINI_PATH directories.
+    try:
+        directories = hou.findDirectories("config/aovs")
+
+    except hou.OperationFailed:
+        directories = ()
+
+    return directories
 
 # =============================================================================
 # FUNCTIONS
@@ -398,7 +531,7 @@ def buildMenuScript():
 
     if manager.groups:
         for group in sorted(manager.groups.keys()):
-            menu.extend(["@{0}".format(group), group])
+            menu.extend(["@{}".format(group), group])
 
         menu.extend(["_separator_", "---------"])
 

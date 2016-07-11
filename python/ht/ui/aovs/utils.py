@@ -9,7 +9,8 @@ import os
 from PySide import QtCore, QtGui
 
 # Houdini Toolbox Imports
-from ht.sohohooks.aovs.aov import AOV, AOVGroup, ALLOWABLE_VALUES
+from ht.sohohooks.aovs.aov import ALLOWABLE_VALUES
+from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.ui.aovs import uidata
 
 # Houdini Imports
@@ -230,6 +231,9 @@ def getIconFromGroup(group):
     if group.icon is not None:
         return QtGui.QIcon(group.icon)
 
+    if isinstance(group, IntrinsicAOVGroup):
+        return QtGui.QIcon(":ht/rsc/icons/aovs/intrinsic_group.png")
+
     return QtGui.QIcon(":ht/rsc/icons/aovs/group.png")
 
 
@@ -290,3 +294,22 @@ def listAsString(elements):
             names.append(element.variable)
 
     return " ".join(names)
+
+
+def openAOVEditor(node):
+    """Open the AOV Manager dialog based on a node."""
+    interface = hou.pypanel.interfaceByName("aov_manager")
+
+    desktop = hou.ui.curDesktop()
+
+    tab = desktop.createFloatingPaneTab(
+        hou.paneTabType.PythonPanel,
+        size=(900, 800)
+    )
+
+    tab.showToolbar(False)
+    tab.setActiveInterface(interface)
+
+    widget = tab.activeInterfaceRootWidget()
+    widget.setNode(node)
+

@@ -1,5 +1,7 @@
 """This module contains classes to define AOVs and groups of AOVs."""
 
+import copy
+
 # =============================================================================
 # CONSTANTS
 # =============================================================================
@@ -11,6 +13,26 @@ ALLOWABLE_VALUES = {
     "vextype": ("float", "unitvector", "vector", "vector4")
 }
 
+_DEFAULT_AOV_DATA = {
+    "variable": None,
+    "vextype": None,
+    "channel": None,
+    "componentexport": None,
+    "components": [],
+    "comment": "",
+    "intrinsic": None,
+    "lightexport": None,
+    "lightexport_scope": "*",
+    "lightexport_select": "*",
+    "path": None,
+    "pfilter": None,
+    "planefile": None,
+    "priority": -1,
+    "quantize": None,
+    "sfilter": None,
+    "variable": None,
+}
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -19,25 +41,25 @@ class AOV(object):
     """This class represents an AOV to be exported."""
 
     def __init__(self, data):
-        self._channel = None
-        self._componentexport = None
-        self._components = []
-        self._comment = None
-        self._lightexport = None
-        self._lightexport_scope = "*"
-        self._lightexport_select = "*"
-        self._path = None
-        self._pfilter = None
-        self._planefile = None
-        self._priority = -1
-        self._quantize = None
-        self._sfilter = None
-        self._variable = None
-        self._vextype = None
 
+        self._data = copy.copy(_DEFAULT_AOV_DATA)
+
+        self._updateData(data)
+
+#        self._verifyInternalData()
+
+    def _verifyInternalData(self):
+        if self.variable is None:
+            raise MissingVariableError()
+
+        if self.vextype is None:
+            raise MissingVexTypeError(self.variable)
+
+    def _updateData(self, data):
         for name, value in data.iteritems():
-            if value is None:
-                continue
+#            if value is None:
+#                if name in self._data and self._data
+#                continue
 
             # Check if there is a restriction on the data type.
             if name in ALLOWABLE_VALUES:
@@ -48,16 +70,12 @@ class AOV(object):
                 if value not in allowable:
                     raise InvalidAOVValueError(name, value, allowable)
 
-            # If the key corresponds to attributes on this object we store
-            # the data.
-            if hasattr(self, name):
-                setattr(self, name, value)
+            # If the key corresponds to the data in this object we store the
+            # data.
+            if name in self._data:
+                self._data[name] = value
 
-        if self.variable is None:
-            raise MissingVariableError()
-
-        if self.vextype is None:
-            raise MissingVexTypeError(self.variable)
+        self._verifyInternalData()
 
     # =========================================================================
     # SPECIAL METHODS
@@ -69,17 +87,11 @@ class AOV(object):
 
         return -1
 
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return (self.variable, self.channel) == (other.variable, other.channel)
-
-        return False
-
     def __hash__(self):
-        return hash("{}:{}".format(self.variable, str(self.channel)))
+        return hash(self.variable)
 
     def __repr__(self):
-        return "<AOV {0} ({1})>".format(self.variable, self.vextype)
+        return "<AOV {} ({})>".format(self.variable, self.vextype)
 
     def __str__(self):
         return self.variable
@@ -91,165 +103,175 @@ class AOV(object):
     @property
     def channel(self):
         """The name of the output aov's channel."""
-        return self._channel
+        return self._data["channel"]
 
     @channel.setter
     def channel(self, channel):
-        self._channel = channel
+        self._data["channel"] = channel
 
     # =========================================================================
 
     @property
     def comment(self):
         """Optional comment about this AOV."""
-        return self._comment
+        return self._data["comment"]
 
     @comment.setter
     def comment(self, comment):
-        self._comment = comment
+        self._data["comment"] = comment
 
     # =========================================================================
 
     @property
     def componentexport(self):
         """Whether or not components are being exported."""
-        return self._componentexport
+        return self._data["componentexport"]
 
     @componentexport.setter
     def componentexport(self, componentexport):
-        self._componentexport = componentexport
+        self._data["componentexport"] = componentexport
 
     # =========================================================================
 
     @property
     def components(self):
         """List of components to export."""
-        return self._components
+        return self._data["components"]
 
     @components.setter
     def components(self, components):
-        self._components = components
+        self._data["components"] = components
+
+    # =========================================================================
+
+    @property
+    def intrinsic(self):
+        return self._data["intrinsic"]
+
+    @intrinsic.setter
+    def intrinsic(self, intrinsic):
+        self._data["intrinsic"] = intrinsic
 
     # =========================================================================
 
     @property
     def lightexport(self):
         """The light output mode."""
-        return self._lightexport
+        return self._data["lightexport"]
 
     @lightexport.setter
     def lightexport(self, lightexport):
-        self._lightexport = lightexport
+        self._data["lightexport"] = lightexport
 
     # =========================================================================
 
     @property
     def lightexport_scope(self):
         """The light mask."""
-        return self._lightexport_scope
+        return self._data["lightexport_scope"]
 
     @lightexport_scope.setter
     def lightexport_scope(self, lightexport_scope):
-        self._lightexport_scope = lightexport_scope
+        self._data["lightexport_scope"] = lightexport_scope
 
     # =========================================================================
 
     @property
     def lightexport_select(self):
         """The light selection (categories)."""
-        return self._lightexport_select
+        return self._data["lightexport_select"]
 
     @lightexport_select.setter
     def lightexport_select(self, lightexport_select):
-        self._lightexport_select = lightexport_select
+        self._data["lightexport_select"] = lightexport_select
 
     # =========================================================================
 
     @property
     def path(self):
         """The path containing the aov definition."""
-        return self._path
+        return self._data["path"]
 
     @path.setter
     def path(self, path):
-        self._path = path
+        self._data["path"] = path
 
     # =========================================================================
 
     @property
     def pfilter(self):
         """The name of the output aov's pixel filter."""
-        return self._pfilter
+        return self._data["pfilter"]
 
     @pfilter.setter
     def pfilter(self, pfilter):
-        self._pfilter = pfilter
+        self._data["pfilter"] = pfilter
 
     # =========================================================================
 
     @property
     def planefile(self):
         """The name of the output aov's specific file, if any."""
-        return self._planefile
+        return self._data["planefile"]
 
     @planefile.setter
     def planefile(self, planefile):
-        self._planefile = planefile
+        self._data["planefile"] = planefile
 
     # =========================================================================
 
     @property
     def priority(self):
         """Group priority."""
-        return self._priority
+        return self._data["priority"]
 
     @priority.setter
     def priority(self, priority):
-        self._priority = priority
+        self._data["priority"] = priority
 
     # =========================================================================
 
     @property
     def quantize(self):
         """The type of quantization for the output aov."""
-        return self._quantize
+        return self._data["quantize"]
 
     @quantize.setter
     def quantize(self, quantize):
-        self._quantize = quantize
+        self._data["quantize"] = quantize
 
     # =========================================================================
 
     @property
     def sfilter(self):
         """The name of the output aov's sample filter."""
-        return self._sfilter
+        return self._data["sfilter"]
 
     @sfilter.setter
     def sfilter(self, sfilter):
-        self._sfilter = sfilter
+        self._data["sfilter"] = sfilter
 
     # =========================================================================
 
     @property
     def variable(self):
         """The name of the output aov's vex variable."""
-        return self._variable
+        return self._data["variable"]
 
     @variable.setter
     def variable(self, variable):
-        self._variable = variable
+        self._data["variable"] = variable
 
     # =========================================================================
 
     @property
     def vextype(self):
         """The data type of the output aov."""
-        return self._vextype
+        return self._data["vextype"]
 
     @vextype.setter
     def vextype(self, vextype):
-        self._vextype = vextype
+        self._data["vextype"] = vextype
 
     # =========================================================================
     # NON-PUBLIC METHODS
@@ -291,7 +313,7 @@ class AOV(object):
                     # If there is a prefix we construct the channel name using
                     # it and the suffix.
                     if prefix:
-                        channel = "{0}_{1}{2}".format(
+                        channel = "{}_{}{}".format(
                             prefix[0],
                             base_channel,
                             suffix
@@ -300,7 +322,7 @@ class AOV(object):
                     # If not and there is a valid suffix, add it to the channel
                     # name.
                     elif suffix:
-                        channel = "{0}{1}".format(base_channel, suffix)
+                        channel = "{}{}".format(base_channel, suffix)
 
                     # Throw an error because all the per-light channels will
                     # have the same name.
@@ -376,7 +398,7 @@ class AOV(object):
 
                     # The channel is the regular channel named prefixed with
                     # the category name.
-                    data["channel"] = "{0}_{1}".format(category, base_channel)
+                    data["channel"] = "{}_{}".format(category, base_channel)
 
                     # Write the per-category light export to the ifd.
                     self.writeDataToIfd(data, wrangler, cam, now)
@@ -393,6 +415,7 @@ class AOV(object):
     def writeDataToIfd(data, wrangler, cam, now):
         """Write aov data to the ifd."""
         import IFDapi
+        import soho
 
         # Call the 'pre_defplane' hook.  If the function returns True,
         # return.
@@ -440,14 +463,14 @@ class AOV(object):
     # METHODS
     # =========================================================================
 
-    def data(self):
+    def getData(self):
         """Get a dictionary representing the AOV."""
         d = {
             "variable": self.variable,
             "vextype": self.vextype,
         }
 
-        if self.channel is not None:
+        if self.channel:
             d["channel"] = self.channel
 
         if self.quantize is not None:
@@ -472,10 +495,13 @@ class AOV(object):
                 d["lightexport_scope"] = self.lightexport_scope
                 d["lightexport_select"] = self.lightexport_select
 
-        if self.comment is not None:
+        if self.intrinsic:
+            d["intrinsic"] = self.intrinsic
+
+        if self.comment:
             d["comment"] = self.comment
 
-        if self.priority > -1:
+        if self.priority != -1:
             d["priority"] = self.priority
 
         return d
@@ -487,7 +513,7 @@ class AOV(object):
         import soho
 
         # The base data to pass along.
-        data = self.data()
+        data = self.getData()
 
         channel = self.channel
 
@@ -532,6 +558,7 @@ class AOV(object):
 
 # =============================================================================
 
+
 class AOVGroup(object):
     """This class represents a group of AOV definitions.
 
@@ -539,7 +566,7 @@ class AOVGroup(object):
 
     def __init__(self, name):
         self._aovs = []
-        self._comment = None
+        self._comment = ""
         self._icon = None
         self._includes = []
         self._name = name
@@ -556,8 +583,11 @@ class AOVGroup(object):
 
         return -1
 
+    # =========================================================================
+
     def __repr__(self):
-        return "<AOVGroup {0} ({1} aovs)>".format(
+        return "<{} {} ({} aovs)>".format(
+            self.__class__.__name__,
             self.name,
             len(self.aovs)
         )
@@ -639,7 +669,7 @@ class AOVGroup(object):
 
     # =========================================================================
 
-    def data(self):
+    def getData(self):
         """Get a dictionary representing the group."""
         d = {
             self.name: {
@@ -647,10 +677,10 @@ class AOVGroup(object):
             }
         }
 
-        if self.comment is not None:
+        if self.comment:
             d[self.name]["comment"] = self.comment
 
-        if self.priority > -1:
+        if self.priority != -1:
             d[self.name]["priority"] = self.priority
 
         return d
@@ -663,12 +693,24 @@ class AOVGroup(object):
             aov.writeToIfd(wrangler, cam, now)
 
 # =============================================================================
+
+class IntrinsicAOVGroup(AOVGroup):
+    """An intrinsic grouping of AOVs."""
+
+    def __init__(self, name):
+        super(IntrinsicAOVGroup, self).__init__(name)
+
+        self.comment = "Automatically generated"
+
+# =============================================================================
 # EXCEPTIONS
 # =============================================================================
 
 class AOVError(Exception):
     """AOV exception base class."""
     pass
+
+# =============================================================================
 
 class InvalidAOVValueError(AOVError):
     """Exception for invalid aov setting values."""
@@ -679,13 +721,16 @@ class InvalidAOVValueError(AOVError):
         self.name = name
         self.value = value
 
+    # =========================================================================
+
     def __str__(self):
-        return "Invalid value '{0}' in '{1}': Must be one of {2}".format(
+        return "Invalid value '{}' in '{}': Must be one of {}".format(
             self.value,
             self.name,
             self.allowable
         )
 
+# =============================================================================
 
 class MissingVariableError(AOVError):
     """Exception for missing 'variable' information."""
@@ -693,6 +738,7 @@ class MissingVariableError(AOVError):
     def __str__(self):
         return "Cannot create aov: missing 'variable' value."
 
+# =============================================================================
 
 class MissingVexTypeError(AOVError):
     """Exception for missing 'vextype' information."""
@@ -701,8 +747,10 @@ class MissingVexTypeError(AOVError):
         super(MissingVexTypeError, self).__init__()
         self.vextype = vextype
 
+    # =========================================================================
+
     def __str__(self):
-        return "Cannot create aov {0}: missing 'vextype'.".format(
+        return "Cannot create aov {}: missing 'vextype'.".format(
             self.vextype
         )
 

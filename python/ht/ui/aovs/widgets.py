@@ -11,7 +11,7 @@ import pickle
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import manager
-from ht.sohohooks.aovs.aov import AOV, AOVGroup
+from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.ui.aovs import models, uidata, utils
 
 # Houdini Imports
@@ -34,7 +34,7 @@ class AOVManagerWidget(QtGui.QWidget):
     def __init__(self, node=None, parent=None):
         super(AOVManagerWidget, self).__init__(parent)
 
-        self.node = node
+        self._node = None
 
         self.initUI()
 
@@ -55,6 +55,7 @@ class AOVManagerWidget(QtGui.QWidget):
         manager.MANAGER.interface.aovAddedSignal.connect(self.select_widget.aov_tree.insertAOV)
         manager.MANAGER.interface.aovRemovedSignal.connect(self.select_widget.aov_tree.removeAOV)
         manager.MANAGER.interface.groupAddedSignal.connect(self.select_widget.aov_tree.insertGroup)
+        manager.MANAGER.interface.groupRemovedSignal.connect(self.select_widget.aov_tree.removeGroup)
 
         self.to_add_widget.tree.model().sourceModel().insertedItemsSignal.connect(
             self.select_widget.markItemsInstalled
@@ -65,6 +66,10 @@ class AOVManagerWidget(QtGui.QWidget):
         )
 
         self.setStyleSheet(uidata.TOOLTIP_STYLE)
+
+        # If a node was passed along, set the UI to use it.
+        if node is not None:
+            self.setNode(node)
 
     # =========================================================================
     # METHODS
@@ -111,8 +116,14 @@ class AOVManagerWidget(QtGui.QWidget):
 
         # =====================================================================
 
-        self.to_add_widget = AOVsToAddWidget(self.node)
+        self.to_add_widget = AOVsToAddWidget()
         splitter.addWidget(self.to_add_widget)
+
+    def setNode(self, node):
+        """Register a node as the target apply node."""
+        self._node = node
+
+        self.to_add_widget.setNode(node)
 
 
 class AOVViewerToolBar(QtGui.QToolBar):
@@ -274,31 +285,34 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         """Edit selected AOVs."""
         import ht.ui.aovs.dialogs
 
-        aovs = [node.item for node in self.getSelectedNodes()
-                if isinstance(node.item, AOV)]
+        aovs = self.getSelectedAOVs()
+
+        parent = hou.ui.mainQtWindow()
 
         for aov in aovs:
-            ht.ui.aovs.dialogs.editAOV(aov)
+            dialog = ht.ui.aovs.dialogs.EditAOVDialog(
+                aov,
+                parent
+            )
+
+            dialog.show()
 
     def editSelectedGroups(self):
-        """Edit selected AOVs."""
+        """Edit selected groups."""
         import ht.ui.aovs.dialogs
 
-        groups = [node.item for node in self.getSelectedNodes()
-                if isinstance(node.item, AOVGroup)]
+        groups = self.getSelectedGroups(allow_intrinsic=False)
 
-        active = QtGui.QApplication.instance().activeWindow()
+        parent = hou.ui.mainQtWindow()
 
-        # TODO: Move to function in dialogs and handle group update.
         for group in groups:
-            dialog = ht.ui.aovs.dialogs.AOVGroupDialog(
-                ht.ui.aovs.dialogs.DialogOperation.Edit,
-                active
+            dialog = ht.ui.aovs.dialogs.EditGroupDialog(
+                group,
+                parent
             )
 
             dialog.groupUpdatedSignal.connect(self.updateGroup)
 
-            dialog.initFromGroup(group)
             dialog.show()
 
     def expandBelow(self):
@@ -323,6 +337,30 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
 
         for index in reversed(indexes):
             self.expand(index)
+
+    def getSelectedAOVs(self):
+        """Get selected AOVs."""
+        selected = self.getSelectedNodes()
+
+        aovs = [node.item for node in selected
+                if not isinstance(node, models.FolderNode) and
+                isinstance(node.item, AOV)]
+
+        return aovs
+
+    def getSelectedGroups(self, allow_intrinsic=True):
+        """Get selected groups."""
+        selected = self.getSelectedNodes()
+
+        groups = [node.item for node in selected
+                  if not isinstance(node, models.FolderNode) and
+                  isinstance(node.item, AOVGroup)]
+
+        if not allow_intrinsic:
+            groups = [group for group in groups
+                      if not isinstance(group, IntrinsicAOVGroup)]
+
+        return groups
 
     def getSelectedNodes(self):
         """Get a list of selected tree nodes."""
@@ -403,9 +441,14 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         show_collapse = False
         show_exp_col_all = False
 
+        show_install = False
+        show_uninstall = False
+
+        show_edit = False
         show_info = False
 
         model = self.model()
+        source_model = model.sourceModel()
 
         for index in indexes:
             source_index = model.mapToSource(index)
@@ -423,6 +466,20 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
             # Show into item for AOVs and groups.
             if isinstance(node, (models.AOVNode, models.AOVGroupNode)):
                 show_info = True
+
+                if isinstance(node, models.IntrinsicAOVGroupNode):
+                    show_edit = show_edit or False
+
+                else:
+                    show_edit = True
+
+                is_installed = source_model.isInstalled(node)
+
+                if is_installed:
+                    show_uninstall = True
+
+                else:
+                    show_install = True
 
         if show_collapse:
             menu.addAction(
@@ -468,32 +525,38 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
 
             menu.addSeparator()
 
-        menu.addAction(
-            "Install",
-            self.installSelected,
-            QtGui.QKeySequence(QtCore.Qt.Key_Y),
-        )
+        if show_install:
+            menu.addAction(
+                "Install",
+                self.installSelected,
+                QtGui.QKeySequence(QtCore.Qt.Key_Y),
+            )
 
-        menu.addAction(
-            "Uninstall",
-            self.uninstallSelected,
-            QtGui.QKeySequence(QtCore.Qt.Key_U),
-        )
+        if show_uninstall:
+            menu.addAction(
+                "Uninstall",
+                self.uninstallSelected,
+                QtGui.QKeySequence(QtCore.Qt.Key_U),
+            )
 
-        menu.addSeparator()
+        if show_edit:
+            menu.addSeparator()
 
-        menu.addAction(
-            "Edit",
-            self.editSelected,
-            QtGui.QKeySequence(QtCore.Qt.Key_E),
-        )
+            menu.addAction(
+                "Edit",
+                self.editSelected,
+                QtGui.QKeySequence(QtCore.Qt.Key_E),
+            )
 
         menu.exec_(self.mapToGlobal(position))
 
     def removeAOV(self, aov):
         """Remove an AOV from the model."""
-        print "Removing ", aov.variable
         self.model().sourceModel().removeAOV(aov)
+
+    def removeGroup(self, group):
+        """Remove a group from the model."""
+        self.model().sourceModel().removeGroup(group)
 
     def selectionChangedHandler(self, selected, deselected):
         """Selection change handler."""
@@ -503,17 +566,14 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         """Show info for selected AOVs."""
         import ht.ui.aovs.dialogs
 
-        nodes = self.getSelectedNodes()
+        aovs = self.getSelectedAOVs()
 
-        filtered = [node for node in nodes
-                    if isinstance(node, models.AOVNode)]
+        parent = hou.ui.mainQtWindow()
 
-        active = QtGui.QApplication.instance().activeWindow()
-
-        for node in filtered:
+        for aov in aovs:
             info_dialog = ht.ui.aovs.dialogs.AOVInfoDialog(
-                node.aov,
-                active
+                aov,
+                parent
             )
 
             info_dialog.show()
@@ -522,18 +582,17 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         """Show info for selected AOVGroups."""
         import ht.ui.aovs.dialogs
 
-        nodes = self.getSelectedNodes()
+        groups = self.getSelectedGroups()
 
-        filtered = [node for node in nodes
-                    if isinstance(node, models.AOVGroupNode)]
+        parent = hou.ui.mainQtWindow()
 
-        active = QtGui.QApplication.instance().activeWindow()
-
-        for node in filtered:
+        for group in groups:
             info_dialog = ht.ui.aovs.dialogs.AOVGroupInfoDialog(
-                node.group,
-                active
+                group,
+                parent
             )
+
+            info_dialog.groupUpdatedSignal.connect(self.updateGroup)
 
             info_dialog.show()
 
@@ -919,18 +978,25 @@ class AOVSelectWidget(QtGui.QWidget):
 
         enable_edit_aov = False
         enable_edit_group = False
+        enable_info = False
 
         if nodes:
             for node in nodes:
                 if isinstance(node, models.AOVNode):
                     enable_edit_aov = True
+                    enable_info = True
+
+                elif isinstance(node, models.IntrinsicAOVGroupNode):
+                    enable_edit_group = False
+                    enable_info = True
 
                 elif isinstance(node, models.AOVGroupNode):
                     enable_edit_group = True
+                    enable_info = True
 
         self.enableEditAOVSignal.emit(enable_edit_aov)
         self.enableEditAOVGroupSignal.emit(enable_edit_group)
-        self.enableInfoButtonSignal.emit(enable_edit_aov or enable_edit_group)
+        self.enableInfoButtonSignal.emit(enable_info)
 
 # =============================================================================
 # AOVs to Apply
@@ -1385,7 +1451,7 @@ class AOVsToAddWidget(QtGui.QWidget):
     def __init__(self, node=None, parent=None):
         super(AOVsToAddWidget, self).__init__(parent)
 
-        self.node = node
+        self._node = node
 
         layout = QtGui.QVBoxLayout()
         self.setLayout(layout)
@@ -1395,13 +1461,13 @@ class AOVsToAddWidget(QtGui.QWidget):
 
         # =====================================================================
 
-        label = QtGui.QLabel("AOVs to Apply")
-        top_layout.addWidget(label)
+        self.label = QtGui.QLabel("AOVs to Apply")
+        top_layout.addWidget(self.label)
 
         bold_font = QtGui.QFont()
         bold_font.setBold(True)
 
-        label.setFont(bold_font)
+        self.label.setFont(bold_font)
 
         # =====================================================================
 
@@ -1434,6 +1500,14 @@ class AOVsToAddWidget(QtGui.QWidget):
         self.tree.model().sourceModel().rowsInserted.connect(self.dataUpdatedHandler)
         self.tree.model().sourceModel().rowsRemoved.connect(self.dataUpdatedHandler)
         self.tree.model().sourceModel().modelReset.connect(self.dataClearedHandler)
+
+    # =========================================================================
+    # PROPERTIES
+    # =========================================================================
+
+    @property
+    def node(self):
+        return self._node
 
     # =========================================================================
     # METHODS
@@ -1516,6 +1590,17 @@ class AOVsToAddWidget(QtGui.QWidget):
                 items.append(node.item)
 
         self.installItems(items)
+
+    def setNode(self, node):
+        """Register a node as the target apply node."""
+        self._node = node
+
+        # Update the top label to indicate that we are targeting a specific
+        # node when applying.
+        self.label.setText("AOVs to Apply - {}".format(node.path()))
+
+        # Initialize the tree by loading the AOVs from the target node.
+        self.toolbar.loadFromNode(node)
 
     def uninstallListener(self, nodes):
         """Listen for items to be removed."""
@@ -2025,50 +2110,4 @@ class StatusMessageWidget(QtGui.QWidget):
             self.display.clear()
             self.display.hide()
             self.icon.hide()
-
-
-class AOVManagerDialog(QtGui.QDialog):
-    """Dialog to display a floating AOV Manager."""
-
-    def __init__(self, node=None, parent=None):
-        super(AOVManagerDialog, self).__init__(parent)
-
-        self.node = node
-
-        title = "AOV Manager"
-
-        if self.node is not None:
-            title = "{} - {}".format(title, self.node.path())
-
-        self.setWindowTitle(title)
-
-        self.manager_widget = AOVManagerWidget(node=node)
-
-        layout = QtGui.QVBoxLayout()
-
-        layout.addWidget(self.manager_widget)
-
-        self.setLayout(layout)
-
-        self.button_box = QtGui.QDialogButtonBox(
-            QtGui.QDialogButtonBox.Close
-        )
-        layout.addWidget(self.button_box)
-
-        self.button_box.rejected.connect(self.close)
-
-        if self.node is not None:
-            self.manager_widget.to_add_widget.toolbar.loadFromNode(self.node)
-
-        self.resize(900, 800)
-
-        self.show()
-
-# =============================================================================
-# FUNCTIONS
-# =============================================================================
-
-def openAOVEditor(node):
-    """Open the AOV Manager dialog based on a node."""
-    AOVManagerDialog(node=node, parent=hou.ui.mainQtWindow())
 
