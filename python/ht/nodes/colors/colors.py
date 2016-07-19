@@ -1,5 +1,6 @@
 """Classes representing color entries and mappings."""
 
+# Standard Library Imports
 import re
 
 # =============================================================================

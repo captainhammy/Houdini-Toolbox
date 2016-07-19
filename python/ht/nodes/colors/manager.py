@@ -52,7 +52,6 @@ class ColorManager(object):
     # NON-PUBLIC METHODS
     # =========================================================================
 
-
     def _buildConstantsFromData(self, all_data):
         for data in all_data:
             path = data["path"]
@@ -122,8 +121,12 @@ class ColorManager(object):
                             color = _buildColor(entry)
 
                             # Add a ColorEntry to the list.
-                            category_list[entry_name] = ColorEntry(entry_name, color, entry["type"], path)
-
+                            category_list[entry_name] = ColorEntry(
+                                entry_name,
+                                color,
+                                entry["type"],
+                                path
+                            )
 
     def _buildMappings(self):
         """Build mappings from files."""
@@ -165,7 +168,6 @@ class ColorManager(object):
                     # Check for a manager entry under the category.
                     if "manager" in category_entries:
                         return self._resolveEntry(category_entries["manager"])
-
 
                 # The node type is a generator.
                 elif node_type.isGenerator():
@@ -227,7 +229,8 @@ class ColorManager(object):
         for category_name in categories:
             # Check if the category has any entries.
             if category_name in self.nodes:
-                # Check if the node type name matches any of the category entries.
+                # Check if the node type name matches any of the category
+                # entries.
                 for color_entry in self.nodes[category_name].itervalues():
                     if hou.patternMatch(color_entry.name, type_name):
                         return self._resolveEntry(color_entry)
@@ -237,7 +240,7 @@ class ColorManager(object):
     def _resolveEntry(self, entry):
         # If the entry object is a ColorEntry then we can just return the
         # color.
-        if isinstance(entry, ht.nodes.colors.colors.ColorEntry):
+        if isinstance(entry, ColorEntry):
             return entry.color
 
         # Otherwise it is a ConstantEntry so we have to resolve the constant
