@@ -22,6 +22,7 @@ import ht.argument
 _DEFAULT_APPS = [
     "gplay",
     "hbatch",
+    "hcollapse",
     "hconfig",
     "hcustom",
     "hexpand",
