@@ -8,8 +8,6 @@ If run with regular Python it will attempt to import the hou module.  You must
 have the Houdini environments sourced.
 
 """
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
 
 # Standard Library Imports
 import datetime
@@ -57,37 +55,11 @@ import inline
 OBJ = hou.node("/obj")
 
 def getObjGeo(nodePath):
-    """Get the geometry from the display node of a Geometry object.
-
-    Args:
-        nodePath : (str)
-            A path to a Geometry object.
-
-    Raises:
-        N/A
-
-    Returns:
-        hou.Geometry
-            The geometry of this object's display node.
-
-    """
+    """Get the geometry from the display node of a Geometry object."""
     return OBJ.node(nodePath).displayNode().geometry()
 
 def getObjGeoCopy(nodePath):
-    """Get a copy of the geometry from the display node of a Geometry object.
-
-    Args:
-        nodePath : (str)
-            A path to a Geometry object.
-
-    Raises:
-        N/A
-
-    Returns:
-        hou.Geometry
-            A copy of the geometry of this object's display node.
-
-    """
+    """Get a copy of the geometry from the display node of a Geometry object."""
     # Create a new hou.Geometry object.
     geo = hou.Geometry()
 

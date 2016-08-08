@@ -1,9 +1,5 @@
 #!/usr/bin/python
-"""Launch Houdini related applications.
-
-"""
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
+"""Launch Houdini related applications."""
 
 # =============================================================================
 # IMPORTS
@@ -18,7 +14,7 @@ import sys
 import ht.houdini.wrapper
 
 # =============================================================================
-# CONSTANTS
+# GLOBALS
 # =============================================================================
 
 # Signals we want to handle and their names.
@@ -30,24 +26,17 @@ SIGNALS = {
 }
 
 # =============================================================================
-# FUNCTIONS
+# NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-#    Name: _handler
-#    Args: signalNum : (int)
-#              The signal number.
-#          frame : (object)
-#              The current stack frame.
-#  Raises: N/A
-# Returns: None
-#    Desc: Signal handler to catch incoming signals and kill the process
-#          group.  This allows things like the Render Scheduler to kill
-#          Mantra renders.
-# -----------------------------------------------------------------------------
-def _handler(signalNum, frame):
-    signalName = SIGNALS[signalNum]
-    print "Houdini wrapper caught sig SIG{0}".format(signalName)
+def _handler(signal_num, frame):
+    """Signal handler to catch incoming signals and kill the process group.
+
+    This allows things like the Render Scheduler to kill Mantra renders.
+
+    """
+    signal_name = SIGNALS[signal_num]
+    print "Houdini wrapper caught sig SIG{}".format(signal_name)
 
     # Ignore further signals.
     for sig in SIGNALS:
@@ -62,13 +51,12 @@ def _handler(signalNum, frame):
     # Exit with non-default status.
     sys.exit(1)
 
-# -----------------------------------------------------------------------------
-#    Name: main
-#  Raises: N/A
-# Returns: None
-#    Desc: Main function.
-# -----------------------------------------------------------------------------
+# =============================================================================
+# FUNCTIONS
+# =============================================================================
+
 def main():
+    """Main function."""
     # Handle specified signals.
     for sig in SIGNALS:
         signal.signal(sig, _handler)

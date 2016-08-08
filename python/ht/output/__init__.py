@@ -1,28 +1,9 @@
-"""This module contains a class for custom text output.
-
-Synopsis
---------
-
-Classes:
-    ShellOutput
-        A simple class for outputting styled text to a shell.
-
-"""
-
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
-
-# =============================================================================
-# EXPORTS
-# =============================================================================
-
-__all__ = [
-    "ShellOutput"
-]
+"""This module contains a class for custom text output."""
 
 # =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class ShellOutput(object):
     """A simple class for outputting styled text to a shell.

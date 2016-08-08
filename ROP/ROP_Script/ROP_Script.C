@@ -58,8 +58,7 @@ static PRM_Name languages[] =
 };
 
 static PRM_ChoiceList   languageMenu(
-    (PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE
-                         | PRM_CHOICELIST_REPLACE),
+    (PRM_ChoiceListType)(PRM_CHOICELIST_EXCLUSIVE | PRM_CHOICELIST_REPLACE),
     languages);
 
 static PRM_Template *
@@ -77,7 +76,7 @@ getTemplates()
     // Separator between frame/take parms and the code parm.
     theTemplate[0] = PRM_Template(PRM_SEPARATOR, 1, &names[0]);
 
-    // String paramater containing the code to run.  Horizontally
+    // String parameter containing the code to run.  Horizontally
     // joined to the next parm.
     theTemplate[1] = PRM_Template(PRM_STRING, 1, &names[1], &defaults[0]);
     theTemplate[1].setJoinNext(true);

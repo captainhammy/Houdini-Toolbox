@@ -1,4 +1,4 @@
-"""This module contains classes and funcions for high level interaction
+"""This module contains classes and functions for high level interaction
 with AOVs.
 
 """
@@ -24,11 +24,7 @@ import hou
 # =============================================================================
 
 class AOVManager(object):
-    """This class is for managing and applying AOVs at rendertime."""
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
+    """This class is for managing and applying AOVs at render time."""
 
     def __init__(self):
         self._aovs = {}
@@ -42,33 +38,10 @@ class AOVManager(object):
     # =========================================================================
 
     def __repr__(self):
-        return "<AOVManager aovs:{} groups:{}>".format(
+        return "<AOVManager AOVs:{} groups:{}>".format(
             len(self.aovs),
             len(self.groups),
         )
-
-    # =========================================================================
-    # PROPERTIES
-    # =========================================================================
-
-    @property
-    def interface(self):
-        """Any AOVViewerInterface assigned to the manager."""
-        return self._interface
-
-    # =========================================================================
-
-    @property
-    def aovs(self):
-        """Dicionary containing all available AOVs."""
-        return self._aovs
-
-    # =========================================================================
-
-    @property
-    def groups(self):
-        """Dictionary containing all available AOVGroups."""
-        return self._groups
 
     # =========================================================================
     # NON-PUBLIC METHODS
@@ -76,7 +49,7 @@ class AOVManager(object):
 
     def _buildIntrinsicGroups(self):
         """Build intrinsic groups."""
-        # Process any AOVs that we have to look for any instrinsic groups.
+        # Process any AOVs that we have to look for any intrinsic groups.
         for aov in self.aovs.itervalues():
             if aov.intrinsic is not None:
                 # Intrinsic groups are prefixed with "i:".
@@ -94,10 +67,8 @@ class AOVManager(object):
                 # Add this AOV to the group.
                 group.aovs.append(aov)
 
-    # =========================================================================
-
     def _initFromFiles(self):
-        """Intialize the manager from files on disk."""
+        """Initialize the manager from files on disk."""
         file_paths = _findAOVFiles()
 
         readers = [AOVFile(file_path) for file_path in file_paths]
@@ -106,8 +77,6 @@ class AOVManager(object):
 
         self._buildIntrinsicGroups()
 
-    # =========================================================================
-
     def _initGroupMembers(self, group):
         """Populate the AOV lists of each group based on available AOVs."""
         # Process each of the group's includes.
@@ -115,8 +84,6 @@ class AOVManager(object):
             # If the AOV name is available, add it to the group.
             if include in self.aovs:
                 group.aovs.append(self.aovs[include])
-
-    # =========================================================================
 
     def _mergeReaders(self, readers):
         """Merge the data of multiple AOVFile objects."""
@@ -151,9 +118,28 @@ class AOVManager(object):
                     if group.priority > self.groups[group_name].priority:
                         self.addGroup(group)
 
-                # Hasn't been seen, so addit.
+                # Hasn't been seen, so add it.
                 else:
                     self.addGroup(group)
+
+    # =========================================================================
+    # PROPERTIES
+    # =========================================================================
+
+    @property
+    def interface(self):
+        """Any AOVViewerInterface assigned to the manager."""
+        return self._interface
+
+    @property
+    def aovs(self):
+        """Dictionary containing all available AOVs."""
+        return self._aovs
+
+    @property
+    def groups(self):
+        """Dictionary containing all available AOVGroups."""
+        return self._groups
 
     # =========================================================================
     # STATIC METHODS
@@ -168,8 +154,18 @@ class AOVManager(object):
 
         # The parameter that defines which automatic aovs to add.
         parms = {
-            "enable": soho.SohoParm("enable_auto_aovs", "int", [1], skipdefault=False),
-            "auto_aovs": soho.SohoParm("auto_aovs", "str", [""], skipdefault=False),
+            "enable": soho.SohoParm(
+                "enable_auto_aovs",
+                "int",
+                [1],
+                skipdefault=False
+            ),
+            "auto_aovs": soho.SohoParm(
+                "auto_aovs",
+                "str",
+                [""],
+                skipdefault=False
+            ),
         }
 
         # Attempt to evaluate the parameter.
@@ -194,9 +190,9 @@ class AOVManager(object):
 
             # If we are generating the "Op_Id" plane we will need to tell SOHO
             # to generate these properties when outputting object.  Look for
-            # the "Op_Id" variable being exported and if so enable opid
+            # the "Op_Id" variable being exported and if so enable operator id
             # generation
-            for aov in aovs:
+            for aov in flattenedList(aovs):
                 if aov.variable == "Op_Id":
                     IFDapi.ray_comment("Forcing object id generation")
                     IFDsettings._GenerateOpId = True
@@ -214,8 +210,6 @@ class AOVManager(object):
         if self.interface is not None:
             self.interface.aovAddedSignal.emit(aov)
 
-    # =========================================================================
-
     def addGroup(self, group):
         """Add an AOVGroup to the manager."""
         self.groups[group.name] = group
@@ -223,14 +217,10 @@ class AOVManager(object):
         if self.interface is not None:
             self.interface.groupAddedSignal.emit(group)
 
-    # =========================================================================
-
     def clear(self):
         """Clear all definitions."""
         self._aovs = {}
         self._groups = {}
-
-    # =========================================================================
 
     def getAOVsFromString(self, aov_str):
         """Get a list of AOVs and AOVGroups from a string."""
@@ -251,14 +241,11 @@ class AOVManager(object):
 
         return aovs
 
-    # =========================================================================
-
     def initInterface(self):
         """Initialize an AOVViewerInterface for this manager."""
         from ht.ui.aovs.utils import AOVViewerInterface
-        self._interface = AOVViewerInterface()
 
-    # =========================================================================
+        self._interface = AOVViewerInterface()
 
     def load(self, path):
         """Load a file."""
@@ -266,14 +253,10 @@ class AOVManager(object):
 
         self._mergeReaders(readers)
 
-    # =========================================================================
-
     def reload(self):
         """Reload all definitions."""
         self.clear()
         self._initFromFiles()
-
-    # =========================================================================
 
     def removeAOV(self, aov):
         """Remove the specified AOV from the manager."""
@@ -282,8 +265,6 @@ class AOVManager(object):
 
             if self.interface is not None:
                 self.interface.aovRemovedSignal.emit(aov)
-
-    # =========================================================================
 
     def removeGroup(self, group):
         """Remove the specified group from the manager."""
@@ -307,36 +288,6 @@ class AOVFile(object):
 
         if self.exists:
             self._initFromFile()
-
-    # =========================================================================
-    # PROPERTIES
-    # =========================================================================
-
-    @property
-    def aovs(self):
-        """List containing AOVs defined in this file."""
-        return self._aovs
-
-    # =========================================================================
-
-    @property
-    def groups(self):
-        """List containing AOVGroups defined in this file."""
-        return self._groups
-
-    # =========================================================================
-
-    @property
-    def path(self):
-        """File path on disk."""
-        return self._path
-
-    # =========================================================================
-
-    @property
-    def exists(self):
-        """Check if the file actually exists."""
-        return os.path.isfile(self.path)
 
     # =========================================================================
     # NON-PUBLIC METHODS
@@ -395,6 +346,36 @@ class AOVFile(object):
             self.groups.append(group)
 
     # =========================================================================
+    # PROPERTIES
+    # =========================================================================
+
+    @property
+    def aovs(self):
+        """List containing AOVs defined in this file."""
+        return self._aovs
+
+    # =========================================================================
+
+    @property
+    def groups(self):
+        """List containing AOVGroups defined in this file."""
+        return self._groups
+
+    # =========================================================================
+
+    @property
+    def path(self):
+        """File path on disk."""
+        return self._path
+
+    # =========================================================================
+
+    @property
+    def exists(self):
+        """Check if the file actually exists."""
+        return os.path.isfile(self.path)
+
+    # =========================================================================
     # METHODS
     # =========================================================================
 
@@ -402,25 +383,17 @@ class AOVFile(object):
         """Add an AOV for writing."""
         self.aovs.append(aov)
 
-    # =========================================================================
-
     def addGroup(self, group):
         """Add An AOVGroup for writing."""
         self.groups.append(group)
-
-    # =========================================================================
 
     def containsAOV(self, aov):
         """Check if this file contains an AOV with the same variable name."""
         return aov in self.aovs
 
-    # =========================================================================
-
     def containsGroup(self, group):
         """Check if this file contains a group with the same name."""
         return group in self.groups
-
-    # =========================================================================
 
     def removeAOV(self, aov):
         """Remove an AOV from the file."""
@@ -428,15 +401,11 @@ class AOVFile(object):
 
         del self.aovs[idx]
 
-    # =========================================================================
-
     def removeGroup(self, group):
         """Remove a group from the file."""
         idx = self.groups.index(group)
 
         del self.groups[idx]
-
-    # =========================================================================
 
     def replaceAOV(self, aov):
         """Replace an AOV in the file."""
@@ -444,15 +413,11 @@ class AOVFile(object):
 
         self.aovs[idx] = aov
 
-    # =========================================================================
-
     def replaceGroup(self, group):
         """Replace a group in the file."""
         idx = self.groups.index(group)
 
         self.groups[idx] = group
-
-    # =========================================================================
 
     def writeToFile(self, path=None):
         """Write data to file."""
@@ -562,6 +527,20 @@ def findOrCreateSessionAOVManager(rebuild=False):
     return manager
 
 
+def flattenedList(items):
+    """Flatten a list that contains AOVs and groups into a list of all AOVs."""
+    aovs = []
+
+    for item in items:
+        if isinstance(item, AOVGroup):
+            aovs.extend(item.aovs)
+
+        else:
+            aovs.append(item)
+
+    return aovs
+
+
 def loadJsonFiles():
     """Load .json files into the manager."""
     result = hou.ui.selectFile(
@@ -578,8 +557,6 @@ def loadJsonFiles():
         if os.path.exists(path):
             MANAGER.load(path)
 
-# =============================================================================
-# GLOBALS
 # =============================================================================
 
 MANAGER = findOrCreateSessionAOVManager(rebuild=True)

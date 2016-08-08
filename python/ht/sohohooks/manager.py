@@ -15,10 +15,10 @@ class SohoHookManager(object):
     """This class manages custom soho hooks."""
 
     def __init__(self):
-	self._hooks = {}
+        self._hooks = {}
 
     def __repr__(self):
-	return "<SohoHookManager ({} hooks)>".format(len(self.hooks))
+        return "<SohoHookManager ({} hooks)>".format(len(self.hooks))
 
     # =========================================================================
     # PROPERTIES
@@ -26,42 +26,45 @@ class SohoHookManager(object):
 
     @property
     def hooks(self):
-	return self._hooks
+        """Dictionary of hook functions grouped by hook name."""
+        return self._hooks
 
+    # =========================================================================
+    # METHODS
     # =========================================================================
 
     def callHook(self, name, *args, **kwargs):
-	"""Call all hook functions for a given soho hook name."""
-	from IFDapi import ray_comment
+        """Call all hook functions for a given soho hook name."""
+        from IFDapi import ray_comment
 
-	hooks = self.hooks.get(name, ())
+        hooks = self.hooks.get(name, ())
 
-	for hook in hooks:
-	    try:
-		result = hook(*args, **kwargs)
+        for hook in hooks:
+            try:
+                result = hook(*args, **kwargs)
 
-	    except Exception as e:
-		ray_comment(
-		    "Hook Error[{}]: {1}".format(name, str(e))
-		)
+            except Exception as e:
+                ray_comment(
+                    "Hook Error[{}]: {}".format(name, str(e))
+                )
 
-		ray_comment(
-		    "Traceback:\n# {}\n".format(
-			    "\n#".join(traceback.format_exc().split('\n'))
-		    )
-		)
+                ray_comment(
+                    "Traceback:\n# {}\n".format(
+                            "\n#".join(traceback.format_exc().split('\n'))
+                    )
+                )
 
-	    else:
-		if result:
-		    return True
+            else:
+                if result:
+                    return True
 
-	return False
+        return False
 
     def registerHook(self, name, hook):
-	"""Register a hook function for a given soho hook name."""
-	hooks = self.hooks.setdefault(name, [])
+        """Register a hook function for a given soho hook name."""
+        hooks = self.hooks.setdefault(name, [])
 
-	hooks.append(hook)
+        hooks.append(hook)
 
 # =============================================================================
 # FUNCTIONS

@@ -21,14 +21,11 @@ import ht.utils
 # CLASSES
 # =============================================================================
 
+
 class HoudiniWrapper(object):
     """Initialize the environment and run Houdini related application.
 
     """
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self):
         self._arguments = None
@@ -155,7 +152,7 @@ class HoudiniWrapper(object):
         # If the program didn't end clean, print a message.
         if returncode != 0:
             self._print(
-                "{} died with signal {}.".format(
+                "{} exited with signal {}.".format(
                     self.program_name,
                     abs(returncode)
                 ),
@@ -388,6 +385,7 @@ class HoudiniWrapper(object):
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
+
 
 def _buildParser():
     """Build an ArgumentParser for the wrapper."""

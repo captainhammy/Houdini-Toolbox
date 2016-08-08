@@ -5,8 +5,6 @@ For more information, please see:
     http://www.sidefx.com/docs/houdini12.5/rendering/python
 
 """
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
 
 # =============================================================================
 # IMPORTS
@@ -22,7 +20,7 @@ import mantra
 import ht.pyfilter.parser
 
 # =============================================================================
-# CONSTANTS
+# GLOBALS
 # =============================================================================
 
 # Global map of all filter properties.
@@ -41,12 +39,6 @@ logging.basicConfig(
 def filterCamera():
     """Modify image related properties.
 
-    Raises:
-        N/A
-
-    Returns:
-        None
-
     Called just before the global properties are locked off for the render.
     This is usually prior to the declaration of any objects in the IFD.  If you
     change global properties after this, they probably will have no effect.
@@ -62,38 +54,12 @@ def filterCamera():
 
 
 def filterEndRender():
-    """Perform actions just after the image has been rendered.
-
-    Raises:
-        N/A
-
-    Returns:
-        None
-
-    """
+    """Perform actions just after the image has been rendered."""
     logging.info("filterEndRender")
 
 
 def filterError(level, message, prefix=""):
     """Process information, warning or error messages printed by Mantra.
-
-    Args:
-        level : (int)
-            The verbosity level of the message.
-
-        message : (str)
-            The message from Mantra.
-
-        prefix="" : (str)
-            A prefix for the message.
-
-    Raises:
-        N/A
-
-    Returns:
-        bool
-            Returning True will tell Mantra that the error has been handled by
-            the filter method and mantra will not print out the message itself.
 
     This function allows you to disable the printing of messages.
 
@@ -105,12 +71,6 @@ def filterError(level, message, prefix=""):
 def filterFog():
     """Modify fog related properties.
 
-    Raises:
-        N/A
-
-    Returns:
-        None
-
     Called just prior to the ray_end statement which locks off the settings for
     a fog object. The function can query fog: settings and possibly alter them.
 
@@ -121,12 +81,6 @@ def filterFog():
 
 def filterGeometry():
     """Modify geometry related properties.
-
-    Raises:
-        N/A
-
-    Returns:
-        None
 
     Called just prior to the ray_end statement which locks off a geometry
     object. This allows the program to query geometry: settings and possibly
@@ -140,12 +94,6 @@ def filterGeometry():
 def filterInstance():
     """Modify object related properties.
 
-    Raises:
-        N/A
-
-    Returns:
-        None
-
     Called just prior to the ray_end statement which locks off the settings for
     an instance object.  The function can query object: settings and possibly
     alter them.
@@ -157,12 +105,6 @@ def filterInstance():
 
 def filterLight():
     """Modify light related properties.
-
-    Raises:
-        N/A
-
-    Returns:
-        None
 
     Called just prior to the ray_end statement which locks off the settings for
     a light object.  The function can query light: settings and possibly alter
@@ -176,12 +118,6 @@ def filterLight():
 def filterMaterial():
     """Modify material related properties.
 
-    Raises:
-        N/A
-
-    Returns:
-        None
-
     Mantra has material blocks which can be applied on a per-primitive basis.
     This function is called before a material is locked off. The function can
     add or change properties on the material.
@@ -192,15 +128,7 @@ def filterMaterial():
 
 
 def filterPlane():
-    """Change query and modify image plane properties.
-
-    Raises:
-        N/A
-
-    Returns:
-        None
-
-    """
+    """Change query and modify image plane properties."""
     variable = mantra.property("plane:variable")[0]
     channel = mantra.property("plane:channel")[0]
 
@@ -213,26 +141,12 @@ def filterPlane():
 
 
 def filterQuit():
-    """Perform actions just before Mantra quits.
-
-    Raises:
-        N/A
-
-    Returns:
-        None
-
-    """
+    """Perform actions just before Mantra quits."""
     logging.info("filterQuit")
 
 
 def filterRender():
     """Query render related properties.
-
-    Raises:
-        N/A
-
-    Returns:
-        None
 
     Called just before the ray_raytrace command.  It's not possible to change
     any properties at this time in the IFD processing.  However, for
@@ -244,15 +158,7 @@ def filterRender():
 
 
 def main():
-    """Build the property information.
-
-    Raises:
-        N/A
-
-    Returns:
-        None
-
-    """
+    """Build the property information."""
     # Build the property information from the command line.
     PROPERTIES.update(ht.pyfilter.parser.buildPropertyInformation())
 

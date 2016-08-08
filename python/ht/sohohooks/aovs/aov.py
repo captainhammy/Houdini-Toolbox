@@ -3,7 +3,7 @@
 import copy
 
 # =============================================================================
-# CONSTANTS
+# GLOBALS
 # =============================================================================
 
 # Allowable values for various settings.
@@ -30,52 +30,20 @@ _DEFAULT_AOV_DATA = {
     "priority": -1,
     "quantize": None,
     "sfilter": None,
-    "variable": None,
 }
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
+
 class AOV(object):
     """This class represents an AOV to be exported."""
 
     def __init__(self, data):
-
         self._data = copy.copy(_DEFAULT_AOV_DATA)
 
         self._updateData(data)
-
-#        self._verifyInternalData()
-
-    def _verifyInternalData(self):
-        if self.variable is None:
-            raise MissingVariableError()
-
-        if self.vextype is None:
-            raise MissingVexTypeError(self.variable)
-
-    def _updateData(self, data):
-        for name, value in data.iteritems():
-#            if value is None:
-#                if name in self._data and self._data
-#                continue
-
-            # Check if there is a restriction on the data type.
-            if name in ALLOWABLE_VALUES:
-                # Get the allowable types for this data.
-                allowable = ALLOWABLE_VALUES[name]
-
-                # If the value isn't in the list, raise an exception.
-                if value not in allowable:
-                    raise InvalidAOVValueError(name, value, allowable)
-
-            # If the key corresponds to the data in this object we store the
-            # data.
-            if name in self._data:
-                self._data[name] = value
-
-        self._verifyInternalData()
 
     # =========================================================================
     # SPECIAL METHODS
@@ -97,12 +65,175 @@ class AOV(object):
         return self.variable
 
     # =========================================================================
+    # NON-PUBLIC METHODS
+    # =========================================================================
+
+    def _lightExportPlanes(self, data, wrangler, cam, now):
+        """Handle exporting the image planes based on their export settings."""
+        import soho
+
+        base_channel = data["channel"]
+
+        # Handle any light exporting.
+        if self.lightexport is not None:
+            # Get a list of lights matching our mask and selection.
+            lights = cam.objectList(
+                "objlist:light",
+                now,
+                self.lightexport_scope,
+                self.lightexport_select
+            )
+
+            if self.lightexport == "per-light":
+                # Process each light.
+                for light in lights:
+                    # Try and find the suffix using the 'vm_export_suffix'
+                    # parameter.  If it doesn't exist, use an emptry string.
+                    suffix = light.getDefaultedString(
+                        "vm_export_suffix", now, ['']
+                    )[0]
+
+                    prefix = []
+
+                    # Look for the prefix parameter.  If it doesn't exist, use
+                    # the light's name and replace the '/' with '_'.  The
+                    # default value of 'vm_export_prefix' is usually $OS.
+                    if not light.evalString("vm_export_prefix", now, prefix):
+                        prefix = [light.getName()[1:].replace('/', '_')]
+
+                    # If there is a prefix we construct the channel name using
+                    # it and the suffix.
+                    if prefix:
+                        channel = "{}_{}{}".format(
+                            prefix[0],
+                            base_channel,
+                            suffix
+                        )
+
+                    # If not and there is a valid suffix, add it to the channel
+                    # name.
+                    elif suffix:
+                        channel = "{}{}".format(base_channel, suffix)
+
+                    # Throw an error because all the per-light channels will
+                    # have the same name.
+                    else:
+                        soho.error("Empty suffix for per-light exports.")
+                        channel = base_channel
+
+                    data["channel"] = channel
+                    data["lightexport"] = light.getName()
+
+                    # Write this light export to the ifd.
+                    self.writeDataToIfd(data, wrangler, cam, now)
+
+            elif self.lightexport == "single":
+                # Take all the light names and join them together.
+                lightexport = ' '.join([light.getName() for light in lights])
+
+                # If there are no lights, we can't pass in an empty string
+                # since then mantra will think that light exports are
+                # disabled.  So pass down an string that presumably doesn't
+                # match any light name.
+                if not lightexport:
+                    lightexport = "__nolights__"
+
+                data["lightexport"] = lightexport
+
+                # Write the combined light export to the ifd.
+                self.writeDataToIfd(data, wrangler, cam, now)
+
+            elif self.lightexport == "per-category":
+                # A mapping between category names and their member lights.
+                category_map = {}
+
+                # Process each selected light.
+                for light in lights:
+                    # Get the category for the light.
+                    categories = []
+                    light.evalString("categories", now, categories)
+
+                    # Light doesn't have a 'categories' parameter.
+                    if not categories:
+                        continue
+
+                    # Get the raw string.
+                    categories = categories[0]
+
+                    # Since the categories value can be space or comma
+                    # separated we replace the commas with spaces then split.
+                    categories = categories.replace(',', ' ')
+                    categories = categories.split()
+
+                    # If the categories list was empty, put the light in a fake
+                    # category.
+                    if not categories:
+                        no_category_lights = category_map.setdefault("__none__", [])
+                        no_category_lights.append(light)
+
+                    else:
+                        # For each category the light belongs to, add it to
+                        # the list.
+                        for category in categories:
+                            category_lights = category_map.setdefault(category, [])
+                            category_lights.append(light)
+
+                # Process all the found categories and their member lights.
+                for category, lights in category_map.iteritems():
+                    # Construct the export string to contain all the member
+                    # lights.
+                    lightexport = ' '.join(
+                        [light.getName() for light in lights]
+                    )
+
+                    data["lightexport"] = lightexport
+
+                    # The channel is the regular channel named prefixed with
+                    # the category name.
+                    data["channel"] = "{}_{}".format(category, base_channel)
+
+                    # Write the per-category light export to the ifd.
+                    self.writeDataToIfd(data, wrangler, cam, now)
+
+        else:
+            # Write a normal AOV definition.
+            self.writeDataToIfd(data, wrangler, cam, now)
+
+    def _updateData(self, data):
+        """Update internal data with new data."""
+        for name, value in data.iteritems():
+            # Check if there is a restriction on the data type.
+            if name in ALLOWABLE_VALUES:
+                # Get the allowable types for this data.
+                allowable = ALLOWABLE_VALUES[name]
+
+                # If the value isn't in the list, raise an exception.
+                if value not in allowable:
+                    raise InvalidAOVValueError(name, value, allowable)
+
+            # If the key corresponds to the data in this object we store the
+            # data.
+            if name in self._data:
+                self._data[name] = value
+
+        # Verify the new data is valid.
+        self._verifyInternalData()
+
+    def _verifyInternalData(self):
+        """Verify data to make sure it is valid."""
+        if self.variable is None:
+            raise MissingVariableError()
+
+        if self.vextype is None:
+            raise MissingVexTypeError(self.variable)
+
+    # =========================================================================
     # PROPERTIES
     # =========================================================================
 
     @property
     def channel(self):
-        """The name of the output aov's channel."""
+        """The name of the output AOV's channel."""
         return self._data["channel"]
 
     @channel.setter
@@ -189,7 +320,7 @@ class AOV(object):
 
     @property
     def path(self):
-        """The path containing the aov definition."""
+        """The path containing the AOV definition."""
         return self._data["path"]
 
     @path.setter
@@ -200,7 +331,7 @@ class AOV(object):
 
     @property
     def pfilter(self):
-        """The name of the output aov's pixel filter."""
+        """The name of the output AOV's pixel filter."""
         return self._data["pfilter"]
 
     @pfilter.setter
@@ -211,7 +342,7 @@ class AOV(object):
 
     @property
     def planefile(self):
-        """The name of the output aov's specific file, if any."""
+        """The name of the output AOV's specific file, if any."""
         return self._data["planefile"]
 
     @planefile.setter
@@ -233,7 +364,7 @@ class AOV(object):
 
     @property
     def quantize(self):
-        """The type of quantization for the output aov."""
+        """The type of quantization for the output AOV."""
         return self._data["quantize"]
 
     @quantize.setter
@@ -244,7 +375,7 @@ class AOV(object):
 
     @property
     def sfilter(self):
-        """The name of the output aov's sample filter."""
+        """The name of the output AOV's sample filter."""
         return self._data["sfilter"]
 
     @sfilter.setter
@@ -255,7 +386,7 @@ class AOV(object):
 
     @property
     def variable(self):
-        """The name of the output aov's vex variable."""
+        """The name of the output AOV's vex variable."""
         return self._data["variable"]
 
     @variable.setter
@@ -266,7 +397,7 @@ class AOV(object):
 
     @property
     def vextype(self):
-        """The data type of the output aov."""
+        """The data type of the output AOV."""
         return self._data["vextype"]
 
     @vextype.setter
@@ -274,148 +405,13 @@ class AOV(object):
         self._data["vextype"] = vextype
 
     # =========================================================================
-    # NON-PUBLIC METHODS
-    # =========================================================================
-
-    def _lightExportPlanes(self, data, wrangler, cam, now):
-        """Handle exporting the image planes based on their export settings."""
-        import soho
-
-        base_channel = data["channel"]
-
-        # Handle any light exporting.
-        if self.lightexport is not None:
-            # Get a list of lights matching our mask and selection.
-            lights = cam.objectList(
-                "objlist:light",
-                now,
-                self.lightexport_scope,
-                self.lightexport_select
-            )
-
-            if self.lightexport == "per-light":
-                # Process each light.
-                for light in lights:
-                    # Try and find the suffix using the 'vm_export_suffix'
-                    # parameter.  If it doesn't exist, use an emptry string.
-                    suffix = light.getDefaultedString(
-                        "vm_export_suffix", now, ['']
-                    )[0]
-
-                    prefix = []
-
-                    # Look for the prefix parameter.  If it doesn't exist, use
-                    # the light's name and replace the '/' with '_'.  The
-                    # default value of 'vm_export_prefix' is usually $OS.
-                    if not light.evalString("vm_export_prefix", now, prefix):
-                        prefix = [light.getName()[1:].replace('/', '_')]
-
-                    # If there is a prefix we construct the channel name using
-                    # it and the suffix.
-                    if prefix:
-                        channel = "{}_{}{}".format(
-                            prefix[0],
-                            base_channel,
-                            suffix
-                        )
-
-                    # If not and there is a valid suffix, add it to the channel
-                    # name.
-                    elif suffix:
-                        channel = "{}{}".format(base_channel, suffix)
-
-                    # Throw an error because all the per-light channels will
-                    # have the same name.
-                    else:
-                        soho.error("Empty suffix for per-light exports.")
-
-                    data["channel"] = channel
-                    data["lightexport"] = light.getName()
-
-                    # Write this light export to the ifd.
-                    self.writeDataToIfd(data, wrangler, cam, now)
-
-            elif self.lightexport == "single":
-                # Take all the light names and join them together.
-                lightexport = ' '.join([light.getName() for light in lights])
-
-                # If there are no lights, we can't pass in an empty string
-                # since then mantra will think that light exports are
-                # disabled.  So pass down an string that presumably doesn't
-                # match any light name.
-                if not lightexport:
-                    lightexport = "__nolights__"
-
-                data["lightexport"] = lightexport
-
-                # Write the combined light export to the ifd.
-                self.writeDataToIfd(data, wrangler, cam, now)
-
-            elif self.lightexport == "per-category":
-                # A mapping between category names and their member lights.
-                category_map = {}
-
-                # Process each selected light.
-                for light in lights:
-                    # Get the category for the light.
-                    categories = []
-                    light.evalString("categories", now, categories)
-
-                    # Light doesn't have a 'categories' parameter.
-                    if not categories:
-                        continue
-
-                    # Get the raw string.
-                    categories = categories[0]
-
-                    # Since the categories value can be space or comma
-                    # separated we replace the commas with spaces then split.
-                    categories = categories.replace(',', ' ')
-                    categories = categories.split()
-
-                    # If the categories list was empty, put the light in a fake
-                    # category.
-                    if not categories:
-                        no_category_lights = category_map.setdefault("__none__", [])
-                        no_category_lights.append(light)
-
-                    else:
-                        # For each category the light belongs to, add it to
-                        # the list.
-                        for category in categories:
-                            category_lights = category_map.setdefault(category, [])
-                            category_lights.append(light)
-
-                # Process all the found categories and their member lights.
-                for category, lights in category_map.iteritems():
-                    # Construct the export string to contain all the member
-                    # lights.
-                    lightexport = ' '.join(
-                        [light.getName() for light in lights]
-                    )
-
-                    data["lightexport"] = lightexport
-
-                    # The channel is the regular channel named prefixed with
-                    # the category name.
-                    data["channel"] = "{}_{}".format(category, base_channel)
-
-                    # Write the per-category light export to the ifd.
-                    self.writeDataToIfd(data, wrangler, cam, now)
-
-        else:
-            # Write a normal aov definition.
-            self.writeDataToIfd(data, wrangler, cam, now)
-
-    # =========================================================================
     # STATIC METHODS
     # =========================================================================
 
     @staticmethod
     def writeDataToIfd(data, wrangler, cam, now):
-        """Write aov data to the ifd."""
+        """Write AOV data to the ifd."""
         import IFDapi
-        import soho
 
         # Call the 'pre_defplane' hook.  If the function returns True,
         # return.
@@ -433,7 +429,7 @@ class AOV(object):
         if "quantize" in data:
             IFDapi.ray_property("plane", "quantize", [data["quantize"]])
 
-        # Optional aov information.
+        # Optional AOV information.
         if "planefile" in data:
             planefile = data["planefile"]
 
@@ -583,10 +579,8 @@ class AOVGroup(object):
 
         return -1
 
-    # =========================================================================
-
     def __repr__(self):
-        return "<{} {} ({} aovs)>".format(
+        return "<{} {} ({} AOVs)>".format(
             self.__class__.__name__,
             self.name,
             len(self.aovs)
@@ -667,8 +661,6 @@ class AOVGroup(object):
         """Clear the list of AOVs belonging to this group."""
         self._aovs = []
 
-    # =========================================================================
-
     def getData(self):
         """Get a dictionary representing the group."""
         d = {
@@ -685,14 +677,13 @@ class AOVGroup(object):
 
         return d
 
-    # =========================================================================
-
     def writeToIfd(self, wrangler, cam, now):
         """Write all AOVs in the group to the ifd."""
         for aov in self.aovs:
             aov.writeToIfd(wrangler, cam, now)
 
 # =============================================================================
+
 
 class IntrinsicAOVGroup(AOVGroup):
     """An intrinsic grouping of AOVs."""
@@ -706,22 +697,20 @@ class IntrinsicAOVGroup(AOVGroup):
 # EXCEPTIONS
 # =============================================================================
 
+
 class AOVError(Exception):
     """AOV exception base class."""
     pass
 
-# =============================================================================
 
 class InvalidAOVValueError(AOVError):
-    """Exception for invalid aov setting values."""
+    """Exception for invalid AOV setting values."""
 
     def __init__(self, name, value, allowable):
         super(InvalidAOVValueError, self).__init__()
         self.allowable = allowable
         self.name = name
         self.value = value
-
-    # =========================================================================
 
     def __str__(self):
         return "Invalid value '{}' in '{}': Must be one of {}".format(
@@ -730,15 +719,13 @@ class InvalidAOVValueError(AOVError):
             self.allowable
         )
 
-# =============================================================================
 
 class MissingVariableError(AOVError):
     """Exception for missing 'variable' information."""
 
     def __str__(self):
-        return "Cannot create aov: missing 'variable' value."
+        return "Cannot create AOV: missing 'variable' value."
 
-# =============================================================================
 
 class MissingVexTypeError(AOVError):
     """Exception for missing 'vextype' information."""
@@ -747,16 +734,15 @@ class MissingVexTypeError(AOVError):
         super(MissingVexTypeError, self).__init__()
         self.vextype = vextype
 
-    # =========================================================================
-
     def __str__(self):
-        return "Cannot create aov {}: missing 'vextype'.".format(
+        return "Cannot create AOV {}: missing 'vextype'.".format(
             self.vextype
         )
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
+
 
 def _callPostDefPlane(data, wrangler, cam, now):
     """Call the post_defplane hook."""
@@ -773,6 +759,7 @@ def _callPostDefPlane(data, wrangler, cam, now):
         data.get("planefile"),
         data.get("lightexport")
     )
+
 
 def _callPreDefPlane(data, wrangler, cam, now):
     """Call the pre_defplane hook."""

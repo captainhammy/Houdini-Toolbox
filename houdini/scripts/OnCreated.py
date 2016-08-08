@@ -18,9 +18,6 @@ def main():
 
     ht.nodes.colors.colorNode(node)
 
-#    if ht.nodes.naming.isNamespacedType(node.type()):
-#        ht.nodes.naming.setNamespacedFormattedName(node)
-
 # =============================================================================
 
 main()

@@ -6,8 +6,6 @@ uses Python decorators to attach the functions to the corresponding HOM classes
 and modules they are meant to extend.
 
 """
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
 
 # =============================================================================
 # IMPORTS
@@ -18,7 +16,7 @@ import hou
 import inlinecpp
 
 # =============================================================================
-# CONSTANTS
+# GLOBALS
 # =============================================================================
 
 # Tuple of all valid attribute data types.
@@ -4146,25 +4144,6 @@ def addPointVelocityAttribute(self):
 @addToClass(hou.Geometry)
 def addColorAttribute(self, attrib_type):
     """Add a color (Cd) attribute to the geometry.
-
-    Args:
-        attrib_type : (hou.attribType)
-            A hou.attribType value to specify if the attribute should be a
-            point, primitive or vertex attribute.
-
-    Raises:
-        hou.GeometryPermissionError
-            This exception is raised if the geometry is read-only.
-
-        hou.TypeError
-            Raise this exception if attribute_type is not a valid type.
-
-        hou.OperationFailed
-            Raise this exception if the attribute was not created.
-
-    Returns:
-        hou.Attrib
-            Returns the newly created point attribute.
 
     Point, primitive and vertex colors are supported.
 

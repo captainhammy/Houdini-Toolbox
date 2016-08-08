@@ -9,35 +9,12 @@ import contextlib
 import time
 
 # =============================================================================
-# EXPORTS
-# =============================================================================
-
-__all__ = [
-    "convertFromUnicode",
-    "timer",
-    "updateMode",
-]
-
-# =============================================================================
 # FUNCTIONS
 # =============================================================================
 
+
 def convertFromUnicode(data):
-    """Convert any unicode members to normal strings.
-
-    Args:
-	data : (object)
-              An object to convert.  This can be a dictionary, list, string or
-	      raw value.
-
-    Raises:
-	N/A
-
-    Returns:
-	object
-	    The object with any unicode members converted to strings.
-
-    """
+    """Convert any unicode members to normal strings."""
     # If the data is a dictionary we need to convert the key/value pairs
     # and return a new dictionary.
     if isinstance(data, dict):
@@ -102,7 +79,7 @@ def updateMode(update_mode):
     current = hou.updateModeSetting()
 
     # Set the desired mode.
-    hou.ui.setUpdateMode(mode)
+    hou.ui.setUpdateMode(update_mode)
 
     try:
         yield

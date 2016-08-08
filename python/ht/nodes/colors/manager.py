@@ -23,14 +23,11 @@ import hou
 # CLASSES
 # =============================================================================
 
+
 class ColorManager(object):
     """Manage and apply Houdini node colors.
 
     """
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self):
         self._constants = {}
@@ -325,6 +322,7 @@ class ColorManager(object):
 # =============================================================================
 # EXCEPTIONS
 # =============================================================================
+
 
 class ConstantDoesNotExistError(Exception):
     """Exception raised when a color attempts to reference a non-existent

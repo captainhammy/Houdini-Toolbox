@@ -1,18 +1,4 @@
-"""This module defines objects used to set Mantra render properties.
-
-Synopsis
---------
-
-Classes:
-    MaskedPropertySetting
-        A PropertySetting that supports masking againt other properties.
-
-    PropertySetting
-        An object representing a Mantra property being set by PyFilter.
-
-"""
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
+"""This module defines objects used to set Mantra render properties."""
 
 # =============================================================================
 # IMPORTS
@@ -26,59 +12,31 @@ import hou
 import mantra
 
 # =============================================================================
-# EXPORTS
-# =============================================================================
-
-__all__ = [
-    "MaskedPropertySetting",
-    "PropertySetting",
-]
-
-# =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class PropertySetting(object):
     """An object representing a Mantra property being set by PyFilter.
 
     """
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
-    def __init__(self, name, propertyBlock):
-        """Initialize a PropertySetting object.
-
-        Args:
-            name : (str)
-                The name of the property.
-
-            propertyBlock : (dict)
-                A dictionary containing property settings.
-
-        Raises:
-            N/A
-
-        Returns:
-            N/A
-
-        """
+    def __init__(self, name, property_block):
         logging.debug("Creating property {}.".format(name))
 
         self._name = name
 
         # Store the raw value object.
-        self._value = propertyBlock["value"]
+        self._value = property_block["value"]
 
         self._enabled = True
-        self._findFile = False
+        self._find_file = False
 
-        if "findFile" in propertyBlock:
-            self.findFile = propertyBlock["findFile"]
+        if "find_file" in property_block:
+            self.find_file = property_block["find_file"]
 
-        if "enabled" in propertyBlock:
-            self.enabled = propertyBlock["enabled"]
+        if "enabled" in property_block:
+            self.enabled = property_block["enabled"]
 
         # Perform any value cleanup.
         self._processValue()
@@ -100,13 +58,8 @@ class PropertySetting(object):
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    # -------------------------------------------------------------------------
-    #    Name: _processValue
-    #  Raises: N/A
-    # Returns: None
-    #    Desc: Perform any operations or cleanup on our data.
-    # -------------------------------------------------------------------------
     def _processValue(self):
+        """Perform any operations or cleanup on our data."""
         # Skip normal types.
         if isinstance(self.value, (bool, float, int)):
             return
@@ -121,55 +74,61 @@ class PropertySetting(object):
 
         # If the value is actually a relative file, search for it in the
         # Houdini path.
-        if self.findFile:
+        if self.find_file:
             self.value = hou.findFile(self.value)
 
         # Object is a list (possibly numbers or strings or both).
         if isinstance(self.value, list):
             # Does the list contain any strings.
-            containsStrings = False
+            contains_strings = False
 
             for val in self.value:
                 # If the value is a string, flag it.
                 if isinstance(val, str):
-                    containsStrings = True
+                    contains_strings = True
                     break
 
             # If at least one value is a string then we need to convert them
             # all to strings.
-            if containsStrings:
+            if contains_strings:
                 self.value = [str(val) for val in self.value]
 
     # =========================================================================
-    # INSTANCE ATTRIBUTES
+    # PROPERTIES
     # =========================================================================
 
     @property
     def enabled(self):
-        """(bool) Is the property setting enabled."""
+        """Is the property setting enabled."""
         return self._enabled
 
     @enabled.setter
     def enabled(self, enabled):
         self._enabled = enabled
 
-    @property
-    def findFile(self):
-        """(bool) Is the value the name of a file to find."""
-        return self._findFile
+    # =========================================================================
 
-    @findFile.setter
-    def findFile(self, findFile):
-        self._findFile = findFile
+    @property
+    def find_file(self):
+        """Is the value the name of a file to find."""
+        return self._find_file
+
+    @find_file.setter
+    def find_file(self, find_file):
+        self._find_file = find_file
+
+    # =========================================================================
 
     @property
     def name(self):
-        """(str) The name of the property to set."""
+        """The name of the property to set."""
         return self._name
+
+    # =========================================================================
 
     @property
     def value(self):
-        """(str|[str]|[int]|[float]) The value to set the property."""
+        """The value to set the property."""
         return self._value
 
     @value.setter
@@ -181,15 +140,7 @@ class PropertySetting(object):
     # =========================================================================
 
     def setProperty(self):
-        """Set the property to the value.
-
-        Raises:
-            N/A
-
-        Returns:
-            None
-
-        """
+        """Set the property to the value."""
         # Don't do anything if the property isn't enabled.
         if not self.enabled:
             return
@@ -203,41 +154,17 @@ class PropertySetting(object):
 
 
 class MaskedPropertySetting(PropertySetting):
-    """A PropertySetting that supports masking againt other properties.
+    """A PropertySetting that supports masking against other properties.
 
     """
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
-    def __init__(self, name, propertyBlock, maskPropertyName):
-        """Initialize a MaskedPropertySetting object.
-
-        Args:
-            name : (str)
-                The name of the property.
-
-            propertyBlock : (dict)
-                A dictionary containing property settings.
-
-            maskPropertyName : (str)
-                A property name to compare a mask value against.
-
-        Raises:
-            N/A
-
-        Returns:
-            N/A
-
-        """
-        super(MaskedPropertySetting, self).__init__(name, propertyBlock)
+    def __init__(self, name, property_block, mask_property_name):
+        super(MaskedPropertySetting, self).__init__(name, property_block)
 
         # Look for a mask property.
-        self._mask = str(propertyBlock["mask"])
+        self._mask = str(property_block["mask"])
 
-        self._maskPropertyName = maskPropertyName
-
+        self._mask_property_name = mask_property_name
 
     # =========================================================================
     # SPECIAL METHODS
@@ -258,18 +185,18 @@ class MaskedPropertySetting(PropertySetting):
         )
 
     # =========================================================================
-    # INSTANCE ATTRIBUTES
+    # PROPERTIES
     # =========================================================================
 
     @property
     def mask(self):
-        """(str) A mask value."""
+        """A mask value."""
         return self._mask
 
     @property
-    def maskPropertyName(self):
-        """(str) The property name to compare the mask against."""
-        return self._maskPropertyName
+    def mask_property_name(self):
+        """The property name to compare the mask against."""
+        return self._mask_property_name
 
     # =========================================================================
     # METHODS
@@ -279,10 +206,10 @@ class MaskedPropertySetting(PropertySetting):
         # Is this property being applied using a name mask.
         if self.mask is not None:
             # Get the name of the item that is currently being filtered.
-            filteredItem = mantra.property(self.maskPropertyName)[0]
+            filtered_item = mantra.property(self.mask_property_name)[0]
 
             # If the mask pattern doesn't match, abort.
-            if not hou.patternMatch(self.mask, filteredItem):
+            if not hou.patternMatch(self.mask, filtered_item):
                 return
 
         # Call the super class function to set the property.

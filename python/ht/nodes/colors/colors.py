@@ -1,5 +1,9 @@
 """Classes representing color entries and mappings."""
 
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
 # Standard Library Imports
 import re
 
@@ -43,6 +47,8 @@ class ColorConstant(object):
     def color(self, color):
         self._color = color
 
+    # =========================================================================
+
     @property
     def color_type(self):
         """The mapped color type."""
@@ -52,10 +58,14 @@ class ColorConstant(object):
     def color_type(self, color_type):
         self._color_type = color_type
 
+    # =========================================================================
+
     @property
     def file_path(self):
         """Path the definition was from."""
         return self._file_path
+
+    # =========================================================================
 
     @property
     def name(self):
@@ -96,6 +106,15 @@ class ColorEntry(object):
         return "(" + ", ".join(strs) + ")"
 
     # =========================================================================
+    # NON-PUBLIC METHODS
+    # =========================================================================
+
+    def _getTypedValue(self):
+        to_func = getattr(self.color, self.color_type.lower())
+
+        return to_func()
+
+    # =========================================================================
     # PROPERTIES
     # =========================================================================
 
@@ -118,12 +137,6 @@ class ColorEntry(object):
     def name(self):
         """The name the color is mapped to."""
         return self._name
-
-
-    def _getTypedValue(self):
-        to_func = getattr(self.color, self.color_type.lower())
-
-        return to_func()
 
 
 class ConstantEntry(object):

@@ -4,6 +4,7 @@
 # IMPORTS
 # =============================================================================
 
+# Houdini-Toolbox Imports
 from ht.sohohooks.manager import getManager
 
 from ht.sohohooks.aovs.manager import AOVManager

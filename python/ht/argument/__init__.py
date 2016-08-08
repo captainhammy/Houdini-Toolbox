@@ -1,17 +1,4 @@
-"""This module contains a custom version of argparse.ArgumentParser.
-
-Synopsis
---------
-
-Classes:
-    ArgumentParser
-        Houdini Toolbox version of the standard Python argument parser.
-
-
-"""
-
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
+"""This module contains a custom version of argparse.ArgumentParser."""
 
 # =============================================================================
 # Import
@@ -21,19 +8,12 @@ __email__ = "captainhammy@gmail.com"
 import argparse
 
 # =============================================================================
-# EXPORTS
-# =============================================================================
-
-__all__ = [
-    "ArgumentParser"
-]
-
-# =============================================================================
 # CLASSES
 # =============================================================================
 
+
 class ArgumentParser(argparse.ArgumentParser):
-    """Houdini Toolbox version of the standard Python argument parser.
+    """HoudiniToolbox version of the standard Python argument parser.
 
     This custom parser implements a future Python version patch that allows
     the disabling of argument abbreviations.  It also overrides the default
@@ -45,38 +25,8 @@ class ArgumentParser(argparse.ArgumentParser):
 
     """
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
     def __init__(self, description=None, epilog=None, add_help=True,
                  allow_abbrev=True, *args, **kwargs):
-        """Object for parsing command line strings into Python objects.
-
-        Args:
-            description=None : (str)
-                A description of what the program does.
-
-            epilog=None : (str)
-                Text following the argument descriptions.
-
-            add_help=True : (bool)
-                Adds -help/--help options.
-
-            allow_abbrev=True : (bool)
-                Allow longn options to be abbreviated unambiguously.
-
-        Raises:
-            N/A
-
-        Returns:
-            N/A
-
-        This initializer will pass any unknown arguments through to the super
-        class initializer.
-
-        """
-
         # Construct the base ArgumentParser object.  We don't want to allow
         # help since it will use flags we don't want.
         super(ArgumentParser, self).__init__(
@@ -100,19 +50,11 @@ class ArgumentParser(argparse.ArgumentParser):
             )
 
     # =========================================================================
-    # NON-PUBLIC FUNCTIONS
+    # NON-PUBLIC METHODS
     # =========================================================================
 
-    # -------------------------------------------------------------------------
-    #    Name: _parse_optional
-    #    Args: arg_string : (str)
-    #              The argument string.
-    #  Raises: N/A
-    # Returns: ([str])
-    #              Argument information.
-    #    Desc: Parse optional arguments.
-    # -------------------------------------------------------------------------
     def _parse_optional(self, arg_string):
+        """Parse optional arguments."""
         # if it's an empty string, it was meant to be a positional
         if not arg_string:
             return None
@@ -145,8 +87,9 @@ class ArgumentParser(argparse.ArgumentParser):
 
             # if multiple actions match, the option string was ambiguous
             if len(option_tuples) > 1:
-                options = ', '.join([option_string
-                    for action, option_string, explicit_arg in option_tuples])
+                options = ', '.join(
+                    [option_string for action, option_string, explicit_arg in option_tuples]
+                )
                 tup = arg_string, options
                 self.error('ambiguous option: %s could match %s' % tup)
 
@@ -168,6 +111,6 @@ class ArgumentParser(argparse.ArgumentParser):
             return None
 
         # it was meant to be an optional but there is no such option
-        # in this parser (though it might be a valid option in a subparser)
+        # in this parser (though it might be a valid option in a sub-parser)
         return None, arg_string, None
 

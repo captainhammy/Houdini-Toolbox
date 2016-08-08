@@ -1,56 +1,56 @@
 
 {
     "camera": {
-	"renderer:tilecallback": {
-	    "value": "mantraTileCallback.py",
-	    "findFile": true,
-	    "enabled": false
-	},
+        "renderer:tilecallback": {
+            "value": "mantraTileCallback.py",
+            "find_file": true,
+            "enabled": false
+        },
 
-	"image:filename": {
-	    "value": "ip"
-	},
+        "image:filename": {
+            "value": "ip"
+        },
 
-	"image:resolution": {
-	    "value": [1280, 720]
-	},
+        "image:resolution": {
+            "value": [1280, 720]
+        },
 
-	"image:samples": {
-	    "value": [2, 2]
-	},
+        "image:samples": {
+            "value": [2, 2]
+        },
 
-	"camera:clip": {
-	    "value": [0.001, 20]
-	}
+        "camera:clip": {
+            "value": [0.001, 20]
+        }
 
     },
 
     "instance": {
-	"disabled": false,
+        "disabled": false,
 
-	"object:surface":
-	[
-	    {
-		"value": ["plastic", "diff", 1, 0, 0],
-		"mask": "*cone*"
-	    },
+        "object:surface":
+        [
+            {
+                "value": ["plastic", "diff", 1, 0, 0],
+                "mask": "*cone*"
+            },
 
-	    {
-		"value": ["plastic", "diff", 0, 1, 0],
-		"mask": "*grid*"
-	    },
+            {
+                "value": ["plastic", "diff", 0, 1, 0],
+                "mask": "*grid*"
+            },
 
-	    {
-		"value": ["plastic", "diff", 0, 0, 1],
-		"mask": "*torus*"
-	    }
-	]
+            {
+                "value": ["plastic", "diff", 0, 0, 1],
+                "mask": "*torus*"
+            }
+        ]
     },
 
     "light": {
-	"light:shadowmask": {
-	    "value": "*torus*"
-	}
+        "light:shadowmask": {
+            "value": "*torus*"
+        }
     }
 }
 

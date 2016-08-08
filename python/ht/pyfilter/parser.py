@@ -1,18 +1,6 @@
 """This module contains functions used to parse PyFilter command line options.
 
-Synopsis
---------
-
-Functions:
-    applyProperties()
-        Apply properties for a given stage.
-
-    buildPropertyInformation()
-        Build a dictionary of properties to apply based on the script args.
-
 """
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
 
 # =============================================================================
 # IMPORTS
@@ -29,26 +17,12 @@ from ht.pyfilter.properties import MaskedPropertySetting, PropertySetting
 import ht.utils
 
 # =============================================================================
-# EXPORTS
-# =============================================================================
-
-__all__ = [
-    "applyProperties",
-    "buildPropertyInformation",
-]
-
-# =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-#    Name: _buildParser
-#  Raises: N/A
-# Returns: argparse.ArgumentParser:
-#              The created argument parser.
-#    Desc: Build the PyFilter argument parser.
-# -----------------------------------------------------------------------------
+
 def _buildParser():
+    """Build the PyFilter argument parser."""
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -69,37 +43,28 @@ def _buildParser():
     return parser
 
 
-# -----------------------------------------------------------------------------
-#    Name: _createPropertySetting
-#    Args: stageName : (str)
-#              The name of the current stage.
-#          propertyName : (str)
-#              The name of the property to create.
-#          propertyBlock : (dict)
-#              The property information dictionary.
-#  Raises: N/A
-# Returns: MaskedPropertySetting|PropertySetting
-#              The PropertySetting object for the property.
-#    Desc: Build an appropriate PropertySetting object for the property.  If
-#          the property block contains a 'mask' field then a
-#          MaskedPropertySetting is created to handle masking.
-# -----------------------------------------------------------------------------
-def _createPropertySetting(stageName, propertyName, propertyBlock):
+def _createPropertySetting(stage_name, property_name, property_block):
+    """Build an appropriate PropertySetting object for the property.
+
+    If the property block contains a 'mask' field then a MaskedPropertySetting
+    is created to handle masking.
+
+    """
     # Handle masked properties.
-    if "mask" in propertyBlock:
+    if "mask" in property_block:
         # Filter a plane.
-        if stageName == "plane":
+        if stage_name == "plane":
             return MaskedPropertySetting(
-                propertyName,
-                propertyBlock,
+                property_name,
+                property_block,
                 "plane:variable"
             )
 
         # Something involving an actual object.
-        elif stageName in ("fog", "light", "instance"):
+        elif stage_name in ("fog", "light", "instance"):
             return MaskedPropertySetting(
-                propertyName,
-                propertyBlock,
+                property_name,
+                property_block,
                 "object:name"
             )
 
@@ -109,88 +74,56 @@ def _createPropertySetting(stageName, propertyName, propertyBlock):
         else:
             logging.warning(
                 "No masking available for {}:{}.".format(
-                    stageName,
-                    propertyName
+                    stage_name,
+                    property_name
                 )
             )
 
     # Generic property setting.
-    return PropertySetting(propertyName, propertyBlock)
+    return PropertySetting(property_name, property_block)
 
 
-# -----------------------------------------------------------------------------
-#    Name: _parseArgs
-#  Raises: N/A
-# Returns: argparse.Namespace:
-#              The result of the argument parsing.
-#    Desc: Parse the command line args.
-# -----------------------------------------------------------------------------
 def _parseArgs():
+    """Parse the command line args."""
     # Create the parser.
     parser = _buildParser()
 
     # Parse for known args.
-    filterArgs, _ = parser.parse_known_args()
+    filter_args, _ = parser.parse_known_args()
 
-    return filterArgs
+    return filter_args
 
 
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
 
-def applyProperties(propertyDict, stage):
-    """Apply properties for a given stage.
-
-    Args:
-        propertyDict : (dict)
-            A dictionary whose keys are stage names and values are dictionaries
-            containing PropertySetting objects.
-
-        stage : (str)
-            The name of the stage whose properties to apply.
-
-    Raises:
-        N/A
-
-    Returns:
-        None
-
-    """
+def applyProperties(property_dict, stage):
+    """Apply properties for a given stage."""
     # Ensure there are properties for this stage.
-    if stage in propertyDict:
+    if stage in property_dict:
         # Set each property.
-        for prop in propertyDict[stage]:
+        for prop in property_dict[stage]:
             prop.setProperty()
 
 
 def buildPropertyInformation():
-    """Build a dictionary of properties to apply based on the script args.
-
-    Raises:
-        N/A
-
-    Returns:
-        dict
-            A dictionary whose keys are filter stage names and values are lists
-            of PropertySetting objects for each stage.
-
-    """
+    """Build a dictionary of properties to apply based on the script args."""
     # Get the parsed args.
-    filterArgs = _parseArgs()
+    filter_args = _parseArgs()
 
     # Get the logger.
     logger = logging.getLogger()
 
     # Since the log level argument is a string we should get the corresponding
     # enum from the module and set the log level using it.
-    logger.setLevel(getattr(logging, filterArgs.logLevel))
+    logger.setLevel(getattr(logging, filter_args.logLevel))
 
-    propertyDict = {}
+    property_dict = {}
 
     # Process custom files.
-    if filterArgs.file is not None:
-        for path in filterArgs.file:
+    if filter_args.file is not None:
+        for path in filter_args.file:
             logging.debug("Reading properties from {}".format(path))
 
             # Load json data from the file.
@@ -198,45 +131,45 @@ def buildPropertyInformation():
                 data = json.load(f, object_hook=ht.utils.convertFromUnicode)
 
             # Process each filter stage name and it's data.
-            for stageName, stageData in data.iteritems():
+            for stage_name, state_data in data.iteritems():
                 # A list of properties for this stage.
                 properties = []
 
                 # Check if the stage should be disabled.
-                if "disabled" in stageData:
-                    if stageData["disabled"]:
+                if "disabled" in state_data:
+                    if state_data["disabled"]:
                         logging.debug(
-                            "Stage entry disabled: {}".format(stageName)
+                            "Stage entry disabled: {}".format(stage_name)
                         )
 
                         continue
 
                     # If not, remove the disabled entry.
-                    del(stageData["disabled"])
+                    del(state_data["disabled"])
 
                 # The data is stored by property name.
-                for propertyName, propertyBlock in stageData.iteritems():
+                for property_name, property_block in state_data.iteritems():
                     # If we want to set the same property with different
                     # settings multiple times (eg. different masks) we can
                     # have a list of objects instead.  In the case where we
                     # just have a single one (really a dictionary) then add it
                     # to a list so we can process it in a loop.
-                    if isinstance(propertyBlock, dict):
-                        propertyBlock = [propertyBlock]
+                    if isinstance(property_block, dict):
+                        property_block = [property_block]
 
-                    if isinstance(propertyBlock, Iterable):
+                    if isinstance(property_block, Iterable):
                         # Process any properties in the block.
-                        for propertyElem in propertyBlock:
+                        for property_elem in property_block:
                             prop = _createPropertySetting(
-                                stageName,
-                                propertyName,
-                                propertyElem
+                                stage_name,
+                                property_name,
+                                property_elem
                             )
 
                             properties.append(prop)
 
                 # Store the properties for this stage.
-                propertyDict[str(stageName)] = properties
+                property_dict[str(stage_name)] = properties
 
-    return propertyDict
+    return property_dict
 

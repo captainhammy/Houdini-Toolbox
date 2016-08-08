@@ -26,10 +26,6 @@ class TreeNode(object):
 
     """
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
     def __init__(self, parent=None):
         self._children = []
         self._parent = parent
@@ -126,10 +122,6 @@ class TreeNode(object):
 class FolderNode(TreeNode):
     """Tree node representing a folder."""
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
     def __init__(self, name, parent=None):
         super(FolderNode, self).__init__(parent)
 
@@ -161,10 +153,6 @@ class AOVBaseNode(TreeNode):
 
     """
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
     def __init__(self, item, parent=None):
         super(AOVBaseNode, self).__init__(parent)
 
@@ -192,10 +180,6 @@ class AOVBaseNode(TreeNode):
 
 class AOVNode(AOVBaseNode):
     """Node representing an AOV."""
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self, aov, parent=None):
         super(AOVNode, self).__init__(aov, parent)
@@ -280,10 +264,6 @@ class AOVNode(AOVBaseNode):
 class AOVGroupNode(AOVBaseNode):
     """Node representing an AOVGroup."""
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
     def __init__(self, group, parent=None):
         super(AOVGroupNode, self).__init__(group, parent)
 
@@ -360,10 +340,6 @@ class LeafFilterProxyModel(QtGui.QSortFilterProxyModel):
     TreeNode child types.
 
     """
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self, parent=None):
         super(LeafFilterProxyModel, self).__init__(parent)
@@ -839,10 +815,6 @@ class AOVsToAddModel(BaseAOVTreeModel):
     insertedItemsSignal = QtCore.Signal([AOVBaseNode])
     removedItemsSignal = QtCore.Signal([AOVBaseNode])
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
     def __init__(self, root, parent=None):
         super(AOVsToAddModel, self).__init__(root, parent)
 
@@ -952,10 +924,6 @@ class AOVsToAddModel(BaseAOVTreeModel):
 class AOVGroupEditListModel(QtCore.QAbstractListModel):
     """This class represents data defining AOVs belonging to an AOVGroup."""
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
     def __init__(self, parent=None):
         super(AOVGroupEditListModel, self).__init__(parent)
 
@@ -1033,16 +1001,12 @@ class AOVGroupEditListModel(QtCore.QAbstractListModel):
 class InfoTableModel(QtCore.QAbstractTableModel):
     """Base class for information table models."""
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
     def __init__(self, parent=None):
         super(InfoTableModel, self).__init__(parent)
 
-        # Store the titles and values in lists since the count my vary depending
-        # on the data set on the group.  This prevents having to do redundant
-        # calculations inside rowCount() and data()
+        # Store the titles and values in lists since the count my vary
+        # depending on the data set on the group.  This prevents having to do
+        # redundant calculations inside rowCount() and data()
         self._titles = []
         self._values = []
 
@@ -1084,10 +1048,6 @@ class InfoTableModel(QtCore.QAbstractTableModel):
 
 class AOVInfoTableModel(InfoTableModel):
     """This class represents information data about an AOV."""
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self, parent=None):
         super(AOVInfoTableModel, self).__init__(parent)
@@ -1162,10 +1122,6 @@ class AOVInfoTableModel(InfoTableModel):
 class AOVGroupInfoTableModel(InfoTableModel):
     """This class represents information data about an AOVGroup."""
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
     def __init__(self, parent=None):
         super(AOVGroupInfoTableModel, self).__init__(parent)
 
@@ -1207,10 +1163,6 @@ class AOVGroupInfoTableModel(InfoTableModel):
 
 class AOVGroupMemberListModel(QtCore.QAbstractListModel):
     """This class represents a list of AOVs belonging to an AOVGroup."""
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self, parent=None):
         super(AOVGroupMemberListModel, self).__init__(parent)
@@ -1254,3 +1206,4 @@ class AOVGroupMemberListModel(QtCore.QAbstractListModel):
     def rowCount(self, parent):
         """Number of rows."""
         return len(self.aovs)
+

@@ -1,7 +1,5 @@
 #!/usr/bin/python
-"""Handle creating and removing symlinks for custom Houdini wrapper.
-
-"""
+"""Handle creating and removing symlinks for custom Houdini wrapper."""
 
 # =============================================================================
 # IMPORTS
@@ -15,7 +13,7 @@ import stat
 import ht.argument
 
 # =============================================================================
-# CONSTANTS
+# GLOBALS
 # =============================================================================
 
 # Default applications to install.
@@ -40,17 +38,11 @@ _DEFAULT_APPS = [
 ]
 
 # =============================================================================
-# FUNCTIONS
+# NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-#    Name: _buildParser
-#  Raises: N/A
-# Returns: ht.argument.ArgumentParser
-#              The application argument parser.
-#    Desc: Build an argument parser to handle input.
-# -----------------------------------------------------------------------------
 def _buildParser():
+    """Build an argument parser to handle input."""
     parser = ht.argument.ArgumentParser()
 
     parser.add_argument(
@@ -74,16 +66,16 @@ def _buildParser():
 
     # Create an exclusive group since we can only either install or uninstall
     # at the same time.
-    installGroup = parser.add_mutually_exclusive_group()
+    install_group = parser.add_mutually_exclusive_group()
 
-    installGroup.add_argument(
+    install_group.add_argument(
         "-install",
         action="store_true",
         default=False,
         help="Install symlinks."
     )
 
-    installGroup.add_argument(
+    install_group.add_argument(
         "-uninstall",
         action="store_true",
         default=False,
@@ -92,13 +84,12 @@ def _buildParser():
 
     return parser
 
-# -----------------------------------------------------------------------------
-#    Name: main
-#  Raises: N/A
-# Returns: None
-#    Desc: Main function.
-# -----------------------------------------------------------------------------
+# =============================================================================
+# FUNCTIONS
+# =============================================================================
+
 def main():
+    """Main function."""
     # Build the parser and parse the args.
     parser = _buildParser()
     arguments = parser.parse_args()
@@ -125,39 +116,39 @@ def main():
     # Process each application to handle.
     for application in arguments.apps:
         # Build the link path.
-        linkPath = os.path.join(directory, application)
+        link_path = os.path.join(directory, application)
 
         # Create the link.
         if arguments.install:
             print "Creating {link} -> {target}".format(
-                link=linkPath,
+                link=link_path,
                 target=wrapper
             )
 
-            os.symlink(wrapper, linkPath)
+            os.symlink(wrapper, link_path)
 
 	    # Set links to be executable.
-	    st = os.stat(linkPath)
-	    os.chmod(linkPath, st.st_mode | stat.S_IEXEC)
+	    st = os.stat(link_path)
+	    os.chmod(link_path, st.st_mode | stat.S_IEXEC)
         
         # Try to remove the link.
         elif arguments.uninstall:
             # If the link isn't pointing to the specified wrapper we can't
             # remove it.
-            if os.path.realpath(linkPath) != wrapper:
-                print "Warning: Cannot remove {0}.  Not linked to {1}".format(
-                    linkPath,
+            if os.path.realpath(link_path) != wrapper:
+                print "Warning: Cannot remove {}.  Not linked to {}".format(
+                    link_path,
                     wrapper
                 )
 
                 continue
 
             print "Removing {link} -> {target}".format(
-                link=linkPath,
+                link=link_path,
                 target=wrapper
             )
             # Remove the link.
-            os.unlink(linkPath)
+            os.unlink(link_path)
 
 # =============================================================================
 

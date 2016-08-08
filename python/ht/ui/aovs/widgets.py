@@ -27,10 +27,6 @@ class AOVManagerWidget(QtGui.QWidget):
     invalidAOVSelectedSignal = QtCore.Signal()
     selectedAOVContainedSignal = QtCore.Signal(bool)
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
     def __init__(self, node=None, parent=None):
         super(AOVManagerWidget, self).__init__(parent)
 
@@ -129,10 +125,6 @@ class AOVManagerWidget(QtGui.QWidget):
 class AOVViewerToolBar(QtGui.QToolBar):
     """This class represents a base toolbar class used for AOVs."""
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
     def __init__(self, parent=None):
         super(AOVViewerToolBar, self).__init__(parent)
 
@@ -152,10 +144,6 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
 
     installItemsSignal = QtCore.Signal(models.AOVBaseNode)
     uninstallItemsSignal = QtCore.Signal(models.AOVBaseNode)
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self, parent=None):
         super(AOVSelectTreeWidget, self).__init__(parent)
@@ -622,10 +610,6 @@ class AOVInstallBarWidget(QtGui.QWidget):
     installSignal = QtCore.Signal()
     uninstallSignal = QtCore.Signal()
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
     def __init__(self, parent=None):
         super(AOVInstallBarWidget, self).__init__(parent)
 
@@ -708,10 +692,6 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
     editAOVSignal = QtCore.Signal()
     editGroupSignal = QtCore.Signal()
     newGroupSignal = QtCore.Signal()
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self, parent=None):
         super(AvailableAOVsToolBar, self).__init__(parent)
@@ -852,10 +832,6 @@ class AOVSelectWidget(QtGui.QWidget):
     enableEditAOVSignal = QtCore.Signal(bool)
     enableEditAOVGroupSignal = QtCore.Signal(bool)
     enableInfoButtonSignal = QtCore.Signal(bool)
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self, parent=None):
         super(AOVSelectWidget, self).__init__(parent)
@@ -1007,10 +983,6 @@ class AOVsToAddTreeWidget(QtGui.QTreeView):
     to a node or render.
 
     """
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self, parent=None):
         super(AOVsToAddTreeWidget, self).__init__(parent)
@@ -1302,10 +1274,6 @@ class AOVsToAddToolBar(AOVViewerToolBar):
     # Signal for clearing all items.
     clearAOVsSignal = QtCore.Signal()
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
     def __init__(self, parent=None):
         super(AOVsToAddToolBar, self).__init__(parent)
 
@@ -1443,10 +1411,6 @@ class AOVsToAddWidget(QtGui.QWidget):
     """This class represents the 'AOVs to Apply' widget."""
 
     updateEnabledSignal = QtCore.Signal()
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self, node=None, parent=None):
         super(AOVsToAddWidget, self).__init__(parent)
@@ -1746,10 +1710,6 @@ class CustomSpinBox(QtGui.QSpinBox):
 class FileChooser(QtGui.QWidget):
     """This class represents a file choosing widget."""
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
     def __init__(self, parent=None):
         super(FileChooser, self).__init__(parent)
 
@@ -1827,10 +1787,6 @@ class FileChooser(QtGui.QWidget):
 class FilterWidget(QtGui.QWidget):
     """This class represents a Filter widget."""
 
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
-
     def __init__(self, parent=None):
         super(FilterWidget, self).__init__(parent)
 
@@ -1849,10 +1805,6 @@ class FilterWidget(QtGui.QWidget):
 
 class HelpButton(QtGui.QPushButton):
     """Generic Help button."""
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self, name, parent=None):
         super(HelpButton, self).__init__(
@@ -1906,10 +1858,6 @@ class MenuField(QtGui.QWidget):
     string menu.
 
     """
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self, menu_items, mode=MenuFieldMode.Replace, parent=None):
         super(MenuField, self).__init__(parent)
@@ -1988,10 +1936,6 @@ class StatusMessageWidget(QtGui.QWidget):
     Error = 0
     Warning = 1
     Info = 2
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self, parent=None):
         super(StatusMessageWidget, self).__init__(parent)

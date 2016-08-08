@@ -12,42 +12,14 @@ from scipy.spatial import KDTree
 import hou
 
 # =============================================================================
-# EXPORTS
-# =============================================================================
-
-__all__ = [
-    "PointCloud",
-]
-
-# =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class PointCloud(object):
     """A wrapper around scipy.spatial.KDTree to represent point positions.
 
-    Constructor
-    ~~~~~~~~~~~
-
-    Args:
-        geometry : (hou.Geometry)
-            Geometry to build a point cloud from.
-
-        pattern=None : (str)
-            A Houdini style pattern to select only specific points to build
-            the cloud from.
-
-        leaf_size=10 : (int)
-            Leaf size of underlying KDTree.
-
-    Raises:
-        N/A
-
     """
-
-    # =========================================================================
-    # CONSTRUCTORS
-    # =========================================================================
 
     def __init__(self, geometry, pattern=None, leaf_size=10):
         # The source geometry. We need this to be able to glob points.
@@ -103,17 +75,6 @@ class PointCloud(object):
         objects belonging to the geometry depending on whether a point map is
         being used.
 
-        Args:
-            indexes : ([int])
-                A list of integer point numbers.
-
-        Raises:
-            N/A
-
-        Returns:
-            (hou.Point)
-                A tuple of hou.Point objects.
-
         """
         # If we have a point map set up we need to index into that and then
         # convert to string.
@@ -136,27 +97,11 @@ class PointCloud(object):
             return ()
 
     # =========================================================================
-    # PUBLIC METHODS
+    # METHODS
     # =========================================================================
 
     def findAllClosePoints(self, position, maxdist):
-        """Find all points within the maxdist from the position.
-
-        Args:
-            position : (hou.Vector3)
-                A 3d position.
-
-            maxdist : (float)
-                A distance from the position to get all points for.
-
-        Raises:
-            N/A
-
-        Returns:
-            (hou.Point)
-                A tuple of any found hou.Point objects.
-
-        """
+        """Find all points within the maxdist from the position."""
         # Convert the position to a compatible ndarray.
         positions = numpy.array([position])
 
@@ -166,22 +111,8 @@ class PointCloud(object):
         # Return any points that are found.
         return self._getResultPoints(result[0])
 
-    # =========================================================================
-
     def findNearestPoints(self, position, num_points=1, maxdist=None):
-        """Find the closest N points to the position.
-
-        Args:
-            position : (hou.Vector3)
-                A 3d position.
-
-            num_points=1 : (int)
-                The maximum number of points to find.
-
-            maxdist=None : (float)
-                An optional distance from the position to get all points for.
-
-        """
+        """Find the closest N points to the position"""
         # Make sure we aren't querying for more points than we have.
         if num_points > self._num_elements:
             num_points = self._num_elements

@@ -34,6 +34,7 @@ PACKAGE_CONFIG_FILE = "houdini_package_config.json"
 # CLASSES
 # =============================================================================
 
+
 class HoudiniBase(object):
     """This class represents a Houdini build on disk.
 
@@ -898,6 +899,19 @@ class UnsupportedOSError(Exception):
 # =============================================================================
 
 def _getSESIAuthInfo():
+    """This function reads a custom .json file in the user's home directory to
+    get their SESI website login credentials.
+
+    This is necessary for automatic build downloading.
+
+    Example file contents:
+
+{
+    "username": "your_name,
+    "password": "your_password"
+}
+
+    """
     auth_path = os.path.expandvars("$HOME/.sesi_login_details")
 
     if not os.path.isfile(auth_path):
@@ -915,6 +929,7 @@ def _getSESIAuthInfo():
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
 
 def downloadBuild(build_file, target_directory):
     """Download a build file from the SESI website and place it in the target
@@ -979,8 +994,6 @@ def setVar(name, value):
 
     os.environ[name] = value
 
-# =============================================================================
-# CONSTANTS
 # =============================================================================
 
 # Build settings for common use by all Houdini objects.
