@@ -1663,6 +1663,18 @@ makeUnique(GU_Detail *gdp, unsigned prim_num)
 """,
 
 """
+bool
+renameGroup(GU_Detail *gdp, const char *from_name, const char *to_name, int group_type)
+{
+    GA_GroupType owner = static_cast<GA_GroupType>(group_type);
+
+    GA_GroupTable *table = gdp->getGroupTable(owner);
+
+    return table->renameGroup(from_name, to_name);
+}
+""",
+
+"""
 FloatArray
 groupBoundingBox(const GU_Detail *gdp, int group_type, const char *group_name)
 {
@@ -2671,6 +2683,27 @@ def _findAttrib(geometry, attrib_type, name):
         return geometry.findGlobalAttrib(name)
 
 
+def _findGroup(geometry, group_type, name):
+    """Find a group with a given name and type.
+
+    group_type corresponds to the integer returned by _getGroupType()
+
+    """
+    if group_type == 0:
+        return geometry.findPointGroup(name)
+
+    elif group_type == 1:
+        return geometry.findPrimGroup(name)
+
+    elif group_type == 2:
+        return geometry.findEdgeGroup(name)
+
+    else:
+        raise hou.OperationFailed(
+            "Invalid group type {}".format(group_type)
+        )
+
+
 def _getAttribStorage(data_type):
     """Get an HDK compatible attribute storage class value."""
     return _ATTRIB_STORAGE_MAP[data_type]
@@ -2798,7 +2831,7 @@ def getGlobalVariableNames(dirty=False):
 
     """
     # Get all the valid variable names.
-    var_names =  _cpp_methods.getGlobalVariables(dirty)
+    var_names = _cpp_methods.getGlobalVariables(dirty)
 
     # Remove any empty names.
     return _cleanStringValues(var_names)
@@ -2845,7 +2878,7 @@ def getVariableNames(dirty=False):
 
     """
     # Get all the valid variable names.
-    var_names =  _cpp_methods.getVariableNames(dirty)
+    var_names = _cpp_methods.getVariableNames(dirty)
 
     # Remove any empty names.
     return _cleanStringValues(var_names)
@@ -3342,7 +3375,8 @@ def renameAttribute(self, new_name):
         # Return the new attribute.
         return _findAttrib(geometry, attrib_type, new_name)
 
-    return None
+    else:
+        return None
 
 
 @addToClass(hou.Attrib)
@@ -3543,8 +3577,8 @@ def copyPointAttributeValues(self, source_point, attributes):
     # source point's geometry.
     attrib_names = [
         attrib.name() for attrib in attributes
-            if attrib.type() == hou.attribType.Point and
-            attrib.geometry().sopNode() == source_geometry.sopNode()
+        if attrib.type() == hou.attribType.Point and
+        attrib.geometry().sopNode() == source_geometry.sopNode()
     ]
 
     # Construct a ctypes string array to pass the strings.
@@ -4280,6 +4314,33 @@ def uniquePoints(self, group=None):
 
     else:
         _cpp_methods.uniquePoints(self, 0, 0)
+
+
+@addToClass(hou.Geometry)
+def renameGroup(self, group, new_name):
+    """Rename this group."""
+    # Make sure the geometry is not read only.
+    if isReadOnly(self):
+        raise hou.GeometryPermissionError()
+
+    # Ensure the new group doesn't have the same name.
+    if new_name == group.name():
+        raise hou.OperationFailed("Cannot rename to same name.")
+
+    group_type = _getGroupType(group)
+
+    success = _cpp_methods.renameGroup(
+        self,
+        group.name(),
+        new_name,
+        group_type
+    )
+
+    if success:
+        return _findGroup(self, group_type, new_name)
+
+    else:
+        return None
 
 
 @addToClass(hou.PointGroup, hou.PrimGroup, hou.EdgeGroup, name="boundingBox")
@@ -5123,10 +5184,10 @@ def buildLookat(from_vec, to_vec, up):
 
 # TODO: create instance from point
 @addToModule(hou.hmath)
-def buildInstance(position, direction=hou.Vector3(0,0,1), pscale=1,
-                  scale=hou.Vector3(1 ,1 ,1), up=hou.Vector3(0,1,0),
-                  rot=hou.Quaternion(0,0,0,1), trans=hou.Vector3(0,0,0),
-                  pivot=hou.Vector3(0,0,0),
+def buildInstance(position, direction=hou.Vector3(0, 0, 1), pscale=1,
+                  scale=hou.Vector3(1, 1, 1), up=hou.Vector3(0, 1, 0),
+                  rot=hou.Quaternion(0, 0, 0, 1), trans=hou.Vector3(0, 0, 0),
+                  pivot=hou.Vector3(0, 0, 0),
                   orient=None
                  ):
     """Compute a transform to orient to a given direction.
@@ -5143,7 +5204,8 @@ def buildInstance(position, direction=hou.Vector3(0,0,1), pscale=1,
     If a translation is specified, the entire frame of reference will be moved
     by this translation (unaffected by the scale or rotation).
 
-    If a pivot is specified, use it as the local transformation of the instance.
+    If a pivot is specified, use it as the local transformation of the
+    instance.
 
     If an orientation quaternion is specified, the orientation (using the
     direction and up vector will not be performed and this orientation will
