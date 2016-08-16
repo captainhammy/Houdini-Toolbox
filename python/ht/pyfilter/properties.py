@@ -97,7 +97,7 @@ class PropertySetterManager(object):
 
     def parseFromString(self, property_string):
         """Load properties from a string."""
-        data = json.loads(property_string, object_hook=ht.utils.conveertFromUnicode)
+        data = json.loads(property_string, object_hook=ht.utils.convertFromUnicode)
 
         self._loadFromData(data)
 

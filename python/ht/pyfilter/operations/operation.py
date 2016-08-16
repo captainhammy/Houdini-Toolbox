@@ -13,9 +13,6 @@ from functools import wraps
 # Houdini Toolbox Imports
 from ht.pyfilter.logger import logger
 
-# Houdini Imports
-import mantra
-
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -88,7 +85,6 @@ def logFilter(method_or_name):
     provide basic logging on call.
 
     """
-
     def decorator(func):
 
         @wraps(func)
@@ -99,6 +95,8 @@ def logFilter(method_or_name):
             msg = "{}.{}()".format(class_name, func_name)
 
             if isinstance(method_or_name, str):
+                import mantra
+
                 msg = "{} ({})".format(
                     msg,
                     mantra.property(method_or_name)[0]

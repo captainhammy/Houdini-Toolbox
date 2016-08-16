@@ -13,9 +13,6 @@ __email__ = "captainhammy@gmail.com"
 # Standard Library Imports
 from collections import Iterable
 
-# Houdini Imports
-import mantra
-
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -38,6 +35,8 @@ class Property(object):
 
     def _initData(self):
         """Init internal data."""
+        import mantra
+
     	values = mantra.property(self.name)
 
     	if len(values) == 1:
@@ -56,9 +55,9 @@ class Property(object):
 
     	self._value = value
 
-    # =============================================================================
+    # =========================================================================
     # PROPERTIES
-    # =============================================================================
+    # =========================================================================
 
     @property
     def name(self):
@@ -72,6 +71,8 @@ class Property(object):
 
     @value.setter
     def value(self, value):
+        import mantra
+
         if value is None:
             value = []
 
@@ -107,3 +108,4 @@ def setProperty(name, value):
 
     """
     Property(name).value = value
+

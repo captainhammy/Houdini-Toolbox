@@ -10,6 +10,9 @@ __email__ = "captainhammy@gmail.com"
 # IMPORTS
 # =============================================================================
 
+# Standard Library Imports
+import json
+
 # Houdini Toolbox Imports
 from ht.pyfilter.operations.operation import PyFilterOperation, logFilter
 from ht.pyfilter.properties import PropertySetterManager
@@ -46,16 +49,19 @@ class SetProperties(PyFilterOperation):
     @staticmethod
     def buildArgString(properties=None, properties_file=None):
         arg_string = ""
+        args = []
 
         if properties is not None:
-            arg_string += "-properties {} ".format(
-                json.dumps(properties)
+            args.append(
+                '-properties "{}"'.format(
+                    json.dumps(properties)
+                )
             )
 
         if properties_file is not None:
-            arg_string += "-propertiesfile {}".format(properties_file)
+            args.append("-propertiesfile {}".format(properties_file))
 
-        return arg_string
+        return " ".join(args)
 
     @staticmethod
     def registerParserArgs(parser):
@@ -97,7 +103,7 @@ class SetProperties(PyFilterOperation):
         """Process any of our interested arguments if they were passed."""
         if filter_args.properties is not None:
             for prop in filter_args.properties:
-                self.property_manager.loadFromString(prop)
+                self.property_manager.parseFromString(prop)
 
         if filter_args.propertiesfile is not None:
             for filepath in filter_args.propertiesfile:
