@@ -23,17 +23,18 @@ import mantra
 class PyFilterOperation(object):
     """Base class of operations for PyFilter."""
 
-    def __init__(self):
+    def __init__(self, manager):
         self._data = {}
+        self._manager = manager
 
     # =========================================================================
     # SPECIAL METHODS
     # =========================================================================
 
     def __repr__(self):
-    	return "<PyFilterOperation: {}>".format(
-    	    self.__class__.__name__
-    	)
+        return "<PyFilterOperation: {}>".format(
+            self.__class__.__name__
+        )
 
     # =========================================================================
     # PROPERTIES
@@ -44,9 +45,20 @@ class PyFilterOperation(object):
         """Data dictionary for sharing between stages and filter calls."""
         return self._data
 
+    @property
+    def manager(self):
+        """Reference to the PyFilterManager this operation is registered with.
+
+        """
+        return self._manager
+
     # =========================================================================
     # STATIC METHODS
     # =========================================================================
+
+    @staticmethod
+    def buildArgString(*args, **kwargs):
+        pass
 
     @staticmethod
     def registerParserArgs(parser):
@@ -102,3 +114,4 @@ def logFilter(method_or_name):
         return decorator(method_or_name)
 
     return decorator
+

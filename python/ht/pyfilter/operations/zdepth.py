@@ -28,8 +28,8 @@ class ZDepthPass(PyFilterOperation):
 
     """
 
-    def __init__(self):
-	    super(ZDepthPass, self).__init__()
+    def __init__(self, manager):
+        super(ZDepthPass, self).__init__(manager)
 
         # Should the operation be run.
         self._active = False
@@ -42,14 +42,16 @@ class ZDepthPass(PyFilterOperation):
     # =========================================================================
 
     @staticmethod
+    def buildArgString(active):
+        return "-zdepth"
+
+    @staticmethod
     def registerParserArgs(parser):
         """Register interested parser args for this operation."""
         parser.add_argument(
             "-zdepth",
-            nargs="?",
-            default=None,
-            action="store",
-            help=""
+            action="store_true",
+            help="Enable the filter"
         )
 
     # =========================================================================
@@ -59,8 +61,8 @@ class ZDepthPass(PyFilterOperation):
     @logFilter
     def filterCamera(self):
         """Apply camera properties."""
-	    # Redirect output image?
-	    pass
+        # Redirect output image?
+        pass
 
     @logFilter("object:name")
     def filterInstance(self):
@@ -71,7 +73,7 @@ class ZDepthPass(PyFilterOperation):
 
         print matte, phantom, surface
 
-	    surface = mantra.property("object:surface")[0]
+        surface = mantra.property("object:surface")[0]
 
         setProperty("object:overridedetail", True)
 
@@ -113,9 +115,10 @@ class ZDepthPass(PyFilterOperation):
 
     def processParsedArgs(self, filter_args):
         """Process any of our interested arguments if they were passed."""
-	    if filter_args.zdepth is not None:
-	        self._active = filter_args.zdepth
+        if filter_args.zdepth is not None:
+            self._active = filter_args.zdepth
 
     def shouldRun(self):
         """Only run if the flag was passed."""
-	    return self._active
+        return self._active
+

@@ -25,8 +25,8 @@ class SetProperties(PyFilterOperation):
 
     """
 
-    def __init__(self):
-        super(SetProperties, self).__init__()
+    def __init__(self, manager):
+        super(SetProperties, self).__init__(manager)
 
         self._property_manager = PropertySetterManager()
 
@@ -42,6 +42,20 @@ class SetProperties(PyFilterOperation):
    # =========================================================================
    # STATIC METHODS
    # =========================================================================
+
+    @staticmethod
+    def buildArgString(properties=None, properties_file=None):
+        arg_string = ""
+
+        if properties is not None:
+            arg_string += "-properties {} ".format(
+                json.dumps(properties)
+            )
+
+        if properties_file is not None:
+            arg_string += "-propertiesfile {}".format(properties_file)
+
+        return arg_string
 
     @staticmethod
     def registerParserArgs(parser):
@@ -82,8 +96,10 @@ class SetProperties(PyFilterOperation):
     def processParsedArgs(self, filter_args):
         """Process any of our interested arguments if they were passed."""
         if filter_args.properties is not None:
-            self.property_manager.loadFromString(filter_args.properties)
+            for prop in filter_args.properties:
+                self.property_manager.loadFromString(prop)
 
         if filter_args.propertiesfile is not None:
             for filepath in filter_args.propertiesfile:
                 self.property_manager.loadFromFile(filepath)
+

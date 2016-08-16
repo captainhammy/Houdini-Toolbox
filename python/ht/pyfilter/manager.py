@@ -27,14 +27,14 @@ class PyFilterManager(object):
     """Manager class for PyFilter operations."""
 
     def __init__(self):
-	self._data = {}
-	self._operations = []
+        self._data = {}
+        self._operations = []
 
         # Populate the list of operations.
-	self._registerOperations()
+        self._registerOperations()
 
         # Build and parse any arguments.
-	self._parsePyFilterArgs()
+        self._parsePyFilterArgs()
 
     # =========================================================================
     # PROPERTIES
@@ -43,12 +43,12 @@ class PyFilterManager(object):
     @property
     def data(self):
         """Data dictionary that can be used to pass information."""
-	return self._data
+        return self._data
 
     @property
     def operations(self):
         """A list of registered operations."""
-	return self._operations
+        return self._operations
 
     # =========================================================================
     # NON-PUBLIC METHODS
@@ -56,55 +56,55 @@ class PyFilterManager(object):
 
     def _parsePyFilterArgs(self):
         """Parse any args passed to PyFilter."""
-	parser = _buildParser()
+        parser = _buildParser()
 
-	self._registerParserArgs(parser)
+        self._registerParserArgs(parser)
 
-	filter_args = parser.parse_known_args()[0]
+        filter_args = parser.parse_known_args()[0]
 
-	# Since the log level argument is a string we should get the
-	# corresponding enum from the module and set the log level using it.
-	logger.setLevel(getattr(logging, filter_args.logLevel))
+        # Since the log level argument is a string we should get the
+        # corresponding enum from the module and set the log level using it.
+        logger.setLevel(getattr(logging, filter_args.logLevel))
 
-	self._processParsedArgs(filter_args)
+        self._processParsedArgs(filter_args)
 
     def _processParsedArgs(self, filter_args):
         """Allow operations to process any args that were parsed."""
-	for operation in self.operations:
-	    operation.processParsedArgs(filter_args)
+        for operation in self.operations:
+            operation.processParsedArgs(filter_args)
 
     def _registerOperations(self):
         """Register operations that should be run by the manager."""
-	import hou
+        import hou
 
         # Look for files containing a list of operations.
         try:
-	    files = hou.findFiles("pyfilter/operations.json")
+            files = hou.findFiles("pyfilter/operations.json")
 
         # If no files could be found then abort.
         except hou.OperationFailed:
             return
 
-	for filepath in files:
-	    with open(filepath) as fp:
-		data = json.load(fp, object_hook=ht.utils.convertFromUnicode)
+        for filepath in files:
+            with open(filepath) as fp:
+                data = json.load(fp, object_hook=ht.utils.convertFromUnicode)
 
-	    if "operations" not in data:
-		continue
+            if "operations" not in data:
+                continue
 
-	    for operation in data["operations"]:
-		module_name, class_name = operation
+            for operation in data["operations"]:
+                module_name, class_name = operation
 
                 # Import the operation class.
-		cls = getattr(
+                cls = getattr(
                     __import__(module_name, {}, {}, [class_name]),
                     class_name
                 )
 
-		logger.info("Registering {}".format(class_name))
+                logger.info("Registering {}".format(class_name))
 
                 # Add an instance of it to our operations list.
-		self.operations.append(cls())
+                self.operations.append(cls(self))
 
     def _registerParserArgs(self, parser):
         """Register any necessary args with our parser.
@@ -113,32 +113,35 @@ class PyFilterManager(object):
         available.
 
         """
-	for operation in self.operations:
-	    operation.registerParserArgs(parser)
+        for operation in self.operations:
+            operation.registerParserArgs(parser)
 
     # =========================================================================
     # METHODS
     # =========================================================================
 
-    def runFilters(self, stage):
+    def runFilters(self, stage, *args, **kwargs):
         """Run all filter operations for the specified stage."""
-	for operation in self.operations:
+        results = []
+
+        for operation in self.operations:
             # Skip operations that should not be run.
-	    if not operation.shouldRun():
-		continue
+            if not operation.shouldRun():
+                continue
 
             # Attempt to find the function for this stage.
-	    try:
-		func = getattr(operation, stage)
+            try:
+                func = getattr(operation, stage)
 
             # Filter has no function for this stage so don't do anything.
-	    except AttributeError:
-		continue
+            except AttributeError:
+                continue
 
             # Run the filter.
-            # TODO: Pass manager as an arg in case anything wants to access
-            # shared data?
-	    func()
+            results.append(func(*args, **kwargs))
+
+        return True in results
+
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS

@@ -23,10 +23,10 @@ class SetDeepResolverPath(PyFilterOperation):
 
     """
 
-    def __init__(self):
-    	super(SetDeepResolverPath, self).__init__()
+    def __init__(self, manager):
+        super(SetDeepResolverPath, self).__init__(manager)
 
-    	self._filepath = None
+        self._filepath = None
 
     # =========================================================================
     # PROPERTIES
@@ -44,6 +44,10 @@ class SetDeepResolverPath(PyFilterOperation):
     # =========================================================================
     # STATIC METHODS
     # =========================================================================
+
+    @staticmethod
+    def buildArgString(path):
+        return "-deeppath {}".format(path)
 
     @staticmethod
     def registerParserArgs(parser):
@@ -72,17 +76,17 @@ class SetDeepResolverPath(PyFilterOperation):
             args = list(deepresolver[0].split())
 
             try:
-        	    idx = args.index("filename")
+                idx = args.index("filename")
 
             except ValueError as inst:
-        	    logger.exception(inst)
+                logger.exception(inst)
                 return
 
             else:
-        	    args[idx + 1] = self.filepath
+                args[idx + 1] = self.filepath
 
-        	# Set the new list as the property value
-        	setProperty("image:deepresolver", args)
+                # Set the new list as the property value
+                setProperty("image:deepresolver", args)
 
     def processParsedArgs(self, filter_args):
         """Process any of our interested arguments if they were passed."""
@@ -91,4 +95,5 @@ class SetDeepResolverPath(PyFilterOperation):
 
     def shouldRun(self):
         """Only run if a target path was passed."""
-	    return self.filepath is not None
+        return self.filepath is not None
+
