@@ -54,7 +54,7 @@ class SetProperties(PyFilterOperation):
         if properties is not None:
             args.append(
                 '-properties "{}"'.format(
-                    json.dumps(properties)
+                    json.dumps(properties).replace('"', '\\"')
                 )
             )
 
