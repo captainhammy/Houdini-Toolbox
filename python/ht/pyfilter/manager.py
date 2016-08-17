@@ -62,10 +62,6 @@ class PyFilterManager(object):
 
         filter_args = parser.parse_known_args()[0]
 
-        # Since the log level argument is a string we should get the
-        # corresponding enum from the module and set the log level using it.
-        logger.setLevel(getattr(logging, filter_args.logLevel))
-
         self._processParsedArgs(filter_args)
 
     def _processParsedArgs(self, filter_args):
@@ -149,14 +145,6 @@ class PyFilterManager(object):
 
 def _buildParser():
     parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        "-logLevel",
-        action="store",
-        default="INFO",
-        choices=("CRITICAL", "DEBUG", "ERROR", "INFO", "WARNING"),
-        help="The Python logging level"
-    )
 
     return parser
 

@@ -19,14 +19,12 @@ from ht.pyfilter.property import setProperty
 class SetDeepResolverPath(PyFilterOperation):
     """Operation to set the deepresolver path.
 
-    This operation creates and uses the -deeppath arg.
-
     """
 
     def __init__(self, manager):
         super(SetDeepResolverPath, self).__init__(manager)
 
-        self._beauty_only = False
+        self._all_passes = False
         self._filepath = None
 
     # =========================================================================
@@ -34,13 +32,13 @@ class SetDeepResolverPath(PyFilterOperation):
     # =========================================================================
 
     @property
-    def beauty_only(self):
-        """Only modify deep resolver during beauty render."""
-        return self._beauty_only
+    def all_passes(self):
+        """Modify deep resolver during all render types."""
+        return self._all_passes
 
-    @beauty_only.setter
-    def beauty_only(self, beauty_only):
-        self._beauty_only = beauty_only
+    @all_passes.setter
+    def all_passes(self, all_passes):
+        self._all_passes = all_passes
 
     @property
     def filepath(self):
@@ -71,7 +69,7 @@ class SetDeepResolverPath(PyFilterOperation):
         )
 
         parser.add_argument(
-            "-deepbeautyonly",
+            "-deepallpasses",
             action="store_true",
             help="Only modify deep resolver for beauty renders."
         )
@@ -87,7 +85,7 @@ class SetDeepResolverPath(PyFilterOperation):
 
         render_type = mantra.property("renderer:rendertype")[0]
 
-        if self.beauty_only and render_type != "beauty":
+        if not self.all_passes and render_type != "beauty":
             logger.warning("Not a beauty render, skipping deepresolver")
             return
 
@@ -119,8 +117,8 @@ class SetDeepResolverPath(PyFilterOperation):
         if filter_args.deeppath is not None:
             self.filepath = filter_args.deeppath
 
-        if filter_args.deepbeautyonly is not None:
-            self.beauty_only = filter_args.deepbeautyonly
+        if filter_args.deepallpasses is not None:
+            self.all_passes = filter_args.deepallpasses
 
     def shouldRun(self):
         """Only run if a target path was passed."""
