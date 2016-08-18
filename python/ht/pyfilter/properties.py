@@ -1,19 +1,16 @@
 """This module defines objects used to set Mantra render properties."""
 
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
-
 # =============================================================================
 # IMPORTS
 # =============================================================================
 
 # Standard Library Imports
-import json
 from collections import Iterable
+import json
 
 # Houdini Toolbox Imports
-import ht.utils
 from ht.pyfilter.logger import logger
+import ht.utils
 
 # Houdini Imports
 import hou
@@ -23,7 +20,9 @@ import hou
 # =============================================================================
 
 class PropertySetterManager(object):
+    """Class for creating and managing PropertySetters.
 
+    """
 
     def __init__(self):
         self._properties = {}
@@ -43,7 +42,7 @@ class PropertySetterManager(object):
             if "disabled" in stage_data:
                 if stage_data["disabled"]:
                     logger.debug(
-                        "Stage entry disabled: {0}".format(stage_name)
+                        "Stage entry disabled: {}".format(stage_name)
                     )
 
                     continue
@@ -53,24 +52,57 @@ class PropertySetterManager(object):
 
             # The data is stored by property name.
             for property_name, property_block in stage_data.iteritems():
-                # If we want to set the same property with different
-                # settings multiple times (eg. different masks) we can
-                # have a list of objects instead.  In the case where we
-                # just have a single one (really a dictionary) then add it
-                # to a list so we can process it in a loop.
-                if isinstance(property_block, dict):
-                    property_block = [property_block]
 
-                if isinstance(property_block, Iterable):
-                    # Process any properties in the block.
-                    for property_elem in property_block:
-                        prop = _createPropertySetter(
-                            stage_name,
-                            property_name,
-                            property_elem
+                # Wrapping properties in a 'rendertype:type' block is supported
+                # if the the name indicates that we have to modify the data.
+                if property_name.startswith("rendertype:"):
+                    # Get the rendertype name.
+                    rendertype = property_name.split(":")[1]
+
+                    # Process each child property block.
+                    for name, block in property_block.iteritems():
+                        # If the child data is the standard dictionary of data
+                        # we can just insert the rendertype value into it.
+                        if isinstance(block, dict):
+                            block["rendertype"] = rendertype
+
+                        # If the child data is a list of dictionaries then
+                        # iterate over each one and insert the value.
+                        elif isinstance(block, list):
+                            for item in block:
+                                item["rendertype"] = rendertype
+
+                        # Process the child data block.
+                        self._processBlock(
+                            properties, stage_name, name, block
                         )
 
-                        properties.append(prop)
+                # Normal data.
+                else:
+                    self._processBlock(
+                        properties, stage_name, property_name, property_block
+                    )
+
+    def _processBlock(self, properties, stage_name, name, block):
+        """Process a data block to add properties."""
+        # If we want to set the same property with different settings multiple
+        # times (eg. different masks) we can have a list of objects instead.
+        # In the case where we just have a single one (really a dictionary)
+        # then add it to a list so we can process it in a loop.
+        if isinstance(block, dict):
+            block = [block]
+
+        # (Can't remember why this check is here. Shouldn't be needed, right?)
+        if isinstance(block, Iterable):
+            # Process any properties in the block.
+            for property_elem in block:
+                prop = _createPropertySetter(
+                    stage_name,
+                    name,
+                    property_elem
+                )
+
+                properties.append(prop)
 
     # =========================================================================
     # PROPERTIES
@@ -87,7 +119,7 @@ class PropertySetterManager(object):
 
     def loadFromFile(self, filepath):
         """Load properties from a file."""
-        logger.debug("Reading properties from {0}".format(filepath))
+        logger.debug("Reading properties from {}".format(filepath))
 
         # Load json data from the file.
         with open(filepath) as f:
@@ -97,7 +129,10 @@ class PropertySetterManager(object):
 
     def parseFromString(self, property_string):
         """Load properties from a string."""
-        data = json.loads(property_string, object_hook=ht.utils.convertFromUnicode)
+        data = json.loads(
+            property_string,
+            object_hook=ht.utils.convertFromUnicode
+        )
 
         self._loadFromData(data)
 
@@ -126,12 +161,16 @@ class PropertySetter(object):
 
         self._enabled = True
         self._find_file = False
+        self._rendertype = None
 
         if "findFile" in property_block:
             self.find_file = property_block["findFile"]
 
         if "enabled" in property_block:
             self.enabled = property_block["enabled"]
+
+        if "rendertype" in property_block:
+            self.rendertype = property_block["rendertype"]
 
         # Perform any value cleanup.
         self._processValue()
@@ -145,9 +184,9 @@ class PropertySetter(object):
 
         # Wrap string values in single quotes.
         if isinstance(value, str):
-            value = "'{0}'".format(value)
+            value = "'{}'".format(value)
 
-        return "<PropertySetter {0}={1}>".format(self.name, value)
+        return "<PropertySetter {}={}>".format(self.name, value)
 
     # =========================================================================
     # NON-PUBLIC METHODS
@@ -216,6 +255,15 @@ class PropertySetter(object):
         return self._name
 
     @property
+    def rendertype(self):
+        """Apply to specific render types."""
+        return self._rendertype
+
+    @rendertype.setter
+    def rendertype(self, rendertype):
+        self._rendertype = rendertype
+
+    @property
     def value(self):
         """The value to set the property."""
         return self._value
@@ -234,12 +282,22 @@ class PropertySetter(object):
         if not self.enabled:
             return
 
+        import mantra
+
+        # Is this property being applied to a specific render type.
+        if self.rendertype is not None:
+            # Get the rendertype for the current pass.
+            rendertype = mantra.property("renderer:rendertype")[0]
+
+            # If the type pattern doesn't match, abort.
+            if not hou.patternMatch(self.rendertype, rendertype):
+                return
+
         logger.debug(
-            "Setting property '{0}' to {1}".format(self.name, self.value)
+            "Setting property '{}' to {}".format(self.name, self.value)
         )
 
         # Update the property value.
-        import mantra
         mantra.setproperty(self.name, self.value)
 
 # =============================================================================
@@ -271,9 +329,9 @@ class MaskedPropertySetter(PropertySetter):
 
         # Wrap string values in single quotes.
         if isinstance(value, str):
-            value = "'{0}'".format(value)
+            value = "'{}'".format(value)
 
-        return "<{0} {1}={2} mask='{3}'>".format(
+        return "<{} {}={} mask='{}'>".format(
             self.__class__.__name__,
             self.name,
             value,
@@ -343,7 +401,7 @@ def _createPropertySetter(stage_name, property_name, property_block):
         # object though.
         else:
             logger.warning(
-                "No masking available for {0}:{1}.".format(
+                "No masking available for {}:{}.".format(
                     stage_name,
                     property_name
                 )
@@ -351,3 +409,4 @@ def _createPropertySetter(stage_name, property_name, property_block):
 
     # Generic property setter.
     return PropertySetter(property_name, property_block)
+

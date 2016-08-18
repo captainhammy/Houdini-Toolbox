@@ -7,39 +7,76 @@
             "enabled": false
         },
 
-        "image:resolution": {
-            "value": [1280, 720]
+        "rendertype:beauty": {
+            "image:resolution":
+            {
+                "value": [1280, 720]
+            },
+
+            "image:samples": {
+                "value": [2, 2]
+            }
         },
 
-        "image:samples": {
-            "value": [2, 2]
+        "rendertype:shadow": {
+            "image:resolution": 
+            {
+                "value": [2048, 2048]
+            },
+
+            "image:samples": {
+                "value": [6, 6]
+            }
         },
 
         "camera:clip": {
-            "value": [0.001, 20]
+            "value": [0.001, 20],
+            "rendertype": "shadow"
         }
     },
 
     "instance": {
         "disabled": false,
 
-        "object:surface":
-        [
-            {
-                "value": ["plastic", "diff", 1, 0, 0],
-                "mask": "*cone*"
-            },
+        "rendertype:beauty": {
+            "object:surface":
+            [
+                {
+                    "value": ["plastic", "diff", 1, 0, 0],
+                    "mask": "*cone*"
+                },
 
-            {
-               "value": ["plastic", "diff", 0, 1, 0],
-               "mask": "*grid*"
-            },
+                {
+                   "value": ["plastic", "diff", 0, 1, 0],
+                   "mask": "*grid*"
+                },
 
-            {
-               "value": ["plastic", "diff", 0, 0, 1],
-               "mask": "*torus*"
-            }
-        ]
+                {
+                   "value": ["plastic", "diff", 0, 0, 1],
+                   "mask": "*torus*"
+                }
+            ]
+        },
+
+        "rendertype:shadow": {
+            "object:surface":
+            [
+                {
+                    "value": ["plastic", "diff", 0, 1, 0],
+                    "mask": "*cone*"
+                },
+
+                {
+                   "value": ["plastic", "diff", 0, 1, 1],
+                   "mask": "*grid*"
+                },
+
+                {
+                   "value": ["plastic", "diff", 1, 0, 1],
+                   "mask": "*torus*"
+                }
+            ]
+        }
     },
 
     "light": {
