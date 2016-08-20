@@ -56,7 +56,7 @@ class PyFilterManager(object):
 
     def _parsePyFilterArgs(self):
         """Parse any args passed to PyFilter."""
-        parser = _buildParser()
+        parser = argparse.ArgumentParser()
 
         self._registerParserArgs(parser)
 
@@ -137,14 +137,4 @@ class PyFilterManager(object):
             results.append(func(*args, **kwargs))
 
         return True in results
-
-
-# =============================================================================
-# NON-PUBLIC FUNCTIONS
-# =============================================================================
-
-def _buildParser():
-    parser = argparse.ArgumentParser()
-
-    return parser
 
