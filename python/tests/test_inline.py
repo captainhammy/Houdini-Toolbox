@@ -50,7 +50,7 @@ def enableHouModule():
 enableHouModule()
 
 # Houdini Imports
-import inline
+import ht.inline
 
 OBJ = hou.node("/obj")
 
