@@ -1,8 +1,5 @@
 """This module contains an operation to force a zdepth pass."""
 
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
-
 # =============================================================================
 # IMPORTS
 # =============================================================================

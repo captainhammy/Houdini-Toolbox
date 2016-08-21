@@ -1,8 +1,5 @@
 """This module defines the logger for PyFilter operations."""
 
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
-
 # =============================================================================
 # IMPORTS
 # =============================================================================
@@ -25,3 +22,4 @@ formatter = logging.Formatter(
 sh.setFormatter(formatter)
 
 logger.addHandler(sh)
+

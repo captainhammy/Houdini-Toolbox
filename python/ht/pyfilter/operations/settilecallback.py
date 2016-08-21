@@ -1,8 +1,5 @@
 """This module contains an operation to set a tile callback."""
 
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
-
 # =============================================================================
 # IMPORTS
 # =============================================================================

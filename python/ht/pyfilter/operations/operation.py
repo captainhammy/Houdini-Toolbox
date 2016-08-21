@@ -1,8 +1,5 @@
 """This module contains the base class for runnable PyFilter operations."""
 
-__author__ = "Graham Thompson"
-__email__ = "captainhammy@gmail.com"
-
 # =============================================================================
 # IMPORTS
 # =============================================================================
