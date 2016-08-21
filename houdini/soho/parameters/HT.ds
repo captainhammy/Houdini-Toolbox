@@ -56,4 +56,128 @@
 	    parmtag	{ "script_callback_language" "python" }
 	}
     }
+
+    collection {
+        name    ht_ip_overrides
+        label   "ip Overrides"
+        parmtag { spare_category "ip Overrides" }
+
+	parm {
+	    name	"enable_ip_override"
+	    label	"Override ip Settings"
+	    type	toggle
+	    joinnext
+	    default	{ "0" }
+	    help	"Enable overriding render settings for ip."
+	    range	{ 0 1 }
+	    export	none
+	}
+	parm {
+	    name	"set_command"
+	    label	"Set Command"
+	    type	button
+	    nolabel
+	    default	{ "0" }
+	    help	"Set the appropriate command to render with the PyFilter"
+	    range	{ 0 1 }
+	    export	none
+	    parmtag	{ "button_icon" "hicon:/SVGIcons.index?ROP_soho.svg" }
+	    parmtag	{ "script_callback" "__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.setMantraCommand(hou.pwd())" }
+	    parmtag	{ "script_callback_language" "python" }
+	}
+	parm {
+	    name	"ip_override_camerares"
+	    label	"Enable Resolution Override"
+	    type	toggle
+	    nolabel
+	    joinnext
+	    default	{ "0" }
+	    help	"Enable overriding ip camera resolution."
+	    disablewhen	"{ enable_ip_override == 0 }"
+	    range	{ 0 1 }
+	    export	none
+	}
+	parm {
+	    name	"ip_res_fraction"
+	    label	"Resolution Scale"
+	    type	string
+	    joinnext
+	    default	{ "0.5" }
+	    help	"Scale the image resolution."
+	    disablewhen	"{ ip_override_camerares == 0 } { enable_ip_override == 0 }"
+	    menu	{
+		"0.1"	"1/10 (One Tenth Resolution)"
+		"0.2"	"1/5 (One Fifth Resolution)"
+		"0.25"	"1/4 (Quarter Resolution)"
+		"0.3333333"	"1/3 (One Third Resolution)"
+		"0.5"	"1/2 (Half Resolution)"
+		"0.6666666"	"2/3 (Two Thirds Resolution)"
+		"0.75"	"3/4 (Three Quarter Resolution)"
+	    }
+	    range	{ 0 1 }
+	    export	none
+	}
+	parm {
+	    name	"ip_resolution_display"
+	    label	"Resolution"
+	    type	label
+	    nolabel
+	    default	{ "`pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.buildResolutionScaleDisplay(hou.pwd())\")`" }
+	    hidewhen	"{ enable_ip_override == 0 } { ip_override_camerares == 0 }"
+	    range	{ 0 1 }
+	    export	none
+	}
+	parm {
+	    name	"ip_sample_scale"
+	    label	"Pixel Sample %"
+	    type	float
+	    joinnext
+	    default	{ "0.5" }
+	    help	"Scale the pixel samples."
+	    disablewhen	"{ enable_ip_override == 0 }"
+	    range	{ 0! 1 }
+	    export	none
+	}
+	parm {
+	    name	"ip_sample_display"
+	    label	"Pixel Samples"
+	    type	label
+	    nolabel
+	    default	{ "`pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.buildPixleSampleScaleDisplay(hou.pwd())\")`" }
+	    hidewhen	"{ enable_ip_override == 0 }"
+	    range	{ 0 1 }
+	    export	none
+	}
+	parm {
+	    name	"ip_disable_blur"
+	    label	"Disable Motion Blur"
+	    type	toggle
+	    default	{ "0" }
+	    help	"Disable rendering with motion blur."
+	    disablewhen	"{ enable_ip_override == 0 }"
+	    range	{ 0 1 }
+	    export	none
+	}
+	parm {
+	    name	"ip_disable_aovs"
+	    label	"Disable AOVs"
+	    type	toggle
+	    default	{ "0" }
+	    help	"Disable rendering extra image planes."
+	    disablewhen	"{ enable_ip_override == 0 }"
+	    range	{ 0 1 }
+	    export	none
+	}
+	parm {
+	    name	"ip_disable_deep"
+	    label	"Disable Deep Output"
+	    type	toggle
+	    default	{ "1" }
+	    help	"Disable generating any deep images."
+	    disablewhen	"{ enable_ip_override == 0 }"
+	    range	{ 0 1 }
+	    export	none
+	}
+
+    }
 }
