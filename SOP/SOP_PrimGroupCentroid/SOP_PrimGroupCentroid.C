@@ -91,7 +91,9 @@ SOP_PrimGroupCentroid::validateAttrib(const GA_Attribute *attribute,
     // Extract the mode value.
     int mode = *((int *)data);
 
-    UT_String attr_name = attribute->getName();
+    UT_String attr_name;
+
+    attr_name = attribute->getName();
 
     // Don't add 'name' when we are doing that type of operation.
     if (mode == MODE_NAME && attr_name == MODENAME_NAME)

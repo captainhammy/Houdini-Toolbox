@@ -2602,6 +2602,7 @@ _cpp_methods = inlinecpp.createLibrary(
 #include <OP/OP_Director.h>
 #include <OP/OP_Node.h>
 #include <OP/OP_OTLDefinition.h>
+#include <OP/OP_OTLLibrary.h>
 #include <OP/OP_OTLManager.h>
 #include <PRM/PRM_Parm.h>
 #include <ROP/ROP_RenderManager.h>
