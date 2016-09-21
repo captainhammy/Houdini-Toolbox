@@ -1116,7 +1116,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         return self._aov
 
     @aov.setter
-    def setter(self, aov):
+    def aov(self, aov):
         self._aov = aov
 
     # =========================================================================
