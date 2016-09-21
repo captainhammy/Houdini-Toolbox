@@ -296,7 +296,7 @@ class HoudiniBuildData(object):
 
         # Try to get any installer args for the current system.
         all_args.extend(
-            self._types[system].get("installer_args", ())
+            _flattenItems(self._types[system].get("installer_args", ()))
         )
 
         # Look for major.minor specific installer args.
@@ -311,7 +311,9 @@ class HoudiniBuildData(object):
             # and system.
             if "installer_args" in version_data:
                 all_args.extend(
-                    version_data["installer_args"].get(system, ())
+                    _flattenItems(
+                        version_data["installer_args"].get(system, ())
+                    )
                 )
 
         return tuple(all_args)
@@ -929,6 +931,20 @@ class UnsupportedOSError(Exception):
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
+
+def _flattenItems(items):
+    """Flatten a list of items."""
+    flattened = []
+
+    for item in items:
+        if isinstance(item, (list, tuple)):
+            flattened.extend(item)
+
+        else:
+            flattened.append(item)
+
+    return flattened
+
 
 def _getSESIAuthInfo():
     """This function reads a custom .json file in the user's home directory to
