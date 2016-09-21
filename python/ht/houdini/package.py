@@ -108,6 +108,11 @@ class HoudiniBase(object):
         return self._major
 
     @property
+    def major_minor(self):
+        """The major number for this build. """
+        return "{}.{}".format(self.major, self.minor)
+
+    @property
     def minor(self):
         """The minor number for this build. """
         return self._minor
@@ -282,6 +287,34 @@ class HoudiniBuildData(object):
         system = platform.system()
 
         return self._types[system]["ext"]
+
+    def getInstallerArgs(self, major_minor=None):
+        """Get installer args."""
+        system = platform.system()
+
+        all_args = []
+
+        # Try to get any installer args for the current system.
+        all_args.extend(
+            self._types[system].get("installer_args", ())
+        )
+
+        # Look for major.minor specific installer args.
+        if major_minor is not None:
+            if major_minor not in self.versions:
+                raise ValueError("Invalid build number")
+
+            # Get the build information.
+            version_data = self.versions[major_minor]
+
+            # Try to find any specific installer args for the current version
+            # and system.
+            if "installer_args" in version_data:
+                all_args.extend(
+                    version_data["installer_args"].get(system, ())
+                )
+
+        return tuple(all_args)
 
 
 class HoudiniBuildManager(object):
@@ -544,6 +577,7 @@ class HoudiniInstallFile(HoudiniBase):
     # =========================================================================
 
     def _installLinux(self, install_path):
+        """Install the build on linux."""
         # Let our system tell us where we can store the temp files.
         temp_path = tempfile.gettempdir()
 
@@ -563,18 +597,16 @@ class HoudiniInstallFile(HoudiniBase):
         # Build the path to the newly extracted tarball.
         extract_path = os.path.join(temp_path, archive_name)
 
-        # Execute the Houdini install script.
-        print "Running Houdini installer."
+        # Path to the installer script.
+        cmd = [os.path.join(extract_path, "houdini.install")]
 
-        cmd = (
-            os.path.join(extract_path, "houdini.install"),
-            "--no-license",
-            "--no-menus",
-            "--accept-EULA",
-            "--make-dir",
-            install_path
-        )
+        # Get any installer arguments.
+        cmd.extend(SETTINGS.build_data.getInstallerArgs(self.major_minor))
 
+        # Last arg is the target path.
+        cmd.append(install_path)
+
+        print "Running Houdini installer: {}".format(" ".join(cmd))
         subprocess.call(cmd)
 
         # Remove the temporary extraction directory.
