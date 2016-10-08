@@ -990,20 +990,18 @@ def downloadBuild(build_file, target_directory):
 
     browser = Browser()
     browser.set_handle_robots(False)
-    browser.open('http://archive.sidefx.com/index.php?option=com_login')
+    browser.open("https://www.sidefx.com/login/?next=/download/daily-builds/")
 
     browser.select_form(nr=0)
     browser.form['username'] = user
     browser.form['password'] = password
     browser.submit()
 
-    browser.follow_link(text='Daily Builds', nr=0)
-    browser.follow_link(text=build_file, nr=0)
-    browser.select_form(nr=0)
-
-    form = browser.form
-    form['terms_menu'] = ['Accept']
-    resp = browser.submit()
+    browser.open('http://www.sidefx.com/download/daily-builds/')
+    resp = browser.follow_link(text=build_file, nr=0)
+    url = resp.geturl()
+    url += 'get/'
+    resp = browser.open(url)
 
     target_path = os.path.join(target_directory, build_file)
 
