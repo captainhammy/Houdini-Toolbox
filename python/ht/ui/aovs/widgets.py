@@ -1592,7 +1592,7 @@ class NewGroupAOVListWidget(QtWidgets.QListView):
 
         model = models.AOVGroupEditListModel()
 
-        self.proxy_model = QtWidgets.QSortFilterProxyModel()
+        self.proxy_model = QtCore.QSortFilterProxyModel()
         self.proxy_model.setSourceModel(model)
         self.proxy_model.sort(QtCore.Qt.AscendingOrder)
 
@@ -1684,7 +1684,7 @@ class GroupMemberListWidget(QtWidgets.QListView):
 
         model = models.AOVGroupMemberListModel()
 
-        self.proxy_model = QtWidgets.QSortFilterProxyModel()
+        self.proxy_model = QtCore.QSortFilterProxyModel()
         self.proxy_model.setSourceModel(model)
         self.proxy_model.sort(QtCore.Qt.AscendingOrder)
 
