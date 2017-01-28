@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Python Imports
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtGui
 import pickle
 
 # Houdini Toolbox Imports
@@ -335,7 +335,7 @@ class IntrinsicAOVGroupNode(AOVGroupNode):
 # PROXY MODELS
 # =============================================================================
 
-class LeafFilterProxyModel(QtGui.QSortFilterProxyModel):
+class LeafFilterProxyModel(QtCore.QSortFilterProxyModel):
     """Custom QSortFilterProxyModel designed to filter based on various
     TreeNode child types.
 

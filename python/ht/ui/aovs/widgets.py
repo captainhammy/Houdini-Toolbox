@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Python Imports
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtGui, QtWidgets
 import os
 import pickle
 
@@ -21,7 +21,7 @@ import hou
 # CLASSES
 # =============================================================================
 
-class AOVManagerWidget(QtGui.QWidget):
+class AOVManagerWidget(QtWidgets.QWidget):
     """Primary AOV Manager widget."""
 
     invalidAOVSelectedSignal = QtCore.Signal()
@@ -97,14 +97,14 @@ class AOVManagerWidget(QtGui.QWidget):
 
     def initUI(self):
         """Initliaze the UI."""
-        layout = QtGui.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
         layout.setContentsMargins(0, 0, 0, 0)
 
         # =====================================================================
 
-        splitter = QtGui.QSplitter()
+        splitter = QtWidgets.QSplitter()
         layout.addWidget(splitter)
 
         self.select_widget = AOVSelectWidget()
@@ -122,7 +122,7 @@ class AOVManagerWidget(QtGui.QWidget):
         self.to_add_widget.setNode(node)
 
 
-class AOVViewerToolBar(QtGui.QToolBar):
+class AOVViewerToolBar(QtWidgets.QToolBar):
     """This class represents a base toolbar class used for AOVs."""
 
     def __init__(self, parent=None):
@@ -135,7 +135,7 @@ class AOVViewerToolBar(QtGui.QToolBar):
 # AOVs and Groups
 # =============================================================================
 
-class AOVSelectTreeWidget(QtGui.QTreeView):
+class AOVSelectTreeWidget(QtWidgets.QTreeView):
     """This class represents a tree with AOVs and AOVGroups that can be
     added to renders.
 
@@ -155,7 +155,7 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         self.proxy_model.setSourceModel(model)
         self.setModel(self.proxy_model)
 
-        self.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
         self.setAlternatingRowColors(True)
         self.setHeaderHidden(True)
@@ -423,7 +423,7 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         """Open the RMB context menu."""
         indexes = self.selectedIndexes()
 
-        menu = QtGui.QMenu(self)
+        menu = QtWidgets.QMenu(self)
 
         show_expand = False
         show_collapse = False
@@ -601,7 +601,7 @@ class AOVSelectTreeWidget(QtGui.QTreeView):
         self.model().sourceModel().updateGroup(group)
 
 
-class AOVInstallBarWidget(QtGui.QWidget):
+class AOVInstallBarWidget(QtWidgets.QWidget):
     """This class represents the vertical bar with buttons to install and
     uninstall items from the 'AOVs and Groups' tree.
 
@@ -613,12 +613,12 @@ class AOVInstallBarWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(AOVInstallBarWidget, self).__init__(parent)
 
-        layout = QtGui.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
         # =====================================================================
 
-        self.reload = QtGui.QPushButton("")
+        self.reload = QtWidgets.QPushButton("")
         layout.addWidget(self.reload)
 
         self.reload.setIcon(
@@ -635,7 +635,7 @@ class AOVInstallBarWidget(QtGui.QWidget):
 
         # =====================================================================
 
-        self.install_button = QtGui.QPushButton("")
+        self.install_button = QtWidgets.QPushButton("")
         layout.addWidget(self.install_button, alignment=QtCore.Qt.AlignVCenter)
 
         self.install_button.setIcon(
@@ -651,7 +651,7 @@ class AOVInstallBarWidget(QtGui.QWidget):
 
         # =====================================================================
 
-        self.uninstall_button = QtGui.QPushButton("")
+        self.uninstall_button = QtWidgets.QPushButton("")
         layout.addWidget(self.uninstall_button, alignment=QtCore.Qt.AlignVCenter)
 
         self.uninstall_button.setIcon(
@@ -699,10 +699,10 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
         import ht.ui.aovs.dialogs
 
         # Button and action to create a new AOV.
-        new_aov_button = QtGui.QToolButton(self)
+        new_aov_button = QtWidgets.QToolButton(self)
         self.addWidget(new_aov_button)
 
-        new_aov_action = QtGui.QAction(
+        new_aov_action = QtWidgets.QAction(
             QtGui.QIcon(":ht/rsc/icons/aovs/create_aov.png"),
             "Create a new AOV.",
             self,
@@ -714,10 +714,10 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
         # =====================================================================
 
         # Button and action to edit an AOV.
-        self.edit_aov_button = QtGui.QToolButton(self)
+        self.edit_aov_button = QtWidgets.QToolButton(self)
         self.addWidget(self.edit_aov_button)
 
-        edit_aov_action = QtGui.QAction(
+        edit_aov_action = QtWidgets.QAction(
             QtGui.QIcon(":ht/rsc/icons/aovs/edit_aov.png"),
             "Edit AOV.",
             self,
@@ -734,10 +734,10 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
         # =====================================================================
 
         # Button and action to create a new AOVGroup.
-        new_group_button = QtGui.QToolButton(self)
+        new_group_button = QtWidgets.QToolButton(self)
         self.addWidget(new_group_button)
 
-        new_group_action = QtGui.QAction(
+        new_group_action = QtWidgets.QAction(
             QtGui.QIcon(":ht/rsc/icons/aovs/create_group.png"),
             "Create a new AOV group.",
             self,
@@ -749,10 +749,10 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
         # =====================================================================
 
         # Button and action to edit an AOVGroup.
-        self.edit_group_button = QtGui.QToolButton(self)
+        self.edit_group_button = QtWidgets.QToolButton(self)
         self.addWidget(self.edit_group_button)
 
-        edit_group_action = QtGui.QAction(
+        edit_group_action = QtWidgets.QAction(
             QtGui.QIcon(":ht/rsc/icons/aovs/edit_group.png"),
             "Edit an AOV group.",
             self,
@@ -769,10 +769,10 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
         # =====================================================================
 
         # Button and action to load a .json file.
-        load_file_button = QtGui.QToolButton(self)
+        load_file_button = QtWidgets.QToolButton(self)
         self.addWidget(load_file_button)
 
-        load_file_action = QtGui.QAction(
+        load_file_action = QtWidgets.QAction(
             hou.ui.createQtIcon("COMMON_file"),
             "Load AOVs from .json files.",
             self,
@@ -783,18 +783,18 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
 
         # =====================================================================
 
-        spacer = QtGui.QWidget()
-        spacer.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        spacer = QtWidgets.QWidget()
+        spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
         self.addWidget(spacer)
 
         # =====================================================================
 
         # Button and action to display information for selected items.
-        self.info_button = QtGui.QToolButton(self)
+        self.info_button = QtWidgets.QToolButton(self)
         self.addWidget(self.info_button)
 
-        info_action = QtGui.QAction(
+        info_action = QtWidgets.QAction(
             hou.ui.createQtIcon("BUTTONS_info"),
             "Display information about the AOV or group.",
             self,
@@ -821,7 +821,7 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
         self.info_button.setEnabled(enable)
 
 
-class AOVSelectWidget(QtGui.QWidget):
+class AOVSelectWidget(QtWidgets.QWidget):
     """This class represents the AOVs and Groups widget."""
 
     # Install and remove signals.
@@ -836,15 +836,15 @@ class AOVSelectWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(AOVSelectWidget, self).__init__(parent)
 
-        layout = QtGui.QHBoxLayout()
+        layout = QtWidgets.QHBoxLayout()
         self.setLayout(layout)
 
-        tree_layout = QtGui.QVBoxLayout()
+        tree_layout = QtWidgets.QVBoxLayout()
         layout.addLayout(tree_layout)
 
         # =====================================================================
 
-        label = QtGui.QLabel("AOVs and Groups")
+        label = QtWidgets.QLabel("AOVs and Groups")
         tree_layout.addWidget(label)
 
         bold_font = QtGui.QFont()
@@ -978,7 +978,7 @@ class AOVSelectWidget(QtGui.QWidget):
 # AOVs to Apply
 # =============================================================================
 
-class AOVsToAddTreeWidget(QtGui.QTreeView):
+class AOVsToAddTreeWidget(QtWidgets.QTreeView):
     """This class represents a tree with AOVs and AOVGroups that can be applied
     to a node or render.
 
@@ -995,7 +995,7 @@ class AOVsToAddTreeWidget(QtGui.QTreeView):
         self.proxy_model.setSourceModel(model)
         self.setModel(self.proxy_model)
 
-        self.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
         self.setAlternatingRowColors(True)
         self.setHeaderHidden(True)
@@ -1174,7 +1174,7 @@ class AOVsToAddTreeWidget(QtGui.QTreeView):
         """Open the RMB context menu."""
         indexes = self.selectedIndexes()
 
-        menu = QtGui.QMenu(self)
+        menu = QtWidgets.QMenu(self)
 
         # Expand/collapse
         show_expand = False
@@ -1278,10 +1278,10 @@ class AOVsToAddToolBar(AOVViewerToolBar):
         super(AOVsToAddToolBar, self).__init__(parent)
 
         # Button and action to apply AOVs at render time.
-        self.apply_button = QtGui.QToolButton(self)
+        self.apply_button = QtWidgets.QToolButton(self)
         self.addWidget(self.apply_button)
 
-        apply_action = QtGui.QAction(
+        apply_action = QtWidgets.QAction(
             hou.ui.createQtIcon("NETWORKS_rop"),
             "Apply",
             self,
@@ -1297,10 +1297,10 @@ class AOVsToAddToolBar(AOVViewerToolBar):
         # =====================================================================
 
         # Button and action to apply AOVs are multiparms.
-        self.apply_as_parms_button = QtGui.QToolButton(self)
+        self.apply_as_parms_button = QtWidgets.QToolButton(self)
         self.addWidget(self.apply_as_parms_button)
 
-        parms_action = QtGui.QAction(
+        parms_action = QtWidgets.QAction(
             hou.ui.createQtIcon("PANETYPES_parameters"),
             "Apply AOVs to selected nodes as parameters.",
             self,
@@ -1318,10 +1318,10 @@ class AOVsToAddToolBar(AOVViewerToolBar):
         # =====================================================================
 
         # Button and action to create a new AOVGroup from chosen items.
-        self.new_group_button = QtGui.QToolButton(self)
+        self.new_group_button = QtWidgets.QToolButton(self)
         self.addWidget(self.new_group_button)
 
-        new_group_action = QtGui.QAction(
+        new_group_action = QtWidgets.QAction(
             QtGui.QIcon(":ht/rsc/icons/aovs/create_group.png"),
             "Create a new group from chosen AOVs.",
             self,
@@ -1338,10 +1338,10 @@ class AOVsToAddToolBar(AOVViewerToolBar):
         # =====================================================================
 
         # Button and action to load from a node.
-        load_button = QtGui.QToolButton(self)
+        load_button = QtWidgets.QToolButton(self)
         self.addWidget(load_button)
 
-        load_action = QtGui.QAction(
+        load_action = QtWidgets.QAction(
             hou.ui.createQtIcon("DATATYPES_node_path"),
             "Load AOVs from a node.",
             self,
@@ -1352,18 +1352,18 @@ class AOVsToAddToolBar(AOVViewerToolBar):
 
         # =====================================================================
 
-        spacer = QtGui.QWidget()
+        spacer = QtWidgets.QWidget()
         self.addWidget(spacer)
 
-        spacer.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
         # =====================================================================
 
         # Button and action to clear all items from the tree.
-        self.clear_button = QtGui.QToolButton(self)
+        self.clear_button = QtWidgets.QToolButton(self)
         self.addWidget(self.clear_button)
 
-        clear_action = QtGui.QAction(
+        clear_action = QtWidgets.QAction(
             hou.ui.createQtIcon("BUTTONS_clear"),
             "Clear all AOVs.",
             self,
@@ -1407,7 +1407,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
             self.installSignal.emit(items)
 
 
-class AOVsToAddWidget(QtGui.QWidget):
+class AOVsToAddWidget(QtWidgets.QWidget):
     """This class represents the 'AOVs to Apply' widget."""
 
     updateEnabledSignal = QtCore.Signal()
@@ -1417,15 +1417,15 @@ class AOVsToAddWidget(QtGui.QWidget):
 
         self._node = node
 
-        layout = QtGui.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
-        top_layout = QtGui.QHBoxLayout()
+        top_layout = QtWidgets.QHBoxLayout()
         layout.addLayout(top_layout)
 
         # =====================================================================
 
-        self.label = QtGui.QLabel("AOVs to Apply")
+        self.label = QtWidgets.QLabel("AOVs to Apply")
         top_layout.addWidget(self.label)
 
         bold_font = QtGui.QFont()
@@ -1582,17 +1582,17 @@ class AOVsToAddWidget(QtGui.QWidget):
 # New Group Widgets
 # =============================================================================
 
-class NewGroupAOVListWidget(QtGui.QListView):
+class NewGroupAOVListWidget(QtWidgets.QListView):
     """This widget allows editing of group AOV membership."""
 
     def __init__(self, parent=None):
         super(NewGroupAOVListWidget, self).__init__(parent)
 
-        self.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
 
         model = models.AOVGroupEditListModel()
 
-        self.proxy_model = QtGui.QSortFilterProxyModel()
+        self.proxy_model = QtWidgets.QSortFilterProxyModel()
         self.proxy_model.setSourceModel(model)
         self.proxy_model.sort(QtCore.Qt.AscendingOrder)
 
@@ -1608,7 +1608,7 @@ class NewGroupAOVListWidget(QtGui.QListView):
 # Info Widgets
 # =============================================================================
 
-class InfoTableView(QtGui.QTableView):
+class InfoTableView(QtWidgets.QTableView):
     """This class represents a generic table view for information."""
     def __init__(self, parent=None):
         super(InfoTableView, self).__init__(parent)
@@ -1633,10 +1633,10 @@ class InfoTableView(QtGui.QTableView):
         column = index.column()
 
         # Create a menu.
-        menu = QtGui.QMenu(self)
+        menu = QtWidgets.QMenu(self)
 
         # Create an entry to copy cells.
-        copyAction = QtGui.QAction("Copy", self)
+        copyAction = QtWidgets.QAction("Copy", self)
         menu.addAction(copyAction)
 
         copyAction.setShortcut(
@@ -1677,14 +1677,14 @@ class AOVGroupInfoTableWidget(InfoTableView):
         model.initDataFromGroup(group)
         self.setModel(model)
 
-class GroupMemberListWidget(QtGui.QListView):
+class GroupMemberListWidget(QtWidgets.QListView):
     """This widget is for displaying AOVGroup membership."""
     def __init__(self, group, parent=None):
         super(GroupMemberListWidget, self).__init__(parent)
 
         model = models.AOVGroupMemberListModel()
 
-        self.proxy_model = QtGui.QSortFilterProxyModel()
+        self.proxy_model = QtWidgets.QSortFilterProxyModel()
         self.proxy_model.setSourceModel(model)
         self.proxy_model.sort(QtCore.Qt.AscendingOrder)
 
@@ -1698,7 +1698,7 @@ class GroupMemberListWidget(QtGui.QListView):
 # Generic Widgets
 # =============================================================================
 
-class CustomSpinBox(QtGui.QSpinBox):
+class CustomSpinBox(QtWidgets.QSpinBox):
     """A QSpinBox with a custom stylesheet."""
 
     def __init__(self, parent=None):
@@ -1707,13 +1707,13 @@ class CustomSpinBox(QtGui.QSpinBox):
         self.setStyleSheet(uidata.CUSTOMSPINBOX_STYLE)
 
 
-class FileChooser(QtGui.QWidget):
+class FileChooser(QtWidgets.QWidget):
     """This class represents a file choosing widget."""
 
     def __init__(self, parent=None):
         super(FileChooser, self).__init__(parent)
 
-        layout = QtGui.QHBoxLayout()
+        layout = QtWidgets.QHBoxLayout()
         self.setLayout(layout)
 
         layout.setSpacing(0)
@@ -1721,12 +1721,12 @@ class FileChooser(QtGui.QWidget):
 
         # =====================================================================
 
-        self.field = QtGui.QLineEdit()
+        self.field = QtWidgets.QLineEdit()
         layout.addWidget(self.field)
 
         # =====================================================================
 
-        self.button = QtGui.QPushButton(
+        self.button = QtWidgets.QPushButton(
             hou.ui.createQtIcon("BUTTONS_chooser_file"),
             ""
         )
@@ -1784,26 +1784,26 @@ class FileChooser(QtGui.QWidget):
         self.field.setText(path)
 
 
-class FilterWidget(QtGui.QWidget):
+class FilterWidget(QtWidgets.QWidget):
     """This class represents a Filter widget."""
 
     def __init__(self, parent=None):
         super(FilterWidget, self).__init__(parent)
 
-        layout = QtGui.QHBoxLayout()
+        layout = QtWidgets.QHBoxLayout()
         self.setLayout(layout)
 
         layout.setContentsMargins(0, 0, 0, 0)
 
-        layout.addWidget(QtGui.QLabel("Filter"))
+        layout.addWidget(QtWidgets.QLabel("Filter"))
 
-        self.field = QtGui.QLineEdit()
+        self.field = QtWidgets.QLineEdit()
         layout.addWidget(self.field)
 
         self.field.setToolTip("Filter the list of AOVs by name.")
 
 
-class HelpButton(QtGui.QPushButton):
+class HelpButton(QtWidgets.QPushButton):
     """Generic Help button."""
 
     def __init__(self, name, parent=None):
@@ -1853,7 +1853,7 @@ class MenuFieldMode(object):
     Toggle = 1
 
 
-class MenuField(QtGui.QWidget):
+class MenuField(QtWidgets.QWidget):
     """This class represents a crappy attempt at a Replace/Toggle style
     string menu.
 
@@ -1862,7 +1862,7 @@ class MenuField(QtGui.QWidget):
     def __init__(self, menu_items, mode=MenuFieldMode.Replace, parent=None):
         super(MenuField, self).__init__(parent)
 
-        layout = QtGui.QHBoxLayout()
+        layout = QtWidgets.QHBoxLayout()
         self.setLayout(layout)
 
         layout.setSpacing(1)
@@ -1870,15 +1870,15 @@ class MenuField(QtGui.QWidget):
 
         # =====================================================================
 
-        self.field = QtGui.QLineEdit()
+        self.field = QtWidgets.QLineEdit()
         layout.addWidget(self.field)
 
         # =====================================================================
 
-        button = QtGui.QPushButton()
+        button = QtWidgets.QPushButton()
         layout.addWidget(button)
 
-        menu = QtGui.QMenu(button)
+        menu = QtWidgets.QMenu(button)
 
         for item in menu_items:
             label, value = item
@@ -1930,7 +1930,7 @@ class MenuField(QtGui.QWidget):
         return self.field.text()
 
 
-class StatusMessageWidget(QtGui.QWidget):
+class StatusMessageWidget(QtWidgets.QWidget):
     """This class represents an status notification widget."""
 
     Error = 0
@@ -1946,7 +1946,7 @@ class StatusMessageWidget(QtGui.QWidget):
 
         self.setContentsMargins(0, 0, 0, 0)
 
-        layout = QtGui.QHBoxLayout()
+        layout = QtWidgets.QHBoxLayout()
         self.setLayout(layout)
 
         layout.setContentsMargins(0, 0, 0, 0)
@@ -1957,7 +1957,7 @@ class StatusMessageWidget(QtGui.QWidget):
 
         # =====================================================================
 
-        self.icon = QtGui.QLabel()
+        self.icon = QtWidgets.QLabel()
         layout.addWidget(self.icon)
 
         self.icon.setFixedSize(24, 24)
@@ -1966,7 +1966,7 @@ class StatusMessageWidget(QtGui.QWidget):
 
         # =====================================================================
 
-        self.display = QtGui.QLabel()
+        self.display = QtWidgets.QLabel()
         layout.addWidget(self.display)
 
         self.setFixedHeight(24)

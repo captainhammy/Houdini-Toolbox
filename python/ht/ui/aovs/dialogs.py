@@ -10,7 +10,7 @@ AOVGroups.
 # Python Imports
 import os
 import re
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtWidgets
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import manager
@@ -29,7 +29,7 @@ import hou
 # Create/Edit Dialogs
 # =============================================================================
 
-class _BaseHoudiniStyleDialog(QtGui.QDialog):
+class _BaseHoudiniStyleDialog(QtWidgets.QDialog):
     """Base dialog for Houdini related dialogs.  Automatically sets the Houdini
     Qt stylesheet and custom sheets.
 
@@ -162,7 +162,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
     def enableCreation(self, enable):
         """Enable the Ok button."""
-        self.button_box.button(QtGui.QDialogButtonBox.Ok).setEnabled(enable)
+        self.button_box.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(enable)
 
     # =========================================================================
 
@@ -181,12 +181,12 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
     def initUI(self):
         """Initialize the UI."""
-        layout = QtGui.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
         # =====================================================================
 
-        help_layout = QtGui.QHBoxLayout()
+        help_layout = QtWidgets.QHBoxLayout()
         layout.addLayout(help_layout)
 
         help_layout.addStretch(1)
@@ -195,21 +195,21 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout = QtGui.QGridLayout()
+        grid_layout = QtWidgets.QGridLayout()
         layout.addLayout(grid_layout)
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("VEX Variable"), 1, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("VEX Variable"), 1, 0)
 
-        self.variable_name = QtGui.QLineEdit()
+        self.variable_name = QtWidgets.QLineEdit()
         grid_layout.addWidget(self.variable_name, 1, 1)
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("VEX Type"), 2, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("VEX Type"), 2, 0)
 
-        self.type_box = QtGui.QComboBox()
+        self.type_box = QtWidgets.QComboBox()
         grid_layout.addWidget(self.type_box, 2, 1)
 
         for entry in uidata.VEXTYPE_MENU_ITEMS:
@@ -223,9 +223,9 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("Channel Name"), 3, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Channel Name"), 3, 0)
 
-        self.channel_name = QtGui.QLineEdit()
+        self.channel_name = QtWidgets.QLineEdit()
         grid_layout.addWidget(self.channel_name, 3, 1)
 
         self.channel_name.setToolTip(
@@ -234,9 +234,9 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("Quantize"), 4, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Quantize"), 4, 0)
 
-        self.quantize_box = QtGui.QComboBox()
+        self.quantize_box = QtWidgets.QComboBox()
         grid_layout.addWidget(self.quantize_box, 4, 1)
 
         for entry in uidata.QUANTIZE_MENU_ITEMS:
@@ -246,9 +246,9 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("Sample Filter"), 5, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Sample Filter"), 5, 0)
 
-        self.sfilter_box = QtGui.QComboBox()
+        self.sfilter_box = QtWidgets.QComboBox()
         grid_layout.addWidget(self.sfilter_box, 5, 1)
 
         for entry in uidata.SFILTER_MENU_ITEMS:
@@ -256,7 +256,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("Pixel Filter"), 6, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Pixel Filter"), 6, 0)
 
         self.pfilter_widget = widgets.MenuField(
             uidata.PFILTER_MENU_ITEMS
@@ -269,23 +269,23 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        self.componentexport = QtGui.QCheckBox()
+        self.componentexport = QtWidgets.QCheckBox()
         grid_layout.addWidget(self.componentexport, 8, 0)
 
         grid_layout.addWidget(
-            QtGui.QLabel("Export variable for each component"),
+            QtWidgets.QLabel("Export variable for each component"),
             8,
             1
         )
 
         # =====================================================================
 
-        self.components_label = QtGui.QLabel("Export Components")
+        self.components_label = QtWidgets.QLabel("Export Components")
         grid_layout.addWidget(self.components_label, 9, 0)
 
         self.components_label.setDisabled(True)
 
-        self.components = QtGui.QLineEdit()
+        self.components = QtWidgets.QLineEdit()
         grid_layout.addWidget(self.components, 9, 1)
 
         self.components.setDisabled(True)
@@ -302,9 +302,9 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("Light Exports"), 11, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Light Exports"), 11, 0)
 
-        self.lightexport = QtGui.QComboBox()
+        self.lightexport = QtWidgets.QComboBox()
         grid_layout.addWidget(self.lightexport, 11, 1)
 
         for entry in uidata.LIGHTEXPORT_MENU_ITEMS:
@@ -314,12 +314,12 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        self.light_mask_label = QtGui.QLabel("Light Mask")
+        self.light_mask_label = QtWidgets.QLabel("Light Mask")
         grid_layout.addWidget(self.light_mask_label, 12, 0)
 
         self.light_mask_label.setDisabled(True)
 
-        self.light_mask = QtGui.QLineEdit()
+        self.light_mask = QtWidgets.QLineEdit()
         grid_layout.addWidget(self.light_mask, 12, 1)
 
         self.light_mask.setText("*")
@@ -327,12 +327,12 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        self.light_select_label = QtGui.QLabel("Light Selection")
+        self.light_select_label = QtWidgets.QLabel("Light Selection")
         grid_layout.addWidget(self.light_select_label, 13, 0)
 
         self.light_select_label.setDisabled(True)
 
-        self.light_select = QtGui.QLineEdit()
+        self.light_select = QtWidgets.QLineEdit()
         grid_layout.addWidget(self.light_select, 13, 1)
 
         self.light_select.setText("*")
@@ -344,7 +344,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("Priority"), 15, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Priority"), 15, 0)
 
         self.priority = widgets.CustomSpinBox()
         grid_layout.addWidget(self.priority, 15, 1)
@@ -354,9 +354,9 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("Intrinsic"), 16, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Intrinsic"), 16, 0)
 
-        self.intrinsic = QtGui.QLineEdit()
+        self.intrinsic = QtWidgets.QLineEdit()
         grid_layout.addWidget(self.intrinsic, 16, 1)
 
         self.intrinsic.setToolTip(
@@ -370,9 +370,9 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("Comment"), 18, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Comment"), 18, 0)
 
-        self.comment = QtGui.QLineEdit()
+        self.comment = QtWidgets.QLineEdit()
         grid_layout.addWidget(self.comment, 18, 1)
 
         self.comment.setToolTip(
@@ -385,7 +385,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("File Path"), 20, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("File Path"), 20, 0)
 
         self.file_widget = widgets.FileChooser()
         grid_layout.addWidget(self.file_widget, 20, 1)
@@ -397,8 +397,8 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        self.button_box = QtGui.QDialogButtonBox(
-            QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel
+        self.button_box = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
         )
         layout.addWidget(self.button_box)
 
@@ -669,9 +669,9 @@ class EditAOVDialog(_BaseAOVDialog):
 
         self.enableCreation(True)
 
-        self.button_box.addButton(QtGui.QDialogButtonBox.Reset)
+        self.button_box.addButton(QtWidgets.QDialogButtonBox.Reset)
 
-        reset_button = self.button_box.button(QtGui.QDialogButtonBox.Reset)
+        reset_button = self.button_box.button(QtWidgets.QDialogButtonBox.Reset)
         reset_button.clicked.connect(self.reset)
 
     # =========================================================================
@@ -733,18 +733,18 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
 
     def enableCreation(self, enable):
         """Enable the Ok button."""
-        self.button_box.button(QtGui.QDialogButtonBox.Ok).setEnabled(enable)
+        self.button_box.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(enable)
 
     # =========================================================================
 
     def initUI(self):
         """Intialize the UI."""
-        layout = QtGui.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
         # =====================================================================
 
-        help_layout = QtGui.QHBoxLayout()
+        help_layout = QtWidgets.QHBoxLayout()
         layout.addLayout(help_layout)
 
         help_layout.addStretch(1)
@@ -753,14 +753,14 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout = QtGui.QGridLayout()
+        grid_layout = QtWidgets.QGridLayout()
         layout.addLayout(grid_layout)
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("Group Name"), 1, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Group Name"), 1, 0)
 
-        self.group_name = QtGui.QLineEdit()
+        self.group_name = QtWidgets.QLineEdit()
         grid_layout.addWidget(self.group_name, 1, 1)
 
         self.group_name.textChanged.connect(self.validateGroupName)
@@ -769,7 +769,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("File Path"), 2, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("File Path"), 2, 0)
 
         self.file_widget = widgets.FileChooser()
         grid_layout.addWidget(self.file_widget, 2, 1)
@@ -778,9 +778,9 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("Comment"), 3, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Comment"), 3, 0)
 
-        self.comment = QtGui.QLineEdit()
+        self.comment = QtWidgets.QLineEdit()
         grid_layout.addWidget(self.comment, 3, 1)
 
         self.comment.setToolTip(
@@ -789,7 +789,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
 
         # ====================================================================
 
-        grid_layout.addWidget(QtGui.QLabel("Priority"), 4, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Priority"), 4, 0)
 
         self.priority = widgets.CustomSpinBox()
         grid_layout.addWidget(self.priority, 4, 1)
@@ -823,8 +823,8 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        self.button_box = QtGui.QDialogButtonBox(
-            QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Cancel
+        self.button_box = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
         )
 
         layout.addWidget(self.button_box)
@@ -1074,9 +1074,9 @@ class EditGroupDialog(_BaseGroupDialog):
         self.file_widget.enable(False)
 
         # Add a Reset button.
-        self.button_box.addButton(QtGui.QDialogButtonBox.Reset)
+        self.button_box.addButton(QtWidgets.QDialogButtonBox.Reset)
 
-        reset_button = self.button_box.button(QtGui.QDialogButtonBox.Reset)
+        reset_button = self.button_box.button(QtWidgets.QDialogButtonBox.Reset)
         reset_button.clicked.connect(self.reset)
 
         self.enableCreation(True)
@@ -1171,10 +1171,10 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
 
     def initUI(self):
         """Initialize the UI."""
-        layout = QtGui.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
-        self.aov_chooser = QtGui.QComboBox()
+        self.aov_chooser = QtWidgets.QComboBox()
         layout.addWidget(self.aov_chooser)
 
         # Start menu index.
@@ -1214,31 +1214,31 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        self.button_box = QtGui.QDialogButtonBox(
-            QtGui.QDialogButtonBox.Ok
+        self.button_box = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok
         )
         layout.addWidget(self.button_box)
 
         self.button_box.accepted.connect(self.accept)
 
-        edit_button = QtGui.QPushButton(
+        edit_button = QtWidgets.QPushButton(
             hou.ui.createQtIcon("BUTTONS_edit"),
             "Edit"
         )
 
         edit_button.setToolTip("Edit this AOV.")
 
-        self.button_box.addButton(edit_button, QtGui.QDialogButtonBox.HelpRole)
+        self.button_box.addButton(edit_button, QtWidgets.QDialogButtonBox.HelpRole)
         edit_button.clicked.connect(self.edit)
 
         # =====================================================================
 
-        delete_button = QtGui.QPushButton(
+        delete_button = QtWidgets.QPushButton(
             hou.ui.createQtIcon("COMMON_delete"),
             "Delete"
         )
 
-        self.button_box.addButton(delete_button, QtGui.QDialogButtonBox.HelpRole)
+        self.button_box.addButton(delete_button, QtWidgets.QDialogButtonBox.HelpRole)
 
         delete_button.setToolTip("Delete this AOV.")
         delete_button.clicked.connect(self.delete)
@@ -1358,12 +1358,12 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
     def initUI(self):
         """Initialize the UI."""
-        layout = QtGui.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
         # =====================================================================
 
-        self.group_chooser = QtGui.QComboBox()
+        self.group_chooser = QtWidgets.QComboBox()
         layout.addWidget(self.group_chooser)
 
         # Start menu index.
@@ -1400,15 +1400,15 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        self.button_box = QtGui.QDialogButtonBox(
-            QtGui.QDialogButtonBox.Ok
+        self.button_box = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok
         )
         layout.addWidget(self.button_box)
 
         self.button_box.accepted.connect(self.accept)
 
         # Button to launch the Edit dialog on the current group.
-        self.edit_button = QtGui.QPushButton(
+        self.edit_button = QtWidgets.QPushButton(
             hou.ui.createQtIcon("BUTTONS_edit"),
             "Edit"
         )
@@ -1416,17 +1416,17 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         self.edit_button.setToolTip("Edit this group.")
 
         # Use HelpRole to force the button to the left size of the dialog.
-        self.button_box.addButton(self.edit_button, QtGui.QDialogButtonBox.HelpRole)
+        self.button_box.addButton(self.edit_button, QtWidgets.QDialogButtonBox.HelpRole)
         self.edit_button.clicked.connect(self.edit)
 
         # =====================================================================
 
-        self.delete_button = QtGui.QPushButton(
+        self.delete_button = QtWidgets.QPushButton(
             hou.ui.createQtIcon("COMMON_delete"),
             "Delete"
         )
 
-        self.button_box.addButton(self.delete_button, QtGui.QDialogButtonBox.HelpRole)
+        self.button_box.addButton(self.delete_button, QtWidgets.QDialogButtonBox.HelpRole)
 
         self.delete_button.setToolTip("Delete this group.")
         self.delete_button.clicked.connect(self.delete)

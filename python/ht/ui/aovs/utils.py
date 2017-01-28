@@ -6,7 +6,7 @@
 
 # Python Imports
 import os
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtGui
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs.aov import ALLOWABLE_VALUES
