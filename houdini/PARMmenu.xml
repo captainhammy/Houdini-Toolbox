@@ -2,6 +2,138 @@
 
 <menuDocument>
     <menu>
+        <scriptItem id="relative_to_absolute_path">
+            <insertAfter>motion_effects_menu</insertAfter>
+            <label>Convert to Absolute Path</label>
+            <context>
+                <expression><![CDATA[parms = kwargs["parms"]
+
+for parm in parms:
+    parm_template = parm.parmTemplate()
+
+    # Check if the parameter is a string parameter.
+    if isinstance(parm_template, hou.StringParmTemplate):
+        # Check if the string parameter is a node reference.
+        if parm_template.stringType() == hou.stringParmType.NodeReference:
+            # Need to test values to decide whether to show up or not.
+            path = parm.eval()
+
+            # Ignore empty strings.
+            if not path:
+                continue
+
+            # Ignore paths which already seem to be relative.
+            if not path.startswith(".."):
+                continue
+
+            # If the path is the same as the raw path then we can say that we
+            # can show the menu item.  If the path is not the same as the
+            # unexpanded we won't say yes because it would be some sort of an
+            # expression which we don't want to mess with.
+            if path == parm.unexpandedString():
+                return True
+
+return False
+
+]]></expression>
+            </context>
+            <scriptCode><![CDATA[parms = kwargs["parms"]
+
+for parm in parms:
+    parm_template = parm.parmTemplate()
+
+    # Check if the parameter is a string parameter.
+    if isinstance(parm_template, hou.StringParmTemplate):
+        # Check if the string parameter is a node reference.
+        if parm_template.stringType() == hou.stringParmType.NodeReference:
+            path = parm.eval()
+
+            # Ignore empty strings.
+            if not path:
+                continue
+
+            # Ignore paths which already seem to be relative.
+            if not path.startswith(".."):
+                continue
+
+            # If the path is the same as the raw path then try to convert the
+            # path from relative to absolute.
+            if path == parm.unexpandedString():
+                target_node = parm.node().node(path)
+
+                if target_node is not None:
+                    parm.set(target_node.path())
+
+]]>
+            </scriptCode>
+        </scriptItem>
+
+        <scriptItem id="absolute_to_relative_path">
+            <insertAfter>motion_effects_menu</insertAfter>
+            <label>Convert to Relative Path</label>
+            <context>
+                <expression><![CDATA[parms = kwargs["parms"]
+
+for parm in parms:
+    parm_template = parm.parmTemplate()
+
+    # Check if the parameter is a string parameter.
+    if isinstance(parm_template, hou.StringParmTemplate):
+        # Check if the string parameter is a node reference.
+        if parm_template.stringType() == hou.stringParmType.NodeReference:
+            # Need to test values to decide whether to show up or not.
+            path = parm.eval()
+
+            # Ignore empty strings.
+            if not path:
+                continue
+
+            # Ignore paths which already seem to be absolute.
+            if not path.startswith("/"):
+                continue
+
+            # If the path is the same as the raw path then we can say that we
+            # can show the menu item.  If the path is not the same as the
+            # unexpanded we won't say yes because it would be some sort of an
+            # expression which we don't want to mess with.
+            if path == parm.unexpandedString():
+                return True
+
+return False
+
+]]></expression>
+            </context>
+            <scriptCode><![CDATA[parms = kwargs["parms"]
+
+for parm in parms:
+    parm_template = parm.parmTemplate()
+
+    # Check if the parameter is a string parameter.
+    if isinstance(parm_template, hou.StringParmTemplate):
+        # Check if the string parameter is a node reference.
+        if parm_template.stringType() == hou.stringParmType.NodeReference:
+            path = parm.eval()
+
+            # Ignore empty strings.
+            if not path:
+                continue
+
+            # Ignore paths which already seem to be absolute.
+            if not path.startswith("/"):
+                continue
+
+            # If the path is the same as the raw path then try to convert the
+            # path from absolute to relative.
+            if path == parm.unexpandedString():
+                target_node = parm.node().node(path)
+
+                if target_node is not None:
+                    parm.set(parm.node().relativePathTo(target_node))
+
+]]>
+            </scriptCode>
+        </scriptItem>
+
         <scriptItem id="revert_ramp">
             <insertBefore>revert_defs</insertBefore>
             <label>Revert Ramp to Defaults</label>
@@ -41,8 +173,8 @@ for parm in parms:
 
         data = default_string.replace("(", "").replace(")", "").split()
 
-	# For each ramp control point there exist 6 data points for a float ramp:
-	# pos parm name + value, color parm name + value, interp parm name + value
+        # For each ramp control point there exist 6 data points for a float ramp:
+        # pos parm name + value, color parm name + value, interp parm name + value
         for i in range(0, len(data), 6):
             point_data = data[i:i+6]
             
@@ -54,19 +186,19 @@ for parm in parms:
         default_string = tags["rampcolordefault"]
 
         data = default_string.replace("(", "").replace(")", "").split()
-	
-	# For each ramp control point there exist 8 data points for a color ramp:
-	# pos parm name + value, color parm name + RGB values, interp parm name + value
+        
+        # For each ramp control point there exist 8 data points for a color ramp:
+        # pos parm name + value, color parm name + RGB values, interp parm name + value
         for i in range(0, len(data), 8):
             point_data = data[i:i+8]
             
-	    # Set the point position.
+            # Set the point position.
             node.parm("{}{}".format(name, point_data[0])).set(point_data[1])
 
-	    # Set the point color.
+            # Set the point color.
             node.parmTuple("{}{}".format(name, point_data[2])).set(point_data[3:6])
 
-	    # Set the point interpolation.
+            # Set the point interpolation.
             node.parm("{}{}".format(name, point_data[6])).set(point_data[7])
 ]]>
             </scriptCode>
