@@ -73,8 +73,10 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
     # METHODS
     # =========================================================================
 
-    def buildAOVDataFromUI(self, aov_data):
+    def buildAOVDataFromUI(self):
         """Set AOV data from UI values."""
+        aov_data = {}
+
         channel_name = self.channel_name.text()
 
         aov_data["channel"] = channel_name
@@ -149,7 +151,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        aov_data = convertFromUnicode(aov_data)
+        return convertFromUnicode(aov_data)
 
     # =========================================================================
 
@@ -540,10 +542,10 @@ class NewAOVDialog(_BaseAOVDialog):
         """Accept the operation."""
         aov_data = {}
 
+        aov_data = self.buildAOVDataFromUI()
+
         aov_data["variable"] = self.variable_name.text()
         aov_data["vextype"] = self.type_box.itemData(self.type_box.currentIndex())
-
-        self.buildAOVDataFromUI(aov_data)
 
         aov = AOV(aov_data)
 
@@ -633,9 +635,7 @@ class EditAOVDialog(_BaseAOVDialog):
 
     def accept(self):
         """Accept the operation."""
-        aov_data = {}
-
-        self.buildAOVDataFromUI(aov_data)
+        aov_data = self.buildAOVDataFromUI()
 
         self.aov._updateData(aov_data)
 
@@ -1228,7 +1228,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
 
         edit_button.setToolTip("Edit this AOV.")
 
-        self.button_box.addButton(edit_button, QtWidgets.QDialogButtonBox.HelpRole)
+        self.button_box.addButton(edit_button, QtWidgets.QDialogButtonBox.ResetRole)
         edit_button.clicked.connect(self.edit)
 
         # =====================================================================
@@ -1238,7 +1238,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
             "Delete"
         )
 
-        self.button_box.addButton(delete_button, QtWidgets.QDialogButtonBox.HelpRole)
+        self.button_box.addButton(delete_button, QtWidgets.QDialogButtonBox.ResetRole)
 
         delete_button.setToolTip("Delete this AOV.")
         delete_button.clicked.connect(self.delete)
