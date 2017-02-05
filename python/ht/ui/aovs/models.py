@@ -715,7 +715,8 @@ class AOVSelectModel(BaseAOVTreeModel):
 
         self.dataChanged.emit(
             self.index(0, 0, parent),
-            self.index(len(parentNode.children)-1, 0, parent)
+            self.index(len(parentNode.children)-1, 0, parent),
+            [QtCore.Qt.DisplayRole],
         )
 
     def mimeData(self, indexes):
@@ -986,7 +987,7 @@ class AOVGroupEditListModel(QtCore.QAbstractListModel):
             self._checked[row] = not self._checked[row]
 
             # Emit signal that the index changed.
-            self.dataChanged.emit(index, index)
+            self.dataChanged.emit(index, index, [QtCore.Qt.CheckStateRole])
 
             return True
 
