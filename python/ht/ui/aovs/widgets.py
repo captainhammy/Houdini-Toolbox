@@ -202,7 +202,7 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
             self.collapse(index)
 
     def dragEnterEvent(self, event):
-        """Event occuring when something is dragged into the widget."""
+        """Event occurring when something is dragged into the widget."""
         # Accept text containing events so we can drop Houdini nodes and files.
         if event.mimeData().hasText():
             event.acceptProposedAction()
@@ -1020,16 +1020,28 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
             self.collapse(index)
 
     def dragEnterEvent(self, event):
-        """Event occuring when something is dragged into the widget."""
+        """Event occurring when something is dragged into the widget."""
         # Dropping our items.
         if event.mimeData().hasFormat("text/csv"):
-            event.acceptProposedAction()
+            data = pickle.loads(event.mimeData().data("text/csv"))
+
+            if not data:
+                event.ignore()
+
+            else:
+                event.acceptProposedAction()
 
         # Dropping Houdini nodes.
-        elif event.mimeData().hasFormat("text/plain"):
-            event.acceptProposedAction()
+#        elif event.mimeData().hasFormat("text/plain"):
+#            event.setDropAction(QtCore.Qt.CopyAction)
+
+#            event.accept()
+
         else:
             event.ignore()
+
+    def dragMoveEvent(self, event):
+        event.accept()
 
     def dropEvent(self, event):
         """Event when dropping items onto widget."""

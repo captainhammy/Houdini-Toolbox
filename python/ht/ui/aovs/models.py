@@ -726,6 +726,9 @@ class AOVSelectModel(BaseAOVTreeModel):
         items = []
 
         for node in nodes:
+            if self.isInstalled(node):
+                continue
+
             if isinstance(node, FolderNode):
                 for child in reversed(node.children):
                     items.append(child.item)
@@ -916,9 +919,9 @@ class AOVsToAddModel(BaseAOVTreeModel):
 
     def supportedDropActions(self):
         """Supported drop actions."""
-        # Add support for MoveAction since that's what Houdin thinks is
+        # Add support for MoveAction since that's what Houdini thinks is
         # happening when you try and drop a node on a widget.
-        return QtCore.Qt.CopyAction | QtCore.Qt.MoveAction
+        return QtCore.Qt.CopyAction# | QtCore.Qt.MoveAction
 
 # =============================================================================
 
