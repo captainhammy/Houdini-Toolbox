@@ -63,6 +63,8 @@ class AOVManagerWidget(QtWidgets.QWidget):
 
         self.setStyleSheet(uidata.TOOLTIP_STYLE)
 
+        self.setProperty("houdiniStyle", True)
+
         # If a node was passed along, set the UI to use it.
         if node is not None:
             self.setNode(node)
