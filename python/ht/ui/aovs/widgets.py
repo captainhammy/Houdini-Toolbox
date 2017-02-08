@@ -98,7 +98,7 @@ class AOVManagerWidget(QtWidgets.QWidget):
             self.invalidAOVSelectedSignal.emit()
 
     def initUI(self):
-        """Initliaze the UI."""
+        """Initialize the UI."""
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
@@ -259,7 +259,7 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
             if not num_aovs:
                 continue
 
-            # Get AOV objects from multiparms.
+            # Get AOV objects from multi parms.
             aovs = utils.buildAOVsFromMultiparm(node)
 
             # Launch the Create New AOV dialog on each AOV.
@@ -277,7 +277,7 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
 
         aovs = self.getSelectedAOVs()
 
-        parent = hou.ui.mainQtWindow()
+        parent = hou.qt.mainWindow()
 
         for aov in aovs:
             dialog = ht.ui.aovs.dialogs.EditAOVDialog(
@@ -293,7 +293,7 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
 
         groups = self.getSelectedGroups(allow_intrinsic=False)
 
-        parent = hou.ui.mainQtWindow()
+        parent = hou.qt.mainWindow()
 
         for group in groups:
             dialog = ht.ui.aovs.dialogs.EditGroupDialog(
@@ -368,7 +368,7 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
         return nodes
 
     def initFromManager(self):
-        """Initliaze the tree from the manager."""
+        """Initialize the tree from the manager."""
         self.root.removeAllChildren()
 
         self.proxy_model.sourceModel().initFromManager()
@@ -558,7 +558,7 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
 
         aovs = self.getSelectedAOVs()
 
-        parent = hou.ui.mainQtWindow()
+        parent = hou.qt.mainWindow()
 
         for aov in aovs:
             info_dialog = ht.ui.aovs.dialogs.AOVInfoDialog(
@@ -574,7 +574,7 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
 
         groups = self.getSelectedGroups()
 
-        parent = hou.ui.mainQtWindow()
+        parent = hou.qt.mainWindow()
 
         for group in groups:
             info_dialog = ht.ui.aovs.dialogs.AOVGroupInfoDialog(
@@ -624,7 +624,7 @@ class AOVInstallBarWidget(QtWidgets.QWidget):
         layout.addWidget(self.reload)
 
         self.reload.setIcon(
-            hou.ui.createQtIcon("BUTTONS_reload")
+            hou.qt.createIcon("BUTTONS_reload")
         )
         self.reload.setIconSize(QtCore.QSize(14, 14))
         self.reload.setMaximumSize(QtCore.QSize(20, 20))
@@ -641,7 +641,7 @@ class AOVInstallBarWidget(QtWidgets.QWidget):
         layout.addWidget(self.install_button, alignment=QtCore.Qt.AlignVCenter)
 
         self.install_button.setIcon(
-            hou.ui.createQtIcon("BUTTONS_move_to_right")
+            hou.qt.createIcon("BUTTONS_move_to_right")
         )
         self.install_button.setIconSize(QtCore.QSize(14, 14))
         self.install_button.setMaximumSize(QtCore.QSize(20, 20))
@@ -657,7 +657,7 @@ class AOVInstallBarWidget(QtWidgets.QWidget):
         layout.addWidget(self.uninstall_button, alignment=QtCore.Qt.AlignVCenter)
 
         self.uninstall_button.setIcon(
-            hou.ui.createQtIcon("BUTTONS_move_to_left")
+            hou.qt.createIcon("BUTTONS_move_to_left")
         )
         self.uninstall_button.setIconSize(QtCore.QSize(14, 14))
         self.uninstall_button.setMaximumSize(QtCore.QSize(20, 20))
@@ -775,7 +775,7 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
         self.addWidget(load_file_button)
 
         load_file_action = QtWidgets.QAction(
-            hou.ui.createQtIcon("COMMON_file"),
+            hou.qt.createIcon("COMMON_file"),
             "Load AOVs from .json files.",
             self,
             triggered=manager.loadJsonFiles
@@ -797,7 +797,7 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
         self.addWidget(self.info_button)
 
         info_action = QtWidgets.QAction(
-            hou.ui.createQtIcon("BUTTONS_info"),
+            hou.qt.createIcon("BUTTONS_info"),
             "Display information about the AOV or group.",
             self,
             triggered=self.displayInfoSignal.emit
@@ -928,7 +928,7 @@ class AOVSelectWidget(QtWidgets.QWidget):
             self.installSignal.emit(nodes)
 
     def emitUninstallSignal(self):
-        """Emit a signal to removel selected nodes."""
+        """Emit a signal to removal selected nodes."""
         nodes = self.getSelectedNodes()
 
         if nodes:
@@ -1052,7 +1052,7 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
 
         # Handle our own drop events.
         if mime_data.hasFormat("text/csv"):
-            # Extract the serialized json mimedata from the event.
+            # Extract the serialized json mime data from the event.
             data = pickle.loads(mime_data.data("text/csv"))
 
             # Flatten any data when moving with Ctrl.
@@ -1296,7 +1296,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
         self.addWidget(self.apply_button)
 
         apply_action = QtWidgets.QAction(
-            hou.ui.createQtIcon("NETWORKS_rop"),
+            hou.qt.createIcon("NETWORKS_rop"),
             "Apply",
             self,
             triggered=self.applyAtRenderTimeSignal.emit
@@ -1310,12 +1310,12 @@ class AOVsToAddToolBar(AOVViewerToolBar):
 
         # =====================================================================
 
-        # Button and action to apply AOVs are multiparms.
+        # Button and action to apply AOVs are multi parms.
         self.apply_as_parms_button = QtWidgets.QToolButton(self)
         self.addWidget(self.apply_as_parms_button)
 
         parms_action = QtWidgets.QAction(
-            hou.ui.createQtIcon("PANETYPES_parameters"),
+            hou.qt.createIcon("PANETYPES_parameters"),
             "Apply AOVs to selected nodes as parameters.",
             self,
             triggered=self.applyToParmsSignal.emit
@@ -1356,7 +1356,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
         self.addWidget(load_button)
 
         load_action = QtWidgets.QAction(
-            hou.ui.createQtIcon("DATATYPES_node_path"),
+            hou.qt.createIcon("DATATYPES_node_path"),
             "Load AOVs from a node.",
             self,
             triggered=self.loadFromNode
@@ -1378,7 +1378,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
         self.addWidget(self.clear_button)
 
         clear_action = QtWidgets.QAction(
-            hou.ui.createQtIcon("BUTTONS_clear"),
+            hou.qt.createIcon("BUTTONS_clear"),
             "Clear all AOVs.",
             self,
             triggered=self.clearAOVsSignal.emit
@@ -1492,7 +1492,7 @@ class AOVsToAddWidget(QtWidgets.QWidget):
     # =========================================================================
 
     def applyAsParms(self):
-        """Apply AOVs and AOVGroups as multiparms."""
+        """Apply AOVs and AOVGroups as multi parms."""
         if self.node is not None:
             nodes = [self.node]
 
@@ -1507,7 +1507,7 @@ class AOVsToAddWidget(QtWidgets.QWidget):
         utils.applyElementsAsParms(elements, nodes)
 
     def applyAtRenderTime(self):
-        """Apply AOVs and AOVGroups at rendertime."""
+        """Apply AOVs and AOVGroups at render time."""
         if self.node is not None:
             nodes = [self.node]
 
@@ -1643,17 +1643,14 @@ class InfoTableView(QtWidgets.QTableView):
         if not index.isValid():
             return
 
-        row = index.row()
-        column = index.column()
-
         # Create a menu.
         menu = QtWidgets.QMenu(self)
 
         # Create an entry to copy cells.
-        copyAction = QtWidgets.QAction("Copy", self)
-        menu.addAction(copyAction)
+        copy_action = QtWidgets.QAction("Copy", self)
+        menu.addAction(copy_action)
 
-        copyAction.setShortcut(
+        copy_action.setShortcut(
             QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_C)
         )
 
@@ -1661,7 +1658,7 @@ class InfoTableView(QtWidgets.QTableView):
         action = menu.exec_(event.globalPos())
 
         # Copy the cell.
-        if action == copyAction:
+        if action == copy_action:
             self.copyCell(index)
 
     def copyCell(self, index):
@@ -1682,6 +1679,7 @@ class AOVInfoTableView(InfoTableView):
         model.initDataFromAOV(aov)
         self.setModel(model)
 
+
 class AOVGroupInfoTableWidget(InfoTableView):
     """This class represents the AOVGroup information table."""
     def __init__(self, group, parent=None):
@@ -1690,6 +1688,7 @@ class AOVGroupInfoTableWidget(InfoTableView):
         model = models.AOVGroupInfoTableModel()
         model.initDataFromGroup(group)
         self.setModel(model)
+
 
 class GroupMemberListWidget(QtWidgets.QListView):
     """This widget is for displaying AOVGroup membership."""
@@ -1741,7 +1740,7 @@ class FileChooser(QtWidgets.QWidget):
         # =====================================================================
 
         self.button = QtWidgets.QPushButton(
-            hou.ui.createQtIcon("BUTTONS_chooser_file"),
+            hou.qt.createIcon("BUTTONS_chooser_file"),
             ""
         )
         layout.addWidget(self.button)
@@ -1822,7 +1821,7 @@ class HelpButton(QtWidgets.QPushButton):
 
     def __init__(self, name, parent=None):
         super(HelpButton, self).__init__(
-            hou.ui.createQtIcon("BUTTONS_help"),
+            hou.qt.createIcon("BUTTONS_help"),
             "",
             parent=parent
         )
@@ -1842,9 +1841,6 @@ class HelpButton(QtWidgets.QPushButton):
 
     def displayHelp(self):
         """Display help page."""
-        # Help browser pane.
-        browser = None
-
         # Look for an existing, float help browser.
         for pane_tab in hou.ui.paneTabs():
             if isinstance(pane_tab, hou.HelpBrowser):
@@ -1901,12 +1897,12 @@ class MenuField(QtWidgets.QWidget):
 
             if mode == MenuFieldMode.Replace:
                 action.triggered.connect(
-                    lambda value=value: self.set(value)
+                    lambda val=value: self.set(val)
                 )
 
             elif mode == MenuFieldMode.Toggle:
                 action.triggered.connect(
-                    lambda value=value: self.toggle(value)
+                    lambda val=value: self.toggle(val)
                 )
 
         button.setMenu(menu)
@@ -1965,9 +1961,9 @@ class StatusMessageWidget(QtWidgets.QWidget):
 
         layout.setContentsMargins(0, 0, 0, 0)
 
-        self.info_pixmap = hou.ui.createQtIcon("DIALOG_info").pixmap(24, 24)
-        self.warning_pixmap = hou.ui.createQtIcon("DIALOG_warning").pixmap(24, 24)
-        self.error_pixmap = hou.ui.createQtIcon("DIALOG_error").pixmap(24, 24)
+        self.info_pixmap = hou.qt.createIcon("DIALOG_info").pixmap(24, 24)
+        self.warning_pixmap = hou.qt.createIcon("DIALOG_warning").pixmap(24, 24)
+        self.error_pixmap = hou.qt.createIcon("DIALOG_error").pixmap(24, 24)
 
         # =====================================================================
 
@@ -2068,4 +2064,3 @@ class StatusMessageWidget(QtWidgets.QWidget):
             self.display.clear()
             self.display.hide()
             self.icon.hide()
-

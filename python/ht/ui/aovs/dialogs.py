@@ -39,7 +39,7 @@ class _BaseHoudiniStyleDialog(QtWidgets.QDialog):
         super(_BaseHoudiniStyleDialog, self).__init__(parent)
 
         self.setStyleSheet(
-            hou.ui.qtStyleSheet() + uidata.TOOLTIP_STYLE
+            hou.qt.styleSheet() + uidata.TOOLTIP_STYLE
         )
 
 # =============================================================================
@@ -292,7 +292,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         self.components.setDisabled(True)
         self.components.setToolTip(
-            "Shading component names.  Leaving this field empty will use the components" \
+            "Shading component names.  Leaving this field empty will use the components"
             " selected on the Mantra ROP."
         )
 
@@ -364,7 +364,6 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         self.intrinsic.setToolTip(
             "Optional intrinsic group for automatic group addition, eg. Diagnostic"
         )
-
 
         # =====================================================================
 
@@ -540,8 +539,6 @@ class NewAOVDialog(_BaseAOVDialog):
 
     def accept(self):
         """Accept the operation."""
-        aov_data = {}
-
         aov_data = self.buildAOVDataFromUI()
 
         aov_data["variable"] = self.variable_name.text()
@@ -738,7 +735,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
     # =========================================================================
 
     def initUI(self):
-        """Intialize the UI."""
+        """Initialize the UI."""
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
@@ -1150,7 +1147,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         # Accept the dialog so it closes.
         self.accept()
 
-        parent = hou.ui.mainQtWindow()
+        parent = hou.qt.mainWindow()
 
         self.dialog = EditAOVDialog(
             self.aov,
@@ -1222,7 +1219,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         self.button_box.accepted.connect(self.accept)
 
         edit_button = QtWidgets.QPushButton(
-            hou.ui.createQtIcon("BUTTONS_edit"),
+            hou.qt.createIcon("BUTTONS_edit"),
             "Edit"
         )
 
@@ -1234,7 +1231,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         # =====================================================================
 
         delete_button = QtWidgets.QPushButton(
-            hou.ui.createQtIcon("COMMON_delete"),
+            hou.qt.createIcon("COMMON_delete"),
             "Delete"
         )
 
@@ -1325,7 +1322,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         # Accept the dialog so it closes.
         self.accept()
 
-        parent = hou.ui.mainQtWindow()
+        parent = hou.qt.mainWindow()
 
         self.dialog = EditGroupDialog(
             self.group,
@@ -1409,7 +1406,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         # Button to launch the Edit dialog on the current group.
         self.edit_button = QtWidgets.QPushButton(
-            hou.ui.createQtIcon("BUTTONS_edit"),
+            hou.qt.createIcon("BUTTONS_edit"),
             "Edit"
         )
 
@@ -1422,7 +1419,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         # =====================================================================
 
         self.delete_button = QtWidgets.QPushButton(
-            hou.ui.createQtIcon("COMMON_delete"),
+            hou.qt.createIcon("COMMON_delete"),
             "Delete"
         )
 
@@ -1457,7 +1454,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         self.table.resizeColumnToContents(0)
 
-        # Enable/diable editing features.
+        # Enable/disable editing features.
         self.enableEdit(self.group)
 
 # =============================================================================
@@ -1466,7 +1463,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
 def createNewAOV(aov=None):
     """Display the Create AOV dialog."""
-    parent = hou.ui.mainQtWindow()
+    parent = hou.qt.mainWindow()
 
     dialog = NewAOVDialog(parent)
 
@@ -1482,7 +1479,7 @@ def createNewAOV(aov=None):
 
 def createNewGroup(aovs=()):
     """Display the Create AOV Group dialog."""
-    parent = hou.ui.mainQtWindow()
+    parent = hou.qt.mainWindow()
 
     new_group_dialog = NewGroupDialog(parent)
 

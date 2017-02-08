@@ -10,7 +10,7 @@ import pickle
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import manager
-from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
+from ht.sohohooks.aovs.aov import AOV, IntrinsicAOVGroup
 from ht.ui.aovs import utils
 import ht.ui.icons
 
@@ -35,7 +35,7 @@ class TreeNode(object):
             parent.addChild(self)
 
     # =========================================================================
-    # SPEACIAL METHODS
+    # SPECIAL METHODS
     # =========================================================================
 
     def __cmp__(self, node):
@@ -59,7 +59,7 @@ class TreeNode(object):
     @property
     def icon(self):
         """Icon for this node."""
-        return hou.ui.createQtIcon("NETWORKS_root")
+        return hou.qt.createIcon("NETWORKS_root")
 
     @property
     def name(self):
@@ -453,7 +453,7 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
         node = index.internalPointer()
         parent = node.parent
 
-        if role == QtCore.Qt.DisplayRole:# or role == QtCore.Qt.EditRole:
+        if role == QtCore.Qt.DisplayRole:
             # If the item is an AOV who has an explicit channel set
             # then display the channel as well.
             if isinstance(node, AOVNode):
@@ -462,7 +462,7 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
                 if aov.channel:
                     return "{0} ({1})".format(aov.variable, aov.channel)
 
-            return  node.name
+            return node.name
 
         if role == QtCore.Qt.DecorationRole:
             return node.icon
@@ -514,7 +514,7 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
                 return node.name
 
     def getNode(self, index):
-        """Get the ndoe at an index."""
+        """Get the node at an index."""
         if index.isValid():
             node = index.internalPointer()
             if node:
@@ -527,10 +527,10 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
         parent = self.getNode(parent)
 
         if row < len(parent.children):
-            childItem = parent.children[row]
+            child_item = parent.children[row]
 
-            if childItem:
-                return self.createIndex(row, column, childItem)
+            if child_item:
+                return self.createIndex(row, column, child_item)
 
         return QtCore.QModelIndex()
 
@@ -581,7 +581,7 @@ class AOVSelectModel(BaseAOVTreeModel):
         return
 
     def initFromManager(self):
-        """Initliaze the data from the global manager."""
+        """Initialize the data from the global manager."""
         self.beginResetModel()
 
         groups_node = FolderNode("Groups", self.root)
@@ -628,11 +628,11 @@ class AOVSelectModel(BaseAOVTreeModel):
         """Insert an AOV into the tree."""
         index = self.findNamedFolder("AOVs")
 
-        parentNode = self.getNode(index)
+        parent_node = self.getNode(index)
 
         # Check to see if an AOV of the same name already exists.  If it does
         # then we want to just update the internal item for the node.
-        for row, child in enumerate(parentNode.children):
+        for row, child in enumerate(parent_node.children):
             # Check the child's AOV against the one to be added.
             if child.aov == aov:
                 # Update the internal item.
@@ -651,11 +651,11 @@ class AOVSelectModel(BaseAOVTreeModel):
 
         # Didn't find an existing one so insert a new node.
         else:
-            position = len(parentNode.children)
+            position = len(parent_node.children)
 
             self.beginInsertRows(index, position, position)
 
-            AOVNode(aov, parentNode)
+            AOVNode(aov, parent_node)
 
             self.endInsertRows()
 
@@ -665,11 +665,11 @@ class AOVSelectModel(BaseAOVTreeModel):
         """Insert an AOVGroup into the tree."""
         index = self.findNamedFolder("Groups")
 
-        parentNode = self.getNode(index)
+        parent_node = self.getNode(index)
 
         # Check to see if an AOV Group of the same name already exists.  If it
         # does then we want to just update the internal item for the node.
-        for row, child in enumerate(parentNode.children):
+        for row, child in enumerate(parent_node.children):
             # Check the child's group against the one to be added.
             if child.group == group:
                 # Update the internal item.
@@ -687,14 +687,14 @@ class AOVSelectModel(BaseAOVTreeModel):
                 break
 
         else:
-            position = len(parentNode.children)
+            position = len(parent_node.children)
 
             self.beginInsertRows(index, position, position)
 
             if isinstance(group, IntrinsicAOVGroup):
-                IntrinsicAOVGroupNode(group, parentNode)
+                IntrinsicAOVGroupNode(group, parent_node)
             else:
-                AOVGroupNode(group, parentNode)
+                AOVGroupNode(group, parent_node)
 
             self.endInsertRows()
 
@@ -711,11 +711,11 @@ class AOVSelectModel(BaseAOVTreeModel):
             self._installed.remove(item)
 
         parent = QtCore.QModelIndex()
-        parentNode = self.getNode(parent)
+        parent_node = self.getNode(parent)
 
         self.dataChanged.emit(
             self.index(0, 0, parent),
-            self.index(len(parentNode.children)-1, 0, parent),
+            self.index(len(parent_node.children)-1, 0, parent),
             [QtCore.Qt.DisplayRole],
         )
 
@@ -745,14 +745,12 @@ class AOVSelectModel(BaseAOVTreeModel):
         """Remove an AOV from the tree."""
         index = self.findNamedFolder("AOVs")
 
-        parentNode = self.getNode(index)
+        parent_node = self.getNode(index)
 
-        for row, child in enumerate(parentNode.children):
+        for row, child in enumerate(parent_node.children):
             if child.aov == aov:
-                existing_index = self.index(row, 0, index)
-
                 self.beginRemoveRows(index, row, row)
-                parentNode.removeChild(row)
+                parent_node.removeChild(row)
                 self.endRemoveRows()
 
                 break
@@ -761,14 +759,12 @@ class AOVSelectModel(BaseAOVTreeModel):
         """Remove a group from the tree."""
         index = self.findNamedFolder("Groups")
 
-        parentNode = self.getNode(index)
+        parent_node = self.getNode(index)
 
-        for row, child in enumerate(parentNode.children):
+        for row, child in enumerate(parent_node.children):
             if child.group == group:
-                existing_index = self.index(row, 0, index)
-
                 self.beginRemoveRows(index, row, row)
-                parentNode.removeChild(row)
+                parent_node.removeChild(row)
                 self.endRemoveRows()
 
                 break
@@ -782,10 +778,10 @@ class AOVSelectModel(BaseAOVTreeModel):
         """
         index = self.findNamedFolder("Groups")
 
-        parentNode = self.getNode(index)
+        parent_node = self.getNode(index)
 
         # Process each group in the tree.
-        for row, child in enumerate(parentNode.children):
+        for row, child in enumerate(parent_node.children):
             # This group is the one to be updated.
             if child.group == group:
                 child_index = self.index(row, 0, index)
@@ -868,7 +864,7 @@ class AOVsToAddModel(BaseAOVTreeModel):
         # Filter data to remove items that area already installed.
         data = [item for item in data if item not in self.items]
 
-        parentNode = self.getNode(parent)
+        parent_node = self.getNode(parent)
 
         if position is None:
             position = len(self.items)
@@ -892,7 +888,7 @@ class AOVsToAddModel(BaseAOVTreeModel):
             else:
                 child_node = AOVGroupNode(item)
 
-            parentNode.insertChild(position, child_node)
+            parent_node.insertChild(position, child_node)
             added_items.append(child_node)
 
         self.insertedItemsSignal.emit(added_items)
@@ -904,14 +900,14 @@ class AOVsToAddModel(BaseAOVTreeModel):
     def removeIndex(self, index):
         """Remove an index."""
         parent = QtCore.QModelIndex()
-        parentNode = self.getNode(parent)
+        parent_node = self.getNode(parent)
 
         row = index.row()
 
         self.beginRemoveRows(parent, row, row)
 
-        self.removedItemsSignal.emit([parentNode.children[row]])
-        parentNode.removeChild(row)
+        self.removedItemsSignal.emit([parent_node.children[row]])
+        parent_node.removeChild(row)
 
         self.endRemoveRows()
 
@@ -921,7 +917,7 @@ class AOVsToAddModel(BaseAOVTreeModel):
         """Supported drop actions."""
         # Add support for MoveAction since that's what Houdini thinks is
         # happening when you try and drop a node on a widget.
-        return QtCore.Qt.CopyAction# | QtCore.Qt.MoveAction
+        return QtCore.Qt.CopyAction
 
 # =============================================================================
 

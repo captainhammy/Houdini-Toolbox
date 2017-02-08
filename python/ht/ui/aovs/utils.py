@@ -60,7 +60,7 @@ def _getItemMenuIndex(items, item):
 # =============================================================================
 
 def applyElementsAsParms(elements, nodes):
-    """Apply a list of elemenents are multiparms."""
+    """Apply a list of elements are multiparms."""
     aovs = flattenList(elements)
 
     for node in nodes:
@@ -68,7 +68,7 @@ def applyElementsAsParms(elements, nodes):
 
 
 def applyElementsAsString(elements, nodes):
-    """Apply a list of elements at rendertime."""
+    """Apply a list of elements at render time."""
     value = listAsString(elements)
 
     for node in nodes:
@@ -242,7 +242,7 @@ def getIconFromVexType(vextype):
     if vextype == "unitvector":
         vextype = "vector"
 
-    return hou.ui.createQtIcon("DATATYPES_{}".format(vextype))
+    return hou.qt.createIcon("DATATYPES_{}".format(vextype))
 
 
 def getLightExportMenuIndex(lightexport):
@@ -312,4 +312,3 @@ def openAOVEditor(node):
 
     widget = tab.activeInterfaceRootWidget()
     widget.setNode(node)
-
