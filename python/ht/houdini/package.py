@@ -14,6 +14,7 @@ import platform
 import re
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 
@@ -223,19 +224,40 @@ class HoudiniBuildData(object):
         # Get the build information.
         version_data = self.versions[major_minor]
 
+        # The current date.
+        today = datetime.now().date()
+
         # The date of build number 1 (eg. 15.0.1).
         timestamp = version_data["date"]
 
         # Build a date object for the initial date.
         origin_date = datetime.strptime(timestamp, "%d/%m/%y").date()
 
-        # The current date.
-        today = datetime.now().date()
+        # It's release candidate time so that means there are now stub
+        # versions.  If we have the stubdata set we can determine
+        # which release candidate build we can download.
+        if "stubdate" in version_data:
+            stub_date = datetime.strptime(
+                version_data["stubdate"],
+                "%d/%m/%y"
+            ).date()
 
-        delta = today - origin_date
+            stub_delta = today - stub_date
 
-        # The build number is the time delta in days.
-        build_number = "{}.{}".format(major_minor, delta.days)
+            # Offset the normal build number by the stub's build number.
+            release_num = (today - origin_date).days - stub_delta.days
+
+            build_number = "{}.{}.{}".format(
+                major_minor,
+                release_num,
+                stub_delta.days
+            )
+
+        else:
+            delta = today - origin_date
+
+            # The build number is the time delta in days.
+            build_number = "{}.{}".format(major_minor, delta.days)
 
         arch = self._getSpecificArchForBuild(major_minor)
 
@@ -1003,14 +1025,37 @@ def downloadBuild(build_file, target_directory):
     url += 'get/'
     resp = browser.open(url)
 
+    file_size = int(resp.info()["Content-Length"])
+    block_size = file_size / 10
+
     target_path = os.path.join(target_directory, build_file)
 
     print "Downloading to {}".format(target_path)
+    print "\tFile size: {:0.2f}MB".format(file_size / (1024.0**2))
+    print "\tDownload block size of {:0.2f}MB\n".format(block_size / (1024.0**2))
+
+    total = 0
 
     with open(target_path, 'wb') as handle:
-        handle.write(resp.read())
+        sys.stdout.write("0% complete")
+        sys.stdout.flush()
 
-    print "Download complete"
+        while True:
+            buf = resp.read(block_size)
+
+            if not buf:
+                break
+
+            total += block_size
+
+            sys.stdout.write(
+                "\r{}% complete".format(min(int((total / float(file_size)) * 100), 100))
+            )
+            sys.stdout.flush()
+
+            handle.write(buf)
+
+    print "\n\nDownload complete"
 
     return target_path
 
