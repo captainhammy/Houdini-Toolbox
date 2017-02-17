@@ -45,7 +45,7 @@ class TreeNode(object):
         return hash(self.name)
 
     def __repr__(self):
-        return "<{0} {1}>".format(self.__class__.__name__, self.name)
+        return "<{} {}>".format(self.__class__.__name__, self.name)
 
     # =========================================================================
     # PROPERTIES
@@ -216,46 +216,51 @@ class AOVNode(AOVBaseNode):
         aov = self.aov
 
         lines = [
-            "VEX Variable: {0}".format(aov.variable),
-            "VEX Type: {0}".format(aov.vextype),
+            "VEX Variable: {}".format(aov.variable),
+            "VEX Type: {}".format(aov.vextype),
         ]
 
         if aov.channel:
-            lines.append("Channel Name: {0}".format(aov.channel))
+            lines.append("Channel Name: {}".format(aov.channel))
 
         if aov.quantize is not None:
-            lines.append("Quantize: {0}".format(aov.quantize))
+            lines.append("Quantize: {}".format(aov.quantize))
 
         if aov.sfilter is not None:
-            lines.append("Sample Filter: {0}".format(aov.sfilter))
+            lines.append("Sample Filter: {}".format(aov.sfilter))
 
         if aov.pfilter is not None:
-            lines.append("Pixel Filter: {0}".format(aov.pfilter))
+            lines.append("Pixel Filter: {}".format(aov.pfilter))
+
+        if aov.exclude_from_dcm is not None:
+            lines.append(
+                "Exclude from DCM: {}".format(aov.exclude_from_dcm)
+            )
 
         if aov.componentexport:
             lines.append(
-                "\nExport variable for each component: {0}".format(
+                "\nExport variable for each component: {}".format(
                     aov.componentexport
                 )
             )
 
             lines.append(
-                "Export Components: {0}".format(", ".join(aov.components))
+                "Export Components: {}".format(", ".join(aov.components))
             )
 
         if aov.lightexport is not None:
-            lines.append("\nLight Exports: {0}".format(aov.lightexport))
-            lines.append("Light Mask: {0}".format(aov.lightexport_scope))
-            lines.append("Light Selection: {0}".format(aov.lightexport_select))
+            lines.append("\nLight Exports: {}".format(aov.lightexport))
+            lines.append("Light Mask: {}".format(aov.lightexport_scope))
+            lines.append("Light Selection: {}".format(aov.lightexport_select))
 
         if aov.comment:
-            lines.append("\nComment: {0}".format(aov.comment))
+            lines.append("\nComment: {}".format(aov.comment))
 
         if aov.priority > -1:
-            lines.append("\nPriority: {0}".format(aov.priority))
+            lines.append("\nPriority: {}".format(aov.priority))
 
         if aov.path is not None:
-            lines.append("\n{0}".format(aov.path))
+            lines.append("\n{}".format(aov.path))
 
         return '\n'.join(lines)
 
@@ -302,19 +307,19 @@ class AOVGroupNode(AOVBaseNode):
         """Return a tooltip for the AOV group."""
         group = self.group
 
-        lines = ["Name: {0}".format(group.name)]
+        lines = ["Name: {}".format(group.name)]
 
         if group.comment:
-            lines.append("\nComment: {0}".format(group.comment))
+            lines.append("\nComment: {}".format(group.comment))
 
         if group.priority > -1:
-            lines.append("\nPriority: {0}".format(group.priority))
+            lines.append("\nPriority: {}".format(group.priority))
 
         if group.icon is not None:
-            lines.append("\nIcon: {0}".format(group.icon))
+            lines.append("\nIcon: {}".format(group.icon))
 
         if group.path is not None:
-            lines.append("\n{0}".format(group.path))
+            lines.append("\n{}".format(group.path))
 
         return '\n'.join(lines)
 
@@ -460,7 +465,7 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
                 aov = node.item
 
                 if aov.channel:
-                    return "{0} ({1})".format(aov.variable, aov.channel)
+                    return "{} ({})".format(aov.variable, aov.channel)
 
             return node.name
 
@@ -1082,6 +1087,10 @@ class AOVInfoTableModel(InfoTableModel):
         if aov.pfilter is not None:
             self._titles.append("Pixel Filter")
             self._values.append(aov.pfilter)
+
+        if aov.exclude_from_dcm is not None:
+            self._titles.append("Exclude from DCM")
+            self._values.append(aov.exclude_from_dcm)
 
         if aov.componentexport:
             self._titles.append("Export Each Component")

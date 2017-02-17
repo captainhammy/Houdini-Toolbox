@@ -38,9 +38,12 @@ class _BaseHoudiniStyleDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(_BaseHoudiniStyleDialog, self).__init__(parent)
 
+        self.setProperty("houdiniStyle", True)
+
         self.setStyleSheet(
-            hou.qt.styleSheet() + uidata.TOOLTIP_STYLE
+            uidata.TOOLTIP_STYLE
         )
+
 
 # =============================================================================
 
@@ -108,6 +111,11 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         else:
             aov_data["pfilter"] = None
+
+        # =====================================================================
+
+        if self.exclude_from_dcm.isChecked():
+            aov_data["exclude_from_dcm"] = True
 
         # =====================================================================
 
@@ -267,28 +275,40 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(7, 25)
+        grid_layout.addWidget(
+            QtWidgets.QLabel("Exclude from DCM"),
+            7,
+            0
+        )
+
+        self.exclude_from_dcm = QtWidgets.QCheckBox()
+        grid_layout.addWidget(self.exclude_from_dcm, 7, 1)
+
+        # =====================================================================
+
+        grid_layout.setRowMinimumHeight(8, 25)
 
         # =====================================================================
 
         self.componentexport = QtWidgets.QCheckBox()
-        grid_layout.addWidget(self.componentexport, 8, 0)
+        grid_layout.addWidget(self.componentexport, 9, 0)
 
         grid_layout.addWidget(
             QtWidgets.QLabel("Export variable for each component"),
-            8,
+            9,
             1
         )
 
         # =====================================================================
 
         self.components_label = QtWidgets.QLabel("Export Components")
-        grid_layout.addWidget(self.components_label, 9, 0)
+        grid_layout.addWidget(self.components_label, 10, 0)
 
         self.components_label.setDisabled(True)
 
         self.components = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.components, 9, 1)
+        self.components.setText("diffuse reflect coat refract volume sss")
+        grid_layout.addWidget(self.components, 10, 1)
 
         self.components.setDisabled(True)
         self.components.setToolTip(
@@ -300,14 +320,14 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(10, 25)
+        grid_layout.setRowMinimumHeight(11, 25)
 
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("Light Exports"), 11, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Light Exports"), 12, 0)
 
         self.lightexport = QtWidgets.QComboBox()
-        grid_layout.addWidget(self.lightexport, 11, 1)
+        grid_layout.addWidget(self.lightexport, 12, 1)
 
         for entry in uidata.LIGHTEXPORT_MENU_ITEMS:
             self.lightexport.addItem(entry[1], entry[0])
@@ -317,12 +337,12 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         # =====================================================================
 
         self.light_mask_label = QtWidgets.QLabel("Light Mask")
-        grid_layout.addWidget(self.light_mask_label, 12, 0)
+        grid_layout.addWidget(self.light_mask_label, 13, 0)
 
         self.light_mask_label.setDisabled(True)
 
         self.light_mask = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.light_mask, 12, 1)
+        grid_layout.addWidget(self.light_mask, 13, 1)
 
         self.light_mask.setText("*")
         self.light_mask.setDisabled(True)
@@ -330,36 +350,36 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         # =====================================================================
 
         self.light_select_label = QtWidgets.QLabel("Light Selection")
-        grid_layout.addWidget(self.light_select_label, 13, 0)
+        grid_layout.addWidget(self.light_select_label, 14, 0)
 
         self.light_select_label.setDisabled(True)
 
         self.light_select = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.light_select, 13, 1)
+        grid_layout.addWidget(self.light_select, 14, 1)
 
         self.light_select.setText("*")
         self.light_select.setDisabled(True)
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(14, 25)
+        grid_layout.setRowMinimumHeight(15, 25)
 
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("Priority"), 15, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Priority"), 16, 0)
 
         self.priority = widgets.CustomSpinBox()
-        grid_layout.addWidget(self.priority, 15, 1)
+        grid_layout.addWidget(self.priority, 16, 1)
 
         self.priority.setMinimum(-1)
         self.priority.setValue(-1)
 
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("Intrinsic"), 16, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Intrinsic"), 17, 0)
 
         self.intrinsic = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.intrinsic, 16, 1)
+        grid_layout.addWidget(self.intrinsic, 17, 1)
 
         self.intrinsic.setToolTip(
             "Optional intrinsic group for automatic group addition, eg. Diagnostic"
@@ -367,14 +387,14 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(17, 25)
+        grid_layout.setRowMinimumHeight(18, 25)
 
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("Comment"), 18, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Comment"), 19, 0)
 
         self.comment = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.comment, 18, 1)
+        grid_layout.addWidget(self.comment, 19, 1)
 
         self.comment.setToolTip(
             "Optional comment, eg. 'This AOV represents X'."
@@ -382,14 +402,14 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(19, 25)
+        grid_layout.setRowMinimumHeight(20, 25)
 
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("File Path"), 20, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("File Path"), 21, 0)
 
         self.file_widget = widgets.FileChooser()
-        grid_layout.addWidget(self.file_widget, 20, 1)
+        grid_layout.addWidget(self.file_widget, 21, 1)
 
         # =====================================================================
 
@@ -428,6 +448,9 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         if aov.pfilter:
             self.pfilter_widget.set(aov.pfilter)
+
+        if aov.exclude_from_dcm is not None:
+            self.exclude_from_dcm.setChecked(aov.exclude_from_dcm)
 
         if aov.componentexport:
             self.componentexport.setChecked(True)
@@ -1181,7 +1204,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         for idx, aov in enumerate(sorted(manager.MANAGER.aovs.values())):
             # If a channel is specified, put it into the display name.
             if aov.channel is not None:
-                label = "{0} ({1})".format(
+                label = "{} ({})".format(
                     aov.variable,
                     aov.channel
                 )

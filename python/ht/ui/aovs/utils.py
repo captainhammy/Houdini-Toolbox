@@ -76,7 +76,7 @@ def applyElementsAsString(elements, nodes):
         if node.parm("auto_aovs") is None:
             # Add the parameters from the .ds file.
             hou.hscript(
-                'opproperty -f -F "Extra Image Planes" {0} ht_parms ht_automatic_aovs'.format(
+                'opproperty -f -F "Extra Image Planes" {} ht_parms ht_automatic_aovs'.format(
                     node.path()
                 )
             )

@@ -20,6 +20,7 @@ _DEFAULT_AOV_DATA = {
     "componentexport": None,
     "components": [],
     "comment": "",
+    "exclude_from_dcm": None,
     "intrinsic": None,
     "lightexport": None,
     "lightexport_scope": "*",
@@ -276,6 +277,17 @@ class AOV(object):
     # =========================================================================
 
     @property
+    def exclude_from_dcm(self):
+        """List of components to export."""
+        return self._data["exclude_from_dcm"]
+
+    @exclude_from_dcm.setter
+    def exclude_from_dcm(self, exclude):
+        self._data["exclude_from_dcm"] = exclude
+
+    # =========================================================================
+
+    @property
     def intrinsic(self):
         return self._data["intrinsic"]
 
@@ -448,6 +460,9 @@ class AOV(object):
         if "component" in data:
             IFDapi.ray_property("plane", "component", [data["component"]])
 
+        if "exclude_from_dcm" in data:
+            IFDapi.ray_property("plane", "excludedcm", [True])
+
         # Call the 'post_defplane' hook.
         if _callPostDefPlane(data, wrangler, cam, now):
             return
@@ -477,6 +492,9 @@ class AOV(object):
 
         if self.pfilter is not None:
             d["pfilter"] = self.pfilter
+
+        if self.exclude_from_dcm is not None:
+            d["exclude_from_dcm"] = self.exclude_from_dcm
 
         if self.componentexport is not None:
             d["componentexport"] = self.componentexport

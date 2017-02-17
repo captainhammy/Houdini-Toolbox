@@ -1779,7 +1779,7 @@ class FileChooser(QtWidgets.QWidget):
         ext = os.path.splitext(path)[1]
 
         if not ext:
-            path = "{0}.json".format(path)
+            path = "{}.json".format(path)
 
         self.setPath(path)
 
@@ -1931,7 +1931,7 @@ class MenuField(QtWidgets.QWidget):
                 text = value
 
             else:
-                text = "{0} {1}".format(text, value)
+                text = "{} {}".format(text, value)
 
             self.set(text)
 
