@@ -458,6 +458,12 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
             if aov.components:
                 self.components.setText(" ".join(aov.components))
 
+        if aov.lightexport is not None:
+            self.lightexport.setCurrentIndex(utils.getLightExportMenuIndex(aov.lightexport))
+
+            self.light_mask.setText(aov.lightexport_scope)
+            self.light_select.setText(aov.lightexport_select)
+
         if aov.priority != -1:
             self.priority.setValue(aov.priority)
 
