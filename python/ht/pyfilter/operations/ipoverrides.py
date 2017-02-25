@@ -29,7 +29,7 @@ class IpOverrides(PyFilterOperation):
         self._disable_deep = False
         self._enabled = False
         self._res_scale = 1.0
-        self._sample_scale = 1.0
+        self._sample_scale = None
 
     # =========================================================================
     # PROPERTIES
@@ -185,11 +185,11 @@ class IpOverrides(PyFilterOperation):
 
             setProperty("image:resolution", new_res)
 
-        if self.sample_scale:
+        if self.sample_scale is not None:
             samples = mantra.property("image:samples")
 
             # Need to make sure our values are at least a minimum of 1.
-            new_samples = [int(math.ceil(val * self.sample_scale)) for val in samples]
+            new_samples = [max(1, int(math.ceil(val * self.sample_scale))) for val in samples]
 
             setProperty("image:samples", new_samples)
 
@@ -264,8 +264,8 @@ def buildPixleSampleScaleDisplay(node):
 
     sample_scale = node.evalParm("ip_sample_scale")
 
-    sx = int(math.ceil(sx * sample_scale))
-    sy = int(math.ceil(sy * sample_scale))
+    sx = max(1, int(math.ceil(sx * sample_scale)))
+    sy = max(1, int(math.ceil(sy * sample_scale)))
 
     return "{}x{}".format(sx, sy)
 
