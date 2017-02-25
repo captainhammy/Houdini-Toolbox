@@ -38,6 +38,9 @@ void newSopOperator(OP_OperatorTable *table)
         SOP_DopImpactPoints::myTemplateList,
         0,
         0,
+        0,
+        0,
+        1,
         0
     );
 
