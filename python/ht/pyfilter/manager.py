@@ -94,7 +94,7 @@ class PyFilterManager(object):
                     class_name
                 )
 
-                logger.info("Registering {}".format(class_name))
+                logger.debug("Registering {}".format(class_name))
 
                 # Add an instance of it to our operations list.
                 self.operations.append(cls(self))

@@ -39,13 +39,14 @@ class Property(object):
     	if len(values) == 1:
     	    value = values[0]
 
-    	    if len(value.split()) > 2:
-        		split_vals = value.split()
+            if isinstance(value, str):
+                if len(value.split()) > 2:
+                    split_vals = value.split()
 
-        		value = dict(zip(*[iter(split_vals)]*2))
+                    value = dict(zip(*[iter(split_vals)]*2))
 
-    	    else:
-                value = _parseString(value)
+                else:
+                    value = _parseString(value)
 
     	else:
     	    value = values
