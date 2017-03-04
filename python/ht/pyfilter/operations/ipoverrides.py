@@ -198,9 +198,9 @@ class IpOverrides(PyFilterOperation):
             setProperty("renderer:blurquality", 0)
             setProperty("renderer:rayblurquality", 0)
 
-        # Redirect the deepresolver to 'null' to disable deep generation.
+        # Set the deepresolver to have no args, thus stopping it from running.
         if self.disable_deep:
-            setProperty("image:deepresolver", "null")
+            setProperty("image:deepresolver", [])
 
     @logFilter
     def filterPlane(self):

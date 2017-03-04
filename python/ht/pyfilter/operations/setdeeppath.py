@@ -87,27 +87,29 @@ class SetDeepResolverPath(PyFilterOperation):
             return
 
         # Look for existing args.
-        deepresolver = mantra.property("image:deepresolver")
+        deep_args = mantra.property("image:deepresolver")
 
-        if deepresolver == ['']:
+        # If deep rendering is not enabled the args will be emptry so we should
+        # log an error and bail out.
+        if not deep_args:
             logger.error("Cannot set deepresolver: deepresolver is not enabled")
+
             return
 
-        if deepresolver:
-            args = list(deepresolver[0].split())
+        try:
+            idx = deep_args.index("filename")
 
-            try:
-                idx = args.index("filename")
+        # Somehow there is no filename arg so log an exception and print the
+        # args list.
+        except ValueError as inst:
+            logger.exception(inst)
+            logger.error("Deep args: {}".format(deep_args))
 
-            except ValueError as inst:
-                logger.exception(inst)
-                return
+        else:
+            deep_args[idx + 1] = self.filepath
 
-            else:
-                args[idx + 1] = self.filepath
-
-                # Set the new list as the property value
-                setProperty("image:deepresolver", args)
+            # Set the new list as the property value
+            setProperty("image:deepresolver", deep_args)
 
     def processParsedArgs(self, filter_args):
         """Process any of our interested arguments if they were passed."""
