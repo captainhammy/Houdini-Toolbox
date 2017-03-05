@@ -278,7 +278,7 @@ class AOV(object):
 
     @property
     def exclude_from_dcm(self):
-        """List of components to export."""
+        """Exclude this aov from dcms."""
         return self._data["exclude_from_dcm"]
 
     @exclude_from_dcm.setter
