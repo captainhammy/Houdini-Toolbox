@@ -21,7 +21,7 @@ _DEFAULT_AOV_DATA = {
     "components": [],
     "comment": "",
     "exclude_from_dcm": None,
-    "intrinsic": None,
+    "intrinsics": [],
     "lightexport": None,
     "lightexport_scope": "*",
     "lightexport_select": "*",
@@ -169,7 +169,7 @@ class AOV(object):
                     # If the categories list was empty, put the light in a fake
                     # category.
                     if not categories:
-                        no_category_lights = category_map.setdefault("__none__", [])
+                        no_category_lights = category_map.setdefault(None, [])
                         no_category_lights.append(light)
 
                     else:
@@ -189,9 +189,13 @@ class AOV(object):
 
                     data["lightexport"] = lightexport
 
-                    # The channel is the regular channel named prefixed with
-                    # the category name.
-                    data["channel"] = "{}_{}".format(category, base_channel)
+                    if category is not None:
+                        # The channel is the regular channel named prefixed with
+                        # the category name.
+                        data["channel"] = "{}_{}".format(category, base_channel)
+
+                    else:
+                        data["channel"] = base_channel
 
                     # Write the per-category light export to the ifd.
                     self.writeDataToIfd(data, wrangler, cam, now)
@@ -288,12 +292,12 @@ class AOV(object):
     # =========================================================================
 
     @property
-    def intrinsic(self):
-        return self._data["intrinsic"]
+    def intrinsics(self):
+        return self._data["intrinsics"]
 
-    @intrinsic.setter
-    def intrinsic(self, intrinsic):
-        self._data["intrinsic"] = intrinsic
+    @intrinsics.setter
+    def intrinsics(self, intrinsics):
+        self._data["intrinsics"] = intrinsics
 
     # =========================================================================
 
@@ -509,8 +513,8 @@ class AOV(object):
                 d["lightexport_scope"] = self.lightexport_scope
                 d["lightexport_select"] = self.lightexport_select
 
-        if self.intrinsic:
-            d["intrinsic"] = self.intrinsic
+        if self.intrinsics:
+            d["intrinsics"] = self.intrinsics
 
         if self.comment:
             d["comment"] = self.comment
@@ -681,9 +685,15 @@ class AOVGroup(object):
 
     def getData(self):
         """Get a dictionary representing the group."""
+        includes = []
+
+        includes.extend(self.includes)
+
+        includes.extend([aov.variable for aov in self.aovs])
+
         d = {
             self.name: {
-                "include": [aov.variable for aov in self.aovs],
+                "include": includes,
             }
         }
 

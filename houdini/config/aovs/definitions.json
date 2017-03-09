@@ -232,64 +232,84 @@
             "variable": "Render_Time", 
             "quantize": "float", 
             "vextype": "float", 
-            "intrinsic": "Diagnostic", 
-            "comment": "Diagnostic: Render Time"
+            "comment": "Diagnostic: Render Time", 
+            "intrinsics": [
+                "Diagnostic"
+            ]
         }, 
         {
             "variable": "Op_Id", 
             "quantize": "float", 
             "vextype": "float", 
-            "intrinsic": "Diagnostic", 
-            "comment": "Diagnostic: Node Id"
+            "comment": "Diagnostic: Node Id", 
+            "intrinsics": [
+                "Diagnostic"
+            ]
         }, 
         {
             "variable": "Prim_Id", 
             "quantize": "float", 
             "vextype": "float", 
-            "intrinsic": "Diagnostic", 
-            "comment": "Diagnostic: Primitive Id"
+            "comment": "Diagnostic: Primitive Id", 
+            "intrinsics": [
+                "Diagnostic"
+            ]
         }, 
         {
             "variable": "Shading_Samples", 
             "comment": "Diagnostic: Shading Samples", 
             "vextype": "float", 
-            "intrinsic": "Diagnostic"
+            "intrinsics": [
+                "Diagnostic"
+            ]
         }, 
         {
             "variable": "Opacity_Samples", 
             "comment": "Diagnostic: Opacity Samples", 
             "vextype": "float", 
-            "intrinsic": "Diagnostic"
+            "intrinsics": [
+                "Diagnostic"
+            ]
         }, 
         {
             "variable": "Pixel_Samples", 
             "comment": "Diagnostic: Pixel Samples", 
             "vextype": "float", 
-            "intrinsic": "Diagnostic"
+            "intrinsics": [
+                "Diagnostic"
+            ]
         }, 
         {
             "variable": "ray:nts", 
             "comment": "Diagnostic: Ray tracing accelerator traversal steps", 
             "vextype": "float", 
-            "intrinsic": "Diagnostic"
+            "intrinsics": [
+                "Diagnostic"
+            ]
         }, 
         {
             "variable": "ray:nets", 
-            "comment": "Diagnostic: Ray tracing accelerator leaf traversal steps", 
             "vextype": "float", 
-            "intrinsic": "Diagnostic"
+            "comment": "Diagnostic: Ray tracing accelerator leaf traversal steps", 
+            "intrinsics": [
+                "Diagnostic"
+            ]
         }, 
         {
             "variable": "ray:nobjs", 
             "comment": "Diagnostic: Instance intersection count", 
             "vextype": "float", 
-            "intrinsic": "Diagnostic"
+            "intrinsics": [
+                "Diagnostic"
+            ]
         }, 
         {
             "variable": "ray:nprims", 
             "comment": "Diagnostic: Primitive intersection count", 
             "vextype": "float", 
-            "intrinsic": "Diagnostic"
+            "intrinsics": [
+                "Diagnostic"
+            ]
         }
     ]
 }

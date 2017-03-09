@@ -1114,9 +1114,9 @@ class AOVInfoTableModel(InfoTableModel):
             self._titles.append("Priority")
             self._values.append(aov.priority)
 
-        if aov.intrinsic:
-            self._titles.append("Intrinsic")
-            self._values.append(aov.intrinsic)
+        if aov.intrinsics:
+            self._titles.append("Intrinsics")
+            self._values.append(", ".join(aov.intrinsics))
 
         if aov.comment:
             self._titles.append("Comment")

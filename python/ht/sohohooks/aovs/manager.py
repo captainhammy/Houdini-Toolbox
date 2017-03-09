@@ -51,17 +51,17 @@ class AOVManager(object):
         """Build intrinsic groups."""
         # Process any AOVs that we have to look for any intrinsic groups.
         for aov in self.aovs.itervalues():
-            if aov.intrinsic is not None:
+            for intrinsic_name in aov.intrinsics:
                 # Intrinsic groups are prefixed with "i:".
-                intrinsic_name = "i:" + aov.intrinsic
+                name = "i:" + intrinsic_name
 
                 # Group exists so use it.
-                if intrinsic_name in self.groups:
-                    group = self.groups[intrinsic_name]
+                if name in self.groups:
+                    group = self.groups[name]
 
                 # Create the group and add it to our list.
                 else:
-                    group = IntrinsicAOVGroup(intrinsic_name)
+                    group = IntrinsicAOVGroup(name)
                     self.addGroup(group)
 
                 # Add this AOV to the group.

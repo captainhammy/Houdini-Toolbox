@@ -143,9 +143,9 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        intrinsic = self.intrinsic.text()
+        intrinsics = self.intrinsics.text()
 
-        aov_data["intrinsic"] = intrinsic
+        aov_data["intrinsics"] = intrinsics.replace(',', ' ').split()
 
         # =====================================================================
 
@@ -163,10 +163,27 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
     # =========================================================================
 
-    def enableComponents(self, enable):
+    def enableComponentMode(self, enable):
         """Enable the Export Components field."""
-        self.components_label.setEnabled(enable)
-        self.components.setEnabled(enable)
+        self.component_mode_label.setEnabled(enable)
+        self.component_mode.setEnabled(enable)
+
+        if not enable:
+            self.components_label.setDisabled(True)
+            self.components.setDisabled(True)
+
+        else:
+            if self.component_mode.currentIndex() == 1:
+                self.components_label.setDisabled(False)
+                self.components.setDisabled(False)
+
+    def enableComponents(self, value):
+        if value == 1:
+            self.components_label.setDisabled(False)
+            self.components.setDisabled(False)
+        else:
+            self.components_label.setDisabled(True)
+            self.components.setDisabled(True)
 
     # =========================================================================
 
@@ -208,19 +225,23 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         grid_layout = QtWidgets.QGridLayout()
         layout.addLayout(grid_layout)
 
+        row = 1
+
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("VEX Variable"), 1, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("VEX Variable"), row, 0)
 
         self.variable_name = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.variable_name, 1, 1)
+        grid_layout.addWidget(self.variable_name, row, 1)
+
+        row += 1
 
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("VEX Type"), 2, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("VEX Type"), row, 0)
 
         self.type_box = QtWidgets.QComboBox()
-        grid_layout.addWidget(self.type_box, 2, 1)
+        grid_layout.addWidget(self.type_box, row, 1)
 
         for entry in uidata.VEXTYPE_MENU_ITEMS:
             icon = utils.getIconFromVexType(entry[0])
@@ -231,84 +252,122 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
                 entry[0]
             )
 
+        row += 1
+
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("Channel Name"), 3, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Channel Name"), row, 0)
 
         self.channel_name = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.channel_name, 3, 1)
+        grid_layout.addWidget(self.channel_name, row, 1)
 
         self.channel_name.setToolTip(
             "Optional channel name Mantra will rename the AOV to."
         )
 
+        row += 1
+
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("Quantize"), 4, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Quantize"), row, 0)
 
         self.quantize_box = QtWidgets.QComboBox()
-        grid_layout.addWidget(self.quantize_box, 4, 1)
+        grid_layout.addWidget(self.quantize_box, row, 1)
 
         for entry in uidata.QUANTIZE_MENU_ITEMS:
             self.quantize_box.addItem(entry[1], entry[0])
 
         self.quantize_box.setCurrentIndex(2)
 
+        row += 1
+
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("Sample Filter"), 5, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Sample Filter"), row, 0)
 
         self.sfilter_box = QtWidgets.QComboBox()
-        grid_layout.addWidget(self.sfilter_box, 5, 1)
+        grid_layout.addWidget(self.sfilter_box, row, 1)
 
         for entry in uidata.SFILTER_MENU_ITEMS:
             self.sfilter_box.addItem(entry[1], entry[0])
 
+        row += 1
+
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("Pixel Filter"), 6, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Pixel Filter"), row, 0)
 
         self.pfilter_widget = widgets.MenuField(
             uidata.PFILTER_MENU_ITEMS
         )
-        grid_layout.addWidget(self.pfilter_widget, 6, 1)
+        grid_layout.addWidget(self.pfilter_widget, row, 1)
+
+        row += 1
+
+        # =====================================================================
+
+        grid_layout.setRowMinimumHeight(row, 25)
+
+        row += 1
 
         # =====================================================================
 
         grid_layout.addWidget(
             QtWidgets.QLabel("Exclude from DCM"),
-            7,
+            row,
             0
         )
 
         self.exclude_from_dcm = QtWidgets.QCheckBox()
-        grid_layout.addWidget(self.exclude_from_dcm, 7, 1)
+        grid_layout.addWidget(self.exclude_from_dcm, row, 1)
+
+        row += 1
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(8, 25)
+        grid_layout.setRowMinimumHeight(row, 25)
+
+        row += 1
 
         # =====================================================================
+
+        self.export_label = QtWidgets.QLabel("Export variable \nfor each component")
+
+        grid_layout.addWidget(self.export_label, row, 0, 2, 1)
 
         self.componentexport = QtWidgets.QCheckBox()
-        grid_layout.addWidget(self.componentexport, 9, 0)
+        grid_layout.addWidget(self.componentexport, row, 1, 2, 1)
 
-        grid_layout.addWidget(
-            QtWidgets.QLabel("Export variable for each component"),
-            9,
-            1
-        )
+        row += 2
+
+        # =====================================================================
+
+        self.component_mode_label = QtWidgets.QLabel("Set Components")
+        grid_layout.addWidget(self.component_mode_label, row, 0)
+
+        self.component_mode = QtWidgets.QComboBox()
+        grid_layout.addWidget(self.component_mode, row, 1)
+
+        self.component_mode.addItem("From ROP", "rop")
+        self.component_mode.addItem("In AOV", "aov")
+
+        self.component_mode_label.setDisabled(True)
+        self.component_mode.setDisabled(True)
+
+#        self.component_mode.currentIndexChanged.connect(self.enableExports)
+
+        row += 1
 
         # =====================================================================
 
         self.components_label = QtWidgets.QLabel("Export Components")
-        grid_layout.addWidget(self.components_label, 10, 0)
+        grid_layout.addWidget(self.components_label, row, 0)
 
         self.components_label.setDisabled(True)
 
         self.components = QtWidgets.QLineEdit()
         self.components.setText("diffuse reflect coat refract volume sss")
-        grid_layout.addWidget(self.components, 10, 1)
+        grid_layout.addWidget(self.components, row, 1)
 
         self.components.setDisabled(True)
         self.components.setToolTip(
@@ -316,100 +375,125 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
             " selected on the Mantra ROP."
         )
 
-        self.componentexport.stateChanged.connect(self.enableComponents)
+        self.componentexport.stateChanged.connect(self.enableComponentMode)
+        self.component_mode.currentIndexChanged.connect(self.enableComponents)
+
+        row += 1
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(11, 25)
+        grid_layout.setRowMinimumHeight(row, 25)
+
+        row += 1
 
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("Light Exports"), 12, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Light Exports"), row, 0)
 
         self.lightexport = QtWidgets.QComboBox()
-        grid_layout.addWidget(self.lightexport, 12, 1)
+        grid_layout.addWidget(self.lightexport, row, 1)
 
         for entry in uidata.LIGHTEXPORT_MENU_ITEMS:
             self.lightexport.addItem(entry[1], entry[0])
 
         self.lightexport.currentIndexChanged.connect(self.enableExports)
 
+        row += 1
+
         # =====================================================================
 
         self.light_mask_label = QtWidgets.QLabel("Light Mask")
-        grid_layout.addWidget(self.light_mask_label, 13, 0)
+        grid_layout.addWidget(self.light_mask_label, row, 0)
 
         self.light_mask_label.setDisabled(True)
 
         self.light_mask = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.light_mask, 13, 1)
+        grid_layout.addWidget(self.light_mask, row, 1)
 
         self.light_mask.setText("*")
         self.light_mask.setDisabled(True)
 
+        row += 1
+
         # =====================================================================
 
         self.light_select_label = QtWidgets.QLabel("Light Selection")
-        grid_layout.addWidget(self.light_select_label, 14, 0)
+        grid_layout.addWidget(self.light_select_label, row, 0)
 
         self.light_select_label.setDisabled(True)
 
         self.light_select = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.light_select, 14, 1)
+        grid_layout.addWidget(self.light_select, row, 1)
 
         self.light_select.setText("*")
         self.light_select.setDisabled(True)
 
-        # =====================================================================
-
-        grid_layout.setRowMinimumHeight(15, 25)
+        row += 1
 
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("Priority"), 16, 0)
+        grid_layout.setRowMinimumHeight(row, 25)
+
+        row += 1
+
+        # =====================================================================
+
+        grid_layout.addWidget(QtWidgets.QLabel("Priority"), row, 0)
 
         self.priority = widgets.CustomSpinBox()
-        grid_layout.addWidget(self.priority, 16, 1)
+        grid_layout.addWidget(self.priority, row, 1)
 
         self.priority.setMinimum(-1)
         self.priority.setValue(-1)
 
+        row += 1
+
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("Intrinsic"), 17, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Intrinsics"), row, 0)
 
-        self.intrinsic = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.intrinsic, 17, 1)
+        self.intrinsics = QtWidgets.QLineEdit()
+        grid_layout.addWidget(self.intrinsics, row, 1)
 
-        self.intrinsic.setToolTip(
-            "Optional intrinsic group for automatic group addition, eg. Diagnostic"
+        self.intrinsics.setToolTip(
+            "Optional intrinsic groups for automatic group addition, eg. Diagnostic"
         )
 
-        # =====================================================================
-
-        grid_layout.setRowMinimumHeight(18, 25)
+        row += 1
 
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("Comment"), 19, 0)
+        grid_layout.setRowMinimumHeight(row, 25)
+
+        row += 1
+
+        # =====================================================================
+
+        grid_layout.addWidget(QtWidgets.QLabel("Comment"), row, 0)
 
         self.comment = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.comment, 19, 1)
+        grid_layout.addWidget(self.comment, row, 1)
 
         self.comment.setToolTip(
             "Optional comment, eg. 'This AOV represents X'."
         )
 
-        # =====================================================================
-
-        grid_layout.setRowMinimumHeight(20, 25)
+        row += 1
 
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("File Path"), 21, 0)
+        grid_layout.setRowMinimumHeight(row, 25)
+
+        row += 1
+
+        # =====================================================================
+
+        grid_layout.addWidget(QtWidgets.QLabel("File Path"), row, 0)
 
         self.file_widget = widgets.FileChooser()
-        grid_layout.addWidget(self.file_widget, 21, 1)
+        grid_layout.addWidget(self.file_widget, row, 1)
+
+        row += 1
 
         # =====================================================================
 
@@ -467,8 +551,8 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         if aov.priority != -1:
             self.priority.setValue(aov.priority)
 
-        if aov.intrinsic:
-            self.intrinsic.setText(aov.intrinsic)
+        if aov.intrinsics:
+            self.intrinsics.setText(", ".join(aov.intrinsics))
 
         if aov.comment:
             self.comment.setText(aov.comment)
