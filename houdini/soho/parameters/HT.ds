@@ -178,6 +178,16 @@
 	    range	{ 0 1 }
 	    export	none
 	}
+	parm {
+	    name	"ip_disable_displacement"
+	    label	"Disable Displacement"
+	    type	toggle
+	    default	{ "0" }
+	    help	"Disable shader displacement."
+	    disablewhen	"{ enable_ip_override == 0 }"
+	    range	{ 0 1 }
+	    export	none
+	}
 
     }
 }

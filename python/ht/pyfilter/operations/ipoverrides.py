@@ -27,6 +27,7 @@ class IpOverrides(PyFilterOperation):
         self._disable_aovs = False
         self._disable_blur = False
         self._disable_deep = False
+        self._disable_displacement = False
         self._enabled = False
         self._res_scale = 1.0
         self._sample_scale = None
@@ -69,6 +70,17 @@ class IpOverrides(PyFilterOperation):
     # =========================================================================
 
     @property
+    def disable_displacement(self):
+        """Disable shader displacement."""
+        return self._disable_displacement
+
+    @disable_displacement.setter
+    def disable_displacement(self, disable_displacement):
+        self._disable_displacement = disable_displacement
+
+    # =========================================================================
+
+    @property
     def enabled(self):
         """Is this filter operation enabled."""
         return self._enabled
@@ -105,7 +117,8 @@ class IpOverrides(PyFilterOperation):
 
     @staticmethod
     def buildArgString(res_scale=None, sample_scale=None, disable_blur=False,
-                       disable_aovs=False, disable_deep=False):
+                       disable_aovs=False, disable_deep=False,
+                       disable_displacement=False):
         """Construct an argument string based on values for this filter."""
         args = []
 
@@ -123,6 +136,9 @@ class IpOverrides(PyFilterOperation):
 
         if disable_deep:
             args.append("-ip_disabledeep")
+
+        if disable_displacement:
+            args.append("-ip_disabledisplacement")
 
         return " ".join(args)
 
@@ -169,6 +185,12 @@ class IpOverrides(PyFilterOperation):
             help="Disable deep output"
         )
 
+        parser.add_argument(
+            "-ip_disabledisplacement",
+            action="store_true",
+            help="Disable shader displacement"
+        )
+
     # =========================================================================
     # METHODS
     # =========================================================================
@@ -203,6 +225,22 @@ class IpOverrides(PyFilterOperation):
             setProperty("image:deepresolver", [])
 
     @logFilter
+    def filterInstance(self):
+        """Modify object properties."""
+        import mantra
+
+        if self.disable_displacement:
+            setProperty("object:displace", [])
+
+    @logFilter
+    def filterMaterial(self):
+        """Modify material properties."""
+        import mantra
+
+        if self.disable_displacement:
+            setProperty("object:displace", [])
+
+    @logFilter
     def filterPlane(self):
         """Modify aov properties."""
         import mantra
@@ -222,6 +260,7 @@ class IpOverrides(PyFilterOperation):
         self.disable_aovs = filter_args.ip_disableaovs
         self.disable_blur = filter_args.ip_disableblur
         self.disable_deep = filter_args.ip_disabledeep
+        self.disable_displacement = filter_args.ip_disabledisplacement
 
         # Only enable ourself if something is set.
         if self.res_scale or self.disable_blur or self.sample_scale \
@@ -255,6 +294,7 @@ def buildArgStringFromNode(node):
         disable_blur=node.evalParm("ip_disable_blur"),
         disable_aovs=node.evalParm("ip_disable_aovs"),
         disable_deep=node.evalParm("ip_disable_deep"),
+        disable_displacement=node.evalParm("ip_disable_displacement"),
     )
 
 
