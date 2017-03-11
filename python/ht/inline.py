@@ -1032,7 +1032,7 @@ mergePoints(GU_Detail *gdp, const GU_Detail *src, int *vals, int num_vals)
 
     for (int i=0; i<num_vals; ++i)
     {
-        points.append(vals[i]);
+        points.append(gdp->pointOffset(vals[i]));
     }
 
     gdp->mergePoints(*src, GA_Range(src->getPointMap(), points));
@@ -1059,7 +1059,7 @@ mergePrims(GU_Detail *gdp, const GU_Detail *src, int *vals, int num_vals)
 
     for (int i=0; i<num_vals; ++i)
     {
-        prims.append(vals[i]);
+        prims.append(gdp->primitiveOffset(vals[i]));
     }
 
     gdp->mergePrimitives(*src, GA_Range(src->getPrimitiveMap(), prims));
