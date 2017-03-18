@@ -28,6 +28,7 @@ class IpOverrides(PyFilterOperation):
         self._disable_blur = False
         self._disable_deep = False
         self._disable_displacement = False
+        self._disable_subd = False
         self._enabled = False
         self._res_scale = 1.0
         self._sample_scale = None
@@ -81,6 +82,17 @@ class IpOverrides(PyFilterOperation):
     # =========================================================================
 
     @property
+    def disable_subd(self):
+        """Disable subdivision."""
+        return self._disable_subd
+
+    @disable_subd.setter
+    def disable_subd(self, disable_subd):
+        self._disable_subd = disable_subd
+
+    # =========================================================================
+
+    @property
     def enabled(self):
         """Is this filter operation enabled."""
         return self._enabled
@@ -118,7 +130,7 @@ class IpOverrides(PyFilterOperation):
     @staticmethod
     def buildArgString(res_scale=None, sample_scale=None, disable_blur=False,
                        disable_aovs=False, disable_deep=False,
-                       disable_displacement=False):
+                       disable_displacement=False, disable_subd=False):
         """Construct an argument string based on values for this filter."""
         args = []
 
@@ -139,6 +151,9 @@ class IpOverrides(PyFilterOperation):
 
         if disable_displacement:
             args.append("-ip_disabledisplacement")
+
+        if disable_subd:
+            args.append("-ip_disablesubd")
 
         return " ".join(args)
 
@@ -191,6 +206,12 @@ class IpOverrides(PyFilterOperation):
             help="Disable shader displacement"
         )
 
+        parser.add_argument(
+            "-ip_disablesubd",
+            action="store_true",
+            help="Disable subdivision"
+        )
+
     # =========================================================================
     # METHODS
     # =========================================================================
@@ -232,6 +253,9 @@ class IpOverrides(PyFilterOperation):
         if self.disable_displacement:
             setProperty("object:displace", [])
 
+        if self.disable_subd:
+            setProperty("object:rendersubd", 0)
+
     @logFilter
     def filterMaterial(self):
         """Modify material properties."""
@@ -261,6 +285,7 @@ class IpOverrides(PyFilterOperation):
         self.disable_blur = filter_args.ip_disableblur
         self.disable_deep = filter_args.ip_disabledeep
         self.disable_displacement = filter_args.ip_disabledisplacement
+        self.disable_subd = filter_args.ip_disablesubd
 
         # Only enable ourself if something is set.
         if self.res_scale or self.disable_blur or self.sample_scale \
@@ -295,6 +320,7 @@ def buildArgStringFromNode(node):
         disable_aovs=node.evalParm("ip_disable_aovs"),
         disable_deep=node.evalParm("ip_disable_deep"),
         disable_displacement=node.evalParm("ip_disable_displacement"),
+        disable_subd=node.evalParm("ip_disable_subd"),
     )
 
 
