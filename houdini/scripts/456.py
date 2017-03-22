@@ -5,10 +5,8 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
-import ht.nodes.colors
-
-# Houdini Imports
-import hou
+#import ht.nodes.shapes
+from ht.events import runEvents
 
 # =============================================================================
 # FUNCTIONS
@@ -16,11 +14,8 @@ import hou
 
 def main():
     """Main function."""
-    # Initialize color settings.
-    ht.nodes.colors.createSessionColorManager()
-
-    # Remove an icon cache directory variable if it exists.
-    hou.hscript("set -u HOUDINI_ICON_CACHE_DIR")
+    runEvents("456", None)
+#    ht.nodes.shapes.createSessionShapeManager()
 
 # =============================================================================
 

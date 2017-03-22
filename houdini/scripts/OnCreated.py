@@ -5,8 +5,7 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
-import ht.nodes.colors
-import ht.nodes.naming
+from ht.events import runEvents
 
 # =============================================================================
 # FUNCTIONS
@@ -14,9 +13,7 @@ import ht.nodes.naming
 
 def main():
     """Main function."""
-    node = kwargs["node"]
-
-    ht.nodes.colors.colorNode(node)
+    runEvents("OnCreated", kwargs)
 
 # =============================================================================
 

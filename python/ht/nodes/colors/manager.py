@@ -235,6 +235,12 @@ class ColorManager(object):
         return None
 
     def _resolveEntry(self, entry):
+        """Resolve the entry to a color.
+
+        The entry might a color or a constant so this will return the actual
+        color.
+
+        """
         # If the entry object is a ColorEntry then we can just return the
         # color.
         if isinstance(entry, ColorEntry):
@@ -270,6 +276,18 @@ class ColorManager(object):
     def tools(self):
         """A dictionary of tool menu location colors."""
         return self._tools
+
+    # =========================================================================
+    # STATIC METHODS
+    # =========================================================================
+
+    @staticmethod
+    def getSessionManager():
+        """Find or create a ColorManager for the session."""
+        if not hasattr(hou.session, "_color_manager"):
+            hou.session._color_manager = ColorManager()
+
+        return hou.session._color_manager
 
     # =========================================================================
     # METHODS
