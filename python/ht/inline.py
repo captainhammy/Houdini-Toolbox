@@ -4904,6 +4904,68 @@ def getMultiParmInstanceValues(self):
     return tuple(all_values)
 
 
+@addToClass(hou.Parm)
+def evalAsStrip(self):
+    """Evaluate the parameter as a Button/Icon Strip.
+
+    Returns a tuple of True/False values indicated which buttons
+    are pressed.
+
+    """
+    parm_template = self.parmTemplate()
+
+    # Right now the best we can do is check that a parameter is a menu
+    # since HOM has no idea about what the strips are.  If we aren't one
+    # then raise an exception.
+    if not isinstance(parm_template,  hou.MenuParmTemplate):
+        raise TypeError("Parameter must be a menu")
+
+    # Get the value.  This might be the selected index, or a bit mask if we
+    # can select more than one.
+    value = self.eval()
+
+    # Initialize a list of False values for each item on the strip.
+    menu_items = parm_template.menuItems()
+    num_items = len(menu_items)
+    values = [False] * num_items
+
+    # If our menu type is a Toggle that means we can select more than one
+    # item at the same time so our value is really a bit mask.
+    if parm_template.menuType() == hou.menuType.StringToggle:
+        # Check which items are selected.
+        for i in range(num_items):
+            mask = 1 << i
+
+            if value & mask:
+                values[i] = True
+
+    # Value is just the selected index so set that one to True.
+    else:
+        values[value] = True
+
+    return tuple(values)
+
+
+@addToClass(hou.Parm)
+def evalStripAsString(self):
+    """Evaluate the parameter as a Button Strip as strings.
+
+    Returns a tuple of the string tokens which are enabled.
+
+    """
+    strip_results = self.evalAsStrip()
+
+    menu_items = self.parmTemplate().menuItems()
+
+    enabled_values = []
+
+    for i, value in enumerate(strip_results):
+        if value:
+            enabled_values.append(menu_items[i])
+
+    return tuple(enabled_values)
+
+
 @addToClass(hou.Node)
 def disconnectAllInputs(self):
     """Disconnect all of this node's inputs."""
