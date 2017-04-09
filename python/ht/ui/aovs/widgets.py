@@ -1853,7 +1853,7 @@ class HelpButton(QtWidgets.QPushButton):
             desktop = hou.ui.curDesktop()
             browser = desktop.createFloatingPaneTab(hou.paneTabType.HelpBrowser)
 
-        browser.displayHelpPath(os.path.join(os.path.sep, "aov_manager", self._name))
+        browser.displayHelpPath("/aov_manager/{}".format(self._name))
 
 
 class MenuFieldMode(object):
