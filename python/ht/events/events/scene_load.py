@@ -32,9 +32,9 @@ class SceneLoadEvent(HoudiniEvent):
 
     def clearSessionSettings(self, scriptargs):
         """Clear out potentially annoying/bad settings."""
-	# Remove an icon cache directory variable if it exists.
-	hou.hscript("set -u HOUDINI_ICON_CACHE_DIR")
+        # Remove an icon cache directory variable if it exists.
+        hou.hscript("set -u HOUDINI_ICON_CACHE_DIR")
 
-	hou.hscript("opdefaultcolor -c")
-	hou.hscript("opdefaultshape -c")
+#       hou.hscript("opdefaultcolor -c")
+#       hou.hscript("opdefaultshape -c")
 
