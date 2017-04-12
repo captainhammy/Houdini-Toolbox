@@ -69,7 +69,7 @@ class HoudiniWrapper(object):
 
         # Install the selected build.
         if self.arguments.install:
-            self.build.install()
+            self.build.install(self.arguments.create_symlink)
             return
 
         # Uninstall the selected build.
@@ -457,6 +457,13 @@ def _buildParser():
         "-dlinstall",
         nargs=1,
         help="Download and install today's Houdini build."
+    )
+
+    parser.add_argument(
+        "-create_symlink",
+        action="store_true",
+        default=True,
+        help="Create a major.minor symlink"
     )
 
     return parser

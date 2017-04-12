@@ -414,8 +414,10 @@ class HoudiniBuildManager(object):
         # Glob in the install location for installed Houdini builds.
         paths = glob.glob(glob_string)
 
-        # Convert all the install directories to InstalledHoudiniBuild objects.
-        self._installed = [InstalledHoudiniBuild(path) for path in paths]
+        # Convert all the install directories to InstalledHoudiniBuild objects
+        # if they are not symlinks.
+        self._installed = [InstalledHoudiniBuild(path) for path in paths
+                           if not os.path.islink(path)]
 
         self.installed.sort(key=attrgetter("version"))
 
@@ -600,7 +602,7 @@ class HoudiniInstallFile(HoudiniBase):
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    def _installLinux(self, install_path):
+    def _installLinux(self, install_path, create_symlink=False):
         """Install the build on linux."""
         # Let our system tell us where we can store the temp files.
         temp_path = tempfile.gettempdir()
@@ -637,11 +639,21 @@ class HoudiniInstallFile(HoudiniBase):
         print "Removing temporary install files."
         shutil.rmtree(extract_path)
 
+        if create_symlink:
+            link_path = os.path.join(
+                os.path.dirname(install_path),
+                "hfs{}.{}".format(self.major, self.minor)
+            )
+
+            print "Linking {} to {}".format(link_path, install_path)
+
+            os.symlink(install_path, link_path)
+
     # =========================================================================
     # METHODS
     # =========================================================================
 
-    def install(self):
+    def install(self, create_symlink=False):
         """Install this package to the install directory.
 
         To install we need to extract the contents to a temp directory.  We
@@ -663,7 +675,7 @@ class HoudiniInstallFile(HoudiniBase):
         system = platform.system()
 
         if system == "Linux":
-            self._installLinux(install_path)
+            self._installLinux(install_path, create_symlink)
 
         elif system == "Windows":
             raise UnsupportedOSError("Windows is not supported")
