@@ -1,4 +1,4 @@
-"""This module contains a class to color nodes based on events."""
+"""This module contains an event to perform actions on scene load."""
 
 # =============================================================================
 # IMPORTS
@@ -34,7 +34,4 @@ class SceneLoadEvent(HoudiniEvent):
         """Clear out potentially annoying/bad settings."""
         # Remove an icon cache directory variable if it exists.
         hou.hscript("set -u HOUDINI_ICON_CACHE_DIR")
-
-#       hou.hscript("opdefaultcolor -c")
-#       hou.hscript("opdefaultshape -c")
 
