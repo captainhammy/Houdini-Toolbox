@@ -160,6 +160,13 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(geo.numPrims(), 12)
 
+    def test_packGeometry(self):
+        geo = getObjGeo("test_packGeometry")
+
+        prim = geo.prims()[0]
+
+        self.assertTrue(isinstance(prim, hou.PackedGeometry))
+
     def test_sortByAttribute(self):
         geo = getObjGeoCopy("test_sortByAttribute")
 
@@ -340,18 +347,18 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(point.position(), hou.Vector3(1, 2, 3))
 
-    def test_createPoints(self):
+    def test_createNPoints(self):
         geo = hou.Geometry()
-        points = geo.createPoints(15)
+        points = geo.createNPoints(15)
 
         self.assertEqual(points, geo.points())
 
-    def test_createPointsInvalidNumber(self):
+    def test_createNPointsInvalidNumber(self):
         geo = hou.Geometry()
 
         self.assertRaises(
             hou.OperationFailed,
-            geo.createPoints,
+            geo.createNPoints,
             -4
         )
 
@@ -395,47 +402,6 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(len(geo.iterPrims()), len(prims))
 
-    def test_renameAttributeVertex(self):
-        geo = getObjGeoCopy("test_renameAttributeVertex")
-        attrib = geo.findVertexAttrib("goodbye")
-
-        new_attrib = attrib.rename("aurevroir")
-
-        self.assertEqual(new_attrib.name(), "aurevroir")
-
-    def test_renameAttributePoint(self):
-        geo = getObjGeoCopy("test_renameAttributePoint")
-        attrib = geo.findPointAttrib("hello")
-
-        new_attrib = attrib.rename("test")
-
-        self.assertEqual(new_attrib.name(), "test")
-
-    def test_renameAttributeP(self):
-        geo = getObjGeoCopy("test_renameAttributePoint")
-        attrib = geo.findPointAttrib("P")
-
-        self.assertRaises(
-            hou.OperationFailed,
-            attrib.rename,
-            "test"
-        )
-
-    def test_renameAttributePrim(self):
-        geo = getObjGeoCopy("test_renameAttributePrim")
-        attrib = geo.findPrimAttrib("today")
-
-        new_attrib = attrib.rename("tomorrow")
-
-        self.assertEqual(new_attrib.name(), "tomorrow")
-
-    def test_renameAttributeGlobal(self):
-        geo = getObjGeoCopy("test_renameAttributeGlobal")
-        attrib = geo.findGlobalAttrib("welcome")
-
-        new_attrib = attrib.rename("getlost")
-
-        self.assertEqual(new_attrib.name(), "getlost")
 
     def test_copyPointAttributeValues(self):
         source = getObjGeo("test_copyPointAttributeValues")
@@ -522,83 +488,84 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(verts, TARGET)
 
-    def test_pointStringAttribValues(self):
-        geo = getObjGeo("test_pointStringAttribValues")
-        TARGET = ('point0', 'point1', 'point2', 'point3', 'point4')
+    def test_pointStringTableIndices(self):
+        geo = getObjGeo("test_pointStringTableIndices")
 
-        values = geo.pointStringAttribValues("test")
+        TARGET = (0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1)
 
-        self.assertTrue(values, TARGET)
+        attr = geo.findPointAttrib("test")
 
-    def test_pointStringAttribValuesInvalidAttribute(self):
-        geo = getObjGeo("test_pointStringAttribValues")
+        self.assertEqual(attr.stringTableIndices(), TARGET)
 
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.pointStringAttribValues,
-            "bad_name"
-        )
+    def test_primStringTableIndices(self):
+        geo = getObjGeo("test_primStringTableIndices")
 
-    def test_pointStringAttribValuesNotString(self):
-        geo = getObjGeo("test_pointStringAttribValues")
+        TARGET = (0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4)
 
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.pointStringAttribValues,
-            "P"
-        )
+        attr = geo.findPrimAttrib("test")
 
-    def test_setPointStringAttribValues(self):
-        TARGET = ('point0', 'point1', 'point2', 'point3', 'point4')
+        self.assertEqual(attr.stringTableIndices(), TARGET)
 
-        geo = hou.Geometry()
-        geo.createPoints(5)
-        attr = geo.addAttrib(hou.attribType.Point, "test", "")
+    def test_vertexStringAttribValues(self):
+        geo = getObjGeo("test_vertexStringAttribValues")
 
-        geo.setPointStringAttribValues("test", TARGET)
+        TARGET = ('vertex0', 'vertex1', 'vertex2', 'vertex3', 'vertex4', 'vertex5', 'vertex6', 'vertex7')
 
-        vals = [point.attribValue(attr) for point in geo.points()]
+        self.assertEqual(geo.vertexStringAttribValues("test"), TARGET)
+
+    def test_setVertexStringAttribValues(self):
+        TARGET = ('vertex0', 'vertex1', 'vertex2', 'vertex3', 'vertex4')
+
+        geo = getObjGeoCopy("test_setVertexStringAttribValues")
+        attr = geo.findVertexAttrib("test")
+
+        geo.setVertexStringAttribValues("test", TARGET)
+
+        vals = []
+
+        for prim in geo.prims():
+            vals.extend([vert.attribValue(attr) for vert in prim.vertices()])
 
         self.assertEqual(tuple(vals), TARGET)
 
-    def test_setPointStringAttribValuesInvalidAttribute(self):
-        TARGET = ('point0', 'point1', 'point2', 'point3', 'point4')
-        geo = hou.Geometry()
+    def test_setVertexStringAttribValuesInvalidAttribute(self):
+        TARGET = ('vertex0', 'vertex1', 'vertex2', 'vertex3', 'vertex4')
+
+        geo = getObjGeoCopy("test_setVertexStringAttribValues")
 
         self.assertRaises(
             hou.OperationFailed,
-            geo.setPointStringAttribValues,
-            "test", TARGET
+            geo.setVertexStringAttribValues,
+            "thing", TARGET
         )
 
-    def test_setPointStringAttribValuesInvalidAttributeType(self):
-        TARGET = ('point0', 'point1', 'point2', 'point3', 'point4')
-        geo = hou.Geometry()
+    def test_setVertexStringAttribValuesInvalidAttributeType(self):
+        TARGET = ('vertex0', 'vertex1', 'vertex2', 'vertex3', 'vertex4')
 
-        attr = geo.addAttrib(hou.attribType.Point, "test", 1)
+        geo = getObjGeoCopy("test_setVertexStringAttribValues")
 
         self.assertRaises(
             hou.OperationFailed,
-            geo.setPointStringAttribValues,
-            "test", TARGET
+            geo.setVertexStringAttribValues,
+            "notstring", TARGET
         )
 
-    def test_setPointStringAttribValuesInvalidAttributeSize(self):
-        TARGET = ('point0', 'point1', 'point2', 'point3', 'point4')
-        geo = hou.Geometry()
-        geo.createPoints(4)
-        attr = geo.addAttrib(hou.attribType.Point, "test", "")
+    def test_setPrimStringAttribValuesInvalidAttributeSize(self):
+        TARGET = ('vertex0', 'vertex1', 'vertex2', 'vertex3')
+
+        geo = getObjGeoCopy("test_setVertexStringAttribValues")
 
         self.assertRaises(
             hou.OperationFailed,
-            geo.setPointStringAttribValues,
+            geo.setVertexStringAttribValues,
             "test", TARGET
         )
+
 
     def test_setSharedPointStringAttrib(self):
         TARGET = ["point0"]*5
         geo = hou.Geometry()
-        geo.createPoints(5)
+        geo.createNPoints(5)
         attr = geo.addAttrib(hou.attribType.Point, "test", "")
 
         geo.setSharedPointStringAttrib(attr.name(), "point0")
@@ -614,90 +581,19 @@ class TestInlineCpp(unittest.TestCase):
 
         attr = geo.addAttrib(hou.attribType.Point, "test", "")
 
-        geo.createPoints(5)
+        geo.createNPoints(5)
         group = geo.createPointGroup("group1")
 
         for point in geo.points():
             group.add(point)
 
-        geo.createPoints(5)
+        geo.createNPoints(5)
 
         geo.setSharedPointStringAttrib(attr.name(), "point0", group)
 
         vals = [point.attribValue(attr) for point in geo.points()]
 
         self.assertEqual(vals, TARGET)
-
-    def test_primStringAttribValues(self):
-        geo = getObjGeo("test_primStringAttribValues")
-        TARGET = ('prim0', 'prim1', 'prim2', 'prim3', 'prim4')
-
-        values = geo.primStringAttribValues("test")
-
-        self.assertTrue(values, TARGET)
-
-    def test_primStringAttribValuesInvalidAttribute(self):
-        geo = getObjGeo("test_primStringAttribValues")
-
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.primStringAttribValues,
-            "bad_name"
-        )
-
-    def test_primStringAttribValuesNotString(self):
-        geo = getObjGeo("test_primStringAttribValues")
-
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.primStringAttribValues,
-            "notstring"
-        )
-
-    def test_setPrimStringAttribValues(self):
-        TARGET = ('prim0', 'prim1', 'prim2', 'prim3', 'prim4')
-
-        geo = getObjGeoCopy("test_setPrimStringAttribValues")
-        attr = geo.findPrimAttrib("test")
-
-        geo.setPrimStringAttribValues("test", TARGET)
-
-        vals = [prim.attribValue(attr) for prim in geo.prims()]
-
-        self.assertEqual(tuple(vals), TARGET)
-
-    def test_setPrimStringAttribValuesInvalidAttribute(self):
-        TARGET = ('prim0', 'prim1', 'prim2', 'prim3', 'prim4')
-
-        geo = getObjGeoCopy("test_setPrimStringAttribValues")
-
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.setPrimStringAttribValues,
-            "thing", TARGET
-        )
-
-    def test_setPrimStringAttribValuesInvalidAttributeType(self):
-        TARGET = ('prim0', 'prim1', 'prim2', 'prim3', 'prim4')
-
-        geo = getObjGeoCopy("test_setPrimStringAttribValues")
-
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.setPrimStringAttribValues,
-            "notstring", TARGET
-        )
-
-    def test_setPrimStringAttribValuesInvalidAttributeSize(self):
-        TARGET = ('prim0', 'prim1', 'prim2', 'prim3')
-
-        geo = getObjGeoCopy("test_setPrimStringAttribValues")
-
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.setPrimStringAttribValues,
-            "test", TARGET
-        )
 
     def test_setSharedPrimStringAttrib(self):
         TARGET = ["value"]*5
@@ -1088,6 +984,77 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(len(geo.iterPoints()), 195)
 
+
+    def test_renamePointGroup(self):
+        geo = getObjGeoCopy("test_renamePointGroup")
+
+        group = geo.pointGroups()[0]
+
+        result = geo.renameGroup(group, "test_group")
+
+        self.assertTrue(result is not None)
+        self.assertTrue(result.name() == "test_group")
+
+
+    def test_renamePointGroupSameName(self):
+        geo = getObjGeoCopy("test_renamePointGroup")
+
+        group = geo.pointGroups()[0]
+        name = group.name()
+
+        self.assertRaises(
+            hou.OperationFailed,
+            geo.renameGroup,
+            group,
+            name
+        )
+
+    def test_renamePrimGroup(self):
+        geo = getObjGeoCopy("test_renamePrimGroup")
+
+        group = geo.primGroups()[0]
+
+        result = geo.renameGroup(group, "test_group")
+
+        self.assertTrue(result is not None)
+        self.assertTrue(result.name() == "test_group")
+
+    def test_renamePrimGroupSameName(self):
+        geo = getObjGeoCopy("test_renamePrimGroup")
+
+        group = geo.primGroups()[0]
+        name = group.name()
+
+        self.assertRaises(
+            hou.OperationFailed,
+            geo.renameGroup,
+            group,
+            name
+        )
+
+    def test_renameEdgeGroup(self):
+        geo = getObjGeoCopy("test_renameEdgeGroup")
+
+        group = geo.edgeGroups()[0]
+
+        result = geo.renameGroup(group, "test_group")
+
+        self.assertTrue(result is not None)
+        self.assertTrue(result.name() == "test_group")
+
+    def test_renameEdgeGroupSameName(self):
+        geo = getObjGeoCopy("test_renameEdgeGroup")
+
+        group = geo.edgeGroups()[0]
+        name = group.name()
+
+        self.assertRaises(
+            hou.OperationFailed,
+            geo.renameGroup,
+            group,
+            name
+        )
+
     def test_groupBoundingBoxPoint(self):
         TARGET = hou.BoundingBox(-4, 0, -1, -2, 0, 2)
 
@@ -1107,6 +1074,40 @@ class TestInlineCpp(unittest.TestCase):
         bbox = group.boundingBox()
 
         self.assertEqual(bbox, TARGET)
+
+    def test_groupBoundingBoxEdge(self):
+        TARGET = hou.BoundingBox(-5, 0, -5, 4, 0, 5)
+
+        geo = getObjGeo("test_groupBoundingBoxEdge")
+
+        group = geo.edgeGroups()[0]
+        bbox = group.boundingBox()
+
+        self.assertEqual(bbox, TARGET)
+
+    def test_pointGroupSize(self):
+        geo = getObjGeo("test_pointGroupSize")
+
+        group = geo.pointGroups()[0]
+
+        self.assertEqual(group.size(), 12)
+        self.assertEqual(len(group), 12)
+
+    def test_primGroupSize(self):
+        geo = getObjGeo("test_primGroupSize")
+
+        group = geo.primGroups()[0]
+
+        self.assertEqual(group.size(), 39)
+        self.assertEqual(len(group), 39)
+
+    def test_edgeGroupSize(self):
+        geo = getObjGeo("test_edgeGroupSize")
+
+        group = geo.edgeGroups()[0]
+
+        self.assertEqual(group.size(), 52)
+        self.assertEqual(len(group), 52)
 
     def test_togglePoint(self):
         geo = getObjGeoCopy("test_togglePoint")
@@ -1148,6 +1149,14 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEquals(group.prims(), vals)
 
+    def test_toggleEntriesEdge(self):
+        geo = getObjGeoCopy("test_toggleEntriesEdge")
+
+        group = geo.edgeGroups()[0]
+        group.toggleEntries()
+
+        self.assertEquals(len(group.edges()),  20)
+
     def test_copyPointGroup(self):
         geo = getObjGeoCopy("test_copyPointGroup")
 
@@ -1182,7 +1191,6 @@ class TestInlineCpp(unittest.TestCase):
         )
 
     def test_copyPrimGroup(self):
-        return
         geo = getObjGeoCopy("test_copyPrimGroup")
 
         group = geo.primGroups()[0]
@@ -1192,7 +1200,6 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEquals(group.prims(), new_group.prims())
 
     def test_copyPrimGroupSameName(self):
-        return
         geo = getObjGeoCopy("test_copyPrimGroup")
 
         group = geo.primGroups()[0]
@@ -1204,7 +1211,6 @@ class TestInlineCpp(unittest.TestCase):
         )
 
     def test_copyPrimGroupExisting(self):
-        return
         geo = getObjGeoCopy("test_copyPrimGroupExisting")
 
         group = geo.primGroups()[-1]
@@ -1249,8 +1255,8 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertFalse(group1.containsAny(group2))
 
-    def test_convertToPointGroup(self):
-        geo = getObjGeoCopy("test_convertToPointGroup")
+    def test_convertPrimToPointGroup(self):
+        geo = getObjGeoCopy("test_convertPrimToPointGroup")
 
         group = geo.primGroups()[0]
 
@@ -1261,8 +1267,8 @@ class TestInlineCpp(unittest.TestCase):
         # Check source group was deleted.
         self.assertEqual(len(geo.primGroups()), 0)
 
-    def test_convertToPointGroupWithName(self):
-        geo = getObjGeoCopy("test_convertToPointGroup")
+    def test_convertPrimToPointGroupWithName(self):
+        geo = getObjGeoCopy("test_convertPrimToPointGroup")
 
         group = geo.primGroups()[0]
 
@@ -1270,8 +1276,8 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(new_group.name(), "new_group")
 
-    def test_convertToPointGroupNoDestroy(self):
-        geo = getObjGeoCopy("test_convertToPointGroup")
+    def test_convertPrimToPointGroupNoDestroy(self):
+        geo = getObjGeoCopy("test_convertPrimToPointGroup")
 
         group = geo.primGroups()[0]
 
@@ -1280,8 +1286,8 @@ class TestInlineCpp(unittest.TestCase):
         # Check source group wasn't deleted.
         self.assertEqual(len(geo.primGroups()), 1)
 
-    def test_convertToPrimGroup(self):
-        geo = getObjGeoCopy("test_convertToPrimGroup")
+    def test_convertPointToPrimGroup(self):
+        geo = getObjGeoCopy("test_convertPointToPrimGroup")
 
         group = geo.pointGroups()[0]
 
@@ -1292,8 +1298,8 @@ class TestInlineCpp(unittest.TestCase):
         # Check source group was deleted.
         self.assertEqual(len(geo.pointGroups()), 0)
 
-    def test_convertToPrimGroupWithName(self):
-        geo = getObjGeoCopy("test_convertToPrimGroup")
+    def test_convertPointToPrimGroupWithName(self):
+        geo = getObjGeoCopy("test_convertPointToPrimGroup")
 
         group = geo.pointGroups()[0]
 
@@ -1301,8 +1307,8 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(new_group.name(), "new_group")
 
-    def test_convertToPrimGroupNoDestroy(self):
-        geo = getObjGeoCopy("test_convertToPrimGroup")
+    def test_convertPointToPrimGroupNoDestroy(self):
+        geo = getObjGeoCopy("test_convertPointToPrimGroup")
 
         group = geo.pointGroups()[0]
 
@@ -1310,6 +1316,102 @@ class TestInlineCpp(unittest.TestCase):
 
         # Check source group wasn't deleted.
         self.assertEqual(len(geo.primGroups()), 1)
+
+    # =========================================================================
+    # UNGROUPED POINTS
+    # =========================================================================
+
+    def test_hasUngroupedPoints(self):
+        geo = getObjGeo("test_hasUngroupedPoints")
+
+        self.assertTrue(geo.hasUngroupedPoints())
+
+    def test_hasUngroupedPointsFalse(self):
+        geo = getObjGeo("test_hasUngroupedPointsFalse")
+
+        self.assertFalse(geo.hasUngroupedPoints())
+
+    def test_groupUngroupedPoints(self):
+        geo = getObjGeoCopy("test_groupUngroupedPoints")
+
+        group = geo.groupUngroupedPoints("ungrouped")
+
+        self.assertEquals(len(group.points()), 10)
+
+    def test_groupUngroupedPointsExistingName(self):
+        geo = getObjGeoCopy("test_groupUngroupedPoints")
+
+        self.assertRaises(
+            hou.OperationFailed,
+            geo.groupUngroupedPoints,
+            "group1"
+        )
+
+    def test_groupUngroupedPointsNoName(self):
+        geo = getObjGeoCopy("test_groupUngroupedPoints")
+
+        self.assertRaises(
+            hou.OperationFailed,
+            geo.groupUngroupedPoints,
+            ""
+        )
+
+    def test_groupUngroupedPointsFalse(self):
+        geo = getObjGeoCopy("test_groupUngroupedPointsFalse")
+
+        group = geo.groupUngroupedPoints("ungrouped")
+
+        self.assertEquals(group, None)
+
+    # =========================================================================
+    # UNGROUPED PRIMS
+    # =========================================================================
+
+    def test_hasUngroupedPrims(self):
+        geo = getObjGeo("test_hasUngroupedPrims")
+
+        self.assertTrue(geo.hasUngroupedPrims())
+
+    def test_hasUngroupedPrims(self):
+        geo = getObjGeo("test_hasUngroupedPrimsFalse")
+
+        self.assertFalse(geo.hasUngroupedPrims())
+
+    def test_groupUngroupedPrims(self):
+        geo = getObjGeoCopy("test_groupUngroupedPrims")
+
+        group = geo.groupUngroupedPrims("ungrouped")
+
+        self.assertEquals(len(group.prims()), 3)
+
+    def test_groupUngroupedPrimsExistingName(self):
+        geo = getObjGeoCopy("test_groupUngroupedPrims")
+
+        self.assertRaises(
+            hou.OperationFailed,
+            geo.groupUngroupedPrims,
+            "group1"
+        )
+
+    def test_groupUngroupedPrimsNoName(self):
+        geo = getObjGeoCopy("test_groupUngroupedPrims")
+
+        self.assertRaises(
+            hou.OperationFailed,
+            geo.groupUngroupedPrims,
+            ""
+        )
+
+    def test_groupUngroupedPrimsFalse(self):
+        geo = getObjGeoCopy("test_groupUngroupedPrimsFalse")
+
+        group = geo.groupUngroupedPrims("ungrouped")
+
+        self.assertEquals(group, None)
+
+    # =========================================================================
+    # BOUNDING BOXES
+    # =========================================================================
 
     def test_isInside(self):
         bbox1 = hou.BoundingBox(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5)
@@ -1379,6 +1481,160 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(bbox.volume(), 42)
 
+    # =========================================================================
+    # PARMS
+    # =========================================================================
+
+    def test_isVector(self):
+        node = OBJ.node("test_isVector/node")
+        parm = node.parmTuple("vec")
+
+        self.assertTrue(parm.isVector())
+
+    def test_isVectorFalse(self):
+        node = OBJ.node("test_isVector/node")
+        parm = node.parmTuple("not_vec")
+
+        self.assertFalse(parm.isVector())
+
+    def test_evalAsVector2(self):
+        node = OBJ.node("test_evalAsVector/node")
+        parm = node.parmTuple("vec2")
+
+        self.assertEqual(parm.evalAsVector(), hou.Vector2(1,2))
+
+    def test_evalAsVector3(self):
+        node = OBJ.node("test_evalAsVector/node")
+        parm = node.parmTuple("vec3")
+
+        self.assertEqual(parm.evalAsVector(), hou.Vector3(3,4,5))
+
+    def test_evalAsVector4(self):
+        node = OBJ.node("test_evalAsVector/node")
+        parm = node.parmTuple("vec4")
+
+        self.assertEqual(parm.evalAsVector(), hou.Vector4(6,7,8,9))
+
+    def test_evalAsVectorFail(self):
+        node = OBJ.node("test_evalAsVector/node")
+        parm = node.parmTuple("not_vec")
+
+        self.assertRaises(
+            hou.Error,
+            parm.evalAsVector
+        )
+
+    def test_isColor(self):
+        node = OBJ.node("test_isColor/node")
+        parm = node.parmTuple("color")
+
+        self.assertTrue(parm.isColor())
+
+    def test_isColorFalse(self):
+        node = OBJ.node("test_isColor/node")
+        parm = node.parmTuple("not_color")
+
+        self.assertFalse(parm.isColor())
+
+    def test_evalAsColor(self):
+        node = OBJ.node("test_evalAsColor/node")
+        parm = node.parmTuple("color")
+
+        self.assertEqual(parm.evalAsColor(), hou.Color(0,0.5,0.5))
+
+    def test_evalAsColorFail(self):
+        node = OBJ.node("test_evalAsColor/node")
+        parm = node.parmTuple("not_color")
+
+        self.assertRaises(
+            hou.Error,
+            parm.evalAsColor
+        )
+
+    def test_getReferencedNodeAbsoluate(self):
+        node = OBJ.node("test_getReferencedNode/node")
+        parm = node.parm("abs_path")
+
+        TARGET = OBJ.node("test_getReferencedNode/TARGET")
+
+        self.assertEqual(parm.getReferencedNode(), TARGET)
+
+    def test_getReferencedNodeRelative(self):
+        node = OBJ.node("test_getReferencedNode/node")
+        parm = node.parm("rel_path")
+
+        TARGET = OBJ.node("test_getReferencedNode/TARGET")
+
+        self.assertEqual(parm.getReferencedNode(), TARGET)
+
+    def test_getReferencedNodeNonString(self):
+        node = OBJ.node("test_getReferencedNode/node")
+        parm = node.parm("non_string")
+
+        self.assertRaises(
+            hou.Error,
+            parm.getReferencedNode
+        )
+
+    def test_getReferencedNodeNonRef(self):
+        node = OBJ.node("test_getReferencedNode/node")
+        parm = node.parm("non_reference")
+
+        self.assertRaises(
+            hou.Error,
+            parm.getReferencedNode
+        )
+
+    def test_evalAsStripSingle(self):
+        node = OBJ.node("test_evalAsStrip/node")
+        parm = node.parm("strip_normal")
+
+        TARGET = (False, True, False, False)
+
+        self.assertEqual(
+            parm.evalAsStrip(),
+            TARGET
+        )
+
+    def test_evalAsStripToggle(self):
+        node = OBJ.node("test_evalAsStrip/node")
+        parm = node.parm("strip_toggle")
+
+        TARGET = (True, False, True, True)
+
+        self.assertEqual(
+            parm.evalAsStrip(),
+            TARGET
+        )
+
+
+    def test_evalStripAsStringSingle(self):
+        node = OBJ.node("test_evalAsStrip/node")
+        parm = node.parm("strip_normal")
+
+        TARGET = ('bar',)
+
+        self.assertEqual(
+            parm.evalStripAsString(),
+            TARGET
+        )
+
+    def test_evalStripAsStringToggle(self):
+        node = OBJ.node("test_evalAsStrip/node")
+        parm = node.parm("strip_toggle")
+
+        TARGET = ('foo', 'hello', 'world')
+
+        self.assertEqual(
+            parm.evalStripAsString(),
+            TARGET
+        )
+
+
+    # =========================================================================
+    # MULTIPARMS
+    # =========================================================================
+
     def test_isMultiParm(self):
         node = OBJ.node("test_isMultiParm/object_merge")
         parm = node.parm("numobj")
@@ -1397,17 +1653,47 @@ class TestInlineCpp(unittest.TestCase):
         parmTuple = node.parmTuple("objpath1")
         self.assertFalse(parmTuple.isMultiParm())
 
+    def test_getMultiParmInstancesPerItem(self):
+        node = OBJ.node("test_getMultiParmInstancesPerItem/object_merge")
+        parm = node.parm("numobj")
+
+        self.assertEqual(parm.getMultiParmInstancesPerItem(), 4)
+
+        parm_tuple = node.parmTuple("numobj")
+        self.assertEqual(parm_tuple.getMultiParmInstancesPerItem(), 4)
+
+
+    def test_getMultiParmStartOffset0(self):
+        node = OBJ.node("test_getMultiParmStartOffset/add")
+        parm = node.parm("points")
+
+        self.assertEqual(parm.getMultiParmStartOffset(), 0)
+
+        parm_tuple = node.parmTuple("points")
+        self.assertEqual(parm_tuple.getMultiParmStartOffset(), 0)
+
+    def test_getMultiParmStartOffset1(self):
+        node = OBJ.node("test_getMultiParmStartOffset/object_merge")
+        parm = node.parm("numobj")
+
+        self.assertEqual(parm.getMultiParmStartOffset(), 1)
+
+        parm_tuple = node.parmTuple("numobj")
+        self.assertEqual(parm_tuple.getMultiParmStartOffset(), 1)
+
     def test_getMultiParmInstanceIndex(self):
-        TARGET = (1, )
+        TARGET = (2, )
 
         node = OBJ.node("test_getMultiParmInstanceIndex/object_merge")
-        parm = node.parm("objpath1")
+        parm = node.parm("objpath2")
 
         self.assertEqual(parm.getMultiParmInstanceIndex(), TARGET)
 
-    def test_getMultiParmInstanceIndexFail(self):
-        TARGET = (1, )
+        parm_tuple = node.parmTuple("objpath2")
 
+        self.assertEqual(parm_tuple.getMultiParmInstanceIndex(), TARGET)
+
+    def test_getMultiParmInstanceIndexFail(self):
         node = OBJ.node("test_getMultiParmInstanceIndex/object_merge")
         parm = node.parm("numobj")
 
@@ -1416,24 +1702,13 @@ class TestInlineCpp(unittest.TestCase):
             parm.getMultiParmInstanceIndex
         )
 
-    def test_getTupleMultiParmInstanceIndex(self):
-        TARGET = (1, )
-
-        node = OBJ.node("test_getMultiParmInstanceIndex/object_merge")
-        parmTuple = node.parmTuple("objpath1")
-
-        self.assertEqual(parmTuple.getMultiParmInstanceIndex(), TARGET)
-
-    def test_getTupleMultiParmInstanceIndexFail(self):
-        TARGET = (1, )
-
-        node = OBJ.node("test_getMultiParmInstanceIndex/object_merge")
-        parmTuple = node.parmTuple("numobj")
+        parm_tuple = node.parmTuple("numobj")
 
         self.assertRaises(
             hou.OperationFailed,
-            parmTuple.getMultiParmInstanceIndex
+            parm_tuple.getMultiParmInstanceIndex
         )
+
 
     def test_getMultiParmInstances(self):
         node = OBJ.node("test_getMultiParmInstances/null1")
@@ -1479,6 +1754,10 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(values, TARGET)
 
+    # =========================================================================
+    # NODES AND NODE TYPES
+    # =========================================================================
+
     def test_disconnectAllOutputs(self):
         node = OBJ.node("test_disconnectAllOutputs/file")
 
@@ -1493,59 +1772,26 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(len(node.inputs()), 0)
 
-    def test_nodeInputLabel(self):
-        node = OBJ.createNode("geo")
-        self.assertEqual(node.inputLabel(0), "parent")
-
-    def test_messageNodes(self):
-        node = OBJ.node("test_messageNodes/solver")
-
-        self.assertEqual(len(node.messageNodes()), 1)
-
-    def test_representativeNode(self):
-        node = OBJ.createNode("stereocamrig")
-
-        TARGET = node.node("stereo_camera")
-
-        self.assertEqual(node.representativeNode(), TARGET)
-
     def test_isContainedBy(self):
-        node = OBJ.createNode("geo")
+        node = OBJ.node("test_isContainedBy")
 
-        box = node.createNode("box")
+        box = node.node("box")
 
         self.assertTrue(box.isContainedBy(node))
 
     def test_isContainedByFalse(self):
-        node = OBJ.createNode("geo")
+        node = OBJ.node("test_isContainedBy")
 
         self.assertFalse(node.isContainedBy(hou.node("/shop")))
 
-    def test_isCompiled(self):
+#    def test_isCompiled(self):
         # TODO: Figure out how to test this.
-        pass
+#        pass
 
-    def test_getOpReferences(self):
-        node = OBJ.node("test_getOpReferences")
+    def test_authorName(self):
+        node = OBJ.node("test_authorName")
 
-        self.assertEqual(len(node.getOpReferences()), 2)
-
-    def test_getOpReferencesRecurse(self):
-        node = OBJ.node("test_getOpReferences")
-
-        self.assertEqual(len(node.getOpReferences(True)), 3)
-
-    def test_getOpDependents(self):
-        node = OBJ.node("test_getOpDependents/box2")
-
-        self.assertEqual(len(node.getOpDependents()), 1)
-
-    def test_getOpDependentsRecurse(self):
-        node = OBJ.node("test_getOpDependents/subnet1")
-
-        self.assertEqual(len(node.getOpDependents()), 0)
-
-        self.assertEqual(len(node.getOpDependents(True)), 1)
+        self.assertEqual(node.authorName(), "gthompson")
 
     def test_typeSetIcon(self):
         nodeType = hou.nodeType(hou.objNodeTypeCategory(), "geo")
@@ -1580,6 +1826,10 @@ class TestInlineCpp(unittest.TestCase):
         nodeType = hou.nodeType(hou.objNodeTypeCategory(), "geo")
 
         self.assertFalse(nodeType.isSubnetType())
+
+    # =========================================================================
+    # VECTORS AND MATRICES
+    # =========================================================================
 
     def test_v3ComponentAlong(self):
         v3 = hou.Vector3(1, 2, 3)
@@ -1746,20 +1996,44 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEqual(mat, TARGET)
 
+    # =========================================================================
+    # DIGITAL ASSETS
+    # =========================================================================
+
+    def test_messageNodes(self):
+        node = OBJ.node("test_messageNodes/solver")
+
+        TARGET = (node.node("d/s"),)
+
+        self.assertEqual(node.messageNodes(), TARGET)
+
+
+    def test_editableNodes(self):
+        node = OBJ.node("test_messageNodes/solver")
+
+        TARGET = (node.node("d/s"),)
+
+        self.assertEqual(node.editableNodes(), TARGET)
+
+    def test_diveTarget(self):
+        node = OBJ.node("test_messageNodes/solver")
+
+        TARGET = node.node("d/s")
+
+        self.assertEqual(node.diveTarget(), TARGET)
+
+    def test_representativeNode(self):
+        node = OBJ.node("test_representativeNode")
+
+        TARGET = node.node("stereo_camera")
+
+        self.assertEqual(node.representativeNode(), TARGET)
+
     def test_isDigitalAsset(self):
         self.assertTrue(OBJ.node("test_isDigitalAsset").isDigitalAsset())
 
     def test_isNotDigitalAsset(self):
         self.assertFalse(OBJ.node("test_isNotDigitalAsset").isDigitalAsset())
-
-    def test_canCreateDigitalAsset(self):
-        self.assertTrue(
-            OBJ.node("test_canCreateDigitalAsset").canCreateDigitalAsset()
-        )
-    def test_cantCreateDigitalAsset(self):
-        self.assertFalse(
-            OBJ.node("test_cantCreateDigitalAsset").canCreateDigitalAsset()
-        )
 
     def test_metaSource(self):
         TARGET = "Scanned Asset Library Directories"

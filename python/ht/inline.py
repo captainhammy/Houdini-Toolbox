@@ -63,464 +63,6 @@ _GROUP_TYPE_MAP = {
 }
 
 _FUNCTION_SOURCES = [
-
-"""
-bool
-isNumericArrayAttribute(const GU_Detail *gdp,
-                        int attribute_type,
-                        const char *attrib_name)
-{
-
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    const GA_Attribute *attrib = gdp->findNumericArray(
-        owner,
-        attrib_name,
-        -1
-    );
-
-    if (!attrib)
-    {
-        return false;
-    }
-
-    const GA_AIFNumericArray *aif = attrib->getAIFNumericArray();
-
-    if (!aif)
-    {
-        return false;
-    }
-
-    return true;
-}
-""",
-
-"""
-bool
-isStringArrayAttribute(const GU_Detail *gdp,
-                       int attribute_type,
-                       const char *attrib_name)
-{
-
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    const GA_Attribute *attrib = gdp->findStringArray(
-        owner,
-        attrib_name,
-        -1
-    );
-
-    if (!attrib)
-    {
-        return false;
-    }
-
-    const GA_AIFSharedStringArray *aif = attrib->getAIFSharedStringArray();
-
-    if (!aif)
-    {
-        return false;
-    }
-
-    return true;
-}
-""",
-
-"""
-bool
-addArrayAttribute(GU_Detail *gdp, int attribute_type, int data_type, const char *attrib_name)
-{
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    GA_StorageClass storage = static_cast<GA_StorageClass>(data_type);
-
-    GA_Attribute *attrib;
-
-    switch (storage)
-    {
-        case GA_STORECLASS_INT:
-            attrib = gdp->addIntArray(
-                owner,
-                attrib_name,
-                1
-            );
-
-            break;
-
-        case GA_STORECLASS_REAL:
-            attrib = gdp->addFloatArray(
-                owner,
-                attrib_name,
-                1
-            );
-
-            break;
-
-        case GA_STORECLASS_STRING:
-            attrib = gdp->addStringArray(
-                owner,
-                attrib_name,
-                1
-            );
-
-            break;
-    }
-
-    if (!attrib)
-    {
-        return false;
-    }
-
-    // TODO: Add AIF verification;
-
-    return true;
-}
-""",
-
-"""
-void
-clearArrayAttribute(GU_Detail *gdp,
-                    int attribute_type,
-                    int data_type,
-                    const char *attrib_name)
-{
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    GA_StorageClass storage = static_cast<GA_StorageClass>(data_type);
-
-    GA_Attribute *attrib;
-
-    switch (storage)
-    {
-        case GA_STORECLASS_INT:
-        case GA_STORECLASS_REAL:
-        {
-            attrib = gdp->findNumericArray(
-                owner,
-                attrib_name,
-                -1
-            );
-
-            const GA_AIFNumericArray *aif = attrib->getAIFNumericArray();
-
-            if (!aif)
-            {
-                return;
-            }
-
-
-            aif->clear(attrib);
-
-            break;
-        }
-
-        // TODO: Doesn't currently do anything
-        case GA_STORECLASS_STRING:
-        {
-            attrib = gdp->findStringArray(
-                owner,
-                attrib_name,
-                -1
-            );
-
-            const GA_AIFSharedStringArray *s_aif = attrib->getAIFSharedStringArray();
-
-            if (!s_aif)
-            {
-                return;
-            }
-
-            break;
-        }
-    }
-}
-""",
-
-"""
-FloatArray
-getFloatArrayValue(GU_Detail *gdp,
-                   int attribute_type,
-                   const char *attrib_name,
-                   int entity_num)
-{
-    std::vector<double>         result;
-
-    GA_Attribute                *attrib;
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    GA_Offset                   entoff;
-
-    UT_FprealArray              data;
-
-    switch (owner)
-    {
-//        case GA_ATTRIB_VERTEX:
-//            entoff = gdp->vertexOffset(entity_num);
-//            break;
-
-        case GA_ATTRIB_POINT:
-            entoff = gdp->pointOffset(entity_num);
-            break;
-
-        case GA_ATTRIB_PRIMITIVE:
-            entoff = gdp->primitiveOffset(entity_num);
-            break;
-    }
-
-    attrib = gdp->findFloatArray(
-        owner,
-        attrib_name,
-        -1
-    );
-
-    const GA_AIFNumericArray *aif = attrib->getAIFNumericArray();
-
-    aif->get(attrib, entoff, data);
-
-    data.toStdVector(result);
-
-    return result;
-}
-""",
-
-"""
-void
-setFloatArrayValue(GU_Detail *gdp,
-                   int attribute_type,
-                   const char *attrib_name,
-                   int entity_num,
-                   fpreal *vals,
-                   int num_vals)
-{
-    GA_Attribute                *attrib;
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    GA_Offset                   entoff;
-
-    UT_FprealArray              data;
-
-    switch (owner)
-    {
-//        case GA_ATTRIB_VERTEX:
-//            entoff = gdp->vertexOffset(entity_num);
-//            break;
-
-        case GA_ATTRIB_POINT:
-            entoff = gdp->pointOffset(entity_num);
-            break;
-
-        case GA_ATTRIB_PRIMITIVE:
-            entoff = gdp->primitiveOffset(entity_num);
-            break;
-    }
-
-    attrib = gdp->findFloatArray(
-        owner,
-        attrib_name,
-        -1
-    );
-
-    const GA_AIFNumericArray *aif = attrib->getAIFNumericArray();
-
-    std::vector<fpreal> vect {vals, vals + num_vals};
-
-    data.fromStdVector(vect);
-
-    aif->set(attrib, entoff, data);
-}
-""",
-
-"""
-IntArray
-getIntArrayValue(GU_Detail *gdp,
-                 int attribute_type,
-                 const char *attrib_name,
-                 int entity_num)
-{
-    std::vector<int>            result;
-
-    GA_Attribute                *attrib;
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    GA_Offset                   entoff;
-
-    UT_IntArray                 data;
-
-    switch (owner)
-    {
-//        case GA_ATTRIB_VERTEX:
-//            entoff = gdp->vertexOffset(entity_num);
-//            break;
-
-        case GA_ATTRIB_POINT:
-            entoff = gdp->pointOffset(entity_num);
-            break;
-
-        case GA_ATTRIB_PRIMITIVE:
-            entoff = gdp->primitiveOffset(entity_num);
-            break;
-    }
-
-    attrib = gdp->findIntArray(
-        owner,
-        attrib_name,
-        -1
-    );
-
-    const GA_AIFNumericArray *aif = attrib->getAIFNumericArray();
-
-    aif->get(attrib, entoff, data);
-
-    data.toStdVector(result);
-
-    return result;
-}
-""",
-
-"""
-void
-setIntArrayValue(GU_Detail *gdp,
-                 int attribute_type,
-                 const char *attrib_name,
-                 int entity_num,
-                 int *vals,
-                 int num_vals)
-{
-    GA_Attribute                *attrib;
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    GA_Offset                   entoff;
-
-    UT_IntArray                 data;
-
-    switch (owner)
-    {
-//        case GA_ATTRIB_VERTEX:
-//            entoff = gdp->vertexOffset(entity_num);
-//            break;
-
-        case GA_ATTRIB_POINT:
-            entoff = gdp->pointOffset(entity_num);
-            break;
-
-        case GA_ATTRIB_PRIMITIVE:
-            entoff = gdp->primitiveOffset(entity_num);
-            break;
-    }
-
-    attrib = gdp->findIntArray(
-        owner,
-        attrib_name,
-        -1
-    );
-
-    const GA_AIFNumericArray *aif = attrib->getAIFNumericArray();
-
-    std::vector<int> vect {vals, vals + num_vals};
-
-    data.fromStdVector(vect);
-
-    aif->set(attrib, entoff, data);
-}
-""",
-
-"""
-StringArray
-getStringArrayValue(GU_Detail *gdp,
-                    int attribute_type,
-                    const char *attrib_name,
-                    int entity_num)
-{
-    std::vector<std::string>    result;
-
-    GA_Attribute                *attrib;
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    GA_Offset                   entoff;
-
-    UT_StringArray              data;
-
-    switch (owner)
-    {
-//        case GA_ATTRIB_VERTEX:
-//            entoff = gdp->vertexOffset(entity_num);
-//            break;
-
-        case GA_ATTRIB_POINT:
-            entoff = gdp->pointOffset(entity_num);
-            break;
-
-        case GA_ATTRIB_PRIMITIVE:
-            entoff = gdp->primitiveOffset(entity_num);
-            break;
-    }
-
-    attrib = gdp->findStringArray(
-        owner,
-        attrib_name,
-        -1
-    );
-
-    const GA_AIFSharedStringArray *aif = attrib->getAIFSharedStringArray();
-
-    aif->get(attrib, entoff, data);
-
-    data.toStdVectorOfStrings(result);
-
-    // Check for an empty vector.
-    validateStringVector(result);
-
-    return result;
-}
-""",
-
-"""
-void
-setStringArrayValue(GU_Detail *gdp,
-                    int attribute_type,
-                    const char *attrib_name,
-                    int entity_num,
-                    const char **values,
-                    int num_vals)
-{
-    GA_Attribute                *attrib;
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    GA_Offset                   entoff;
-
-    UT_StringArray              data;
-
-    switch (owner)
-    {
-//        case GA_ATTRIB_VERTEX:
-//            entoff = gdp->vertexOffset(entity_num);
-//            break;
-
-        case GA_ATTRIB_POINT:
-            entoff = gdp->pointOffset(entity_num);
-            break;
-
-        case GA_ATTRIB_PRIMITIVE:
-            entoff = gdp->primitiveOffset(entity_num);
-            break;
-    }
-
-    attrib = gdp->findStringArray(
-        owner,
-        attrib_name,
-        -1
-    );
-
-    const GA_AIFSharedStringArray *aif = attrib->getAIFSharedStringArray();
-
-    std::vector<std::string> vect (values, values + num_vals);
-
-    data.fromStdVectorOfStrings(vect);
-
-    aif->set(attrib, entoff, data);
-}
-""",
-
 """
 bool
 isRendering()
@@ -985,7 +527,7 @@ createPoint(GU_Detail *gdp, UT_Vector3D *position)
 
 """
 int
-createPoints(GU_Detail *gdp, int npoints)
+createNPoints(GU_Detail *gdp, int npoints)
 {
     GA_Offset                   ptOff;
 
@@ -994,21 +536,6 @@ createPoints(GU_Detail *gdp, int npoints)
 
     // Return the starting point number.
     return gdp->pointIndex(ptOff);
-}
-""",
-
-"""
-bool
-renameAttribute(GU_Detail *gdp,
-                int attrib_type,
-                const char *from_name,
-                const char *to_name)
-{
-    // Convert the int value to the attribute owner type.
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attrib_type);
-
-    // Rename the attribute.
-    return gdp->renameAttribute(owner, GA_SCOPE_PUBLIC, from_name, to_name);
 }
 """,
 
@@ -1387,7 +914,7 @@ getStringTableIndices(const GU_Detail *gdp, int attribute_type, const char *attr
 
 """
 StringArray
-stringAttribValues(const GU_Detail *gdp, int attribute_type, const char *attrib_name)
+vertexStringAttribValues(const GU_Detail *gdp, const char *attrib_name)
 {
     std::vector<std::string>    result;
 
@@ -1396,26 +923,9 @@ stringAttribValues(const GU_Detail *gdp, int attribute_type, const char *attrib_
 
     GA_Range                    range;
 
+    attrib = gdp->findStringTuple(GA_ATTRIB_VERTEX, attrib_name);
 
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    attrib = gdp->findStringTuple(owner, attrib_name);
-
-    // Figure out the range of elements we need to iterate over.
-    switch(owner)
-    {
-        case GA_ATTRIB_VERTEX:
-            range = gdp->getVertexRange();
-            break;
-
-        case GA_ATTRIB_POINT:
-            range = gdp->getPointRange();
-            break;
-
-        case GA_ATTRIB_PRIMITIVE:
-            range = gdp->getPrimitiveRange();
-            break;
-    }
+    range = gdp->getVertexRange();
 
     // Get a shared string tuple from the attribute.
     s_t = attrib->getAIFSharedStringTuple();
@@ -1431,8 +941,7 @@ stringAttribValues(const GU_Detail *gdp, int attribute_type, const char *attrib_
 
 """
 void
-setStringAttribValues(GU_Detail *gdp,
-                      int attribute_type,
+setVertexStringAttribValues(GU_Detail *gdp,
                       const char *attrib_name,
                       const char **values,
                       int num_values)
@@ -1442,30 +951,14 @@ setStringAttribValues(GU_Detail *gdp,
 
     GA_Range                    range;
 
-
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
     // Try to find the string attribute.
-    attrib = gdp->findStringTuple(owner, attrib_name);
+    attrib = gdp->findStringTuple(GA_ATTRIB_VERTEX, attrib_name);
 
     // Get a shared string tuple from the attribute.
     s_t = attrib->getAIFSharedStringTuple();
 
-    // Figure out the range of elements we need to iterate over.
-    switch(owner)
-    {
-        case GA_ATTRIB_VERTEX:
-            range = gdp->getVertexRange();
-            break;
 
-        case GA_ATTRIB_POINT:
-            range = gdp->getPointRange();
-            break;
-
-        case GA_ATTRIB_PRIMITIVE:
-            range = gdp->getPrimitiveRange();
-            break;
-    }
+    range = gdp->getVertexRange();
 
     int i = 0;
 
@@ -1928,6 +1421,7 @@ setEntries(GU_Detail *gdp, const char *group_name, int group_type)
 void
 toggleEntries(GU_Detail *gdp, const char *group_name, int group_type)
 {
+    GA_EdgeGroup                *egroup;
     GA_ElementGroup             *group;
 
     GA_GroupType type = static_cast<GA_GroupType>(group_type);
@@ -1936,18 +1430,19 @@ toggleEntries(GU_Detail *gdp, const char *group_name, int group_type)
     {
         case GA_GROUP_POINT:
             group = gdp->findPointGroup(group_name);
+            group->toggleEntries();
             break;
 
         case GA_GROUP_PRIMITIVE:
             group = gdp->findPrimitiveGroup(group_name);
+            group->toggleEntries();
             break;
 
-        case GA_GROUP_VERTEX:
-            group = gdp->findVertexGroup(group_name);
+        case GA_GROUP_EDGE:
+            egroup = gdp->findEdgeGroup(group_name);
+            egroup->toggleEntries();
             break;
     }
-
-    group->toggleEntries();
 }
 """,
 
@@ -2290,76 +1785,10 @@ disconnectAllOutputs(OP_Node *node)
 """,
 
 """
-const char *
-inputLabel(OP_Node *node, int index)
-{
-    return node->inputLabel(index);
-}
-""",
-
-"""
 bool
 isCompiled(const OP_Node *node)
 {
     return node->isCompiled();
-}
-""",
-
-"""
-StringArray
-getExistingOpReferences(OP_Node *node, bool recurse)
-{
-    std::vector<std::string>    result;
-
-    OP_Node                     *ref_node;
-    OP_NodeList                 refs;
-    OP_NodeList::const_iterator depend_it;
-
-    UT_String                   path;
-
-    node->getExistingOpReferences(refs, recurse);
-
-    for (depend_it=refs.begin(); !depend_it.atEnd(); ++depend_it)
-    {
-        ref_node = *depend_it;
-        ref_node->getFullPath(path);
-
-        result.push_back(path.toStdString());
-    }
-
-    // Check for an empty vector.
-    validateStringVector(result);
-
-    return result;
-}
-""",
-
-"""
-StringArray
-getExistingOpDependents(OP_Node *node, bool recurse)
-{
-    std::vector<std::string>    result;
-
-    OP_Node                     *dep_node;
-    OP_NodeList                 deps;
-    OP_NodeList::const_iterator depend_it;
-
-    UT_String                   path;
-
-    node->getExistingOpDependents(deps, recurse);
-
-    for (depend_it=deps.begin(); !depend_it.atEnd(); ++depend_it)
-    {
-        dep_node = *depend_it;
-        dep_node->getFullPath(path);
-
-        result.push_back(path.toStdString());
-    }
-
-    // Check for an empty vector.
-    validateStringVector(result);
-
-    return result;
 }
 """,
 
@@ -2373,7 +1802,7 @@ getMultiParmInstancesPerItem(OP_Node *node, const char *parm_name)
 
     PRM_Parm &multiparm = node->getParm(parm_name);
 
-    instances = multiparm.getMultiParmNumItems();
+    instances = multiparm.getMultiParmInstancesPerItem();
 
     return instances;
 }
@@ -2973,6 +2402,8 @@ def packGeometry(self, source):
     This function works by packing the supplied geometry into the current
     detail, returning the new PackedGeometry primitive.
 
+    Both hou.Geometry objects must not be read only.
+
     """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
@@ -3284,7 +2715,7 @@ def createPoint(self, position=None):
 
 
 @addToClass(hou.Geometry)
-def createPoints(self, npoints):
+def createNPoints(self, npoints):
     """Create a specific number of new points."""
     # Make sure the geometry is not read only.
     if self.isReadOnly():
@@ -3293,7 +2724,7 @@ def createPoints(self, npoints):
     if npoints <= 0:
         raise hou.OperationFailed("Invalid number of points.")
 
-    result = _cpp_methods.createPoints(self, npoints)
+    result = _cpp_methods.createNPoints(self, npoints)
 
     # Since the result is only the starting point number we need to
     # build a starting from that.
@@ -3344,217 +2775,6 @@ def mergePrims(self, prims):
     arr = _buildCIntArray([prim.number() for prim in prims])
 
     _cpp_methods.mergePrims(self, prims[0].geometry(), arr, len(arr))
-
-
-@addToClass(hou.Attrib, name="rename")
-def renameAttribute(self, new_name):
-    """Rename this attribute."""
-    geometry = self.geometry()
-
-    # Make sure the geometry is not read only.
-    if geometry.isReadOnly():
-        raise hou.GeometryPermissionError()
-
-    attrib_type = self.type()
-
-    attrib_owner = _getAttribOwner(attrib_type)
-
-    # Raise an exception when trying to modify 'P'.
-    if attrib_type == hou.attribType.Point and self.name() == "P":
-        raise hou.OperationFailed("Renaming 'P' is not permitted.")
-
-    # Try to rename the attribute.
-    success = _cpp_methods.renameAttribute(
-        geometry,
-        attrib_owner,
-        self.name(),
-        new_name
-    )
-
-    # That attribute was renamed.
-    if success:
-        # Return the new attribute.
-        return _findAttrib(geometry, attrib_type, new_name)
-
-    else:
-        return None
-
-
-@addToClass(hou.Attrib)
-def isArrayAttribute(self):
-    """Check if an attribute is an array attribute."""
-    if self.dataType() == hou.attribData.String:
-        return _cpp_methods.isStringArrayAttribute(
-            self.geometry(),
-            _getAttribOwner(self.type()),
-            self.name()
-        )
-
-    else:
-        return _cpp_methods.isNumericArrayAttribute(
-            self.geometry(),
-            _getAttribOwner(self.type()),
-            self.name()
-        )
-
-
-@addToClass(hou.Geometry)
-def addArrayAttrib(self, attrib_type, data_type, name):
-    """Create an array attribute."""
-    # Make sure the geometry is not read only.
-    if self.isReadOnly():
-        raise hou.GeometryPermissionError()
-
-    if attrib_type not in _ALL_ATTRIB_TYPES:
-        raise hou.OperationFailed("Invalid attribute type.")
-
-    if data_type not in _ALL_ATTRIB_DATA_TYPES:
-        raise hou.OperationFailed("Invalid data type.")
-
-    if not name:
-        raise hou.OperationFailed("Invalid attribute name: {}".format(name))
-
-    success = _cpp_methods.addArrayAttribute(
-        self,
-        attrib_type,
-        data_type,
-        name
-    )
-
-    if success:
-        return _findAttrib(self, attrib_type, name)
-
-    raise hou.OperationFailed("Could not create attribute: {}".format(name))
-
-
-@addToClass(hou.Geometry)
-def clearArrayAttrib(self, attribute):
-    """Clear all the values of an array attribute for every entity.
-
-    Note: Currently only works for numerical attributes.
-
-    """
-    if not attribute.isArrayAttribute():
-        raise hou.OperationFailed("Attribute is not an array attribute")
-
-    # Make sure the geometry is not read only.
-    if self.isReadOnly():
-        raise hou.GeometryPermissionError()
-
-    # TODO: Make work
-    if attribute.dataType() == hou.attribData.String:
-        raise hou.OperationFailed("Cannot clear string arrays")
-
-    _cpp_methods.clearArrayAttribute(
-        self,
-        _getAttribOwner(attribute.type()),
-        _getAttribStorage(attribute.dataType()),
-        attribute.name()
-    )
-
-
-@addToClass(hou.Point, hou.Prim)#, hou.Vertex)
-def arrayAttribValue(self, attribute):
-    """Get the value of an array attribute for an entity."""
-    geometry = self.geometry()
-
-    if not isinstance(attribute, hou.Attrib):
-        raise hou.OperationFailed("Must pass a hou.Attrib object")
-
-    if not attribute.isArrayAttribute():
-        raise hou.OperationFailed("Attribute is not an array attribute")
-
-    data_type = attribute.dataType()
-
-    if data_type not in _ALL_ATTRIB_DATA_TYPES:
-        raise hou.OperationFailed("Invalid attribute data type")
-
-    if data_type == hou.attribData.Float:
-        result = _cpp_methods.getFloatArrayValue(
-            geometry,
-            _getAttribOwner(attribute.type()),
-            attribute.name(),
-            self.number(),
-        )
-
-        return tuple(result)
-
-    elif data_type == hou.attribData.Int:
-        result = _cpp_methods.getIntArrayValue(
-            geometry,
-            _getAttribOwner(attribute.type()),
-            attribute.name(),
-            self.number(),
-        )
-
-        return tuple(result)
-
-    else:
-        result = _cpp_methods.getStringArrayValue(
-            geometry,
-            _getAttribOwner(attribute.type()),
-            attribute.name(),
-            self.number(),
-        )
-
-        return _cleanStringValues(result)
-
-
-@addToClass(hou.Point, hou.Prim)#, hou.Vertex)
-def setArrayAttribValue(self, attribute, values):
-    """Set an entities array attribute value."""
-    geometry = self.geometry()
-
-    # Make sure the geometry is not read only.
-    if geometry.isReadOnly():
-        raise hou.GeometryPermissionError()
-
-    if not isinstance(attribute, hou.Attrib):
-        raise hou.OperationFailed("Must pass a hou.Attrib object")
-
-    if not attribute.isArrayAttribute():
-        raise hou.OperationFailed("Attribute is not an array attribute")
-
-    data_type = attribute.dataType()
-
-    if data_type not in _ALL_ATTRIB_DATA_TYPES:
-        raise hou.OperationFailed("Invalid attribute data type")
-
-    if data_type == hou.attribData.Float:
-        arr = _buildCDoubleArray(values)
-
-        _cpp_methods.setFloatArrayValue(
-            geometry,
-            _getAttribOwner(attribute.type()),
-            attribute.name(),
-            self.number(),
-            arr,
-            len(values)
-        )
-
-    elif data_type == hou.attribData.Int:
-        arr = _buildCIntArray(values)
-
-        _cpp_methods.setIntArrayValue(
-            geometry,
-            _getAttribOwner(attribute.type()),
-            attribute.name(),
-            self.number(),
-            arr,
-            len(values)
-        )
-
-    else:
-        arr = _buildCStringArray(values)
-
-        _cpp_methods.setStringArrayValue(
-            geometry,
-            _getAttribOwner(attribute.type()),
-            attribute.name(),
-            self.number(),
-            arr,
-            len(values)
-        )
 
 
 @addToClass(hou.Point, name="copyAttribValues")
@@ -3734,9 +2954,8 @@ def vertexStringAttribValues(self, name):
     if attrib.dataType() != hou.attribData.String:
         raise hou.OperationFailed("Attribute must be a string.")
 
-    return _cpp_methods.stringAttribValues(
+    return _cpp_methods.vertexStringAttribValues(
         self,
-        _getAttribOwner(hou.attribType.Vertex),
         name
     )
 
@@ -3762,61 +2981,8 @@ def setVertexStringAttribValues(self, name, values):
     # Construct a ctypes string array to pass the strings.
     arr = _buildCStringArray(values)
 
-    _cpp_methods.setStringAttribValues(
+    _cpp_methods.setVertexStringAttribValues(
         self,
-        _getAttribOwner(attrib.type()),
-        name,
-        arr,
-        len(values)
-    )
-
-
-
-@addToClass(hou.Geometry)
-def pointStringAttribValues(self, name):
-    """Return a tuple of strings containing one attribute's values for all the
-    points.
-
-    """
-    attrib = self.findPointAttrib(name)
-
-    if attrib is None:
-        raise hou.OperationFailed("Invalid attribute name.")
-
-    if attrib.dataType() != hou.attribData.String:
-        raise hou.OperationFailed("Attribute must be a string.")
-
-    return _cpp_methods.stringAttribValues(
-        self,
-        _getAttribOwner(hou.attribType.Point),
-        name
-    )
-
-
-@addToClass(hou.Geometry)
-def setPointStringAttribValues(self, name, values):
-    """Set the string attribute values for all points."""
-    # Make sure the geometry is not read only.
-    if self.isReadOnly():
-        raise hou.GeometryPermissionError()
-
-    attrib = self.findPointAttrib(name)
-
-    if attrib is None:
-        raise hou.OperationFailed("Invalid attribute name.")
-
-    if attrib.dataType() != hou.attribData.String:
-        raise hou.OperationFailed("Attribute must be a string.")
-
-    if len(values) != len(self.iterPoints()):
-        raise hou.OperationFailed("Incorrect attribute value sequence size.")
-
-    # Construct a ctypes string array to pass the strings.
-    arr = _buildCStringArray(values)
-
-    _cpp_methods.setStringAttribValues(
-        self,
-        _getAttribOwner(attrib.type()),
         name,
         arr,
         len(values)
@@ -3857,56 +3023,6 @@ def setSharedPointStringAttrib(self, name, value, group=None):
         name,
         value,
         group_name
-    )
-
-
-@addToClass(hou.Geometry)
-def primStringAttribValues(self, name):
-    """Return a tuple of strings containing one attribute's values for all the
-    primitives.
-
-    """
-    attrib = self.findPrimAttrib(name)
-
-    if attrib is None:
-        raise hou.OperationFailed("Invalid attribute name.")
-
-    if attrib.dataType() != hou.attribData.String:
-        raise hou.OperationFailed("Attribute must be a string.")
-
-    return _cpp_methods.stringAttribValues(
-        self,
-        _getAttribOwner(hou.attribType.Prim),
-        name
-    )
-
-@addToClass(hou.Geometry)
-def setPrimStringAttribValues(self, name, values):
-    """Set the string attribute values for all primitives."""
-    # Make sure the geometry is not read only.
-    if self.isReadOnly():
-        raise hou.GeometryPermissionError()
-
-    attrib = self.findPrimAttrib(name)
-
-    if attrib is None:
-        raise hou.OperationFailed("Invalid attribute name.")
-
-    if attrib.dataType() != hou.attribData.String:
-        raise hou.OperationFailed("Attribute must be a string.")
-
-    if len(values) != len(self.iterPrims()):
-        raise hou.OperationFailed("Incorrect attribute value sequence size.")
-
-    # Construct a ctypes string array to pass the strings.
-    arr = _buildCStringArray(values)
-
-    _cpp_methods.setStringAttribValues(
-        self,
-        _getAttribOwner(attrib.type()),
-        name,
-        arr,
-        len(values)
     )
 
 
@@ -4418,7 +3534,7 @@ def togglePrim(self, prim):
     )
 
 
-@addToClass(hou.PointGroup, hou.PrimGroup)
+@addToClass(hou.EdgeGroup, hou.PointGroup, hou.PrimGroup)
 def toggleEntries(self):
     """Toggle group membership for all elements in the group.
 
@@ -4685,6 +3801,7 @@ def boundingBoxVolume(self):
 
 @addToClass(hou.ParmTuple)
 def isVector(self):
+    """Check if the tuple is a vector parameter."""
     parm_template = self.parmTemplate()
 
     return parm_template.namingScheme() == hou.parmNamingScheme.XYZW
@@ -4740,6 +3857,68 @@ def getReferencedNode(self):
 
     # Look for the pointed to node, relative to the parameter's node.
     return self.node().node(self.eval())
+
+
+@addToClass(hou.Parm)
+def evalAsStrip(self):
+    """Evaluate the parameter as a Button/Icon Strip.
+
+    Returns a tuple of True/False values indicated which buttons
+    are pressed.
+
+    """
+    parm_template = self.parmTemplate()
+
+    # Right now the best we can do is check that a parameter is a menu
+    # since HOM has no idea about what the strips are.  If we aren't one
+    # then raise an exception.
+    if not isinstance(parm_template,  hou.MenuParmTemplate):
+        raise TypeError("Parameter must be a menu")
+
+    # Get the value.  This might be the selected index, or a bit mask if we
+    # can select more than one.
+    value = self.eval()
+
+    # Initialize a list of False values for each item on the strip.
+    menu_items = parm_template.menuItems()
+    num_items = len(menu_items)
+    values = [False] * num_items
+
+    # If our menu type is a Toggle that means we can select more than one
+    # item at the same time so our value is really a bit mask.
+    if parm_template.menuType() == hou.menuType.StringToggle:
+        # Check which items are selected.
+        for i in range(num_items):
+            mask = 1 << i
+
+            if value & mask:
+                values[i] = True
+
+    # Value is just the selected index so set that one to True.
+    else:
+        values[value] = True
+
+    return tuple(values)
+
+
+@addToClass(hou.Parm)
+def evalStripAsString(self):
+    """Evaluate the parameter as a Button Strip as strings.
+
+    Returns a tuple of the string tokens which are enabled.
+
+    """
+    strip_results = self.evalAsStrip()
+
+    menu_items = self.parmTemplate().menuItems()
+
+    enabled_values = []
+
+    for i, value in enumerate(strip_results):
+        if value:
+            enabled_values.append(menu_items[i])
+
+    return tuple(enabled_values)
 
 
 @addToClass(hou.Parm, hou.ParmTuple)
@@ -4904,68 +4083,6 @@ def getMultiParmInstanceValues(self):
     return tuple(all_values)
 
 
-@addToClass(hou.Parm)
-def evalAsStrip(self):
-    """Evaluate the parameter as a Button/Icon Strip.
-
-    Returns a tuple of True/False values indicated which buttons
-    are pressed.
-
-    """
-    parm_template = self.parmTemplate()
-
-    # Right now the best we can do is check that a parameter is a menu
-    # since HOM has no idea about what the strips are.  If we aren't one
-    # then raise an exception.
-    if not isinstance(parm_template,  hou.MenuParmTemplate):
-        raise TypeError("Parameter must be a menu")
-
-    # Get the value.  This might be the selected index, or a bit mask if we
-    # can select more than one.
-    value = self.eval()
-
-    # Initialize a list of False values for each item on the strip.
-    menu_items = parm_template.menuItems()
-    num_items = len(menu_items)
-    values = [False] * num_items
-
-    # If our menu type is a Toggle that means we can select more than one
-    # item at the same time so our value is really a bit mask.
-    if parm_template.menuType() == hou.menuType.StringToggle:
-        # Check which items are selected.
-        for i in range(num_items):
-            mask = 1 << i
-
-            if value & mask:
-                values[i] = True
-
-    # Value is just the selected index so set that one to True.
-    else:
-        values[value] = True
-
-    return tuple(values)
-
-
-@addToClass(hou.Parm)
-def evalStripAsString(self):
-    """Evaluate the parameter as a Button Strip as strings.
-
-    Returns a tuple of the string tokens which are enabled.
-
-    """
-    strip_results = self.evalAsStrip()
-
-    menu_items = self.parmTemplate().menuItems()
-
-    enabled_values = []
-
-    for i, value in enumerate(strip_results):
-        if value:
-            enabled_values.append(menu_items[i])
-
-    return tuple(enabled_values)
-
-
 @addToClass(hou.Node)
 def disconnectAllInputs(self):
     """Disconnect all of this node's inputs."""
@@ -4983,14 +4100,6 @@ def disconnectAllOutputs(self):
     for connection in connections:
         connection.outputNode().setInput(connection.inputIndex(), None)
 
-
-@addToClass(hou.Node)
-def inputLabel(self, index):
-    """Returns the input label for this node at the specified index."""
-    if index not in range(self.type().maxNumInputs()):
-        raise IndexError("Index out of range.")
-
-    return _cpp_methods.inputLabel(self, index)
 
 @addToClass(hou.Node)
 def messageNodes(self):
@@ -5094,25 +4203,12 @@ def isCompiled(self):
 
 
 @addToClass(hou.Node)
-def getOpReferences(self, recurse=False):
-    """Returns a tuple of nodes this node has references to."""
-    result = _cpp_methods.getExistingOpReferences(self, recurse)
-
-    return _getNodesFromPaths(result)
-
-
-@addToClass(hou.Node)
-def getOpDependents(self, recurse=False):
-    """Returns a tuple of nodes that reference this node."""
-    result = _cpp_methods.getExistingOpDependents(self, recurse)
-
-    return _getNodesFromPaths(result)
-
-
-@addToClass(hou.Node)
 def authorName(self):
     """Get the name of the node creator."""
-    return _cpp_methods.getAuthor(self)
+    author = _cpp_methods.getAuthor(self)
+
+    # Remove any machine name from the user name.
+    return author.split('@')[0]
 
 
 @addToClass(hou.NodeType)
