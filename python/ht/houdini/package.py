@@ -147,6 +147,11 @@ class HoudiniBase(object):
         """Format a string given information about this build."""
         args = {
             "version": str(self),
+            "major": self.major,
+            "minor": self.minor,
+            "major_minor": self.major_minor,
+            "build": self.build,
+            "candidate": self.candidate,
         }
 
         return value.format(**args)
@@ -353,6 +358,7 @@ class HoudiniBuildManager(object):
 
         self._install_target = SETTINGS.system.installation.target
         self._install_folder = SETTINGS.system.installation.folder
+        self._link_name = SETTINGS.system.installation.folder
 
         self._getInstalledBuilds()
         self._getInstallablePackages()
@@ -440,7 +446,7 @@ class HoudiniBuildManager(object):
     # =========================================================================
 
     @staticmethod
-    def downloadAndInstall(build_numbers):
+    def downloadAndInstall(build_numbers, create_symlink=False):
         """Download and install a list of build numbers.
 
         Build numbers can be explicit numbers or major.minor versions.
@@ -458,7 +464,7 @@ class HoudiniBuildManager(object):
             downloaded_path = downloadBuild(file_name, download_dir)
 
             package = HoudiniInstallFile(downloaded_path)
-            package.install()
+            package.install(create_symlink)
 
 
 class HoudiniEnvironmentSettings(object):
@@ -597,12 +603,13 @@ class HoudiniInstallFile(HoudiniBase):
 
         self._install_target = SETTINGS.system.installation.target
         self._install_folder = SETTINGS.system.installation.folder
+        self._link_name = SETTINGS.system.installation.link_name
 
     # =========================================================================
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    def _installLinux(self, install_path, create_symlink=False):
+    def _installLinux(self, install_path, link_path):
         """Install the build on linux."""
         # Let our system tell us where we can store the temp files.
         temp_path = tempfile.gettempdir()
@@ -639,15 +646,19 @@ class HoudiniInstallFile(HoudiniBase):
         print "Removing temporary install files."
         shutil.rmtree(extract_path)
 
-        if create_symlink:
-            link_path = os.path.join(
-                os.path.dirname(install_path),
-                "hfs{}.{}".format(self.major, self.minor)
-            )
-
+        if link_path is not None:
             print "Linking {} to {}".format(link_path, install_path)
 
-            os.symlink(install_path, link_path)
+            try:
+                os.symlink(install_path, link_path)
+
+            except OSError as inst:
+                if inst.errno == os.errno.EEXIST:
+                    os.remove(link_path)
+                    os.symlink(install_path, link_path)
+
+                else:
+                    raise
 
     # =========================================================================
     # METHODS
@@ -667,6 +678,14 @@ class HoudiniInstallFile(HoudiniBase):
             self.formatString(self._install_folder)
         )
 
+        link_path = None
+
+        if create_symlink:
+            link_path = os.path.join(
+                self._install_target,
+                self.formatString(self._link_name)
+            )
+
         # Check to see if the build is already installed.  If it is
         # we throw an exception.
         if os.path.exists(install_path):
@@ -675,7 +694,7 @@ class HoudiniInstallFile(HoudiniBase):
         system = platform.system()
 
         if system == "Linux":
-            self._installLinux(install_path, create_symlink)
+            self._installLinux(install_path, link_path)
 
         elif system == "Windows":
             raise UnsupportedOSError("Windows is not supported")
@@ -695,10 +714,16 @@ class HoudiniInstallationSettings(object):
     def __init__(self, data):
         self._target = data["target"]
         self._folder = data["folder"]
+        self._link_name = data.get("symlink")
 
     # =========================================================================
     # PROPERTIES
     # =========================================================================
+
+    @property
+    def link_name(self):
+        """The name of the symlink, if any."""
+        return self._link_name
 
     @property
     def folder(self):
@@ -919,6 +944,27 @@ class InstalledHoudiniBuild(HoudiniBase):
         remove any compiled operators for the build.
 
         """
+        parent = os.path.dirname(self.path)
+
+        # Construct the symlink path to check for.
+        link_path = os.path.join(
+            parent,
+            self.formatString(SETTINGS.system.installation.link_name)
+        )
+
+        # Check if the link exists and if it points to this build.  If so, try
+        # to remove it.
+        if os.path.islink(link_path):
+            if os.path.realpath(link_path) == self.path:
+                print "Removing symlink {} -> {}".format(link_path, self.path)
+
+                try:
+                    os.unlink(link_path)
+
+                except OSError as inst:
+                    print "Error: Could not remove symlink"
+                    print inst
+
         print "Removing installation directory {}".format(self.path)
 
         shutil.rmtree(self.path)
@@ -931,7 +977,6 @@ class InstalledHoudiniBuild(HoudiniBase):
                 )
 
                 shutil.rmtree(self.plugin_path)
-
 
 # =============================================================================
 # EXCEPTIONS

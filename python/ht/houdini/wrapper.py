@@ -57,7 +57,7 @@ class HoudiniWrapper(object):
         # We are going to download and install a build so do this before
         # anything else.
         if self.arguments.dlinstall:
-            self._downloadAndInstall()
+            self._downloadAndInstall(self.arguments.create_symlink)
             return
 
         # Try to find a build.
@@ -213,10 +213,11 @@ class HoudiniWrapper(object):
 
             self._print()
 
-    def _downloadAndInstall(self):
+    def _downloadAndInstall(self, create_symlink=False):
         """Download and automatically install a build."""
         ht.houdini.package.HoudiniBuildManager.downloadAndInstall(
-            self.arguments.dlinstall
+            self.arguments.dlinstall,
+            create_symlink
         )
 
     def _findBuild(self):

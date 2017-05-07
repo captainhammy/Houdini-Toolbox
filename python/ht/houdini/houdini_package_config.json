@@ -2,7 +2,8 @@
     "system": {
         "installation": {
             "target": "/opt",
-            "folder": "hfs{version}"
+            "folder": "hfs{version}",
+            "symlink": "hfs{major_minor}"
         },
 
         "plugins": {
