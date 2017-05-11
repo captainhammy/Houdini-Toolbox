@@ -227,7 +227,7 @@ SOP_IdAttribCopy::cookInputGroups(OP_Context &context, int alone=0)
     // If the group string is not null, then we try to parse the group.
     if (grp_name.isstring())
     {
-        myGroup = parsePointGroups((const char *)grp_name, pgdp);
+        myGroup = parsePointGroups((const char *)grp_name, GroupCreator(pgdp, false));
 
         // If the group is not valid, then the group string is invalid
         // as well.  Thus, we add an error to this SOP.
@@ -247,11 +247,11 @@ SOP_IdAttribCopy::cookInputGroups(OP_Context &context, int alone=0)
     {
         // If no group string is specified, then we operate on the entire
         // geometry, so we highlight every point for this SOP.
-        select(GU_SPoint);
+        select(GA_GROUP_POINT);
     }
 
     // This is where we notify our handles (if any) if the inputs have changed.
-    checkInputChanged(0, -1, myDetailGroupPair, pgdp, myGroup);
+    notifyGroupParmListeners(0, -1, (const GU_Detail *)pgdp, myGroup);
 
     // If we are called by the handles, then we have to unlock our inputs.
     if (alone)
