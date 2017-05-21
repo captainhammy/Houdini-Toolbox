@@ -638,7 +638,7 @@ copyPointAttributeValues(GU_Detail *dest_gdp,
 
     // Get the point offsets.
     srcOff = src_gdp->pointOffset(src_pt);
-    destOff = src_gdp->pointOffset(dest_pt);
+    destOff = dest_gdp->pointOffset(dest_pt);
 
     // Copy the attribute value.
     hmap.copyValue(GA_ATTRIB_POINT, destOff, GA_ATTRIB_POINT, srcOff);
@@ -690,7 +690,7 @@ copyPrimAttributeValues(GU_Detail *dest_gdp,
 
     // Get the primitive offsets.
     srcOff = src_gdp->primitiveOffset(src_pr);
-    destOff = src_gdp->primitiveOffset(dest_pr);
+    destOff = dest_gdp->primitiveOffset(dest_pr);
 
     // Copy the attribute value.
     hmap.copyValue(GA_ATTRIB_PRIMITIVE, destOff, GA_ATTRIB_PRIMITIVE, srcOff);
