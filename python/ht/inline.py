@@ -62,7 +62,29 @@ _GROUP_TYPE_MAP = {
     hou.EdgeGroup: 2,
 }
 
+# Mapping between geometry types and corresponding GA_AttributeOwner values.
+_GEOMETRY_ATTRIB_MAP = {
+    hou.Vertex: 0,
+    hou.Point: 1,
+    hou.Prim: 2,
+    hou.Geometry: 3
+}
+
 _FUNCTION_SOURCES = [
+"""
+int
+getVertexOffset(const GU_Detail *gdp, int prim_num, int vertex_num)
+{
+    GA_Offset                   prim_off, vert_off;
+
+    prim_off = gdp->primitiveOffset(prim_num);
+
+    vert_off = gdp->getPrimitiveVertexOffset(prim_off, vertex_num);
+
+    return vert_off;
+}
+""",
+
 """
 bool
 isRendering()
@@ -590,6 +612,109 @@ mergePrims(GU_Detail *gdp, const GU_Detail *src, int *vals, int num_vals)
     }
 
     gdp->mergePrimitives(*src, GA_Range(src->getPrimitiveMap(), prims));
+}
+""",
+
+"""
+void
+copyAttributeValues(GU_Detail *dest_gdp,
+                    int dest_entity_type,
+                    int dest_entity_num,
+                    const GU_Detail *src_gdp,
+                    int src_entity_type,
+                    int src_entity_num,
+                    const char **attribute_names,
+                    int num_attribs)
+{
+    GA_AttributeOwner           dest_owner, src_owner;
+
+    GA_Attribute                *dest_attrib;
+    const GA_Attribute          *attrib;
+    GA_Offset                   dest_off, src_off;
+
+    UT_String                   attr_name;
+
+    dest_owner = static_cast<GA_AttributeOwner>(dest_entity_type);
+    src_owner = static_cast<GA_AttributeOwner>(src_entity_type);
+
+    // Build an attribute reference map between the geometry.
+    GA_AttributeRefMap hmap(*dest_gdp, src_gdp);
+
+    // Iterate over all the attribute names.
+    for (int i=0; i < num_attribs; ++i)
+    {
+        // Get the attribute name.
+        attr_name = attribute_names[i];
+
+        // Get the attribute reference from the source geometry.
+
+        attrib = src_gdp->findAttribute(src_owner, attr_name);
+
+        if (attrib)
+        {
+            dest_attrib = dest_gdp->findAttribute(
+                dest_owner,
+                attrib->getScope(),
+                attrib->getName()
+            );
+
+            if (!dest_attrib)
+            {
+                dest_attrib = dest_gdp->getAttributes().cloneAttribute(
+                    dest_owner,
+                    attrib->getName(),
+                    *attrib,
+                    true
+                );
+            }
+
+            // Add a mapping between the source and dest attributes.
+            hmap.append(dest_attrib, attrib);
+        }
+    }
+
+    switch(src_owner)
+    {
+        case GA_ATTRIB_VERTEX:
+            // Already a vertex offset.
+            src_off = src_entity_num;
+            break;
+
+        case GA_ATTRIB_POINT:
+            src_off = src_gdp->pointOffset(src_entity_num);
+            break;
+
+        case GA_ATTRIB_PRIMITIVE:
+            src_off = src_gdp->primitiveOffset(src_entity_num);
+            break;
+
+        case GA_ATTRIB_GLOBAL:
+            src_off = 0;
+            break;
+    }
+
+    switch(dest_owner)
+    {
+        case GA_ATTRIB_VERTEX:
+            // Already a vertex offset.
+            dest_off = dest_entity_num;
+            break;
+
+        case GA_ATTRIB_POINT:
+            dest_off = dest_gdp->pointOffset(dest_entity_num);
+            break;
+
+        case GA_ATTRIB_PRIMITIVE:
+            dest_off = dest_gdp->primitiveOffset(dest_entity_num);
+            break;
+
+        case GA_ATTRIB_GLOBAL:
+            dest_off = 0;
+            break;
+    }
+
+    // Copy the attribute value.
+    hmap.copyValue(dest_owner, dest_off, src_owner, src_off);
 }
 """,
 
@@ -2020,6 +2145,7 @@ _cpp_methods = inlinecpp.createLibrary(
     includes="""
 #include <CMD/CMD_Variable.h>
 #include <GA/GA_AttributeRefMap.h>
+#include <GA/GA_Primitive.h>
 #include <GEO/GEO_Face.h>
 #include <GEO/GEO_PointTree.h>
 #include <GQ/GQ_Detail.h>
@@ -2144,6 +2270,15 @@ def _getAttribOwner(attribute_type):
     return _ATTRIB_TYPE_MAP[attribute_type]
 
 
+def _getAttribOwnerFromEntity(entity):
+    """Get an HDK compatible attribute owner value from a geometry entity.
+
+    Entity can be of hou.Geometry, hou.Point, hou.Prim or hou.Vertex.
+
+    """
+    return _GEOMETRY_ATTRIB_MAP[type(entity)]
+
+
 def _getGroupAttribOwner(group):
     """Get an HDK compatible group attribute type value."""
     try:
@@ -2191,6 +2326,19 @@ def _getPrimsFromList(geometry, prim_list):
 
     # Glob for the specified prims.
     return geometry.globPrims(prim_str)
+
+
+def _getVertexOffset(vertex):
+    """Get the map offset value for a vertex.
+
+    This is the GA_Offset value.
+
+    """
+    return _cpp_methods.getVertexOffset(
+        vertex.geometry(),
+        vertex.prim().number(),
+        vertex.number()
+    )
 
 # =============================================================================
 # FUNCTIONS
@@ -2775,6 +2923,71 @@ def mergePrims(self, prims):
     arr = _buildCIntArray([prim.number() for prim in prims])
 
     _cpp_methods.mergePrims(self, prims[0].geometry(), arr, len(arr))
+
+
+def copyAttributeValues(source_element, source_attribs, target_element):
+    """Copy a list of attributes from the source element to the target element."""
+    # Copying to a geometry entity.
+    if not isinstance(target_element, hou.Geometry):
+        # Get the source element's geometry.
+        target_geometry = target_element.geometry()
+
+        # Entity number is generally just the number().
+        target_entity_num = target_element.number()
+
+        # If we're copying to a vertex then we need to get the offset.
+        if isinstance(target_element, hou.Vertex):
+            target_entity_num = _getVertexOffset(target_element)
+
+    # hou.Geometry means copying to detail attributes.
+    else:
+        target_geometry = target_element
+        target_entity_num = 0
+
+    # Make sure the target geometry is not read only.
+    if target_geometry.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    # Copying from a geometry entity.
+    if not isinstance(source_element, hou.Geometry):
+        # Get the source point's geometry.
+        source_geometry = source_element.geometry()
+        source_entity_num = source_element.number()
+
+        if isinstance(source_element, hou.Vertex):
+            source_entity_num = _getVertexOffset(source_element)
+
+    # Copying from detail attributes.
+    else:
+        source_geometry = source_element
+        source_entity_num = 0
+
+    # Get the attribute owners from the elements.
+    target_owner = _getAttribOwnerFromEntity(target_element)
+    source_owner = _getAttribOwnerFromEntity(source_element)
+
+    # Get the attribute names, ensuring we only use attributes on the
+    # source's geometry.
+    attrib_names = [
+        attrib.name() for attrib in source_attribs
+        if _getAttribOwner(attrib.type()) == source_owner and
+        attrib.geometry().sopNode() == source_geometry.sopNode()
+    ]
+
+
+    # Construct a ctypes string array to pass the strings.
+    arr = _buildCStringArray(attrib_names)
+
+    _cpp_methods.copyAttributeValues(
+        target_geometry,
+        target_owner,
+        target_entity_num,
+        source_geometry,
+        source_owner,
+        source_entity_num,
+        arr,
+        len(attrib_names)
+    )
 
 
 @addToClass(hou.Point, name="copyAttribValues")
