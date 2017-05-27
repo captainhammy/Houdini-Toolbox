@@ -72,20 +72,6 @@ _GEOMETRY_ATTRIB_MAP = {
 
 _FUNCTION_SOURCES = [
 """
-int
-getVertexOffset(const GU_Detail *gdp, int prim_num, int vertex_num)
-{
-    GA_Offset                   prim_off, vert_off;
-
-    prim_off = gdp->primitiveOffset(prim_num);
-
-    vert_off = gdp->getPrimitiveVertexOffset(prim_off, vertex_num);
-
-    return vert_off;
-}
-""",
-
-"""
 bool
 isRendering()
 {
@@ -2328,18 +2314,6 @@ def _getPrimsFromList(geometry, prim_list):
     return geometry.globPrims(prim_str)
 
 
-def _getVertexOffset(vertex):
-    """Get the map offset value for a vertex.
-
-    This is the GA_Offset value.
-
-    """
-    return _cpp_methods.getVertexOffset(
-        vertex.geometry(),
-        vertex.prim().number(),
-        vertex.number()
-    )
-
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
@@ -2937,7 +2911,7 @@ def copyAttributeValues(source_element, source_attribs, target_element):
 
         # If we're copying to a vertex then we need to get the offset.
         if isinstance(target_element, hou.Vertex):
-            target_entity_num = _getVertexOffset(target_element)
+            target_entity_num = target_element.linearNumber()
 
     # hou.Geometry means copying to detail attributes.
     else:
@@ -2955,7 +2929,7 @@ def copyAttributeValues(source_element, source_attribs, target_element):
         source_entity_num = source_element.number()
 
         if isinstance(source_element, hou.Vertex):
-            source_entity_num = _getVertexOffset(source_element)
+            source_entity_num = source_element.linearNumber()
 
     # Copying from detail attributes.
     else:
@@ -2973,7 +2947,6 @@ def copyAttributeValues(source_element, source_attribs, target_element):
         if _getAttribOwner(attrib.type()) == source_owner and
         attrib.geometry().sopNode() == source_geometry.sopNode()
     ]
-
 
     # Construct a ctypes string array to pass the strings.
     arr = _buildCStringArray(attrib_names)
