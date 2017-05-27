@@ -15,40 +15,6 @@ import os
 import sys
 import unittest
 
-def enableHouModule():
-    """Set up the environment so that "import hou" works."""
-
-    # Handle dlopen flags so dsos can be loaded correctly.
-    if hasattr(sys, "setdlopenflags"):
-        import DLFCN
-
-        old_dlopen_flags = sys.getdlopenflags()
-        sys.setdlopenflags(old_dlopen_flags | DLFCN.RTLD_GLOBAL)
-
-    # Try to import hou.
-    try:
-        import hou
-    # If it can't find it, make sure it is in the path.
-    except ImportError:
-        # Python needs to know where the hou module is.
-        path = os.path.join(
-            os.getenv("HH"),
-            "python{}.{}".format(sys.version_info[0], sys.version_info[1])
-        )
-
-        # Append the path.
-        sys.path.append(path)
-
-        # Try again.
-        import hou
-
-    finally:
-        # Restore old flags.
-        if hasattr(sys, "setdlopenflags"):
-            sys.setdlopenflags(old_dlopen_flags)
-
-enableHouModule()
-
 # Houdini Imports
 import ht.inline
 
@@ -82,6 +48,21 @@ class TestInlineCpp(unittest.TestCase):
 
     def tearDown(self):
 	pass
+
+    def test_getAttribOwnerFromGeometryType(self):
+        self.assertEquals(ht.inline._getAttribOwnerFromGeometryType(hou.Vertex), 0)
+        self.assertEquals(ht.inline._getAttribOwnerFromGeometryType(hou.Point), 1)
+        self.assertEquals(ht.inline._getAttribOwnerFromGeometryType(hou.Prim), 2)
+        self.assertEquals(ht.inline._getAttribOwnerFromGeometryType(hou.Face), 2)
+        self.assertEquals(ht.inline._getAttribOwnerFromGeometryType(hou.Volume), 2)
+        self.assertEquals(ht.inline._getAttribOwnerFromGeometryType(hou.Polygon), 2)
+        self.assertEquals(ht.inline._getAttribOwnerFromGeometryType(hou.Geometry), 3)
+
+        self.assertRaises(
+            TypeError,
+            ht.inline._getAttribOwnerFromGeometryType,
+            None,
+        )
 
     def test_getVariable(self):
         hipName = hou.getVariable("HIPNAME")

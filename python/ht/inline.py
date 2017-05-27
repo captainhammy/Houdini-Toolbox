@@ -2256,13 +2256,26 @@ def _getAttribOwner(attribute_type):
     return _ATTRIB_TYPE_MAP[attribute_type]
 
 
-def _getAttribOwnerFromEntity(entity):
-    """Get an HDK compatible attribute owner value from a geometry entity.
+def _getAttribOwnerFromGeometryType(entity_type):
+    """Get an HDK compatible attribute owner value from a geometry class.
 
-    Entity can be of hou.Geometry, hou.Point, hou.Prim or hou.Vertex.
+    The type can be of hou.Geometry, hou.Point, hou.Prim (or subclasses) or hou.Vertex.
 
     """
-    return _GEOMETRY_ATTRIB_MAP[type(entity)]
+    # If the class is a base class in the map then just return it.
+    if entity_type in _GEOMETRY_ATTRIB_MAP:
+        return _GEOMETRY_ATTRIB_MAP[entity_type]
+
+    # If it is not in the map then it is most likely a subclass of hou.Prim,
+    # such as hou.Polygon, hou.Face, hou.Volume, etc.  We will check the class
+    # against being a subclass of any of our valid types and if it is, return
+    # the owner of that class.
+    for key, value in _GEOMETRY_ATTRIB_MAP.iteritems():
+        if issubclass(entity_type, key):
+            return value
+
+    # Something went wrong so raise an exception.
+    raise TypeError("Invalid entity type: {}".format(entity_type))
 
 
 def _getGroupAttribOwner(group):
@@ -2937,8 +2950,8 @@ def copyAttributeValues(source_element, source_attribs, target_element):
         source_entity_num = 0
 
     # Get the attribute owners from the elements.
-    target_owner = _getAttribOwnerFromEntity(target_element)
-    source_owner = _getAttribOwnerFromEntity(source_element)
+    target_owner = _getAttribOwnerFromGeometryType(type(target_element))
+    source_owner = _getAttribOwnerFromGeometryType(type(source_element))
 
     # Get the attribute names, ensuring we only use attributes on the
     # source's geometry.
@@ -2970,36 +2983,10 @@ def copyPointAttributeValues(self, source_point, attributes):
     If the attributes do not exist on the destination detail they will be
     created.
 
+    This function is deprecated.  Use copyAttributeValues instead.
+
     """
-    geometry = self.geometry()
-
-    # Make sure the geometry is not read only.
-    if geometry.isReadOnly():
-        raise hou.GeometryPermissionError()
-
-    # Get the source point's geometry.
-    source_geometry = source_point.geometry()
-
-    # Get the attribute names, ensuring we only use point attributes on the
-    # source point's geometry.
-    attrib_names = [
-        attrib.name() for attrib in attributes
-        if attrib.type() == hou.attribType.Point and
-        attrib.geometry().sopNode() == source_geometry.sopNode()
-    ]
-
-    # Construct a ctypes string array to pass the strings.
-    arr = _buildCStringArray(attrib_names)
-
-    # Copy the values.
-    _cpp_methods.copyPointAttributeValues(
-        geometry,
-        self.number(),
-        source_geometry,
-        source_point.number(),
-        arr,
-        len(attrib_names)
-    )
+    copyAttributeValues(source_point, attributes, self)
 
 
 @addToClass(hou.Prim, name="copyAttribValues")
@@ -3009,36 +2996,10 @@ def copyPrimAttributeValues(self, source_prim, attributes):
     If the attributes do not exist on the destination primitive they will be
     created.
 
+    This function is deprecated.  Use copyAttributeValues instead.
+
     """
-    geometry = self.geometry()
-
-    # Make sure the geometry is not read only.
-    if geometry.isReadOnly():
-        raise hou.GeometryPermissionError()
-
-    # Get the source primitive's geometry.
-    source_geometry = source_prim.geometry()
-
-    # Get the attribute names, ensuring we only use primitive attributes on the
-    # source primitive's geometry.
-    attrib_names = [
-        attrib.name() for attrib in attributes
-        if attrib.type() == hou.attribType.Prim and
-        attrib.geometry().sopNode() == source_geometry.sopNode()
-    ]
-
-    # Construct a ctypes string array to pass the strings.
-    arr = _buildCStringArray(attrib_names)
-
-    # Copy the values.
-    _cpp_methods.copyPrimAttributeValues(
-        geometry,
-        self.number(),
-        source_geometry,
-        source_prim.number(),
-        arr,
-        len(attrib_names)
-    )
+    copyAttributeValues(source_prim, attributes, self)
 
 
 @addToClass(hou.Prim)
