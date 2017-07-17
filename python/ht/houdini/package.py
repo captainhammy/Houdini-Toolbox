@@ -19,7 +19,7 @@ import tarfile
 import tempfile
 
 # Third Party Imports
-from mechanize import Browser
+from mechanize import Browser, LinkNotFoundError
 
 # Houdini Toolbox Imports
 import ht.utils
@@ -463,8 +463,9 @@ class HoudiniBuildManager(object):
 
             downloaded_path = downloadBuild(file_name, download_dir)
 
-            package = HoudiniInstallFile(downloaded_path)
-            package.install(create_symlink)
+            if downloaded_path is not None:
+                package = HoudiniInstallFile(downloaded_path)
+                package.install(create_symlink)
 
 
 class HoudiniEnvironmentSettings(object):
@@ -1077,7 +1078,14 @@ def downloadBuild(build_file, target_directory):
     browser.submit()
 
     browser.open('http://www.sidefx.com/download/daily-builds/')
-    resp = browser.follow_link(text=build_file, nr=0)
+
+    try:
+        resp = browser.follow_link(text=build_file, nr=0)
+
+    except LinkNotFoundError:
+        print "Error: {} does not exist".format(build_file)
+        return
+
     url = resp.geturl()
     url += 'get/'
     resp = browser.open(url)
