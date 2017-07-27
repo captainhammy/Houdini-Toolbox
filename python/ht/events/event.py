@@ -1,5 +1,7 @@
 """This module contains the base Houdini event class."""
 
+import collections
+
 from ht.events.block import HoudiniEventBlock
 from ht.events.stats import EventStats
 
@@ -41,7 +43,6 @@ class HoudiniEvent(object):
     @enabled.setter
     def enabled(self, enabled):
         self._enabled = enabled
-        self._enabled = enabled
 
     @property
     def event_map(self):
@@ -71,6 +72,11 @@ class HoudiniEvent(object):
         :type priority: int
         :return:
         """
+        if not isinstance(event_block, HoudiniEventBlock):
+            raise TypeError(
+                "Excepted HoudiniEventBlock, got {}".format(type(event_block))
+            )
+
         priority_map = self.event_map.setdefault(priority, [])
 
         priority_map.append(event_block)
@@ -79,11 +85,14 @@ class HoudiniEvent(object):
         """Register a function with a priority.
 
         :param: func: The function to register
-        :type func: callable
+        :type func: collections.Callable
         :param priority: The function priority
         :type priority: int
         :return:
         """
+        if not isinstance(func, collections.Callable):
+            raise TypeError("{} is not callable".format(func))
+
         priority_map = self.event_map.setdefault(priority, [])
 
         priority_map.append(func)
@@ -92,12 +101,18 @@ class HoudiniEvent(object):
         """Register a list of functions with a priority.
 
 
-        :param: functions: The function to register
-        :type functions: list(callable)
+        :param: functions: The functions to register
+        :type functions: list(collections.Callable)
         :param priority: The function priority
         :type priority: int
         :return:
         """
+        non_callable = [func for func in function
+                        if not isinstance(func, collections.Callable)]
+
+        if non_callable:
+            raise TypeError("Cannot register non-callable objects")
+
         priority_map = self.event_map.setdefault(priority, [])
 
         priority_map.extend(functions)

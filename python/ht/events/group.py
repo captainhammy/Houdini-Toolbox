@@ -4,6 +4,7 @@
 # CLASSES
 # =============================================================================
 
+
 class HoudiniEventGroup(object):
     """The base Houdini event class."""
 

@@ -8,9 +8,12 @@ events in Houdini.
 # =============================================================================
 
 # Python Imports
+import collections
 from contextlib import contextmanager
 
 from ht.events.event import HoudiniEvent
+from ht.events.block import HoudiniEventBlock
+from ht.events.group import HoudiniEventGroup
 
 # Houdini Imports
 import hou
@@ -24,6 +27,7 @@ class EventManager(object):
     """Manager and execute events in Houdini."""
 
     def __init__(self):
+        self._data = {}
         self._events = {}
 
         # Special dict used to maintain event enabled states when using
@@ -70,8 +74,13 @@ class EventManager(object):
     # =========================================================================
 
     @property
+    def data(self):
+        """dict: Data stored on the manager."""
+        return self._data
+
+    @property
     def events(self):
-        """Get the map of events to run."""
+        """dict: The map of events to run."""
         return self._events
 
     # =========================================================================
@@ -135,6 +144,9 @@ class EventManager(object):
         :type priority: int
         :return:
         """
+        if not isinstance(event_block, HoudiniEventBlock):
+            raise TypeError("Expected HoudiniEventBlock, got {}".format(type(event_block)))
+
         name = event_block.event_name
 
         if name not in self.events:
@@ -155,6 +167,9 @@ class EventManager(object):
         :type priority: int
         :return:
         """
+        if not isinstance(event_group, HoudiniEventGroup):
+            raise TypeError("Expected HoudiniEventGroup, got {}".format(type(event_group)))
+
         event_mappings = event_group.event_map
 
         for name, functions in event_mappings.iteritems():
@@ -168,13 +183,16 @@ class EventManager(object):
         """Register a function for a given event name.
 
         :param: func: The function to register
-        :type func: callable
+        :type func: collections.Callable
         :param: event_name: The name of the event to register the function for
         :type event_name: str
         :param priority: The event priority
         :type priority: int
         :return:
         """
+        if not isinstance(func, collections.Callable):
+            raise TypeError("{} is not callable".format(func))
+
         if event_name not in self.events:
             self.createEvent(event_name)
 
@@ -195,10 +213,12 @@ class EventManager(object):
         """
         event = self.events.get(event_name)
 
-        if scriptargs is None:
-            scriptargs = {}
-
         if event is not None:
+            if scriptargs is None:
+                scriptargs = {}
+
+            # Add data about the manager and event to the scriptargs
+            scriptargs["_manager_"] = self
             scriptargs["_event_name_"] = event.name
 
             event.run(scriptargs)
@@ -243,7 +263,7 @@ def registerFunction(func, event_name, priority=1):
     """Register a function for a given event name.
 
     :param: func: The function to register
-    :type func: callable
+    :type func: collections.Callable
     :param: event_name: The event name
     :type event_name: str
     :param: priority: The event priority
