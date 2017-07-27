@@ -107,7 +107,7 @@ class HoudiniEvent(object):
         :type priority: int
         :return:
         """
-        non_callable = [func for func in function
+        non_callable = [func for func in functions
                         if not isinstance(func, collections.Callable)]
 
         if non_callable:
