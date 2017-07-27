@@ -5,8 +5,7 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
-#import ht.nodes.shapes
-from ht.events import runEvents
+from ht.events import runEvent
 
 # =============================================================================
 # FUNCTIONS
@@ -14,8 +13,7 @@ from ht.events import runEvents
 
 def main():
     """Main function."""
-    runEvents("456", None)
-#    ht.nodes.shapes.createSessionShapeManager()
+    runEvent("456")
 
 # =============================================================================
 

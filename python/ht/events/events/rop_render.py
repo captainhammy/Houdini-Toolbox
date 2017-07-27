@@ -11,7 +11,7 @@ scripts.
 import time
 
 # Houdini Toolbox Imports
-from ht.events.event import HoudiniEvent
+from ht.events.group import HoudiniEventGroup
 
 # Houdini Imports
 import hou
@@ -20,7 +20,7 @@ import hou
 # CLASSES
 # =============================================================================
 
-class RopRenderEvent(HoudiniEvent):
+class RopRenderEvent(HoudiniEventGroup):
     """Event to run on ROP render script events."""
 
     def __init__(self):

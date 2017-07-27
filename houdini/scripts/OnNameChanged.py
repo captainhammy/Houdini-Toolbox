@@ -5,9 +5,7 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
-#import ht.nodes.colors
-
-from ht.events import runEvents
+from ht.events import runEvent
 
 # =============================================================================
 # FUNCTIONS
@@ -15,7 +13,7 @@ from ht.events import runEvents
 
 def main():
     """Main function."""
-    runEvents("OnNameChanged", kwargs)
+    runEvent("OnNameChanged", kwargs)
 
 # =============================================================================
 

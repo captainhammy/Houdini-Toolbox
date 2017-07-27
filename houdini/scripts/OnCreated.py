@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
-from ht.events import runEvents
+from ht.events import runEvent
 
 # =============================================================================
 # FUNCTIONS
@@ -13,7 +13,7 @@ from ht.events import runEvents
 
 def main():
     """Main function."""
-    runEvents("OnCreated", kwargs)
+    runEvent("OnCreated", kwargs)
 
 # =============================================================================
 

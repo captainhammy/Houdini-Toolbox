@@ -1,5 +1,5 @@
-from ht.events import runEvents
+from ht.events import runEvent
 
 # Perform any registered after scene save events.
-runEvents("AfterSceneSave", kwargs)
+runEvent("AfterSceneSave", kwargs)
 

@@ -7,6 +7,11 @@ events in Houdini.
 # IMPORTS
 # =============================================================================
 
+# Python Imports
+from contextlib import contextmanager
+
+from ht.events.event import HoudiniEvent
+
 # Houdini Imports
 import hou
 
@@ -14,20 +19,60 @@ import hou
 # CLASSES
 # =============================================================================
 
+
 class EventManager(object):
     """Manager and execute events in Houdini."""
 
     def __init__(self):
-        self._event_map = {}
+        self._events = {}
+
+        # Special dict used to maintain event enabled states when using
+        # disabling context manager.
+        self._event_states = {}
+
+    def __repr__(self):
+        return "<EventManager>"
+
+    # =========================================================================
+    # NON-PUBLIC METHODS
+    # =========================================================================
+
+    def _restoreEvents(self):
+        """Restore the enabled state of any events that were disabled.
+
+        :return:
+        """
+        for name, state in self._event_states.iteritems():
+            self.events[name].enabled = state
+
+        self._event_states.clear()
+
+    def _disableEvents(self, names=None):
+        """Disable any events with matching names.
+
+        :param: names: A list of names of events to disable.
+        :type names: list(str) or None
+        :return:
+        """
+        if names is not None:
+            for event in self.events.values():
+                if event.name in names:
+                    self._event_states[event.name] = event.enabled
+
+                    event.enabled = False
+        else:
+            for event in self.events.values():
+                self._event_states[event.name] = event.enabled
+                event.enabled = False
 
     # =========================================================================
     # PROPERTIES
     # =========================================================================
 
     @property
-    def event_map(self):
-        """The map of events to run."""
-        return self._event_map
+    def events(self):
+        """Get the map of events to run."""
+        return self._events
 
     # =========================================================================
     # STATIC METHODS
@@ -35,7 +80,11 @@ class EventManager(object):
 
     @staticmethod
     def getSessionManager():
-        """Find or create an EventManager for the session."""
+        """Find or create an EventManager for the current session.
+
+        :return: Returns the session's event manager
+        :rtype: EventManager
+        """
         if not hasattr(hou.session, "_event_manager"):
             hou.session._event_manager = EventManager()
 
@@ -45,70 +94,176 @@ class EventManager(object):
     # METHODS
     # =========================================================================
 
-    def registerEvent(self, event, priority=1):
-        """Register a HoudiniEvent.
+    def createEvent(self, name):
+        """Create an event with a given name.
+
+        :param name: The event name
+        :type name: str
+        :return: The newly created event
+        :rtype: HoudiniEvent
+        """
+        event = HoudiniEvent(name)
+
+        self.events[name] = event
+
+    @contextmanager
+    def eventDisabler(self, names=None):
+        """Context manager to disable any events with matching names.
+
+        :param: names: A list of names of events to disable.
+        :type names: list(str) or None
+        :return:
+        """
+        # Disable any matching events.
+        self._disableEvents(names)
+
+        # Wrap the yield in a try/finally block so even if an exception occurs
+        # the restore function will always be run.
+        try:
+            yield
+
+        finally:
+            # Restore all event settings.
+            self._restoreEvents()
+
+    def registerEventBlock(self, event_block, priority=1):
+        """Register an EventBlock with a given priority.
+
+        :param event_block: The event block to register
+        :type event_block: HoudiniEventBlock
+        :param priority: The event priority
+        :type priority: int
+        :return:
+        """
+        name = event_block.event_name
+
+        if name not in self.events:
+            self.createEvent(name)
+
+        event = self.events[name]
+        event.registerBlock(event_block, priority)
+
+    def registerEventGroup(self, event_group, priority=1):
+        """Register a HoudiniEventGroup.
 
         This function will register all mapped functions in the event object's
         event_map with the given priority.
 
+        :param: event_group: The event group to register
+        :type event_group: HoudiniEventGroup
+        :param priority: The event priority
+        :type priority: int
+        :return:
         """
-        event_mappings = event.event_map
+        event_mappings = event_group.event_map
 
         for name, functions in event_mappings.iteritems():
-            events = self.event_map.setdefault(name, {})
+            if name not in self.events:
+                self.createEvent(name)
 
-            priority_map = events.setdefault(priority, [])
+            event = self.events[name]
+            event.registerFunctions(functions, priority)
 
-            priority_map.extend(functions)
+    def registerFunction(self, func, event_name, priority=1):
+        """Register a function for a given event name.
 
-    def registerFunction(self, event_name, func, priority=1):
-        """Register a function for a given event name."""
-        events = self.event_map.setdefault(event_name, {})
+        :param: func: The function to register
+        :type func: callable
+        :param: event_name: The name of the event to register the function for
+        :type event_name: str
+        :param priority: The event priority
+        :type priority: int
+        :return:
+        """
+        if event_name not in self.events:
+            self.createEvent(event_name)
 
-        priority_map = events.setdefault(priority, [])
+        event = self.events[event_name]
+        event.registerFunction(func, priority)
 
-        priority_map.append(func)
-
-    def runEvents(self, event_name, scriptargs):
+    def runEvent(self, event_name, scriptargs):
         """Run all registered events for the given name with the supplied
         args.
 
         Events are run in decreasing order of priority.
+
+        :param: event_name: The name of the event to run
+        :type event_name: str
+        :param: scriptargs: Arguments passed to the event from the caller
+        :type scriptargs: dict
+        :return:
         """
-        events = self.event_map.get(event_name, {})
+        event = self.events.get(event_name)
 
-        for priority in reversed(sorted(events.keys())):
-            priority_events = events[priority]
+        if scriptargs is None:
+            scriptargs = {}
 
-            for event in priority_events:
-                event(scriptargs)
+        if event is not None:
+            scriptargs["_event_name_"] = event.name
+
+            event.run(scriptargs)
+
 
 # =============================================================================
-# CLASSES
+# FUNCTIONS
 # =============================================================================
 
-def runEvents(event_name, scriptargs):
-    """Run all registered events for the given name with the supplied args."""
+def registerEventBlock(event_block, priority=1):
+    """Register an event block.
+
+    :param: event_block: The event block to register
+    :type event_block: HoudiniEventBlock
+    :param: priority: The event priority
+    :type priority: int
+    :return:
+    """
     manager = EventManager.getSessionManager()
 
-    manager.runEvents(event_name, scriptargs)
+    manager.registerEventBlock(event_block, priority=priority)
 
 
-def registerEvent(event, priority=1):
+def registerEventGroup(event_group, priority=1):
     """Register a HoudiniEvent.
 
     This function will register all mapped functions in the event object's
     event_map with the given priority.
 
+    :param: event_group: The event group to register
+    :type event_group: HoudiniEventGroup
+    :param: priority: The event priority
+    :type priority: int
+    :return:
     """
     manager = EventManager.getSessionManager()
 
-    manager.registerEvent(event, priority=priority)
+    manager.registerEventGroup(event_group, priority=priority)
 
 
-def registerFunction(event_name, func, priority=1):
-    """Register a function for a given event name."""
+def registerFunction(func, event_name, priority=1):
+    """Register a function for a given event name.
+
+    :param: func: The function to register
+    :type func: callable
+    :param: event_name: The event name
+    :type event_name: str
+    :param: priority: The event priority
+    :type priority: int
+    :return:
+    """
     manager = EventManager.getSessionManager()
 
-    manager.registerFunction(event_name, func, priority=priority)
+    manager.registerFunction(func, event_name, priority=priority)
 
+
+def runEvent(event_name, scriptargs=None):
+    """Run all registered events for the given name with the supplied args.
+
+    :param: event_name: The name of the event to run
+    :type event_name: str
+    :param: scriptargs: Arguments passed to the event from the caller
+    :type scriptargs: dict
+    :return:
+    """
+    manager = EventManager.getSessionManager()
+
+    manager.runEvent(event_name, scriptargs)

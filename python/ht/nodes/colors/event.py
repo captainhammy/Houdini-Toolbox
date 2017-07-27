@@ -1,19 +1,18 @@
-"""This module contains a class to color nodes based on events."""
+"""This module contains an event to color nodes based on events."""
 
 # =============================================================================
 # IMPORTS
 # =============================================================================
 
 # Houdini Toolbox Imports
-from ht.events.event import HoudiniEvent
-
+from ht.events.group import HoudiniEventGroup
 from ht.nodes.colors.manager import ColorManager
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class ColorNodeEvent(HoudiniEvent):
+class ColorNodeEvent(HoudiniEventGroup):
     """Event to color Houdini nodes based on events."""
 
     def __init__(self):
