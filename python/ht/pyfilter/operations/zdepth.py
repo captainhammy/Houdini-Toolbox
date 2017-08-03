@@ -7,9 +7,9 @@
 # Houdini Toolbox Imports
 from ht.pyfilter.logger import logger
 from ht.pyfilter.operations.operation import PyFilterOperation, logFilter
-from ht.pyfilter.property import Property, setProperty
+from ht.pyfilter.property import getProperty, setProperty
 
-import mantra
+#import mantra
 
 # =============================================================================
 # CLASSES
@@ -47,8 +47,7 @@ class ZDepthPass(PyFilterOperation):
         """Register interested parser args for this operation."""
         parser.add_argument(
             "-zdepth",
-            action="store_true",
-            help="Enable the filter"
+            action="store_true"
         )
 
     # =========================================================================
@@ -64,22 +63,18 @@ class ZDepthPass(PyFilterOperation):
     @logFilter("object:name")
     def filterInstance(self):
         """Apply constant black shaders to objects."""
-        matte = Property("object:matte").value
-        phantom = Property("object:phantom").value
-        surface = Property("object:surface").value
-
-        print matte, phantom, surface
-
-        surface = mantra.property("object:surface")[0]
+        matte = getProperty("object:matte")
+        phantom = getProperty("object:phantom")
+        surface = getProperty("object:surface")
 
         setProperty("object:overridedetail", True)
-
-        shader = "opdef:/Shop/v_constant clr 0 0 0".split()
 
         if matte == "true" or surface == "matte" or phantom == "true":
             setProperty("object:phantom", 1)
 
         else:
+            shader = "opdef:/Shop/v_constant clr 0 0 0".split()
+
             setProperty("object:surface", shader)
             setProperty("object:displace", None)
 
@@ -90,7 +85,7 @@ class ZDepthPass(PyFilterOperation):
         This will disable all planes that are not C and Pz.
 
         """
-        channel = Property("plane:channel").value
+        channel = getProperty("plane:channel")
 
         # The if the plane is Pz then store that it is set.
         if channel == "Pz":
@@ -118,4 +113,3 @@ class ZDepthPass(PyFilterOperation):
     def shouldRun(self):
         """Only run if the flag was passed."""
         return self._active
-

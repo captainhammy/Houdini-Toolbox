@@ -2,10 +2,10 @@
     "operations":
     [
         ["ht.pyfilter.operations.setproperties", "SetProperties"],
-        ["ht.pyfilter.operations.setdeeppath", "SetDeepResolverPath"],
+        ["ht.pyfilter.operations.deepimage", "SetDeepImage"],
         ["ht.pyfilter.operations.zdepth", "ZDepthPass"],
         ["ht.pyfilter.operations.settilecallback", "SetTileCallback"],
         ["ht.pyfilter.operations.ipoverrides", "IpOverrides"],
-        ["ht.pyfilter.operations.disableprimary", "DisablePrimaryImage"]
+        ["ht.pyfilter.operations.primaryimage", "SetPrimaryImage"]
     ]
 }

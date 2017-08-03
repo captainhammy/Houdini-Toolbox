@@ -12,6 +12,7 @@ from ht.pyfilter.property import setProperty
 # CLASSES
 # =============================================================================
 
+
 class SetTileCallback(PyFilterOperation):
     """Operation to set a mantra tile callback.
 
@@ -24,20 +25,20 @@ class SetTileCallback(PyFilterOperation):
 
         # This could also be hardcoded and we could not bother with
         # parsing args or anything like that.
-        self._callback_path = None
+        self._tilecallback = None
 
     # =========================================================================
     # PROPERTIES
     # =========================================================================
 
     @property
-    def callback_path(self):
-        """The path to set to."""
-        return self._callback_path
+    def tilecallback(self):
+        """The path to the tile callback."""
+        return self._tilecallback
 
-    @callback_path.setter
-    def callback_path(self, callback_path):
-        self._callback_path = callback_path
+    @tilecallback.setter
+    def tilecallback(self, tilecallback):
+        self._tilecallback = tilecallback
 
     # =========================================================================
     # STATIC METHODS
@@ -50,13 +51,7 @@ class SetTileCallback(PyFilterOperation):
     @staticmethod
     def registerParserArgs(parser):
         """Register interested parser args for this operation."""
-        parser.add_argument(
-            "-tilecallback",
-            nargs="?",
-            default=None,
-            action="store",
-            help=""
-        )
+        parser.add_argument("-tilecallback")
 
     # =========================================================================
     # METHODS
@@ -65,14 +60,13 @@ class SetTileCallback(PyFilterOperation):
     @logFilter
     def filterCamera(self):
         """Apply camera properties."""
-        setProperty("render:tilecallback", self.callback_path)
+        setProperty("render:tilecallback", self.tilecallback)
 
     def processParsedArgs(self, filter_args):
         """Process any of our interested arguments if they were passed."""
         if filter_args.tilecallback is not None:
-            self.callback_path = filter_args.tilecallback
+            self.tilecallback = filter_args.tilecallback
 
     def shouldRun(self):
         """Only run if a callback file path is set."""
-        self.callback_path is not None
-
+        return self.tilecallback is not None

@@ -44,10 +44,6 @@ def filterCamera():
 
     PYFILTER_MANAGER.runFilters("filterCamera")
 
-def filterEndRender():
-    """Perform actions just after the image has been rendered."""
-    logging.info("filterEndRender")
-
 def filterCameraSegment():
     """Modify properties for a camera motion segment.
 
@@ -67,14 +63,12 @@ def filterEndRender():
     PYFILTER_MANAGER.runFilters("filterEndRender")
 
 
-def filterError(level, message, prefix=""):
+def filterError(level, message, prefix):
     """Process information, warning or error messages printed by Mantra.
 
     This function allows you to disable the printing of messages.
 
     """
- #   logger.debug("filterError")
-
     result = PYFILTER_MANAGER.runFilters("filterError", level, message, prefix)
 
     return result

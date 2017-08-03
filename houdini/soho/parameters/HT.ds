@@ -198,6 +198,16 @@
 	    range	{ 0 1 }
 	    export	none
 	}
+	parm {
+	    name	"ip_disable_tilecallback"
+	    label	"Disable Tile Callback"
+	    type	toggle
+	    default	{ "1" }
+	    help	"Disable any tile callback scripts."
+	    disablewhen	"{ enable_ip_override == 0 }"
+	    range	{ 0 1 }
+	    export	none
+	}
 
     }
 }

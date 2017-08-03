@@ -6,17 +6,18 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Python Imports
 import math
 
 # Houdini Toolbox Imports
 from ht.pyfilter.logger import logger
 from ht.pyfilter.operations.operation import PyFilterOperation, logFilter
-from ht.pyfilter.property import setProperty
+from ht.pyfilter.property import getProperty, setProperty
 
 # =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class IpOverrides(PyFilterOperation):
     """Operation to set overrides when rendering to ip."""
@@ -29,8 +30,9 @@ class IpOverrides(PyFilterOperation):
         self._disable_deep = False
         self._disable_displacement = False
         self._disable_subd = False
+        self._disable_tilecallback = False
         self._enabled = False
-        self._res_scale = 1.0
+        self._res_scale = None
         self._sample_scale = None
 
     # =========================================================================
@@ -93,6 +95,16 @@ class IpOverrides(PyFilterOperation):
     # =========================================================================
 
     @property
+    def disable_tilecallback(self):
+        return self._disable_tilecallback
+
+    @disable_tilecallback.setter
+    def disable_tilecallback(self, disable_tilecallback):
+        self._disable_tilecallback = disable_tilecallback
+
+    # =========================================================================
+
+    @property
     def enabled(self):
         """Is this filter operation enabled."""
         return self._enabled
@@ -130,7 +142,8 @@ class IpOverrides(PyFilterOperation):
     @staticmethod
     def buildArgString(res_scale=None, sample_scale=None, disable_blur=False,
                        disable_aovs=False, disable_deep=False,
-                       disable_displacement=False, disable_subd=False):
+                       disable_displacement=False, disable_subd=False,
+                       disable_tilecallback=False):
         """Construct an argument string based on values for this filter."""
         args = []
 
@@ -155,62 +168,29 @@ class IpOverrides(PyFilterOperation):
         if disable_subd:
             args.append("-ip_disablesubd")
 
+        if disable_tilecallback:
+            args.append("-ip_disabletilecallback")
+
         return " ".join(args)
 
     @staticmethod
     def registerParserArgs(parser):
         """Register interested parser args for this operation."""
-        parser.add_argument(
-            "-ip_override",
-            action="store_true",
-            help="Enable modification of settings for ip."
-        )
+        parser.add_argument("-ip_resscale", default=None, type=float)
 
-        parser.add_argument(
-            "-ip_resscale",
-            nargs="?",
-            default=None,
-            action="store",
-            help="Scale image resolution by this value."
-        )
+        parser.add_argument("-ip_samplescale", default=None, type=float)
 
-        parser.add_argument(
-            "-ip_samplescale",
-            nargs="?",
-            default=None,
-            action="store",
-            help="Scale pixel samples by this value."
-        )
+        parser.add_argument("-ip_disableblur", action="store_true")
 
-        parser.add_argument(
-            "-ip_disableblur",
-            action="store_true",
-            help="Disable motion blur"
-        )
+        parser.add_argument("-ip_disableaovs", action="store_true")
 
-        parser.add_argument(
-            "-ip_disableaovs",
-            action="store_true",
-            help="Disable aovs"
-        )
+        parser.add_argument("-ip_disabledeep", action="store_true")
 
-        parser.add_argument(
-            "-ip_disabledeep",
-            action="store_true",
-            help="Disable deep output"
-        )
+        parser.add_argument("-ip_disabledisplacement", action="store_true")
 
-        parser.add_argument(
-            "-ip_disabledisplacement",
-            action="store_true",
-            help="Disable shader displacement"
-        )
+        parser.add_argument("-ip_disablesubd", action="store_true")
 
-        parser.add_argument(
-            "-ip_disablesubd",
-            action="store_true",
-            help="Disable subdivision"
-        )
+        parser.add_argument("-ip_disabletilecallback", action="store_true")
 
     # =========================================================================
     # METHODS
@@ -219,20 +199,17 @@ class IpOverrides(PyFilterOperation):
     @logFilter
     def filterCamera(self):
         """Apply camera properties."""
-        import mantra
-
         if self.res_scale is not None:
-            resolution = mantra.property("image:resolution")
+            resolution = getProperty("image:resolution")
 
-            new_res = [int(round(val * self.res_scale)) for val in resolution]
+            new_res = [_scaleResolution(val, self.res_scale) for val in resolution]
 
             setProperty("image:resolution", new_res)
 
         if self.sample_scale is not None:
-            samples = mantra.property("image:samples")
+            samples = getProperty("image:samples")
 
-            # Need to make sure our values are at least a minimum of 1.
-            new_samples = [max(1, int(math.ceil(val * self.sample_scale))) for val in samples]
+            new_samples = [_scaleSampleValue(val, self.sample_scale) for val in samples]
 
             setProperty("image:samples", new_samples)
 
@@ -245,11 +222,12 @@ class IpOverrides(PyFilterOperation):
         if self.disable_deep:
             setProperty("image:deepresolver", [])
 
+        if self.disable_tilecallback:
+            setProperty("render:tilecallback", "")
+
     @logFilter
     def filterInstance(self):
         """Modify object properties."""
-        import mantra
-
         if self.disable_displacement:
             setProperty("object:displace", [])
 
@@ -259,49 +237,67 @@ class IpOverrides(PyFilterOperation):
     @logFilter
     def filterMaterial(self):
         """Modify material properties."""
-        import mantra
-
         if self.disable_displacement:
             setProperty("object:displace", [])
 
     @logFilter
     def filterPlane(self):
         """Modify aov properties."""
-        import mantra
-
         # We can't disable the main image plane or Mantra won't render.
-        if self.disable_aovs and mantra.property("plane:variable")[0] != "Cf+Af":
+        if self.disable_aovs and getProperty("plane:variable") != "Cf+Af":
             setProperty("plane:disable", 1)
 
     def processParsedArgs(self, filter_args):
         """Process any of our interested arguments if they were passed."""
         if filter_args.ip_resscale is not None:
-            self.res_scale = float(filter_args.ip_resscale)
+            self.res_scale = filter_args.ip_resscale
 
         if filter_args.ip_samplescale is not None:
-            self.sample_scale = float(filter_args.ip_samplescale)
+            self.sample_scale = filter_args.ip_samplescale
 
         self.disable_aovs = filter_args.ip_disableaovs
         self.disable_blur = filter_args.ip_disableblur
         self.disable_deep = filter_args.ip_disabledeep
         self.disable_displacement = filter_args.ip_disabledisplacement
         self.disable_subd = filter_args.ip_disablesubd
+        self.disable_tilecallback = filter_args.ip_disabletilecallback
 
-        # Only enable ourself if something is set.
-        if self.res_scale or self.disable_blur or self.sample_scale \
-            or self.disable_aovs or self.disable_deep:
-
-            self.enabled = True
+        # Only enable the operation if something is set.
+        self.enabled = any(
+            (
+                self.res_scale,
+                self.sample_scale,
+                self.disable_aovs,
+                self.disable_blur,
+                self.disable_deep,
+                self.disable_displacement,
+                self.disable_subd,
+                self.disable_tilecallback
+            )
+        )
 
     def shouldRun(self):
         """Only run if we are enabled AND rendering to ip."""
-        import mantra
+        return self.enabled and getProperty("image:filename") == "ip"
 
-        return self.enabled and mantra.property("image:filename")[0] == "ip"
+# =============================================================================
+# NON-PUBLIC FUNCTIONS
+# =============================================================================
+
+
+def _scaleResolution(resolution, scale):
+    """Scale a resolution value."""
+    return int(round(resolution * scale))
+
+
+def _scaleSampleValue(sample, scale):
+    """Scale a sample value, ensuring it remains >= 1."""
+    return max(1, int(math.ceil(sample*scale)))
 
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
 
 def buildArgStringFromNode(node):
     """Build an argument string from a Mantra node."""
@@ -321,6 +317,7 @@ def buildArgStringFromNode(node):
         disable_deep=node.evalParm("ip_disable_deep"),
         disable_displacement=node.evalParm("ip_disable_displacement"),
         disable_subd=node.evalParm("ip_disable_subd"),
+        disable_tilecallback=node.evalParm("ip_disable_tilecallback")
     )
 
 
@@ -330,8 +327,8 @@ def buildPixleSampleScaleDisplay(node):
 
     sample_scale = node.evalParm("ip_sample_scale")
 
-    sx = max(1, int(math.ceil(sx * sample_scale)))
-    sy = max(1, int(math.ceil(sy * sample_scale)))
+    sx = _scaleSampleValue(sx, sample_scale)
+    sy = _scaleSampleValue(sy, sample_scale)
 
     return "{}x{}".format(sx, sy)
 
@@ -359,15 +356,14 @@ def buildResolutionScaleDisplay(node):
             resx, resy = node.evalParmTuple("res_override")
 
         else:
-            resx = int(round(resx * float(rop_res_scale)))
-            resy = int(round(resy * float(rop_res_scale)))
-
+            resx = _scaleResolution(resx, float(rop_res_scale))
+            resy = _scaleResolution(resy, float(rop_res_scale))
 
     res_scale = float(node.evalParm("ip_res_fraction"))
 
     # Scale based our override.
-    resx = int(round(resx * res_scale))
-    resy = int(round(resy * res_scale))
+    resx = _scaleResolution(resx, res_scale)
+    resy = _scaleResolution(resy, res_scale)
 
     return "{}x{}".format(resx, resy)
 
@@ -402,4 +398,3 @@ def setMantraCommand(node):
     cmd = "mantra `pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.buildPyFilterCommand(hou.pwd())\")`"
 
     node.parm("soho_pipecmd").set(cmd)
-

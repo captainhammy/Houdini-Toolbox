@@ -52,6 +52,7 @@ class PyFilterOperation(object):
 
     @staticmethod
     def buildArgString(*args, **kwargs):
+        """Build an argument string for this operation."""
         pass
 
     @staticmethod
@@ -63,7 +64,7 @@ class PyFilterOperation(object):
     # METHODS
     # =========================================================================
 
-    def processParsedArgs(filter_args):
+    def processParsedArgs(self, filter_args):
         """Process any parsed args that the operation may be interested in."""
         pass
 

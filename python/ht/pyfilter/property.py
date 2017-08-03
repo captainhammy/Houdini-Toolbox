@@ -14,6 +14,7 @@ from collections import Iterable
 # CLASSES
 # =============================================================================
 
+
 class Property(object):
     """This class respresents and interface for getting and setting
     Mantra properties.
@@ -21,10 +22,10 @@ class Property(object):
     """
 
     def __init__(self, name):
-    	self._name = name
-    	self._value = None
+        self._name = name
+        self._value = None
 
-    	self._initData()
+        self._initData()
 
     # =========================================================================
     # NON-PUBLIC METHODS
@@ -34,10 +35,10 @@ class Property(object):
         """Init internal data."""
         import mantra
 
-    	values = mantra.property(self.name)
+        values = mantra.property(self.name)
 
-    	if len(values) == 1:
-    	    value = values[0]
+        if len(values) == 1:
+            value = values[0]
 
             if isinstance(value, str):
                 if len(value.split()) > 2:
@@ -48,10 +49,10 @@ class Property(object):
                 else:
                     value = _parseString(value)
 
-    	else:
-    	    value = values
+        else:
+            value = values
 
-    	self._value = value
+        self._value = value
 
     # =========================================================================
     # PROPERTIES
@@ -98,6 +99,16 @@ def _parseString(value):
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
+
+def getProperty(name):
+    """Get a property to a value.
+
+    This is a wrapper around the Property.value.
+
+    """
+    return Property(name).value
+
 
 def setProperty(name, value):
     """Set a property to a value.
