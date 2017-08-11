@@ -6,11 +6,14 @@
 
 # Houdini Toolbox Imports
 from ht.events.group import HoudiniEventGroup
+from ht.events import NodeEvents
+
 from ht.nodes.colors.manager import ColorManager
 
 # =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class ColorNodeEvent(HoudiniEventGroup):
     """Event to color Houdini nodes based on events."""
@@ -20,8 +23,8 @@ class ColorNodeEvent(HoudiniEventGroup):
 
         self.event_map.update(
             {
-                "OnCreated": (self.colorNodeOnCreation,),
-                "OnNameChanged": (self.colorNodeByName,),
+                NodeEvents.OnCreated: (self.colorNodeOnCreation,),
+                NodeEvents.OnNameChanged: (self.colorNodeByName,),
             }
         )
 

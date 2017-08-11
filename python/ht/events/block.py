@@ -40,7 +40,12 @@ class HoudiniEventBlock(object):
     def stats(self):
         return self._stats
 
+    # =========================================================================
+    # METHODS
+    # =========================================================================
+
     def run(self, scriptargs):
+        """Run all the events in the event block."""
         with self.stats:
             for func in self._order:
                 with self.stats.time_child(func.__name__):
