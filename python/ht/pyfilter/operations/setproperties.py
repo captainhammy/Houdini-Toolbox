@@ -104,16 +104,13 @@ class PropertySetterManager(object):
 
         # Load json data from the file.
         with open(filepath) as f:
-            data = json.load(f, object_hook=ht.utils.convertFromUnicode)
+            data = json.load(f)
 
         self._loadFromData(data)
 
     def parseFromString(self, property_string):
         """Load properties from a string."""
-        data = json.loads(
-            property_string,
-            object_hook=ht.utils.convertFromUnicode
-        )
+        data = json.loads(property_string)
 
         self._loadFromData(data)
 

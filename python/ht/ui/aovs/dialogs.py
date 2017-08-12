@@ -16,7 +16,6 @@ from PySide2 import QtCore, QtWidgets
 from ht.sohohooks.aovs import manager
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.ui.aovs import uidata, utils, widgets
-from ht.utils import convertFromUnicode
 
 # Houdini Imports
 import hou
@@ -159,7 +158,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        return convertFromUnicode(aov_data)
+        return aov_data
 
     # =========================================================================
 

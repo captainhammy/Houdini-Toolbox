@@ -14,8 +14,6 @@ import json
 # Houdini Toolbox Imports
 from ht.pyfilter.logger import logger
 
-import ht.utils
-
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -80,7 +78,7 @@ class PyFilterManager(object):
 
         for filepath in files:
             with open(filepath) as fp:
-                data = json.load(fp, object_hook=ht.utils.convertFromUnicode)
+                data = json.load(fp)
 
             if "operations" not in data:
                 continue

@@ -14,7 +14,6 @@ import os
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
-from ht.utils import convertFromUnicode
 
 # Houdini Imports
 import hou
@@ -296,7 +295,7 @@ class AOVFile(object):
     def _initFromFile(self):
         """Read data from the file and create the appropriate entities."""
         with open(self.path) as handle:
-            data = json.load(handle, object_hook=convertFromUnicode)
+            data = json.load(handle)
 
         if "definitions" in data:
             self._createAOVs(data["definitions"])
