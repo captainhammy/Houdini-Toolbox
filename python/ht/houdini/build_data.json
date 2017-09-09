@@ -9,7 +9,10 @@
                 "--no-license",
                 "--no-menus",
                 "--accept-EULA",
-                "--make-dir"
+                "--make-dir",
+                "--no-root-check",
+                "--no-install-hfs-symlink",
+                "--no-local-licensing"
             ]
         },
 
@@ -25,35 +28,12 @@
     },
 
     "versions": {
+        "16.5": {
+            "reference_date": ["6/09/17", 224]
+        },
+        
         "16.0": {
-            "date": "14/09/15",
-            "installer_args": {
-                "Linux": [
-                    "--no-root-check",
-                    "--no-install-hfs-symlink",
-                    "--no-local-licensing"
-                ]
-            }
-        },
-
-        "15.5": {
-            "date": "24/01/15"
-        },
-
-        "15.0": {
-            "date": "24/01/15"
-        },
-
-        "14.0": {
-            "date": "17/06/14"
-        },
-
-        "13.0": {
-            "types": {
-                "Linux": "linux_x86_64_gcc4.6",
-                "Windows": "win64-vc11"
-            },
-            "date": "28/03/13"
+            "reference_date": ["6/09/17", 721]
         }
     }
 }

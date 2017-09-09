@@ -229,14 +229,20 @@ class HoudiniBuildData(object):
         # Get the build information.
         version_data = self.versions[major_minor]
 
-        # The current date.
+        # Today's date.
         today = datetime.now().date()
 
-        # The date of build number 1 (eg. 15.0.1).
-        timestamp = version_data["date"]
+        # The date and build number to use as a reference in downloading
+        # today's build.
+        reference_date, reference_build = version_data["reference_date"]
 
-        # Build a date object for the initial date.
-        origin_date = datetime.strptime(timestamp, "%d/%m/%y").date()
+        # Build a date object for the reference date.
+        start_date = datetime.strptime(reference_date, "%d/%m/%y").date()
+
+        build_delta = today - start_date
+
+        # The build number is the reference build + time delta in days.
+        todays_build = reference_build + build_delta.days
 
         # It's release candidate time so that means there are now stub
         # versions.  If we have the stubdata set we can determine
@@ -250,7 +256,7 @@ class HoudiniBuildData(object):
             stub_delta = today - stub_date
 
             # Offset the normal build number by the stub's build number.
-            release_num = (today - origin_date).days - stub_delta.days
+            release_num = todays_build - stub_delta.days
 
             build_number = "{}.{}.{}".format(
                 major_minor,
@@ -259,10 +265,7 @@ class HoudiniBuildData(object):
             )
 
         else:
-            delta = today - origin_date
-
-            # The build number is the time delta in days.
-            build_number = "{}.{}".format(major_minor, delta.days)
+            build_number = "{}.{}".format(major_minor, todays_build)
 
         arch = self._getSpecificArchForBuild(major_minor)
 
