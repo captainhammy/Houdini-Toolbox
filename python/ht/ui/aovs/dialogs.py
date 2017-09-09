@@ -919,9 +919,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
         self.filter = widgets.FilterWidget()
         layout.addWidget(self.filter)
 
-        QtCore.QObject.connect(
-            self.filter.field,
-            QtCore.SIGNAL("textChanged(QString)"),
+        self.filter.field.textChanged.connect(
             self.aov_list.proxy_model.setFilterWildcard
         )
 
