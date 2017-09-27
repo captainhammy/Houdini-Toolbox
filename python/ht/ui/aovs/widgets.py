@@ -1711,13 +1711,12 @@ class GroupMemberListWidget(QtWidgets.QListView):
 # Generic Widgets
 # =============================================================================
 
-class CustomSpinBox(QtWidgets.QSpinBox):
-    """A QSpinBox with a custom stylesheet."""
+class ComboBox(QtWidgets.QComboBox):
 
     def __init__(self, parent=None):
-        super(CustomSpinBox, self).__init__(parent)
+        super(ComboBox, self).__init__(parent)
 
-        self.setStyleSheet(uidata.CUSTOMSPINBOX_STYLE)
+        self.setView(QtWidgets.QListView())
 
 
 class FileChooser(QtWidgets.QWidget):
@@ -1888,6 +1887,8 @@ class MenuField(QtWidgets.QWidget):
         button = QtWidgets.QPushButton()
         layout.addWidget(button)
 
+        button.setProperty("menu", True)
+
         menu = QtWidgets.QMenu(button)
 
         for item in menu_items:
@@ -1906,8 +1907,6 @@ class MenuField(QtWidgets.QWidget):
                 )
 
         button.setMenu(menu)
-
-        button.setStyleSheet(uidata.MENUFIELD_STYLE)
 
     # =========================================================================
     # METHODS
@@ -2064,3 +2063,4 @@ class StatusMessageWidget(QtWidgets.QWidget):
             self.display.clear()
             self.display.hide()
             self.icon.hide()
+

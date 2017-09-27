@@ -61,7 +61,6 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         self.initUI()
 
         self.setMinimumWidth(450)
-        self.setFixedHeight(525)
 
     # =========================================================================
     # NON-PUBLIC METHODS
@@ -224,6 +223,8 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         grid_layout = QtWidgets.QGridLayout()
         layout.addLayout(grid_layout)
 
+        grid_layout.setSpacing(5)
+
         row = 1
 
         # =====================================================================
@@ -239,7 +240,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(QtWidgets.QLabel("VEX Type"), row, 0)
 
-        self.type_box = QtWidgets.QComboBox()
+        self.type_box = widgets.ComboBox()
         grid_layout.addWidget(self.type_box, row, 1)
 
         for entry in uidata.VEXTYPE_MENU_ITEMS:
@@ -270,7 +271,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(QtWidgets.QLabel("Quantize"), row, 0)
 
-        self.quantize_box = QtWidgets.QComboBox()
+        self.quantize_box = widgets.ComboBox()
         grid_layout.addWidget(self.quantize_box, row, 1)
 
         for entry in uidata.QUANTIZE_MENU_ITEMS:
@@ -284,7 +285,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(QtWidgets.QLabel("Sample Filter"), row, 0)
 
-        self.sfilter_box = QtWidgets.QComboBox()
+        self.sfilter_box = widgets.ComboBox()
         grid_layout.addWidget(self.sfilter_box, row, 1)
 
         for entry in uidata.SFILTER_MENU_ITEMS:
@@ -305,7 +306,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(row, 25)
+        grid_layout.setRowMinimumHeight(row, 15)
 
         row += 1
 
@@ -317,14 +318,14 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
             0
         )
 
-        self.exclude_from_dcm = QtWidgets.QCheckBox()
+        self.exclude_from_dcm = hou.qt.createCheckBox()
         grid_layout.addWidget(self.exclude_from_dcm, row, 1)
 
         row += 1
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(row, 25)
+        grid_layout.setRowMinimumHeight(row, 15)
 
         row += 1
 
@@ -334,7 +335,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(self.export_label, row, 0, 2, 1)
 
-        self.componentexport = QtWidgets.QCheckBox()
+        self.componentexport = hou.qt.createCheckBox()
         grid_layout.addWidget(self.componentexport, row, 1, 2, 1)
 
         row += 2
@@ -344,7 +345,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         self.component_mode_label = QtWidgets.QLabel("Set Components")
         grid_layout.addWidget(self.component_mode_label, row, 0)
 
-        self.component_mode = QtWidgets.QComboBox()
+        self.component_mode = widgets.ComboBox()
         grid_layout.addWidget(self.component_mode, row, 1)
 
         self.component_mode.addItem("From ROP", "rop")
@@ -381,7 +382,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(row, 25)
+        grid_layout.setRowMinimumHeight(row, 15)
 
         row += 1
 
@@ -389,7 +390,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(QtWidgets.QLabel("Light Exports"), row, 0)
 
-        self.lightexport = QtWidgets.QComboBox()
+        self.lightexport = widgets.ComboBox()
         grid_layout.addWidget(self.lightexport, row, 1)
 
         for entry in uidata.LIGHTEXPORT_MENU_ITEMS:
@@ -431,7 +432,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(row, 25)
+        grid_layout.setRowMinimumHeight(row, 15)
 
         row += 1
 
@@ -439,7 +440,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(QtWidgets.QLabel("Priority"), row, 0)
 
-        self.priority = widgets.CustomSpinBox()
+        self.priority = QtWidgets.QSpinBox()
         grid_layout.addWidget(self.priority, row, 1)
 
         self.priority.setMinimum(-1)
@@ -462,7 +463,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(row, 25)
+        grid_layout.setRowMinimumHeight(row, 15)
 
         row += 1
 
@@ -481,7 +482,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(row, 25)
+        grid_layout.setRowMinimumHeight(row, 15)
 
         row += 1
 
@@ -900,7 +901,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(QtWidgets.QLabel("Priority"), 4, 0)
 
-        self.priority = widgets.CustomSpinBox()
+        self.priority = QtWidgets.QSpinBox()
         grid_layout.addWidget(self.priority, 4, 1)
 
         self.priority.setMinimum(-1)
@@ -1281,7 +1282,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
-        self.aov_chooser = QtWidgets.QComboBox()
+        self.aov_chooser = widgets.ComboBox()
         layout.addWidget(self.aov_chooser)
 
         # Start menu index.
@@ -1470,7 +1471,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        self.group_chooser = QtWidgets.QComboBox()
+        self.group_chooser = widgets.ComboBox()
         layout.addWidget(self.group_chooser)
 
         # Start menu index.
