@@ -11,7 +11,9 @@
 
         "archive_locations": [
             "${HOME}/Downloads"
-        ]
+        ],
+
+        "default_version": null
     },
 
     "environment": {

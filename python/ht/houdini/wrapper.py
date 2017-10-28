@@ -229,9 +229,15 @@ class HoudiniWrapper(object):
         # options.
         manager = ht.houdini.package.HoudiniBuildManager()
 
+        version = self.arguments.version
+
         # If trying to install, get any builds that are installable.
         if self.arguments.install:
             search_builds = manager.installable
+
+            # If we are installing builds there is no default so remap to 'latest'.
+            if version == "default":
+                version = "latest"
 
         # Get the installed builds.
         else:
@@ -251,23 +257,26 @@ class HoudiniWrapper(object):
             return
 
         # Use the last build in the list since it is sorted by version.
-        if self.arguments.version == "latest":
+        if version == "latest":
             self.build = search_builds[-1]
+
+        # Support a 'default' build as defined in the config file.
+        elif version == "default":
+            self.build = manager.getDefaultBuild()
 
         # Look for a build matching the string.
         else:
-            for installed in search_builds:
-                if str(installed) == self.arguments.version:
-                    self.build = installed
-                    break
+            result = manager.findMatchingBuilds(version, search_builds)
 
-            # If we didn't find any matching build, display a message.
-            else:
+            if result is None:
                 self._print(
                     "Could not find version: {ver}".format(
                         ver=self.arguments.version
                     )
                 )
+
+            else:
+                self.build = result
 
     def _print(self, msg="", colored=None):
         """Print a message, optionally with color, respecting the -silent flag.
@@ -426,7 +435,7 @@ def _buildParser():
     parser.add_argument(
         "-version",
         nargs="?",
-        default="latest",
+        default="default",
         help="Set the package version."
     )
 

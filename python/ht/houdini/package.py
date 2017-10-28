@@ -470,6 +470,36 @@ class HoudiniBuildManager(object):
                 package = HoudiniInstallFile(downloaded_path)
                 package.install(create_symlink)
 
+    def findMatchingBuilds(self, match_string, builds):
+        """Find a matching build given a string and list of builds"""
+        # Filter all installed builds that match the build version
+        # string.
+        matching = [build for build in builds
+                    if str(build).startswith(match_string)]
+
+        # If there are any that match, use the latest/only one.
+        if matching:
+            return matching[-1]
+
+    def getDefaultBuild(self):
+        """Attempt to find a default build."""
+        default = None
+
+        # Ensure we have system settings available.
+        if SETTINGS.system is not None:
+            # Get the default from the system settings.
+            default_name = SETTINGS.system.default_version
+
+            if default_name is not None:
+                default = self.findMatchingBuilds(default_name, self.installed)
+
+        # If the default could not be found (or none was specified) use the
+        # latest build.
+        if default is None:
+            default = self.installed[-1]
+
+        return default
+
 
 class HoudiniEnvironmentSettings(object):
     """This class stores environment settings.
@@ -813,7 +843,7 @@ class HoudiniSettingsManager(object):
             # Get the json data.
             data = json.load(handle, object_hook=ht.utils.convertFromUnicode)
 
-            # Consturct settings objects for available data.
+            # Construct settings objects for available data.
             self._environment = HoudiniEnvironmentSettings(
                 data["environment"]
             )
@@ -866,8 +896,12 @@ class HoudiniSystemSettings(object):
     def __init__(self, data):
         self._locations = data["archive_locations"]
         self._plugins = None
+        self._default_version = None
 
         self._installation = HoudiniInstallationSettings(data["installation"])
+
+        if "default_version" in data:
+            self._default_version = data["default_version"]
 
         # Plugin data is optional.
         if "plugins" in data:
@@ -876,6 +910,11 @@ class HoudiniSystemSettings(object):
     # =========================================================================
     # PROPERTIES
     # =========================================================================
+
+    @property
+    def default_version(self):
+        """A default build version string."""
+        return self._default_version
 
     @property
     def installation(self):
