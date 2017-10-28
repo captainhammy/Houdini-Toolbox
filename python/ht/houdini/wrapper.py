@@ -269,11 +269,7 @@ class HoudiniWrapper(object):
             result = manager.findMatchingBuilds(version, search_builds)
 
             if result is None:
-                self._print(
-                    "Could not find version: {ver}".format(
-                        ver=self.arguments.version
-                    )
-                )
+                self._print("Could not find version: {ver}".format(ver=version))
 
             else:
                 self.build = result
