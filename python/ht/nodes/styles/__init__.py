@@ -9,8 +9,8 @@ Houdini.
 
 # Houdini Toolbox Imports
 from ht.events import registerEventGroup
-from ht.nodes.colors.event import StyleNodeEvent
-from ht.nodes.colors.manager import StyleManager
+from ht.nodes.styles.event import StyleNodeEvent
+from ht.nodes.styles.manager import StyleManager
 
 # =============================================================================
 

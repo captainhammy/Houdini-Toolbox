@@ -1,4 +1,4 @@
-"""This module contains an event to color nodes based on events."""
+"""This module contains an event to style nodes based on events."""
 
 # =============================================================================
 # IMPORTS
@@ -8,7 +8,7 @@
 from ht.events.group import HoudiniEventGroup
 from ht.events import NodeEvents
 
-from ht.nodes.colors.manager import StyleManager
+from ht.nodes.styles.manager import StyleManager
 
 # =============================================================================
 # CLASSES
@@ -37,7 +37,7 @@ class StyleNodeEvent(HoudiniEventGroup):
         node = scriptargs["node"]
 
         manager = StyleManager.from_session()
-        manager.colorNodeByName(node)
+        manager.styleNodeByName(node)
 
     def styleNodeOnCreation(self, scriptargs):
         """Style a node on creation."""

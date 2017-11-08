@@ -13,8 +13,7 @@ import json
 import os
 
 # Houdini Toolbox Imports
-from ht.nodes.colors.colors import StyleConstant, StyleEntry, ConstantEntry
-import ht.utils
+from ht.nodes.styles.styles import StyleConstant, StyleEntry, ConstantEntry
 
 # Houdini Imports
 import hou
@@ -416,7 +415,7 @@ def _buildColor(entry):
 def _findFiles():
     """Find any .json files that should be read."""
     try:
-        directories = hou.findDirectories("config/colors")
+        directories = hou.findDirectories("config/styles")
 
     except hou.OperationFailed:
         directories = []
