@@ -11,12 +11,14 @@ import re
 # CLASSES
 # =============================================================================
 
-class ColorConstant(object):
-    """This class represents a constant color."""
 
-    def __init__(self, name, color, color_type, file_path=None):
+class StyleConstant(object):
+    """This class represents a named constant style."""
+
+    def __init__(self, name, color, color_type, shape, file_path=None):
         self._color = color
         self._color_type = color_type
+        self._shape = shape
         self._file_path = file_path
         self._name = name
 
@@ -29,7 +31,7 @@ class ColorConstant(object):
         return self.name == entry.name
 
     def __repr__(self):
-        return "<ColorConstant {} ({})>".format(
+        return "<StyleConstant {} ({})>".format(
             self.name,
             self.color
         )
@@ -61,6 +63,17 @@ class ColorConstant(object):
     # =========================================================================
 
     @property
+    def shape(self):
+        """The mapped shape."""
+        return self._shape
+
+    @shape.setter
+    def shape(self, shape):
+        self._shape = shape
+
+    # =========================================================================
+
+    @property
     def file_path(self):
         """Path the definition was from."""
         return self._file_path
@@ -72,15 +85,27 @@ class ColorConstant(object):
         """The name the color is mapped to."""
         return self._name
 
+    # =========================================================================
+    # METHODS
+    # =========================================================================
 
-class ColorEntry(object):
+    def applyToNode(self, node):
+        if self.color is not None:
+            node.setColor(self.color)
+
+        if self.shape is not None:
+            node.setUserData("nodeshape", self.shape)
+
+
+class StyleEntry(object):
     """This class represents a color application bound to a name.
 
     """
 
-    def __init__(self, name, color, color_type, file_path=None):
+    def __init__(self, name, color, color_type, shape, file_path=None):
         self._color = color
         self._color_type = color_type
+        self._shape = shape
         self._file_path = file_path
         self._name = name
 
@@ -93,15 +118,15 @@ class ColorEntry(object):
         return self.name == entry.name
 
     def __repr__(self):
-        return "<ColorEntry {} ({})>".format(
+        return "<StyleEntry {} ({})>".format(
             self.name,
             self.color
         )
 
     def __str__(self):
-        value = self._getTypedValue()
+        value = self._getTypedColorValue()
 
-        strs = [ re.sub("\.*0+$", "", "{:0.3f}".format(val)) for val in value]
+        strs = [re.sub("\.*0+$", "", "{:0.3f}".format(val)) for val in value]
 
         return "(" + ", ".join(strs) + ")"
 
@@ -109,7 +134,7 @@ class ColorEntry(object):
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    def _getTypedValue(self):
+    def _getTypedColorValue(self):
         to_func = getattr(self.color, self.color_type.lower())
 
         return to_func()
@@ -129,18 +154,34 @@ class ColorEntry(object):
         return self._color_type
 
     @property
+    def shape(self):
+        """The mapped shape name."""
+        return self._shape
+
+    @property
     def file_path(self):
         """Path the definition was from."""
         return self._file_path
 
     @property
     def name(self):
-        """The name the color is mapped to."""
+        """The name the style is mapped to."""
         return self._name
+
+    # =========================================================================
+    # METHODS
+    # =========================================================================
+
+    def applyToNode(self, node):
+        if self.color is not None:
+            node.setColor(self.color)
+
+        if self.shape is not None:
+            node.setUserData("nodeshape", self.shape)
 
 
 class ConstantEntry(object):
-    """This class represents a color application bound to a named constant.
+    """This class represents a style application bound to a named constant.
 
     """
 
@@ -179,6 +220,6 @@ class ConstantEntry(object):
 
     @property
     def name(self):
-        """The name the color is mapped to."""
+        """The name the style is mapped to."""
         return self._name
 

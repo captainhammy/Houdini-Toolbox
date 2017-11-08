@@ -13,7 +13,7 @@ import json
 import os
 
 # Houdini Toolbox Imports
-from ht.nodes.colors.colors import ColorConstant, ColorEntry, ConstantEntry
+from ht.nodes.colors.colors import StyleConstant, StyleEntry, ConstantEntry
 import ht.utils
 
 # Houdini Imports
@@ -24,8 +24,8 @@ import hou
 # =============================================================================
 
 
-class ColorManager(object):
-    """Manage and apply Houdini node colors.
+class StyleManager(object):
+    """Manage and apply Houdini node styles.
 
     """
 
@@ -43,7 +43,7 @@ class ColorManager(object):
     # =========================================================================
 
     def __repr__(self):
-        return "<ColorManager>"
+        return "<StyleManager>"
 
     # =========================================================================
     # NON-PUBLIC METHODS
@@ -57,13 +57,16 @@ class ColorManager(object):
             if "constants" in data:
                 for name, entry in data["constants"].iteritems():
                     # Get the color from the info.
-                    color = _buildColor(entry)
+
+                    color, color_type = _buildColor(entry)
+                    shape = _buildShape(entry)
 
                     # Store the constant under its name.
-                    self.constants[name] = ColorConstant(
+                    self.constants[name] = StyleConstant(
                         name,
                         color,
-                        entry["type"],
+                        color_type,
+                        shape,
                         path
                     )
 
@@ -91,20 +94,16 @@ class ColorManager(object):
                     # Process each entry.  The entry name can be a node
                     # type name, Tab menu folder name, or manager/generator.
                     for entry in entries:
-                        # Get the entry name and remove it from the data.
+                        # Get the entry name.
                         entry_name = entry["name"]
 
-                        # Is the color type a constant?
-                        if entry["type"] == "constant":
-                            # Get the constant name.
+                        if "constant" in entry:
                             constant_name = entry["constant"]
 
                             # Ensure the constant exists.  If not, raise an
                             # exception.
                             if constant_name not in self.constants:
-                                raise ConstantDoesNotExistError(
-                                    constant_name
-                                )
+                                raise ConstantDoesNotExistError(constant_name)
 
                             # Add a ConstantEntry to the list.
                             category_list[entry_name] = ConstantEntry(
@@ -113,17 +112,21 @@ class ColorManager(object):
                                 path
                             )
 
-                        # Build the color from the raw data.
-                        else:
-                            color = _buildColor(entry)
+                            continue
 
-                            # Add a ColorEntry to the list.
-                            category_list[entry_name] = ColorEntry(
-                                entry_name,
-                                color,
-                                entry["type"],
-                                path
-                            )
+                        # Build the color from the raw data.
+                        color, color_type = _buildColor(entry)
+
+                        shape = _buildShape(entry)
+
+                        # Add a ColorEntry to the list.
+                        category_list[entry_name] = StyleEntry(
+                            entry_name,
+                            color,
+                            color_type,
+                            shape,
+                            path
+                        )
 
     def _buildMappings(self):
         """Build mappings from files."""
@@ -136,10 +139,7 @@ class ColorManager(object):
             # Open the target file.
             with open(path) as handle:
                 # Load the json data and convert the data from unicde.
-                data = json.load(
-                    handle,
-                    object_hook=ht.utils.convertFromUnicode
-                )
+                data = json.load(handle)
 
             data["path"] = path
             all_data.append(data)
@@ -148,7 +148,7 @@ class ColorManager(object):
 
         self._buildEntriesFromData(all_data)
 
-    def _getManagerGeneratorColor(self, node_type):
+    def _getManagerGeneratorStyle(self, node_type):
         """Look for a color match based on the node type being a manager or
         generator type.
 
@@ -191,7 +191,7 @@ class ColorManager(object):
 
         return None
 
-    def _getToolColor(self, node_type):
+    def _getToolStyle(self, node_type):
         """Look for a color match based on the node type's Tab menu
         locations.
 
@@ -215,7 +215,7 @@ class ColorManager(object):
 
         return None
 
-    def _getTypeColor(self, node_type):
+    def _getTypeStyle(self, node_type):
         """Look for a color match based on the node type's name."""
         type_name = node_type.nameComponents()[2]
 
@@ -228,9 +228,9 @@ class ColorManager(object):
             if category_name in self.nodes:
                 # Check if the node type name matches any of the category
                 # entries.
-                for color_entry in self.nodes[category_name].itervalues():
-                    if hou.patternMatch(color_entry.name, type_name):
-                        return self._resolveEntry(color_entry)
+                for style_entry in self.nodes[category_name].itervalues():
+                    if hou.patternMatch(style_entry.name, type_name):
+                        return self._resolveEntry(style_entry)
 
         return None
 
@@ -243,15 +243,14 @@ class ColorManager(object):
         """
         # If the entry object is a ColorEntry then we can just return the
         # color.
-        if isinstance(entry, ColorEntry):
-            return entry.color
+        if isinstance(entry, StyleEntry):
+            return entry
 
         # Otherwise it is a ConstantEntry so we have to resolve the constant
         # name and return its color.
         else:
             constant_name = entry.constant_name
-            constant = self.constants[constant_name]
-            return constant.color
+            return self.constants[constant_name]
 
     # =========================================================================
     # PROPERTIES
@@ -259,22 +258,22 @@ class ColorManager(object):
 
     @property
     def constants(self):
-        """A dictionary of constant colors."""
+        """A dictionary of constant styles."""
         return self._constants
 
     @property
     def names(self):
-        """A dictionary of node name colors."""
+        """A dictionary of node name styles."""
         return self._names
 
     @property
     def nodes(self):
-        """A dictionary of node type name colors."""
+        """A dictionary of node type name styles."""
         return self._nodes
 
     @property
     def tools(self):
-        """A dictionary of tool menu location colors."""
+        """A dictionary of tool menu location styles."""
         return self._tools
 
     # =========================================================================
@@ -282,18 +281,18 @@ class ColorManager(object):
     # =========================================================================
 
     @staticmethod
-    def getSessionManager():
-        """Find or create a ColorManager for the session."""
-        if not hasattr(hou.session, "_color_manager"):
-            hou.session._color_manager = ColorManager()
+    def from_session():
+        """Find or create a StyleManager for the session."""
+        if not hasattr(hou.session, "style_manager"):
+            hou.session.style_manager = StyleManager()
 
-        return hou.session._color_manager
+        return hou.session.style_manager
 
     # =========================================================================
     # METHODS
     # =========================================================================
 
-    def colorNode(self, node):
+    def styleNode(self, node):
         """Color the node given its properties.
 
         This function will attempt to color the node by first matching its
@@ -304,29 +303,29 @@ class ColorManager(object):
         node_type = node.type()
 
         # Look for a match with the node type name.
-        color = self._getTypeColor(node_type)
+        style = self._getTypeStyle(node_type)
 
         # Look for a match given the node's Tab menu entries.
-        if color is None:
-            color = self._getToolColor(node_type)
+        if style is None:
+            style = self._getToolStyle(node_type)
 
-        if color is None:
+        if style is None:
             # Check if the node is a manager or generator.
             if node_type.isManager() or node_type.isGenerator():
-                color = self._getManagerGeneratorColor(node_type)
+                style = self._getManagerGeneratorStyle(node_type)
 
         # If a color was found, set it.
-        if color is not None:
-            node.setColor(color)
+        if style is not None:
+            style.applyToNode(node)
 
-    def colorNodeByName(self, node):
+    def styleNodeByName(self, node):
         """Color the node given its name."""
         # Look for a name entry for the node's type category.
-        color = self._getNameEntry(node)
+        style = self._getNameEntry(node)
 
         # If a color was found, set the node to it.
-        if color is not None:
-            node.setColor(color)
+        if style is not None:
+            style.applyToNode(node)
 
     def reload(self):
         """Reload all color mappings."""
@@ -363,9 +362,20 @@ class InvalidColorTypeError(Exception):
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-def _buildColor(data):
+def _buildShape(data):
+    shape = data.get("shape")
+
+    return shape
+
+
+def _buildColor(entry):
     """Build a hou.Color object from data."""
-    value = data["color"]
+    data = entry.get("color")
+
+    if data is None:
+        return None, None
+
+    value = data["value"]
 
     # Create an empty color value since we don't know the color format yet.
     color = hou.Color()
@@ -400,7 +410,7 @@ def _buildColor(data):
     elif color_type == hou.colorType.XYZ:
         color.setXYZ(value)
 
-    return color
+    return color, data["type"]
 
 
 def _findFiles():

@@ -8,23 +8,23 @@
 from ht.events.group import HoudiniEventGroup
 from ht.events import NodeEvents
 
-from ht.nodes.colors.manager import ColorManager
+from ht.nodes.colors.manager import StyleManager
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
 
-class ColorNodeEvent(HoudiniEventGroup):
-    """Event to color Houdini nodes based on events."""
+class StyleNodeEvent(HoudiniEventGroup):
+    """Event to style Houdini nodes based on events."""
 
     def __init__(self):
-        super(ColorNodeEvent, self).__init__()
+        super(StyleNodeEvent, self).__init__()
 
         self.event_map.update(
             {
-                NodeEvents.OnCreated: (self.colorNodeOnCreation,),
-                NodeEvents.OnNameChanged: (self.colorNodeByName,),
+                NodeEvents.OnCreated: (self.styleNodeOnCreation,),
+                NodeEvents.OnNameChanged: (self.styleNodeByName,),
             }
         )
 
@@ -32,17 +32,17 @@ class ColorNodeEvent(HoudiniEventGroup):
     # METHODS
     # =========================================================================
 
-    def colorNodeByName(self, scriptargs):
-        """Color a node based on a name."""
+    def styleNodeByName(self, scriptargs):
+        """Style a node based on a name."""
         node = scriptargs["node"]
 
-        manager = ColorManager.getSessionManager()
+        manager = StyleManager.from_session()
         manager.colorNodeByName(node)
 
-    def colorNodeOnCreation(self, scriptargs):
-        """Color a node on creation."""
+    def styleNodeOnCreation(self, scriptargs):
+        """Style a node on creation."""
         node = scriptargs["node"]
 
-        manager = ColorManager.getSessionManager()
-        manager.colorNode(node)
+        manager = StyleManager.from_session()
+        manager.styleNode(node)
 

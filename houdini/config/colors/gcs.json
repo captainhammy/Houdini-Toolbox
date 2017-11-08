@@ -2,39 +2,54 @@
 {
     "constants": {
 	"DEFAULT": {
-	    "type": "RGB",
-	    "color": 0.8,
-	    "comment": "Default node color."
+            "color": {
+                "type": "RGB",
+                "value": 0.8
+            },
+            "shape": "classic",
+	    "comment": "Default node style."
 	}, 
 
 	"BLACK": {
-	    "type": "RGB",
-	    "color": 0
+            "color": {
+                "type": "RGB",
+                "value": 0
+            }
 	},
 
 	"DARKGREY": {
-	    "type": "RGB",
-	    "color": 0.36
+            "color": {
+                "type": "RGB",
+                "value": 0.36
+            }
 	},
 
 	"ORANGE": {
-	    "type": "HSV",
-	    "color": [45.0, 1.0, 0.8]
+            "color": {
+                "type": "HSV",
+                "value": [45.0, 1.0, 0.8]
+            }
 	},
 
 	"PURPLE": {
-	    "type": "RGB",
-	    "color": [0.4, 0.2, 0.6]
+            "color": {
+                "type": "RGB",
+                "value": [0.4, 0.2, 0.6]
+            }
 	},
 
 	"HOLYSHITTHISISAREALLYLONGNAME": {
-	    "type": "RGB",
-	    "color": [0.8, 0.2, 0.2]
+            "color": {
+                "type": "RGB",
+                "value": [0.8, 0.2, 0.2]
+            }
 	},
 
 	"PINK": {
-	    "type": "HSV",
-	    "color": [300, 0.59, 0.9]
+            "color": {
+                "type": "HSV",
+                "value": [300, 0.59, 0.9]
+            }
 	}
     },
 
@@ -42,90 +57,104 @@
 	"all": [
 	    {
 		"name": "generator",
+                "color": {
 		    "type": "RGB",
-		    "color": [0.4, 1 ,1]
+		    "value": [0.4, 1 ,1]
+                }
 	    },
 
 	    {
 		"name": "manager",
-		"type": "RGB",
-		"color": [0.4, 1, 0.4]
+                "color": {
+                    "type": "RGB",
+                    "value": [0.4, 1, 0.4]
+                }
 	    },
 
 	    {
 		"name": "null",
-		"type": "constant",
-		"constant": "BLACK"
+                "constant": "BLACK"
 	    },
 
 	    {
 		"name": "switch",
-		"type": "constant",
-		"constant": "DARKGREY"
+                "shape": "decision",
+                "color": {
+                    "type": "RGB",
+                    "value": 0.36
+                }
 	    },
 
 	    {
 		"name": "subnet",
-		"type": "constant",
-		"constant": "ORANGE"
+                "constant": "ORANGE"
 	    },
 
 	    {
 		"name": "merge",
-		"type": "constant",
-		"constant": "DARKGREY"
+                "constant": "DARKGREY"
 	    },
 
 	    {
 		"name": "dopnet",
-		"type": "RGB",
-		"color": [0, 0.4, 1]
+                "color": {
+                    "type": "RGB",
+                    "value": [0, 0.4, 1]
+                }
 	    },
 
             {
                 "name": "file",
-                "type": "HSV",
-                "color": [45.0, 1.0, 0.8]
+                "color": {
+                    "type": "HSV",
+                    "value": [45.0, 1.0, 0.8]
+                }
             }
 	],
 
 	"Object": [
 	    {
 		"name": "generator",
-		"type": "constant",
 		"constant": "DEFAULT",
 		"comment": "Since all objects are generators, leave them the default color."
 	    },
 
 	    {
 		"name": "geo",
-		"type": "RGB",
-		"color": [0, 0.4, 0]
+                "color": {
+                    "type": "RGB",
+                    "value": [0, 0.4, 0]
+                }
 	    },
 
 	    {	
 		"name": "cam",
-		"type": "RGB",
-		"color": 1
+                "color": {
+                    "type": "RGB",
+                    "value": 1
+                }
 	    },
 
 	    {
 		"name": "light",
-		"type": "RGB",
-		"color": [1, 0, 0]
+                "color": {
+                    "type": "RGB",
+                    "value": [1, 0, 0]
+                }
 	    },
 
 	    {
 		"name": "*light*",
-		"type": "RGB",
-		"color": [1, 0.8, 0]
+                "color": {
+                    "type": "RGB",
+                    "value": [1, 0.8, 0]
+                }
 	    }
 	],
 
 	"Vop": [
 	    {
 		"name": "global",
-		"type": "constant",
 		"constant": "PURPLE"
 	    }
 	]
@@ -135,16 +164,20 @@
 	"Vop": [
 	    {
 		"name": "Utility",
-		"type": "RGB",
-		"color": [1, 0.8, 0]
+                "color": {
+                    "type": "RGB",
+                    "value": [1, 0.8, 0]
+                }
 	    }
 	],
 
 	"all": [
 	    {
 		"name": "*Assets*",
-		"type": "RGB",
-		"color": [0, 0.8, 0.3]
+                "color": {
+                    "type": "RGB",
+                    "value": [0, 0.8, 0.3]
+                }
 	    }
 	]
     },
@@ -153,16 +186,20 @@
 	"all": [
 	    {
 		"name": "OUT",
-		"type": "RGB",
-		"color": [0, 0.8, 0]
+                "color" : {
+    		    "type": "RGB",
+		    "value": [0, 0.8, 0]
+                }
 	    }
 	],
 
 	"Object": [
 	    {
 		"name": "*TEST*",
-		"type": "RGB",
-		"color": [1, 0, 0.5]
+                "color": {
+    		    "type": "RGB",
+		    "value": [1, 0, 0.5]
+                }
 	    }
 	]
     }
