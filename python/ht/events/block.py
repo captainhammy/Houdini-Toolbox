@@ -1,5 +1,10 @@
-"""This module contains the base Houdini event class."""
+"""This module contains the Houdini block event class."""
 
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Houdini Toolbox Imports
 from ht.events.stats import EventBlockStats
 
 # =============================================================================
@@ -8,7 +13,7 @@ from ht.events.stats import EventBlockStats
 
 
 class HoudiniEventBlock(object):
-    """A block of events to run at the same time."""
+    """A block of event methods to run at the same time."""
 
     _EVENT_NAME = None
 

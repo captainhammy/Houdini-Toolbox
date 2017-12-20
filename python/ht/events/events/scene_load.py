@@ -35,3 +35,4 @@ class SceneLoadEvent(HoudiniEventBlock):
         """Clear out potentially annoying/bad settings."""
         # Remove an icon cache directory variable if it exists.
         hou.hscript("set -u HOUDINI_ICON_CACHE_DIR")
+

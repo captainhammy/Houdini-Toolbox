@@ -1,4 +1,4 @@
-"""This module contains the base Houdini event class."""
+"""This module contains the Houdini event group class."""
 
 # =============================================================================
 # CLASSES
@@ -6,7 +6,11 @@
 
 
 class HoudiniEventGroup(object):
-    """The base Houdini event class."""
+    """The Houdini event group class.
+
+    This class acts as a way to associate multiple event methods together.
+
+    """
 
     def __init__(self):
         self._data = {}
