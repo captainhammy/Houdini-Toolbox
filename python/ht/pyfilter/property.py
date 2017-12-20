@@ -9,6 +9,7 @@ properties.
 
 # Standard Library Imports
 from collections import Iterable
+import json
 
 # =============================================================================
 # CLASSES
@@ -41,13 +42,23 @@ class Property(object):
             value = values[0]
 
             if isinstance(value, str):
-                if len(value.split()) > 2:
+                # Try to decode the string as a json object.
+                try:
+                    value = json.loads(value)
+
+                # It can't be converted to a dict so we'll process it manually.
+                except ValueError:
+                    #Split the string.
                     split_vals = value.split()
 
-                    value = dict(zip(*[iter(split_vals)]*2))
+                    # If there are multiple values we want to build a
+                    # dictionary out of pairs.
+                    if len(split_vals) > 2:
+                        value = dict(zip(*[iter(split_vals)]*2))
 
-                else:
-                    value = _parseString(value)
+                    # Not multiple values so do any additional processing.
+                    else:
+                        value = _parseString(value)
 
         else:
             value = values
@@ -72,9 +83,15 @@ class Property(object):
     def value(self, value):
         import mantra
 
+        # Convert to empty list.
         if value is None:
             value = []
 
+        # Convert to a list of a single string value.
+        if isinstance(value, (str, unicode)):
+            value = [value]
+
+        # If the value is not an iterable then convert it to a list.
         if not isinstance(value, Iterable):
             value = [value]
 
