@@ -13,7 +13,7 @@ import re
 from PySide2 import QtCore, QtWidgets
 
 # Houdini Toolbox Imports
-from ht.sohohooks.aovs import manager
+from ht.sohohooks.aovs import manager, sources
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.ui.aovs import uidata, utils, widgets
 
@@ -84,31 +84,24 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        quantize = self.quantize_box.itemData(self.quantize_box.currentIndex())
-
         aov_data["quantize"] = None
 
-        if not utils.isValueDefault(quantize, "quantize"):
-            aov_data["quantize"] = quantize
+        if not self.quantize_box.isDefault():
+            aov_data["quantize"] = self.quantize_box.value()
 
         # =====================================================================
-
-        sfilter = self.sfilter_box.itemData(self.sfilter_box.currentIndex())
 
         aov_data["sfilter"] = None
 
-        if not utils.isValueDefault(sfilter, "sfilter"):
-            aov_data["sfilter"] = sfilter
+        if not self.sfilter_box.isDefault():
+            aov_data["sfilter"] = self.sfilter_box.value()
 
         # =====================================================================
 
-        pfilter = self.pfilter_widget.value()
+        aov_data["pfilter"] = None
 
-        if not utils.isValueDefault(pfilter, "pfilter"):
-            aov_data["pfilter"] = pfilter
-
-        else:
-            aov_data["pfilter"] = None
+        if not self.pfilter_widget.isDefault():
+            aov_data["pfilter"] = self.pfilter_widget.value()
 
         # =====================================================================
 
@@ -117,13 +110,24 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        if self.componentexport.isChecked():
-            aov_data["componentexport"] = True
-            aov_data["components"] = self.components.text().split()
+        component_mode = self.component_mode.value()
+
+        if not component_mode:
+            aov_data["componentexport"] = None
+            aov_data["components"] = []
+
+        else:
+            aov_data["componentexport"] = None
+
+            if component_mode == "rop":
+                aov_data["components"] = []
+
+            elif component_mode == "aov":
+                aov_data["components"] = self.components.value()
 
         # =====================================================================
 
-        lightexport = self.lightexport.itemData(self.lightexport.currentIndex())
+        lightexport = self.lightexport.value()
 
         if lightexport:
             aov_data["lightexport"] = lightexport
@@ -141,7 +145,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        intrinsics = self.intrinsics.text()
+        intrinsics = self.intrinsics.value()
 
         aov_data["intrinsics"] = intrinsics.replace(',', ' ').split()
 
@@ -161,22 +165,9 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
     # =========================================================================
 
-    def enableComponentMode(self, enable):
-        """Enable the Export Components field."""
-        self.component_mode_label.setEnabled(enable)
-        self.component_mode.setEnabled(enable)
-
-        if not enable:
-            self.components_label.setDisabled(True)
-            self.components.setDisabled(True)
-
-        else:
-            if self.component_mode.currentIndex() == 1:
-                self.components_label.setDisabled(False)
-                self.components.setDisabled(False)
-
     def enableComponents(self, value):
-        if value == 1:
+        """Enable specifying components."""
+        if value == 2:
             self.components_label.setDisabled(False)
             self.components.setDisabled(False)
         else:
@@ -193,8 +184,8 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
     def enableExports(self, value):
         """Enable the Light Mask and Light Selection fields."""
-        # Current index must be 2 or 3 to enable the fields.
-        enable = value in (2, 3)
+        # Current index must be 1 or 2 to enable the fields.
+        enable = value in (1, 2)
 
         self.light_mask_label.setEnabled(enable)
         self.light_mask.setEnabled(enable)
@@ -240,17 +231,9 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(QtWidgets.QLabel("VEX Type"), row, 0)
 
-        self.type_box = widgets.ComboBox()
+        self.type_box = widgets.VexTypeMenu()#ComboBox.from_vex_types()
         grid_layout.addWidget(self.type_box, row, 1)
-
-        for entry in uidata.VEXTYPE_MENU_ITEMS:
-            icon = utils.getIconFromVexType(entry[0])
-
-            self.type_box.addItem(
-                icon,
-                entry[1],
-                entry[0]
-            )
+        #self.type_box.value()
 
         row += 1
 
@@ -271,13 +254,13 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(QtWidgets.QLabel("Quantize"), row, 0)
 
-        self.quantize_box = widgets.ComboBox()
+        self.quantize_box = widgets.ComboBox(
+            uidata.QUANTIZE_MENU_ITEMS,
+            default=utils.getDefaultValue("quantize"),
+        )
         grid_layout.addWidget(self.quantize_box, row, 1)
 
-        for entry in uidata.QUANTIZE_MENU_ITEMS:
-            self.quantize_box.addItem(entry[1], entry[0])
-
-        self.quantize_box.setCurrentIndex(2)
+      #  self.quantize_box.setCurrentIndex(2)
 
         row += 1
 
@@ -285,11 +268,11 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(QtWidgets.QLabel("Sample Filter"), row, 0)
 
-        self.sfilter_box = widgets.ComboBox()
+        self.sfilter_box = widgets.ComboBox(
+            uidata.SFILTER_MENU_ITEMS,
+            default=utils.getDefaultValue("sfilter"),
+        )
         grid_layout.addWidget(self.sfilter_box, row, 1)
-
-        for entry in uidata.SFILTER_MENU_ITEMS:
-            self.sfilter_box.addItem(entry[1], entry[0])
 
         row += 1
 
@@ -298,15 +281,10 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         grid_layout.addWidget(QtWidgets.QLabel("Pixel Filter"), row, 0)
 
         self.pfilter_widget = widgets.MenuField(
-            uidata.PFILTER_MENU_ITEMS
+            uidata.PFILTER_MENU_ITEMS,
+            default=utils.getDefaultValue("pfilter")
         )
         grid_layout.addWidget(self.pfilter_widget, row, 1)
-
-        row += 1
-
-        # =====================================================================
-
-        grid_layout.setRowMinimumHeight(row, 15)
 
         row += 1
 
@@ -325,48 +303,29 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.setRowMinimumHeight(row, 15)
+        self.export_label = QtWidgets.QLabel("Export Components")
+        grid_layout.addWidget(self.export_label, row, 0)
 
-        row += 1
-
-        # =====================================================================
-
-        self.export_label = QtWidgets.QLabel("Export variable \nfor each component")
-
-        grid_layout.addWidget(self.export_label, row, 0, 2, 1)
-
-        self.componentexport = hou.qt.createCheckBox()
-        grid_layout.addWidget(self.componentexport, row, 1, 2, 1)
-
-        row += 2
-
-        # =====================================================================
-
-        self.component_mode_label = QtWidgets.QLabel("Set Components")
-        grid_layout.addWidget(self.component_mode_label, row, 0)
-
-        self.component_mode = widgets.ComboBox()
+        self.component_mode = widgets.ComboBox(
+            uidata.EXPORT_COMPONENTS,
+            default=utils.getDefaultValue("export_components"),
+        )
         grid_layout.addWidget(self.component_mode, row, 1)
 
-        self.component_mode.addItem("From ROP", "rop")
-        self.component_mode.addItem("In AOV", "aov")
-
-        self.component_mode_label.setDisabled(True)
-        self.component_mode.setDisabled(True)
-
-#        self.component_mode.currentIndexChanged.connect(self.enableExports)
-
         row += 1
 
         # =====================================================================
 
-        self.components_label = QtWidgets.QLabel("Export Components")
+        self.components_label = QtWidgets.QLabel("Components")
         grid_layout.addWidget(self.components_label, row, 0)
 
         self.components_label.setDisabled(True)
 
-        self.components = QtWidgets.QLineEdit()
-        self.components.setText("diffuse reflect coat refract volume sss")
+        self.components = widgets.MenuField(
+            uidata.COMPONENT_MENU_ITEMS,
+            default=utils.getDefaultValue("components")
+        )
+
         grid_layout.addWidget(self.components, row, 1)
 
         self.components.setDisabled(True)
@@ -375,7 +334,6 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
             " selected on the Mantra ROP."
         )
 
-        self.componentexport.stateChanged.connect(self.enableComponentMode)
         self.component_mode.currentIndexChanged.connect(self.enableComponents)
 
         row += 1
@@ -390,11 +348,11 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(QtWidgets.QLabel("Light Exports"), row, 0)
 
-        self.lightexport = widgets.ComboBox()
+        self.lightexport = widgets.ComboBox(
+            uidata.LIGHTEXPORT_MENU_ITEMS,
+            default=utils.getDefaultValue("lightexport"),
+        )
         grid_layout.addWidget(self.lightexport, row, 1)
-
-        for entry in uidata.LIGHTEXPORT_MENU_ITEMS:
-            self.lightexport.addItem(entry[1], entry[0])
 
         self.lightexport.currentIndexChanged.connect(self.enableExports)
 
@@ -440,11 +398,12 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(QtWidgets.QLabel("Priority"), row, 0)
 
-        self.priority = QtWidgets.QSpinBox()
-        grid_layout.addWidget(self.priority, row, 1)
+        self.priority = widgets.SpinBox(
+            default=utils.getDefaultValue("priority"),
+            min_value=-1,
+        )
 
-        self.priority.setMinimum(-1)
-        self.priority.setValue(-1)
+        grid_layout.addWidget(self.priority, row, 1)
 
         row += 1
 
@@ -452,7 +411,15 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(QtWidgets.QLabel("Intrinsics"), row, 0)
 
-        self.intrinsics = QtWidgets.QLineEdit()
+        menu_items = []
+        for group_name in sorted(manager.MANAGER.groups):
+            group = manager.MANAGER.groups[group_name]
+
+            if isinstance(group, IntrinsicAOVGroup):
+                name = group_name.split(":")[1]
+                menu_items.append((name, name))
+
+        self.intrinsics = widgets.MenuField(menu_items, mode=widgets.MenuFieldMode.Toggle)
         grid_layout.addWidget(self.intrinsics, row, 1)
 
         self.intrinsics.setToolTip(
@@ -488,12 +455,28 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("File Path"), row, 0)
+        if False:
+            grid_layout.addWidget(QtWidgets.QLabel("Source"), row, 0)
 
-        self.file_widget = widgets.FileChooser()
-        grid_layout.addWidget(self.file_widget, row, 1)
+            self.source_mode = widgets.ComboBox(
+                uidata.SOURCE_MENU_ITEMS,
+                default=utils.getDefaultValue("source")
+            )
+            grid_layout.addWidget(self.source_mode, row, 1)
 
-        row += 1
+            row += 1
+
+
+            grid_layout.addWidget(QtWidgets.QLabel("File Path"), row, 0)
+
+            self.file_widget = widgets.FileChooser()
+            grid_layout.addWidget(self.file_widget, row, 1)
+
+            row += 1
+
+        self.source_widget = widgets.SourceWidget()
+        layout.addWidget(self.source_widget)
+
 
         # =====================================================================
 
@@ -519,16 +502,16 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         self.variable_name.setText(aov.variable)
 
-        self.type_box.setCurrentIndex(utils.getVexTypeMenuIndex(aov.vextype))
+        self.type_box.set(aov.vextype)
 
         if aov.channel:
             self.channel_name.setText(aov.channel)
 
         if aov.quantize is not None:
-            self.quantize_box.setCurrentIndex(utils.getQuantizeMenuIndex(aov.quantize))
+            self.quantize_box.set(aov.quantize)
 
         if aov.sfilter is not None:
-            self.sfilter_box.setCurrentIndex(utils.getSFilterMenuIndex(aov.sfilter))
+            self.sfilter_box.set(aov.sfilter)
 
         if aov.pfilter:
             self.pfilter_widget.set(aov.pfilter)
@@ -543,21 +526,21 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
                 self.components.setText(" ".join(aov.components))
 
         if aov.lightexport is not None:
-            self.lightexport.setCurrentIndex(utils.getLightExportMenuIndex(aov.lightexport))
+            self.lightexport.set(aov.lightexport)
 
             self.light_mask.setText(aov.lightexport_scope)
             self.light_select.setText(aov.lightexport_select)
 
-        if aov.priority != -1:
-            self.priority.setValue(aov.priority)
+        self.priority.setValue(aov.priority)
 
         if aov.intrinsics:
-            self.intrinsics.setText(", ".join(aov.intrinsics))
+            self.intrinsics.set(" ".join(aov.intrinsics))
 
         if aov.comment:
             self.comment.setText(aov.comment)
 
-        self.file_widget.setPath(aov.path)
+        if aov.source is not None:
+            self.file_widget.setPath(aov.source.path)
 
     # =========================================================================
 
@@ -655,12 +638,12 @@ class NewAOVDialog(_BaseAOVDialog):
         aov_data = self.buildAOVDataFromUI()
 
         aov_data["variable"] = self.variable_name.text()
-        aov_data["vextype"] = self.type_box.itemData(self.type_box.currentIndex())
+        aov_data["vextype"] = self.type_box.value()
 
         aov = AOV(aov_data)
 
         # Open file for writing.
-        aov_file = manager.AOVFile(aov.path)
+        aov_file = sources.AOVFile(aov.path)
 
 #        if aov_file.exists:
 #                if aov_file.containsAOV(new_aov):
@@ -703,11 +686,11 @@ class NewAOVDialog(_BaseAOVDialog):
         self.variable_name.setFocus()
         self.variable_name.textChanged.connect(self.validateVariableName)
 
-        self.type_box.setCurrentIndex(1)
+   #     self.type_box.setCurrentIndex(1)
 
         self.priority.valueChanged.connect(self.validateVariableName)
 
-        self.file_widget.field.textChanged.connect(self.validateFilePath)
+   #     self.source_widget.file_widget.field.textChanged.connect(self.validateFilePath)
 
         self.status_widget.addInfo(0, "Enter a variable name")
         self.status_widget.addInfo(1, "Choose a file")
@@ -750,9 +733,10 @@ class EditAOVDialog(_BaseAOVDialog):
         self.aov._updateData(aov_data)
 
         # Open file for writing.
-        aov_file = manager.AOVFile(self.aov.path)
-        aov_file.replaceAOV(self.aov)
-        aov_file.writeToFile()
+        #aov_file = sources.AOVFile(self.aov.path)
+        source = self.aov.source
+        source.replaceAOV(self.aov)
+        source.write()
 
         self.aovUpdatedSignal.emit(self.aov)
 
@@ -866,47 +850,74 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
         grid_layout = QtWidgets.QGridLayout()
         layout.addLayout(grid_layout)
 
+        row = 1
+
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("Group Name"), 1, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Group Name"), row, 0)
 
         self.group_name = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.group_name, 1, 1)
+        grid_layout.addWidget(self.group_name, row, 1)
 
         self.group_name.textChanged.connect(self.validateGroupName)
 
         self.group_name.setFocus()
 
+        row += 1
+
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("File Path"), 2, 0)
+
+        grid_layout.addWidget(QtWidgets.QLabel("Source"), row, 0)
+
+        self.source_mode = widgets.ComboBox(
+            uidata.SOURCE_MENU_ITEMS,
+            default=utils.getDefaultValue("source")
+        )
+        grid_layout.addWidget(self.source_mode, row, 1)
+
+        row += 1
+
+
+        grid_layout.addWidget(QtWidgets.QLabel("File Path"), row, 0)
 
         self.file_widget = widgets.FileChooser()
-        grid_layout.addWidget(self.file_widget, 2, 1)
+        grid_layout.addWidget(self.file_widget, row, 1)
 
-        self.file_widget.field.textChanged.connect(self.validateFilePath)
+        row += 1
+
+
+        #grid_layout.addWidget(QtWidgets.QLabel("File Path"), 2, 0)
+
+#        self.file_widget = widgets.FileChooser()
+#        grid_layout.addWidget(self.file_widget, 2, 1)
+
+ #       self.file_widget.field.textChanged.connect(self.validateFilePath)
 
         # =====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("Comment"), 3, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Comment"), row, 0)
 
         self.comment = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.comment, 3, 1)
+        grid_layout.addWidget(self.comment, row, 1)
 
         self.comment.setToolTip(
             "Optional comment, eg. 'This group is for X'."
         )
 
+        row += 1
+
         # ====================================================================
 
-        grid_layout.addWidget(QtWidgets.QLabel("Priority"), 4, 0)
+        grid_layout.addWidget(QtWidgets.QLabel("Priority"), row, 0)
 
-        self.priority = QtWidgets.QSpinBox()
-        grid_layout.addWidget(self.priority, 4, 1)
+        self.priority = widgets.SpinBox(
+            default=utils.getDefaultValue("priority"),
+            min_value=-1
+        )
+        grid_layout.addWidget(self.priority, row, 1)
 
-        self.priority.setMinimum(-1)
-        self.priority.setValue(-1)
-
+        row += 1
         # ====================================================================
 
         self.aov_list = widgets.NewGroupAOVListWidget(self)
@@ -1086,11 +1097,11 @@ class NewGroupDialog(_BaseGroupDialog):
 
         self.buildGroupFromUI(group)
 
-        aov_file = manager.AOVFile(group.path)
+        aov_file = sources.AOVFile(group.path)
 
         aov_file.addGroup(group)
 
-        aov_file.writeToFile()
+        aov_file.write()
 
         self.newAOVGroupSignal.emit(group)
 
@@ -1149,9 +1160,10 @@ class EditGroupDialog(_BaseGroupDialog):
 
         self.buildGroupFromUI(group)
 
-        aov_file = manager.AOVFile(group.path)
-        aov_file.replaceGroup(group)
-        aov_file.writeToFile()
+        #aov_file = sources.AOVFile(group.path)
+        source = group.source
+        source.replaceGroup(group)
+        source.write()
 
         self.groupUpdatedSignal.emit(group)
 
@@ -1162,7 +1174,7 @@ class EditGroupDialog(_BaseGroupDialog):
     def initFromGroup(self):
         """Initialize the UI values from the group."""
         self.group_name.setText(self.group.name)
-        self.file_widget.setPath(self.group.path)
+        self.file_widget.setPath(self.group.source.path)
 
         if self.group.comment:
             self.comment.setText(self.group.comment)
@@ -1245,9 +1257,9 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         )
 
         if choice == 1:
-            aov_file = manager.AOVFile(self.aov.path)
-            aov_file.removeAOV(self.aov)
-            aov_file.writeToFile()
+            source = self.aov.source
+            source.removeAOV(self.aov)
+            source.write()
 
             manager.MANAGER.removeAOV(self.aov)
 
@@ -1282,37 +1294,10 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
-        self.aov_chooser = widgets.ComboBox()
+        self.aov_chooser = widgets.AOVMenu()#ComboBox.from_aovs(manager.MANAGER.aovs.values())
         layout.addWidget(self.aov_chooser)
 
-        # Start menu index.
-        start_idx = -1
-
-        # Populate the AOV chooser with all the existing AOVs.
-        for idx, aov in enumerate(sorted(manager.MANAGER.aovs.values())):
-            # If a channel is specified, put it into the display name.
-            if aov.channel is not None:
-                label = "{} ({})".format(
-                    aov.variable,
-                    aov.channel
-                )
-
-            else:
-                label = aov.variable
-
-            self.aov_chooser.addItem(
-                utils.getIconFromVexType(aov.vextype),
-                label,
-                aov
-            )
-
-            # The AOV matches our start AOV so set the start index.
-            if aov == self.aov:
-                start_idx = idx
-
-        if start_idx != -1:
-            self.aov_chooser.setCurrentIndex(start_idx)
-
+        self.aov_chooser.set(self.aov)
         self.aov_chooser.currentIndexChanged.connect(self.selectionChanged)
 
         # =====================================================================
@@ -1329,27 +1314,27 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
 
         self.button_box.accepted.connect(self.accept)
 
-        edit_button = QtWidgets.QPushButton(
+        self.edit_button = QtWidgets.QPushButton(
             hou.qt.createIcon("BUTTONS_edit"),
             "Edit"
         )
 
-        edit_button.setToolTip("Edit this AOV.")
+        self.edit_button.setToolTip("Edit this AOV.")
 
-        self.button_box.addButton(edit_button, QtWidgets.QDialogButtonBox.ResetRole)
-        edit_button.clicked.connect(self.edit)
+        self.button_box.addButton(self.edit_button, QtWidgets.QDialogButtonBox.ResetRole)
+        self.edit_button.clicked.connect(self.edit)
 
         # =====================================================================
 
-        delete_button = QtWidgets.QPushButton(
+        self.delete_button = QtWidgets.QPushButton(
             hou.qt.createIcon("COMMON_delete"),
             "Delete"
         )
 
-        self.button_box.addButton(delete_button, QtWidgets.QDialogButtonBox.ResetRole)
+        self.button_box.addButton(self.delete_button, QtWidgets.QDialogButtonBox.ResetRole)
 
-        delete_button.setToolTip("Delete this AOV.")
-        delete_button.clicked.connect(self.delete)
+        self.delete_button.setToolTip("Delete this AOV.")
+        self.delete_button.clicked.connect(self.delete)
 
         # =====================================================================
 
@@ -1420,9 +1405,9 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         )
 
         if choice == 1:
-            aov_file = manager.AOVFile(self.group.path)
-            aov_file.removeGroup(self.group)
-            aov_file.writeToFile()
+            source = self.group.source
+            source.removeGroup(self.group)
+            source.write()
 
             manager.MANAGER.removeGroup(self.group)
 
@@ -1471,29 +1456,10 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        self.group_chooser = widgets.ComboBox()
+        self.group_chooser = widgets.AOVGroupMenu()
         layout.addWidget(self.group_chooser)
 
-        # Start menu index.
-        start_idx = -1
-
-        # Populate the group chooser with all the existing groups.
-        for idx, group in enumerate(sorted(manager.MANAGER.groups.values())):
-            label = group.name
-
-            self.group_chooser.addItem(
-                utils.getIconFromGroup(group),
-                label,
-                group
-            )
-
-            # The group matches our start group so set the start index.
-            if group == self.group:
-                start_idx = idx
-
-        if start_idx != -1:
-            self.group_chooser.setCurrentIndex(start_idx)
-
+        self.group_chooser.set(self.group)
         self.group_chooser.currentIndexChanged.connect(self.selectionChanged)
 
         # =====================================================================
@@ -1523,8 +1489,8 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         self.edit_button.setToolTip("Edit this group.")
 
-        # Use HelpRole to force the button to the left size of the dialog.
-        self.button_box.addButton(self.edit_button, QtWidgets.QDialogButtonBox.HelpRole)
+        # Use ResetRole to force the button to the left size of the dialog.
+        self.button_box.addButton(self.edit_button, QtWidgets.QDialogButtonBox.ResetRole)
         self.edit_button.clicked.connect(self.edit)
 
         # =====================================================================
@@ -1534,7 +1500,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
             "Delete"
         )
 
-        self.button_box.addButton(self.delete_button, QtWidgets.QDialogButtonBox.HelpRole)
+        self.button_box.addButton(self.delete_button, QtWidgets.QDialogButtonBox.ResetRole)
 
         self.delete_button.setToolTip("Delete this group.")
         self.delete_button.clicked.connect(self.delete)

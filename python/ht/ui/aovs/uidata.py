@@ -5,13 +5,16 @@
 # =============================================================================
 
 DEFAULT_VALUES = {
-    "componentexport": False,
+    "channel": "",
+    "components": "diffuse reflect sss",
+    "export_components": "",
     "lightexport": "",
     "quantize": "half",
     "pfilter": "",
     "priority": -1,
     "sfilter": "alpha",
     "vextype": "vector",
+    "source": "file"
 }
 
 LIGHTEXPORT_MENU_ITEMS = (
@@ -21,24 +24,38 @@ LIGHTEXPORT_MENU_ITEMS = (
     ("per-category", "Export variable for each category"),
 )
 
+COMPONENT_MENU_ITEMS = (
+    ("diffuse reflect sss", "Basic Components"),
+    ("diffuse reflect coat refract volume sss", "Common Components")
+)
+
+EXPORT_COMPONENTS = (
+    ("", "None"),
+    ("rop", "From ROP"),
+    ("aov", "In AOV"),
+)
+
 PFILTER_MENU_ITEMS = (
-    ("Inherit from main plane", ""),
-    ("Unit Box Filter", "box -w 1"),
-    ("Gaussian 2x2", "gaussian -w 2"),
-    ("Gaussian 3x3 (softer)", "gaussian -w 3"),
-    ("Gaussian 2x2 with noisy sample refiltering", "gaussian -w 2 -r 1"),
-    ("Ray Histogram Fusion", "combine -t 20.0"),
-    ("Bartlett (triangle)", "bartlett -w 2"),
-    ("Catmull-Rom", "catrom -w 3"),
-    ("Hanning", "hanning -w 2"),
-    ("Blackman", "blackman -w 2"),
-    ("Sinc (sharpening)", "sinc -w 3"),
-    ("Edge Detection Filter", "edgedetect"),
-    ("Closest Sample Filter", "minmax min"),
-    ("Farthest Sample Filter", "minmax max"),
-    ("Disable Edge Antialiasing", "minmax edge"),
-    ("Object With Most Pixel Coverage", "minmax ocover"),
-    ("Object With Most Pixel Coverage (no filtering)", "minmax idcover"),
+    ("", "Inherit from main plane"),
+    ("box -w 1", "Unit Box Filter"),
+    ("gaussian -w 2", "Gaussian 2x2"),
+    ("gaussian -w 3", "Gaussian 3x3 (softer)"),
+    ("gaussian -w 2 -r 1", "Gaussian 2x2 with noisy sample refiltering"),
+    ("combine -t 20.0", "Ray Histogram Fusion"),
+    ("bartlett -w 2", "Bartlett (triangle)"),
+    ("catrom -w 3", "Catmull-Rom"),
+    ("hanning -w 2", "Hanning"),
+    ("blackman -w 2", "Blackman"),
+    ("sinc -w 3", "Sinc (sharpening)"),
+    ("edgedetect", "Edge Detection Filter"),
+    ("minmax min", "Closest Sample Filter"),
+    ("minmax max", "Farthest Sample Filter"),
+    ("minmax edge", "Disable Edge Antialiasing"),
+    ("minmax ocover", "Object With Most Pixel Coverage (average)"),
+    ("minmax idcover", "Object With Most Coverage (no filtering)"),
+    ("minmax omin", "Object With Most Coverage (minimum z-value)"),
+    ("minmax omax", "Object With Most Coverage (maximum z-value)"),
+    ("minmax omedian", "Object With Most Coverage (median z-value)"),
 )
 
 QUANTIZE_MENU_ITEMS = (
@@ -59,6 +76,12 @@ VEXTYPE_MENU_ITEMS = (
     ("vector", "Vector Type"),
     ("vector4", "Vector4 Type"),
     ("unitvector", "Unit Vector Type"),
+)
+
+SOURCE_MENU_ITEMS = (
+    ("file", "Disk File"),
+    ("group", "AOV Group"),
+    ("otl", "Digital Asset")
 )
 
 # =============================================================================

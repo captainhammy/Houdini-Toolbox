@@ -225,6 +225,11 @@ def getAOVNamesFromMultiparm(node):
     return names
 
 
+def getDefaultValue(field):
+    """Get the default value of a UI element."""
+    return uidata.DEFAULT_VALUES.get(field)
+
+
 def getIconFromGroup(group):
     """Get the icon for an AOVGroup."""
     # Group has a custom icon path so use. it.

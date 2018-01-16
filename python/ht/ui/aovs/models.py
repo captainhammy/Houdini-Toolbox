@@ -10,7 +10,7 @@ import pickle
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import manager
-from ht.sohohooks.aovs.aov import AOV, IntrinsicAOVGroup
+from ht.sohohooks.aovs.aov import AOV, IntrinsicAOVGroup, GroupBasedAOV
 from ht.ui.aovs import utils
 import ht.ui.icons
 
@@ -259,10 +259,20 @@ class AOVNode(AOVBaseNode):
         if aov.priority > -1:
             lines.append("\nPriority: {}".format(aov.priority))
 
-        if aov.path is not None:
-            lines.append("\n{}".format(aov.path))
+        if aov.source is not None:
+            path = aov.source.path
+
+            if aov.source.read_only:
+                path = "{} (read only)".format(path)
+
+            lines.append("\n{}".format(path))
 
         return '\n'.join(lines)
+
+
+class GroupAOVNode(AOVNode):
+
+    pass
 
 # =============================================================================
 
@@ -274,7 +284,11 @@ class AOVGroupNode(AOVBaseNode):
 
         # Create child nodes for the group's AOVs.
         for aov in group.aovs:
-            AOVNode(aov, self)
+            if isinstance(aov, GroupBasedAOV):
+                GroupAOVNode(aov, self)
+
+            else:
+                AOVNode(aov, self)
 
     # =========================================================================
     # PROPERTIES
@@ -318,8 +332,13 @@ class AOVGroupNode(AOVBaseNode):
         if group.icon is not None:
             lines.append("\nIcon: {}".format(group.icon))
 
-        if group.path is not None:
-            lines.append("\n{}".format(group.path))
+        if group.source is not None:
+            path = group.source.path
+
+            if group.source.read_only:
+                path = "{} (read only)".format(path)
+
+            lines.append("\n{}".format(path))
 
         return '\n'.join(lines)
 
@@ -477,10 +496,11 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
 
         if role == QtCore.Qt.FontRole:
             # Italicize AOVs inside groups.
-            if isinstance(parent, AOVGroupNode):
-                font = QtGui.QFont()
-                font.setItalic(True)
-                return font
+            if not isinstance(node, GroupAOVNode):
+                if isinstance(parent, AOVGroupNode):
+                    font = QtGui.QFont()
+                    font.setItalic(True)
+                    return font
 
             return
 
@@ -492,10 +512,11 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
                 brush.setColor(QtGui.QColor(131, 131, 131))
                 return brush
 
-            # Grey out AOVs inside groups.
-            if isinstance(parent, AOVGroupNode):
-                brush.setColor(QtGui.QColor(131, 131, 131))
-                return brush
+            if not isinstance(node, GroupAOVNode):
+                # Grey out AOVs inside groups.
+                if isinstance(parent, AOVGroupNode):
+                    brush.setColor(QtGui.QColor(131, 131, 131))
+                    return brush
 
             return
 
@@ -1104,11 +1125,12 @@ class AOVInfoTableModel(InfoTableModel):
             self._titles.append("Light Exports")
             self._values.append(aov.lightexport)
 
-            self._titles.append("Light Mask")
-            self._values.append(aov.lightexport_scope)
+            if aov.lightexport != "per-category":
+                self._titles.append("Light Mask")
+                self._values.append(aov.lightexport_scope)
 
-            self._titles.append("Light Selection")
-            self._values.append(aov.lightexport_select)
+                self._titles.append("Light Selection")
+                self._values.append(aov.lightexport_select)
 
         if aov.priority > -1:
             self._titles.append("Priority")
@@ -1122,9 +1144,9 @@ class AOVInfoTableModel(InfoTableModel):
             self._titles.append("Comment")
             self._values.append(aov.comment)
 
-        if aov.path is not None:
-            self._titles.append("File Path")
-            self._values.append(aov.path)
+        if aov.source is not None:
+            self._titles.append("Source")
+            self._values.append(aov.source.path)
 
 # =============================================================================
 
@@ -1162,8 +1184,8 @@ class AOVGroupInfoTableModel(InfoTableModel):
             self._values.append(group.icon)
 
         if not is_intrinsic:
-            self._titles.append("File Path")
-            self._values.append(group.path)
+            self._titles.append("Source")
+            self._values.append(group.source.path)
 
     def rowCount(self, parent):
         return len(self._titles)
