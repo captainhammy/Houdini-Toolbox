@@ -110,7 +110,6 @@ class AOVManager(object):
         # Now that AOVs have been made available, add them to groups.
         for source in sources:
             for group in source.groups:
-
                 group.initMembersFromManager(self)
 
                 group_name = group.name

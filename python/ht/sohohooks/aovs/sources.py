@@ -1,5 +1,4 @@
 
-
 import abc
 
 import json
@@ -20,7 +19,6 @@ class AOVSourceManager(object):
         self._otl_sources = {}
         self._hip_source = None
         self._unsaved_source = None
-
 
     def getFileSource(self, filepath):
         if filepath in self._file_sources:
@@ -67,7 +65,6 @@ class BaseAOVSource(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self):
-
         self._aovs = []
         self._data = {}
         self._groups = []
@@ -131,7 +128,6 @@ class BaseAOVSource(object):
             self.groups.append(group)
 
             if definitions:
-            #if "definitions" in group_data:
                 group_source = AOVGroupSource(group)
 
                 for definition_data in definitions:
@@ -156,7 +152,6 @@ class BaseAOVSource(object):
                 definitions.append(aov.getData())
 
         return data
-
 
     @abc.abstractmethod
     def _loadData(self):
@@ -211,6 +206,7 @@ class BaseAOVSource(object):
 
         aov.source = self
 
+
     def addGroup(self, group):
         """Add An AOVGroup for writing."""
         self.groups.append(group)
@@ -225,7 +221,6 @@ class BaseAOVSource(object):
         """Check if this file contains a group with the same name."""
         return group in self.groups
 
-
     def deleteAOV(self, aov):
         """Remove and delete an AOV from the file."""
         idx = self.aovs.index(aov)
@@ -238,7 +233,6 @@ class BaseAOVSource(object):
         idx = self.groups.index(group)
 
         del self.groups[idx]
-
 
     def removeAOV(self, aov):
         self.aovs.remove(aov)

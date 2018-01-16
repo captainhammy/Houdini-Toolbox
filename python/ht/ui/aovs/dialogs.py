@@ -704,7 +704,6 @@ class NewAOVDialog(_BaseAOVDialog):
 
         self.source_widget.file_widget.chooser.field.textChanged.connect(self.validateFilePath)
 
-
         self.status_widget.addInfo(0, "Enter a variable name")
         self.status_widget.addInfo(1, "Choose a source")
 
@@ -896,11 +895,11 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
 
         self.file_widget = widgets.FileChooser()
         grid_layout.addWidget(self.file_widget, row, 1)
-
         row += 1
 
 
         #grid_layout.addWidget(QtWidgets.QLabel("File Path"), 2, 0)
+
 
 #        self.file_widget = widgets.FileChooser()
 #        grid_layout.addWidget(self.file_widget, 2, 1)

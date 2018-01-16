@@ -2385,7 +2385,6 @@ class SourceWidget(QtWidgets.QWidget):
             node = self.nodetype_widget.chooser.getNode()
             print node
 
-
         elif source_mode == "hip":
             print "hip file"
 
@@ -2441,7 +2440,6 @@ class SourceWidget(QtWidgets.QWidget):
 
             if node is None:
                 return "Invalid node"
-
 
 
 class _CoolLabel(QtWidgets.QLabel):
