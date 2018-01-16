@@ -62,7 +62,6 @@ class AOVManagerWidget(QtWidgets.QWidget):
         )
 
         self.setStyleSheet(uidata.TOOLTIP_STYLE)
-
         self.setProperty("houdiniStyle", True)
 
         # If a node was passed along, set the UI to use it.
@@ -1666,7 +1665,7 @@ class InfoTableView(QtWidgets.QTableView):
         result = self.model().data(index)
 
         if result is not None:
-            clipboard = QtGui.QApplication.clipboard()
+            clipboard = QtWidgets.QApplication.clipboard()
             clipboard.setText(result)
 
 
@@ -1711,12 +1710,118 @@ class GroupMemberListWidget(QtWidgets.QListView):
 # Generic Widgets
 # =============================================================================
 
+
 class ComboBox(QtWidgets.QComboBox):
 
-    def __init__(self, parent=None):
+    def __init__(self, items=None, default=None, parent=None):
         super(ComboBox, self).__init__(parent)
 
+        self._default = default
+
         self.setView(QtWidgets.QListView())
+
+        if items is not None:
+            for item in items:
+                self.addItem(item[1], item[0])
+
+        if self.count() and default is not None:
+            self.set(default)
+
+    @property
+    def default(self):
+        return self._default
+
+    def isDefault(self):
+        return self.value == self.default
+
+    def label(self):
+        """Get the label for the currently selected item."""
+        return self.itemText(self.currentIndex())
+
+    def findData(self, data):
+        for index in range(self.count()):
+            if self.itemData(index) == data:
+                return index
+
+        return -1
+
+    def set(self, value):
+        index = self.findData(value)
+
+        if index > -1:
+            self.setCurrentIndex(index)
+
+        else:
+            raise ValueError("Invalid value: {}".format(value))
+
+    def value(self):
+        """Get the value for the currently selected item."""
+        return self.itemData(self.currentIndex())
+
+
+class AOVMenu(ComboBox):
+
+    def __init__(self, parent=None):
+        super(AOVMenu, self).__init__(parent=parent)
+
+        for aov in sorted(manager.MANAGER.aovs.values()):
+            # If a channel is specified, put it into the display name.
+            if aov.channel is not None:
+                label = "{} ({})".format(
+                    aov.variable,
+                    aov.channel
+                )
+
+            else:
+                label = aov.variable
+
+            self.addItem(
+                utils.getIconFromVexType(aov.vextype),
+                label,
+                aov
+            )
+
+
+class AOVGroupMenu(ComboBox):
+
+    def __init__(self, show_intrinsics=True, parent=None):
+        super(AOVGroupMenu, self).__init__(parent=parent)
+
+        groups = manager.MANAGER.groups.values()
+
+        for group in sorted(groups):
+            name = group.name
+
+            if isinstance(group, IntrinsicAOVGroup):
+                if not show_intrinsics:
+                    continue
+
+                name = name.split(":")[1]
+
+            self.addItem(
+                utils.getIconFromGroup(group),
+                name,
+                group
+            )
+
+class VexTypeMenu(ComboBox):
+
+    def __init__(self, parent=None):
+        default = utils.getDefaultValue("vextype")
+
+        super(VexTypeMenu, self).__init__(default=default, parent=parent)
+
+        for entry in uidata.VEXTYPE_MENU_ITEMS:
+            icon = utils.getIconFromVexType(entry[0])
+
+            self.addItem(
+                icon,
+                entry[1],
+                entry[0]
+            )
+
+        if default is not None:
+            self.set(default)
 
 
 class FileChooser(QtWidgets.QWidget):
@@ -1868,8 +1973,10 @@ class MenuField(QtWidgets.QWidget):
 
     """
 
-    def __init__(self, menu_items, mode=MenuFieldMode.Replace, parent=None):
+    def __init__(self, items, default=None, mode=MenuFieldMode.Replace, parent=None):
         super(MenuField, self).__init__(parent)
+
+        self._default = default
 
         layout = QtWidgets.QHBoxLayout()
         self.setLayout(layout)
@@ -1882,6 +1989,9 @@ class MenuField(QtWidgets.QWidget):
         self.field = QtWidgets.QLineEdit()
         layout.addWidget(self.field)
 
+        if default is not None:
+            self.set(default)
+
         # =====================================================================
 
         button = QtWidgets.QPushButton()
@@ -1891,8 +2001,8 @@ class MenuField(QtWidgets.QWidget):
 
         menu = QtWidgets.QMenu(button)
 
-        for item in menu_items:
-            label, value = item
+        for item in items:
+            value, label = item
 
             action = menu.addAction(label)
 
@@ -1908,9 +2018,16 @@ class MenuField(QtWidgets.QWidget):
 
         button.setMenu(menu)
 
+    @property
+    def default(self):
+        return self._default
+
     # =========================================================================
     # METHODS
     # =========================================================================
+
+    def isDefault(self):
+        return self.value() == self.default
 
     def set(self, value):
         """Set the field to a value."""
@@ -1938,6 +2055,103 @@ class MenuField(QtWidgets.QWidget):
         """The field value."""
         return self.field.text()
 
+class NodeChooser(QtWidgets.QWidget):
+    """This class represents a node choosing widget."""
+
+    pathChangedSignal = QtCore.Signal()
+
+    def __init__(self, parent=None):
+        super(NodeChooser, self).__init__(parent)
+
+        layout = QtWidgets.QHBoxLayout()
+        self.setLayout(layout)
+
+        layout.setSpacing(0)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        # =====================================================================
+
+        self.field = QtWidgets.QLineEdit()
+        layout.addWidget(self.field)
+
+        # =====================================================================
+
+        self.button = QtWidgets.QPushButton(
+            hou.qt.createIcon("BUTTONS_chooser_node"),
+            ""
+        )
+        layout.addWidget(self.button)
+
+        self.button.setFlat(True)
+        self.button.setIconSize(QtCore.QSize(16, 16))
+        self.button.setMaximumSize(QtCore.QSize(24, 24))
+
+        self.button.clicked.connect(self.chooseNode)
+
+        self.field.textChanged.connect(lambda: self.pathChangedSignal.emit())
+
+    # =========================================================================
+    # METHODS
+    # =========================================================================
+
+    def chooseNode(self):
+        """Open the file chooser dialog."""
+        start_node = self.getNode()
+
+        path = hou.ui.selectNode(initial_node=start_node)
+
+        if not path:
+            return
+
+        self.setPath(path)
+
+    def enable(self, enable):
+        """Set the UI element's enabled state."""
+        self.field.setEnabled(enable)
+        self.button.setEnabled(enable)
+
+    def getNode(self):
+        path = self.getPath()
+
+        return hou.node(path)
+
+    def getPath(self):
+        """Get the text."""
+        return self.field.text()
+
+    def setNode(self, node):
+        path = node.path()
+
+        self.setPath(path)
+
+    def setPath(self, path):
+        """Set the path."""
+        self.field.setText(path)
+
+
+class SpinBox(QtWidgets.QSpinBox):
+
+    def __init__(self, default=None, min_value=None, max_value=None, parent=None):
+        super(SpinBox, self).__init__(parent)
+
+        self._default = default
+
+        if min_value is not None:
+            self.setMinimum(min_value)
+
+        if max_value is not None:
+            self.setMaximum(max_value)
+
+        if default is not None:
+            self.setValue(default)
+
+
+    @property
+    def default(self):
+        return self._default
+
+    def atDefault(self):
+        return self.value() == self.default
 
 class StatusMessageWidget(QtWidgets.QWidget):
     """This class represents an status notification widget."""
@@ -2063,4 +2277,143 @@ class StatusMessageWidget(QtWidgets.QWidget):
             self.display.clear()
             self.display.hide()
             self.icon.hide()
+
+
+
+
+class _FileSourceWidget(QtWidgets.QWidget):
+
+    def __init__(self, parent=None):
+        super(_FileSourceWidget, self).__init__(parent)
+        self.setContentsMargins(0, 0, 0, 0)
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
+
+        layout.addWidget(_CoolLabel("File Path"))
+
+        self.chooser = FileChooser()
+        layout.addWidget(self.chooser)
+
+
+class _GroupSourceWidget(QtWidgets.QWidget):
+
+    def __init__(self, parent=None):
+        super(_GroupSourceWidget, self).__init__(parent)
+        layout = QtWidgets.QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
+
+        layout.addWidget(_CoolLabel("Group"))
+
+        self.group_menu = AOVGroupMenu(show_intrinsics=False)
+        layout.addWidget(self.group_menu, 1)
+
+
+class _NodeSourceWidget(QtWidgets.QWidget):
+
+    def __init__(self, parent=None):
+        super(_NodeSourceWidget, self).__init__(parent)
+        self.setContentsMargins(0, 0, 0, 0)
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
+
+        layout.addWidget(_CoolLabel("Digital Asset"))
+
+        self.chooser = NodeChooser()
+        layout.addWidget(self.chooser)
+
+class SourceWidget(QtWidgets.QWidget):
+
+    def __init__(self, parent=None):
+        super(SourceWidget, self).__init__(parent)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        self.setLayout(layout)
+
+        source_layout = QtWidgets.QHBoxLayout()
+
+        source_layout.addWidget(_CoolLabel("Source"))
+
+        self._source_mode = ComboBox(
+            uidata.SOURCE_MENU_ITEMS,
+            default=utils.getDefaultValue("source")
+        )
+
+        source_layout.addWidget(self._source_mode, 1)
+
+        self._source_mode.currentIndexChanged.connect(self.sourceChanged)
+
+        layout.addLayout(source_layout)
+
+        self.file_widget = _FileSourceWidget()
+        layout.addWidget(self.file_widget)
+
+        self.group_widget = _GroupSourceWidget()
+        layout.addWidget(self.group_widget)
+        self.group_widget.setHidden(True)
+
+        self.nodetype_widget = _NodeSourceWidget()
+        layout.addWidget(self.nodetype_widget)
+        self.nodetype_widget.setHidden(True)
+
+        self.setMaximumHeight(55)
+
+        self.nodetype_widget.chooser.pathChangedSignal.connect(self.validateSource)
+
+    def source_mode(self):
+        return self._source_mode.value()
+
+    def source(self):
+        source_mode = self.source_mode()
+
+        if source_mode == "file":
+            file_path = self.file_widget.chooser.getPath()
+
+            print file_path
+
+        elif source_mode == "group":
+            group = self.group_widget.group_menu.value()
+            print group
+
+        elif source_mode == "otl":
+            node = self.nodetype_widget.chooser.getNode()
+            print node
+
+
+    def sourceChanged(self, index):
+        mode = self._source_mode.value()
+
+        if mode == "file":
+            self.group_widget.setHidden(True)
+            self.nodetype_widget.setHidden(True)
+            self.file_widget.setHidden(False)
+
+        elif mode == 'group':
+            self.file_widget.setHidden(True)
+            self.nodetype_widget.setHidden(True)
+            self.group_widget.setHidden(False)
+
+        elif mode == "otl":
+            self.file_widget.setHidden(True)
+            self.group_widget.setHidden(True)
+            self.nodetype_widget.setHidden(False)
+
+        self.validateSource()
+
+    def validateSource(self):
+        source = self.source()
+
+
+class _CoolLabel(QtWidgets.QLabel):
+
+    def __init__(self, text, parent=None):
+        super(_CoolLabel, self).__init__(text, parent)
+
+        self.setMinimumWidth(100)
 

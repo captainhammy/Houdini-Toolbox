@@ -1,0 +1,23 @@
+{
+    "groups": {
+        "diagnostic": {
+            "comment": "AOVs related to render diagnostics", 
+            "include": [
+                "Op_Id", 
+                "Pixel_Samples", 
+                "Render_Time", 
+                "Shading_Samples", 
+                "Opacity_Samples", 
+                "Prim_Id"
+            ],
+
+            "definitions": [
+                {
+                    "variable": "N",
+                    "comment": "this is embedded",
+                    "vextype": "unitvector"
+                }
+            ]
+        }
+    }
+}

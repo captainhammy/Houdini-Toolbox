@@ -33,6 +33,15 @@ _DEFAULT_AOV_DATA = {
     "sfilter": None,
 }
 
+_DEFAULT_GROUP_DATA = {
+    "aovs": [],
+    "comment": "",
+    "icon": None,
+    "include": [],
+    "name": None,
+    "priority": -1,
+}
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -42,6 +51,8 @@ class AOV(object):
     """This class represents an AOV to be exported."""
 
     def __init__(self, data):
+        self._source = data.pop("source")
+
         self._data = copy.copy(_DEFAULT_AOV_DATA)
 
         self._updateData(data)
@@ -51,7 +62,7 @@ class AOV(object):
     # =========================================================================
 
     def __cmp__(self, other):
-        if isinstance(other, self.__class__):
+        if isinstance(other, type(self)):
             return cmp(self.variable, other.variable)
 
         return -1
@@ -60,7 +71,7 @@ class AOV(object):
         return hash(self.variable)
 
     def __repr__(self):
-        return "<AOV {} ({})>".format(self.variable, self.vextype)
+        return "<{} {} ({})>".format(self.__class__.__name__, self.variable, self.vextype)
 
     def __str__(self):
         return self.variable
@@ -213,7 +224,7 @@ class AOV(object):
                 allowable = ALLOWABLE_VALUES[name]
 
                 # If the value isn't in the list, raise an exception.
-                if value not in allowable:
+                if value is not None and value not in allowable:
                     raise InvalidAOVValueError(name, value, allowable)
 
             # If the key corresponds to the data in this object we store the
@@ -335,13 +346,13 @@ class AOV(object):
     # =========================================================================
 
     @property
-    def path(self):
+    def source(self):
         """The path containing the AOV definition."""
-        return self._data["path"]
+        return self._source
 
-    @path.setter
-    def path(self, path):
-        self._data["path"] = path
+    @source.setter
+    def source(self, source):
+        self._source = source
 
     # =========================================================================
 
@@ -576,27 +587,51 @@ class AOV(object):
 
 # =============================================================================
 
+class GroupBasedAOV(AOV):
+
+    def __init__(self, data, group):
+        super(GroupBasedAOV, self).__init__(data)
+
+        self._group = group
+
+    @property
+    def group(self):
+        return self._group
+
+
+# =============================================================================
 
 class AOVGroup(object):
     """This class represents a group of AOV definitions.
 
     """
 
-    def __init__(self, name):
-        self._aovs = []
-        self._comment = ""
-        self._icon = None
-        self._includes = []
-        self._name = name
-        self._path = None
-        self._priority = -1
+    def __init__(self, data):
+        self._source = None
+        self._data = copy.deepcopy(_DEFAULT_GROUP_DATA)
+
+        if "source" in data:
+            self._source = data.pop("source")
+
+        self._updateData(data)
+
+    def _updateData(self, data):
+        """Update internal data with new data."""
+        for name, value in data.iteritems():
+            # If the key corresponds to the data in this object we store the
+            # data.
+            if name in self._data:
+                self._data[name] = value
 
     # =========================================================================
     # SPECIAL METHODS
     # =========================================================================
 
     def __cmp__(self, other):
-        if isinstance(other, self.__class__):
+        if isinstance(other, type(self)):
+            return cmp(self.name, other.name)
+
+        elif issubclass(type(self), type(other)):
             return cmp(self.name, other.name)
 
         return -1
@@ -615,65 +650,66 @@ class AOVGroup(object):
     @property
     def aovs(self):
         """A list of AOVs in the group."""
-        return self._aovs
+        return self._data["aovs"]
 
     # =========================================================================
 
     @property
     def comment(self):
         """Optional comment about this AOV."""
-        return self._comment
+        return self._data["comment"]
 
     @comment.setter
     def comment(self, comment):
-        self._comment = comment
+        self._data["comment"] = comment
 
     # =========================================================================
 
     @property
     def icon(self):
         """Optional path to an icon for this group."""
-        return self._icon
+        return self._data["icon"]
 
     @icon.setter
     def icon(self, icon):
-        self._icon = icon
+        self._data["icon"] = icon
+
+    # =========================================================================
+
+#    @property
+#    def includes(self):
+#        """List of AOV names belonging to the group."""
+#        return self._includes
 
     # =========================================================================
 
     @property
-    def includes(self):
-        """List of AOV names belonging to the group."""
-        return self._includes
-
-    # =========================================================================
-
-    @property
-    def path(self):
+    def source(self):
         """The path containing the group definition."""
-        return self._path
+        return self._source
 
-    @path.setter
-    def path(self, path):
-        self._path = path
+    @source.setter
+    def source(self, source):
+        self._source = source
 
     # =========================================================================
 
     @property
     def name(self):
         """The name of the group."""
-        return self._name
+        return self._data["name"]
 
     # =========================================================================
 
     @property
     def priority(self):
         """Group priority."""
-        return self._priority
+        return self._data["priority"]
 
     @priority.setter
     def priority(self, priority):
-        self._priority = priority
+        self._data["priority"] = priority
+
 
     # =========================================================================
     # METHODS
@@ -687,23 +723,43 @@ class AOVGroup(object):
         """Get a dictionary representing the group."""
         includes = []
 
-        includes.extend(self.includes)
+        # The list of included aovs (not sourced in the group)
+        includes.extend(self._data["include"])
 
         includes.extend([aov.variable for aov in self.aovs])
 
-        d = {
-            self.name: {
-                "include": includes,
-            }
-        }
+        d = {}
+        #    self.name: {
+#             "include": includes,
+#            }
+        #}
 
         if self.comment:
-            d[self.name]["comment"] = self.comment
+            d["comment"] = self.comment
 
         if self.priority != -1:
-            d[self.name]["priority"] = self.priority
+            d["priority"] = self.priority
+
+        if self.aovs:
+            aov_definitions = []
+
+            for aov in self.aovs:
+                if isinstance(aov, GroupBasedAOV):
+                    aov_definitions.append(aov.getData())
+
+            if aov_definitions:
+                d["definitions"] = aov_definitions
+
+        if includes:
+            d["include"] = includes
 
         return d
+
+    def initMembersFromManager(self, manager):
+        for include in self._data["include"]:
+            # If the AOV name is available, add it to the group.
+            if include in manager.aovs:
+                self.aovs.append(manager.aovs[include])
 
     def writeToIfd(self, wrangler, cam, now):
         """Write all AOVs in the group to the ifd."""
@@ -717,7 +773,8 @@ class IntrinsicAOVGroup(AOVGroup):
     """An intrinsic grouping of AOVs."""
 
     def __init__(self, name):
-        super(IntrinsicAOVGroup, self).__init__(name)
+        data = {"name": name}
+        super(IntrinsicAOVGroup, self).__init__(data)
 
         self.comment = "Automatically generated"
 

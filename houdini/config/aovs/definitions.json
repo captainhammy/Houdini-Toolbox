@@ -28,10 +28,13 @@
             "comment": "position-z"
         }, 
         {
-            "variable": "N", 
             "comment": "normal passes are cool", 
+            "pfilter": "minmax omedian", 
+            "sfilter": "alpha", 
+            "priority": 1, 
+            "quantize": "float", 
             "vextype": "unitvector", 
-            "priority": 1
+            "variable": "N"
         }, 
         {
             "variable": "Ce", 
@@ -126,7 +129,8 @@
         {
             "variable": "direct", 
             "comment": "Combined direct lighting", 
-            "vextype": "vector"
+            "vextype": "vector", 
+            "lightexport": "per-category"
         }, 
         {
             "variable": "indirect", 
@@ -289,8 +293,8 @@
         }, 
         {
             "variable": "ray:nets", 
-            "vextype": "float", 
             "comment": "Diagnostic: Ray tracing accelerator leaf traversal steps", 
+            "vextype": "float", 
             "intrinsics": [
                 "Diagnostic"
             ]
