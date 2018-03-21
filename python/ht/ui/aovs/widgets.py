@@ -2391,6 +2391,12 @@ class SourceWidget(QtWidgets.QWidget):
         elif source_mode == "unsaved":
             print "unsaved"
 
+        elif source_mode == "hip":
+            print "hip file"
+
+        elif source_mode == "unsaved":
+            print "unsaved"
+
     def sourceChanged(self, index):
         source_mode = self._source_mode.value()
 

@@ -206,7 +206,6 @@ class BaseAOVSource(object):
 
         aov.source = self
 
-
     def addGroup(self, group):
         """Add An AOVGroup for writing."""
         self.groups.append(group)
