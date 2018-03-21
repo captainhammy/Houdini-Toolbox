@@ -76,16 +76,26 @@ class AOVManager(object):
 
         readers = [self._source_manager.getFileSource(file_path) for file_path in file_paths]
 
-        self._mergeReaders(readers)
+        self._mergeSources(sources)
 
         self._buildIntrinsicGroups()
 
-    def _mergeReaders(self, readers):
+
+    def _initGroupMembers(self, group):
+        """Populate the AOV lists of each group based on available AOVs."""
+        # Process each of the group's includes.
+        for include in group.includes:
+            # If the AOV name is available, add it to the group.
+            if include in self.aovs:
+                group.aovs.append(self.aovs[include])
+
+
+    def _mergeSources(self, sources):
         """Merge the data of multiple AOVFile objects."""
         # We need to handle AOVs first since AOVs in other files may overwrite
         # AOVs in group definition files.
-        for reader in readers:
-            for aov in reader.aovs:
+        for source in sources:
+            for aov in source.aovs:
                 variable_name = aov.variable
 
                 # Check if this AOV has already been seen.
@@ -100,8 +110,8 @@ class AOVManager(object):
                     self.addAOV(aov)
 
         # Now that AOVs have been made available, add them to groups.
-        for reader in readers:
-            for group in reader.groups:
+        for source in sources:
+            for group in source.groups:
 
                 group.initMembersFromManager(self)
 
@@ -136,6 +146,10 @@ class AOVManager(object):
     def groups(self):
         """Dictionary containing all available AOVGroups."""
         return self._groups
+
+    @property
+    def source_manager(self):
+        return self._source_manager
 
     # =========================================================================
     # STATIC METHODS
@@ -247,10 +261,15 @@ class AOVManager(object):
         """Load a file."""
         readers = [self._source_manager.getFileSource(path)]
 
-        self._mergeReaders(readers)
+        self._mergeSources(sources)
 
     def loadSource(self, source):
         self._mergeReaders([source])
+
+        self._buildIntrinsicGroups()
+
+    def loadSource(self, source):
+        self._mergeSources([source])
 
         self._buildIntrinsicGroups()
 
@@ -356,8 +375,6 @@ def createSessionAOVManager():
 
 def findOrCreateSessionAOVManager(rebuild=False):
     """Find or create an AOVManager from hou.session."""
-    manager = None
-
     if hasattr(hou.session, "aov_manager") and not rebuild:
         manager = hou.session.aov_manager
 

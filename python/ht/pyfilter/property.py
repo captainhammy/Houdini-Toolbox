@@ -36,8 +36,10 @@ class Property(object):
         """Init internal data."""
         import mantra
 
+        # Get the value for this name from Mantra.
         values = mantra.property(self.name)
 
+        # Value is a single value (really a single value list)
         if len(values) == 1:
             value = values[0]
 
@@ -48,7 +50,7 @@ class Property(object):
 
                 # It can't be converted to a dict so we'll process it manually.
                 except ValueError:
-                    #Split the string.
+                    # Split the string.
                     split_vals = value.split()
 
                     # If there are multiple values we want to build a
@@ -60,8 +62,15 @@ class Property(object):
                     else:
                         value = _parseString(value)
 
+        # Value is a multi item list.
         else:
-            value = values
+            # Try to convert all the items to json.
+            try:
+                value = [json.loads(val) for val in values]
+
+            # Could not do that, so use value as is.
+            except (TypeError, ValueError):
+                value = values
 
         self._value = value
 
@@ -83,17 +92,35 @@ class Property(object):
     def value(self, value):
         import mantra
 
-        # Convert to empty list.
+        # If the value is None then we should just set an empty list.
         if value is None:
             value = []
 
-        # Convert to a list of a single string value.
-        if isinstance(value, (str, unicode)):
+        # If the value is a string then it should be in a list.
+        elif isinstance(value, (str, unicode)):
             value = [value]
 
-        # If the value is not an iterable then convert it to a list.
-        if not isinstance(value, Iterable):
+        # If the value is a dictionary then we need to convert it to a json
+        # string.
+        elif isinstance(value, dict):
+            value = [json.dumps(value)]
+
+        # If the value isn't already in an iterable then it needs to be.
+        elif not isinstance(value, Iterable):
             value = [value]
+
+        # The value is already a list of something.
+        else:
+            # Check all the entries to see if they are dictionaries.
+            if all([isinstance(val, dict) for val in value]):
+                # If they are, try to convert them all to create a list
+                # of json strings.
+                try:
+                    value = [json.dumps(val) for val in value]
+
+                # Something bad occured, so just stick with the original.
+                except (TypeError, ValueError):
+                    pass
 
         mantra.setproperty(self.name, value)
 

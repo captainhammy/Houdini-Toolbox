@@ -17,7 +17,7 @@ from ht.pyfilter.logger import logger
 class PyFilterOperation(object):
     """Base class of operations for PyFilter."""
 
-    def __init__(self, manager):
+    def __init__(self, manager=None):
         self._data = {}
         self._manager = manager
 
@@ -102,7 +102,7 @@ def logFilter(method_or_name):
 
             logger.debug(msg)
 
-            func(*args, **kwargs)
+            return func(*args, **kwargs)
 
         return wrapper
 

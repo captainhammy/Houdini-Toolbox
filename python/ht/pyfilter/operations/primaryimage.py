@@ -19,8 +19,13 @@ class SetPrimaryImage(PyFilterOperation):
 
     """
 
-    def __init__(self, manager):
-        super(SetPrimaryImage, self).__init__(manager)
+    ARG_LIST = {
+        "disable": "-disable_primary_image",
+        "path": "-primary_image_path"
+    }
+
+    def __init__(self, manager=None):
+        super(SetPrimaryImage, self).__init__(manager=manager)
 
         self._disable_primary_image = False
         self._primary_image_path = None
@@ -57,19 +62,25 @@ class SetPrimaryImage(PyFilterOperation):
         args = []
 
         if primary_image_path is not None:
-            args.append("-primary_image_path {}".format(primary_image_path))
+            args.append(
+                "{}={}".format(
+                    SetPrimaryImage.ARG_LIST["path"],
+                    primary_image_path
+                )
+            )
+
 
         if disable_primary_image:
-            args.append("-disable_primary_image")
+            args.append(SetPrimaryImage.ARG_LIST["disable"])
 
         return " ".join(args)
 
     @staticmethod
     def registerParserArgs(parser):
         """Register interested parser args for this operation."""
-        parser.add_argument("-primary_image_path")
+        parser.add_argument(SetPrimaryImage.ARG_LIST["path"])
 
-        parser.add_argument("-disable_primary_image", action="store_true")
+        parser.add_argument(SetPrimaryImage.ARG_LIST["disable"], action="store_true")
 
     # =========================================================================
     # METHODS
