@@ -265,6 +265,11 @@ class AOVManager(object):
 
         self._buildIntrinsicGroups()
 
+    def loadSource(self, source):
+        self._mergeSources([source])
+
+        self._buildIntrinsicGroups()
+
     def reload(self):
         """Reload all definitions."""
         self.clear()
