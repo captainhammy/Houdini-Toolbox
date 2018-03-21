@@ -2386,23 +2386,34 @@ class SourceWidget(QtWidgets.QWidget):
             print node
 
 
-    def sourceChanged(self, index):
-        mode = self._source_mode.value()
+        elif source_mode == "hip":
+            print "hip file"
 
-        if mode == "file":
+        elif source_mode == "unsaved":
+            print "unsaved"
+
+    def sourceChanged(self, index):
+        source_mode = self._source_mode.value()
+
+        if source_mode == "file":
             self.group_widget.setHidden(True)
             self.nodetype_widget.setHidden(True)
             self.file_widget.setHidden(False)
 
-        elif mode == 'group':
+        elif source_mode == 'group':
             self.file_widget.setHidden(True)
             self.nodetype_widget.setHidden(True)
             self.group_widget.setHidden(False)
 
-        elif mode == "otl":
+        elif source_mode == "otl":
             self.file_widget.setHidden(True)
             self.group_widget.setHidden(True)
             self.nodetype_widget.setHidden(False)
+
+        elif source_mode in ("hip", "unsaved"):
+            self.file_widget.setHidden(True)
+            self.group_widget.setHidden(True)
+            self.nodetype_widget.setHidden(True)
 
         self.validateSource()
 

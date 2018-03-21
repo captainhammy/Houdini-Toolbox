@@ -74,12 +74,11 @@ class AOVManager(object):
         """Initialize the manager from files on disk."""
         file_paths = _findAOVFiles()
 
-        readers = [self._source_manager.getFileSource(file_path) for file_path in file_paths]
+        sources = [self._source_manager.getFileSource(file_path) for file_path in file_paths]
 
         self._mergeSources(sources)
 
         self._buildIntrinsicGroups()
-
 
     def _initGroupMembers(self, group):
         """Populate the AOV lists of each group based on available AOVs."""
@@ -88,7 +87,6 @@ class AOVManager(object):
             # If the AOV name is available, add it to the group.
             if include in self.aovs:
                 group.aovs.append(self.aovs[include])
-
 
     def _mergeSources(self, sources):
         """Merge the data of multiple AOVFile objects."""
@@ -259,14 +257,9 @@ class AOVManager(object):
 
     def load(self, path):
         """Load a file."""
-        readers = [self._source_manager.getFileSource(path)]
+        sources = [self._source_manager.getFileSource(path)]
 
         self._mergeSources(sources)
-
-    def loadSource(self, source):
-        self._mergeReaders([source])
-
-        self._buildIntrinsicGroups()
 
     def loadSource(self, source):
         self._mergeSources([source])
