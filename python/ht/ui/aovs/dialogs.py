@@ -56,7 +56,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # UI elements are valid.
         self._variable_valid = False
-        self._file_valid = False
+        self._source_valid = False
 
         self.initUI()
 
@@ -157,7 +157,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # =====================================================================
 
-        aov_data["path"] = os.path.expandvars(self.file_widget.getPath())
+ #       aov_data["path"] = os.path.expandvars(self.file_widget.getPath())
 
         # =====================================================================
 
@@ -551,7 +551,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         if not self._variable_valid:
             valid = False
 
-        if not self._file_valid:
+        if not self._source_valid:
             valid = False
 
         self.validInputSignal.emit(valid)
@@ -570,6 +570,18 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
             self.status_widget.addError(1, "Invalid file path")
 
         self.validateAllValues()
+
+    def validateSource(self):
+        self.status_widget.clear(1)
+
+        result = self.source_widget.validateSource()
+
+        if result:
+            self.status_widget.addError(1, result)
+            self._source_valid = False
+
+        self.validateAllValues()
+
 
     # =========================================================================
 
@@ -690,10 +702,11 @@ class NewAOVDialog(_BaseAOVDialog):
 
         self.priority.valueChanged.connect(self.validateVariableName)
 
-   #     self.source_widget.file_widget.field.textChanged.connect(self.validateFilePath)
+        self.source_widget.file_widget.chooser.field.textChanged.connect(self.validateFilePath)
+
 
         self.status_widget.addInfo(0, "Enter a variable name")
-        self.status_widget.addInfo(1, "Choose a file")
+        self.status_widget.addInfo(1, "Choose a source")
 
         self.enableCreation(False)
 
@@ -1258,7 +1271,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
 
         if choice == 1:
             source = self.aov.source
-            source.removeAOV(self.aov)
+            source.deleteAOV(self.aov)
             source.write()
 
             manager.MANAGER.removeAOV(self.aov)
@@ -1406,7 +1419,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         if choice == 1:
             source = self.group.source
-            source.removeGroup(self.group)
+            source.deleteGroup(self.group)
             source.write()
 
             manager.MANAGER.removeGroup(self.group)

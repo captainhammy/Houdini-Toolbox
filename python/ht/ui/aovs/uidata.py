@@ -81,7 +81,9 @@ VEXTYPE_MENU_ITEMS = (
 SOURCE_MENU_ITEMS = (
     ("file", "Disk File"),
     ("group", "AOV Group"),
-    ("otl", "Digital Asset")
+    ("otl", "Digital Asset"),
+    ("hip", "Hip File"),
+    ("unsaved", "Unsaved")
 )
 
 # =============================================================================
