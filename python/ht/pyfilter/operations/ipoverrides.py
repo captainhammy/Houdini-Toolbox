@@ -29,6 +29,7 @@ class IpOverrides(PyFilterOperation):
         self._disable_blur = False
         self._disable_deep = False
         self._disable_displacement = False
+        self._disable_phantom = False
         self._disable_subd = False
         self._disable_tilecallback = False
         self._enabled = False
@@ -80,6 +81,17 @@ class IpOverrides(PyFilterOperation):
     @disable_displacement.setter
     def disable_displacement(self, disable_displacement):
         self._disable_displacement = disable_displacement
+
+    # =========================================================================
+
+    @property
+    def disable_phantom(self):
+        """Disable subdivision."""
+        return self._disable_phantom
+
+    @disable_phantom.setter
+    def disable_phantom(self, disable_phantom):
+        self._disable_phantom = disable_phantom
 
     # =========================================================================
 
@@ -143,15 +155,15 @@ class IpOverrides(PyFilterOperation):
     def buildArgString(res_scale=None, sample_scale=None, disable_blur=False,
                        disable_aovs=False, disable_deep=False,
                        disable_displacement=False, disable_subd=False,
-                       disable_tilecallback=False):
+                       disable_tilecallback=False, disable_phantom=False):
         """Construct an argument string based on values for this filter."""
         args = []
 
         if res_scale is not None:
-            args.append("-ip_resscale {}".format(res_scale))
+            args.append("-ip_resscale={}".format(res_scale))
 
         if sample_scale is not None:
-            args.append("-ip_samplescale {}".format(sample_scale))
+            args.append("-ip_samplescale={}".format(sample_scale))
 
         if disable_blur:
             args.append("-ip_disableblur")
@@ -170,6 +182,9 @@ class IpOverrides(PyFilterOperation):
 
         if disable_tilecallback:
             args.append("-ip_disabletilecallback")
+
+        if disable_phantom:
+            args.append("-ip_disablephantom")
 
         return " ".join(args)
 
@@ -191,6 +206,8 @@ class IpOverrides(PyFilterOperation):
         parser.add_argument("-ip_disablesubd", action="store_true")
 
         parser.add_argument("-ip_disabletilecallback", action="store_true")
+
+        parser.add_argument("-ip_disablephantom", action="store_true")
 
     # =========================================================================
     # METHODS
@@ -234,6 +251,10 @@ class IpOverrides(PyFilterOperation):
         if self.disable_subd:
             setProperty("object:rendersubd", 0)
 
+        if self.disable_phantom:
+            if getProperty("object:phantom"):
+                setProperty("object:renderable", False)
+
     @logFilter
     def filterMaterial(self):
         """Modify material properties."""
@@ -261,6 +282,7 @@ class IpOverrides(PyFilterOperation):
         self.disable_displacement = filter_args.ip_disabledisplacement
         self.disable_subd = filter_args.ip_disablesubd
         self.disable_tilecallback = filter_args.ip_disabletilecallback
+        self.disable_phantom = filter_args.ip_disablephantom
 
         # Only enable the operation if something is set.
         self.enabled = any(
@@ -272,7 +294,8 @@ class IpOverrides(PyFilterOperation):
                 self.disable_deep,
                 self.disable_displacement,
                 self.disable_subd,
-                self.disable_tilecallback
+                self.disable_tilecallback,
+                self.disable_phantom
             )
         )
 
@@ -317,7 +340,8 @@ def buildArgStringFromNode(node):
         disable_deep=node.evalParm("ip_disable_deep"),
         disable_displacement=node.evalParm("ip_disable_displacement"),
         disable_subd=node.evalParm("ip_disable_subd"),
-        disable_tilecallback=node.evalParm("ip_disable_tilecallback")
+        disable_tilecallback=node.evalParm("ip_disable_tilecallback"),
+        disable_phantom=node.evalParm("ip_disable_phantom")
     )
 
 

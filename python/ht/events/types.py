@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Python Imports
-from enum import Enum
+from enum import Enum, IntEnum
 
 # =============================================================================
 # CLASSES
@@ -13,7 +13,7 @@ from enum import Enum
 
 
 class NodeEvents(Enum):
-    """Events related to node changes.  These correspond to node based event handler scripts.
+    """Events related to node changes.  These correspond to node based event handler scriepts.
 
     """
     OnCreated = "OnCreated"
@@ -44,3 +44,11 @@ class SceneEvents(Enum):
     Load = "sceneload"  # 456/[cmd|py]
     PostSave = "afterscenesave"
     PreSave = "beforesenesave"
+
+
+
+class Priorities(IntEnum):
+    DEFAULT = 1
+    MODERATE = 5
+    URGENT = 10
+    FIRST = 99

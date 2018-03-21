@@ -2407,7 +2407,30 @@ class SourceWidget(QtWidgets.QWidget):
         self.validateSource()
 
     def validateSource(self):
-        source = self.source()
+        source_mode = self.source_mode()
+
+        if source_mode == "file":
+            path = self.file_widget.chooser.getPath()
+
+            file_valid = utils.filePathIsValid(path)
+            print file_valid, path
+
+            if not file_valid:
+                return "Invalid file"
+
+        elif source_mode == "group":
+            group = self.group_widget.group_menu.value()
+
+            print group
+            if group is None:
+                return "Invalid group"
+
+        elif source_mode == "otl":
+            node = self.nodetype_widget.chooser.getNode()
+
+            if node is None:
+                return "Invalid node"
+
 
 
 class _CoolLabel(QtWidgets.QLabel):
