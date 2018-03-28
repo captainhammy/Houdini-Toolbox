@@ -43,6 +43,35 @@ class AOVViewerInterface(QtCore.QObject):
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
+def _addAOVParms(node):
+    """Add the custom aov parameters to the node.
+
+    By default this will install to the Extra Image Planes folder.
+
+    """
+    # Get the target parameter template.
+    parm_template = hou.properties.parmTemplate("ht_parms", "ht_automatic_aovs")
+
+    ptg = node.parmTemplateGroup()
+
+    # Try to find the Extra Image Planes folder.
+    target_folder = ptg.findFolder(("Images", "Extra Image Planes"))
+
+    if target_folder is not None:
+        # Add the template to the target folder.
+        target_folder.addParmTemplate(parm_template)
+
+        # Replace the target folder with the changed one.
+        ptg.replace(target_folder.name(), target_folder)
+
+    # Somehow it doesn't exist, so just add it to the end of the list.
+    else:
+        ptg.addParmTemplate(parm_template)
+
+    # Set the new parameters.
+    node.setParmTemplateGroup(ptg)
+
+
 def _getItemMenuIndex(items, item):
     """Function to determine which index an item represents."""
     idx = 0
@@ -75,11 +104,7 @@ def applyElementsAsString(elements, nodes):
         # Need to add the automatic aov parameters if they doesn't exist.
         if node.parm("auto_aovs") is None:
             # Add the parameters from the .ds file.
-            hou.hscript(
-                'opproperty -f -F "Extra Image Planes" {} ht_parms ht_automatic_aovs'.format(
-                    node.path()
-                )
-            )
+            _addAOVParms(node)
 
         parm = node.parm("auto_aovs")
         parm.set(value)
@@ -317,3 +342,4 @@ def openAOVEditor(node):
 
     widget = tab.activeInterfaceRootWidget()
     widget.setNode(node)
+

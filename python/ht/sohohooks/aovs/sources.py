@@ -470,7 +470,7 @@ class AOVGroupSource(BaseAOVSource):
         self._read_only = group.source.read_only
 
     def _loadData(self):
-        pass
+        return {}
 
     @property
     def exists(self):
@@ -495,4 +495,4 @@ class AOVGroupSource(BaseAOVSource):
     def write(self):
         """Write data to the source section."""
         self.group.source.write()
-s
+
