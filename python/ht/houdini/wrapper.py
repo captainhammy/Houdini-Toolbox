@@ -51,7 +51,7 @@ class HoudiniWrapper(object):
         # If version is False (no argument), display any availble versions and
         # exit.
         if not self.arguments.version:
-            self._dislayVersions()
+            self._displayVersions()
             return
 
         # We are going to download and install a build so do this before
@@ -176,7 +176,7 @@ class HoudiniWrapper(object):
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    def _dislayVersions(self):
+    def _displayVersions(self):
         """Display a list of Houdini versions that are available to install,
         run or uninstall.
 
@@ -205,11 +205,22 @@ class HoudiniWrapper(object):
             else:
                 self._print("Installed Houdini builds:")
 
-            self._print(
-                '\t' + " ".join(
-                    [str(build) for build in manager.installed]
-                )
-            )
+            default_build = manager.getDefaultBuild()
+
+            output = []
+
+            for build in manager.installed:
+                if build ==  default_build:
+                    # Run the message through the styler.
+                    msg = ht.output.ShellOutput.blue(str(build))
+
+                    output.append(msg)
+
+                else:
+                    output.append(str(build))
+
+
+            self._print('\t' + ' '.join(output))
 
             self._print()
 
@@ -280,10 +291,8 @@ class HoudiniWrapper(object):
         """
         # Doing colored output.
         if colored is not None:
-            shell = ht.output.ShellOutput()
-
             # Run the message through the styler.
-            msg = getattr(shell, colored)(msg)
+            msg = getattr(ht.output.ShellOutput, colored)(msg)
 
         # Print the message.
         if not self.silent:
