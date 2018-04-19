@@ -210,7 +210,7 @@ class HoudiniWrapper(object):
             output = []
 
             for build in manager.installed:
-                if build ==  default_build:
+                if build == default_build:
                     # Run the message through the styler.
                     msg = ht.output.ShellOutput.blue(str(build))
 
