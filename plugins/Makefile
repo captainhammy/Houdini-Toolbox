@@ -1,5 +1,5 @@
 
-SUBDIRS = plugins
+SUBDIRS = ROP SOP
 
 INSTALLDIRS = $(SUBDIRS:%=install-%)
 CLEANDIRS = $(SUBDIRS:%=clean-%)
