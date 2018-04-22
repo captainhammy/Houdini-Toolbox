@@ -6,5 +6,5 @@ ICONS = SOP_idattribcopy.svg
 SHELFTOOLS = sop_idattribcopy.shelf
 SOURCES = SOP_IdAttribCopy.C
 
-include $(TOOLBOXDIR)/Makefile.gnu
+include $(TOOLBOXDIR)/plugins/Makefile.gnu
 

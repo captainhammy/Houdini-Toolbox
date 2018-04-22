@@ -6,5 +6,5 @@ ICONS = ROP_script.svg
 SHELFTOOLS = rop_script.shelf
 SOURCES = ROP_Script.C
 
-include $(TOOLBOXDIR)/Makefile.gnu
+include $(TOOLBOXDIR)/plugins/Makefile.gnu
 

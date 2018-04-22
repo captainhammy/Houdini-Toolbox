@@ -5,5 +5,5 @@ HELPCONTEXT = sop
 SHELFTOOLS = sop_dopimpactpoints.shelf
 SOURCES = SOP_DopImpactPoints.C
 
-include $(TOOLBOXDIR)/Makefile.gnu
+include $(TOOLBOXDIR)/plugins/Makefile.gnu
 

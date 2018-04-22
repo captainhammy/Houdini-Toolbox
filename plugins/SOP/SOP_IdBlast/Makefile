@@ -4,5 +4,5 @@ HELP = idblast.txt
 HELPCONTEXT = sop
 SOURCES = SOP_IdBlast.C
 
-include $(TOOLBOXDIR)/Makefile.gnu
+include $(TOOLBOXDIR)/plugins/Makefile.gnu
 

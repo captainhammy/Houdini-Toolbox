@@ -6,5 +6,5 @@ ICONS = SOP_pointsfromvoxels.svg
 SHELFTOOLS = sop_pointsfromvoxels.shelf
 SOURCES = SOP_PointsFromVoxels.C
 
-include $(TOOLBOXDIR)/Makefile.gnu
+include $(TOOLBOXDIR)/plugins/Makefile.gnu
 
