@@ -40,6 +40,7 @@ class SceneLoadEvent(HoudiniEventBlock):
         hou.hscript("set -u HOUDINI_ICON_CACHE_DIR")
 
     def loadHipAOVs(self, scriptargs):
+        """Load any AOVs that are contained in the hip file being opened."""
         root = hou.node("/")
 
         if "aovs.json" in root.userDataDict():
