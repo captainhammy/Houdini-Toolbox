@@ -18,7 +18,7 @@ class AOVSourceManager(object):
         self._group_sources = {}
         self._otl_sources = {}
         self._hip_source = AOVHipSource()
-        self._unsaved_source = AOVUnsavedSource
+        self._unsaved_source = AOVUnsavedSource()
 
     def getFileSource(self, filepath):
         """Get the source representing a file on disk."""
@@ -227,6 +227,11 @@ class BaseAOVSource(object):
 
         group.source = self
 
+    def clear(self):
+        self._aovs = []
+        self._data.clear()
+        self._groups = []
+
     def containsAOV(self, aov):
         """Check if this source contains an AOV."""
         return aov in self.aovs
@@ -292,11 +297,11 @@ class BaseAOVSource(object):
             self.write()
 
 
-class AOVAssetSection(BaseAOVSource):
+class AOVAssetSectionSource(BaseAOVSource):
     """This class represents AOVs and groups stored in Digital Asset sections."""
 
     # The name of the digital asset section definitions will be stored in.
-    _SECTION_NAME = "aovs.json"
+    SECTION_NAME = "aovs.json"
 
     def __init__(self, section):
         # Store information about the operator type.  We do this so we don't have
@@ -307,10 +312,10 @@ class AOVAssetSection(BaseAOVSource):
         self._category = section.definition().nodeType().category().name()
         self._type_name = section.definition().nodeType().name()
 
-        super(AOVAssetSection, self).__init__()
+        super(AOVAssetSectionSource, self).__init__()
 
         # Build an opdef: style display name for our section.
-        self._name = AOVAssetSection.buildName(section)
+        self._name = AOVAssetSectionSource.buildName(section)
 
     def _loadData(self):
         """Load the data from the section."""
@@ -358,7 +363,7 @@ class AOVAssetSection(BaseAOVSource):
         """Get the representative hou.HDASection for the source."""
         category = hou.nodeTypeCategories()[self._category]
         definition = hou.hdaDefinition(category, self._type_name, self._path)
-        return definition.sections()[self._SECTION_NAME]
+        return definition.sections()[self.SECTION_NAME]
 
     @staticmethod
     def createSectionFromNode(node):
@@ -366,20 +371,20 @@ class AOVAssetSection(BaseAOVSource):
         definition = node.type().definition()
 
         # Add a new section with empty json data.
-        section = definition.addSection(AOVAssetSection._SECTION_NAME, json.dumps({}))
+        section = definition.addSection(AOVAssetSectionSource.SECTION_NAME, json.dumps({}))
 
         return section
 
     @staticmethod
     def getAOVSection(node):
         """Get the hou.HDASection representing AOV storage from a node."""
-        return node.type().definition().sections()[AOVAssetSection._SECTION_NAME]
+        return node.type().definition().sections()[AOVAssetSectionSource.SECTION_NAME]
 
     @staticmethod
     def hasAOVSection(node):
         """Check to see if a node contains embedded AOV definitions."""
         definition = node.type().definition()
-        return AOVAssetSection._SECTION_NAME in definition.sections().keys()
+        return AOVAssetSectionSource.SECTION_NAME in definition.sections().keys()
 
     def write(self):
         """Write data to the source section."""
@@ -437,7 +442,7 @@ class AOVFileSource(BaseAOVSource):
 class AOVHipSource(BaseAOVSource):
     """This class represents AOVs and groups stored in the current hip file."""
 
-    _USER_DATA_NAME = "aovs.json"
+    USER_DATA_NAME = "aovs.json"
 
     def __init__(self):
         super(AOVHipSource, self).__init__()
@@ -464,7 +469,7 @@ class AOVHipSource(BaseAOVSource):
 
     def _loadData(self):
         """Load the data from the root node's user data dictionary."""
-        user_data = self.root.userData(self._USER_DATA_NAME)
+        user_data = self.root.userData(self.USER_DATA_NAME)
 
         if user_data is not None:
             return json.loads(user_data)
@@ -480,7 +485,7 @@ class AOVHipSource(BaseAOVSource):
         """Write data to the hip file."""
         data = self._getData()
 
-        self.node.setUserData(self._USER_DATA_NAME, json.dumps(data, indent=4))
+        self.node.setUserData(self.USER_DATA_NAME, json.dumps(data, indent=4))
 
         # TODO: Should we save the file?  If so, we need to adjust the read_only check.
         # Save the hip file to seal the changes.
@@ -521,7 +526,7 @@ class AOVUnsavedSource(BaseAOVSource):
 
     def _loadData(self):
         """This is a noop as there is never any data to load."""
-        return None
+        return {}
 
     def write(self):
         """This is a noop as there is never any place to write to."""
