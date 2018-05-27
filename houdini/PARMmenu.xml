@@ -2,6 +2,90 @@
 
 <menuDocument>
     <menu>
+	<scriptItem id="promote_parm_to_node">
+            <label>Promote Parameter to Node</label>
+            <insertAfter>export_parm_type_props</insertAfter>
+            <scriptCode><![CDATA[# Get the parms to act on.
+parms = kwargs["parms"]
+
+# The number of parms that were selected. 
+num_parms = len(parms)
+
+parm_tuple = parms[0].tuple()
+
+# Find the node to start from.
+node = parm_tuple.node()
+
+# Prompt for a target node.  Start at the parent (the most logical choice?)
+result = hou.ui.selectNode(initial_node=node.parent())
+
+# Try to find ths selected node.
+target_node = hou.node(result)
+
+if target_node is not None:
+    if target_node == node:
+	raise hou.OperationFailed("Cannot promote to the source node.")
+
+    # Should the target parm will be set to the source value?
+    set_value = True
+
+    # The target node already has a parm tuple with the desired name so we
+    # should prompt to use it.
+    if target_node.parmTuple(parm_tuple.name()) is not None:
+	choice = hou.ui.displayMessage(
+	    "Parameter already exists on {}.  Link to existing parameter?".format(
+		target_node.path(),
+	    ),
+	    buttons=("Yes and keep current value", "Yes and update value", "Cancel"),
+	    severity=hou.severityType.ImportantMessage,
+	)
+
+	# Use parm but keep value, so don't set.
+	if choice == 0:
+	    set_value = False
+
+	# Use parm and update value.
+	elif choice == 1:
+	    set_value = True
+
+	# Cancelling so clear out the parm list so we don't try to set anything.
+	else:
+	   parms = ()
+
+    else:
+	# Get the target node's parm interface.
+	target_ptg = target_node.parmTemplateGroup()
+
+	# The parameter definition for the parm we are trying to link.
+	parm_template = parm_tuple.parmTemplate()
+
+	# If we are trying to link a single parm inside a tuple then modify
+	# the parm definition to represent that single parm.
+	if num_parms != len(parm_tuple):
+	    parm_template.setNumComponents(1)
+	    parm_template.setName(parms[0].name())
+
+	# Add the parameter definition to the parm list.
+	target_ptg.addParmTemplate(parm_template)
+
+	# Update the interface with the new definition.
+	target_node.setParmTemplateGroup(target_ptg)
+
+    # Process each parm to set.
+    for parm in parms:
+	# Get the target parm.
+	target_parm = target_node.parm(parm.name())
+
+	# Set the target parm to the current value if required.
+	if set_value:
+	   target_parm.set(parm.eval())
+
+	# Create the channel reference.
+	parm.set(target_parm)
+]]>
+            </scriptCode>
+        </scriptItem>
+
         <scriptItem id="relative_to_absolute_path">
             <insertAfter>motion_effects_menu</insertAfter>
             <label>Convert to Absolute Path</label>
