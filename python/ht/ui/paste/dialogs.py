@@ -155,7 +155,7 @@ class PasteItemsDialog(QtWidgets.QDialog):
     def _sourceChanged(self, index):
         source = self.source_chooser.menu.manager.sources[index]
 
-        self.table.setSource(source)
+        self.source_choice_widget.setSource(source)
 
     def _verifySelection(self, new_selection, old_selection):
         """Verify the selection to enable the Paste button.
@@ -163,7 +163,7 @@ class PasteItemsDialog(QtWidgets.QDialog):
         The selection is valid if one or more rows is selected.
 
         """
-        valid = bool(self.table.selection_model.selectedRows())
+        valid = self.source_choice_widget.verifySelection(new_selection, old_selection)
 
         # Enable/disable button based on the validity of the selection.
         self.button_box.accept_button.setEnabled(valid)
@@ -194,13 +194,13 @@ class PasteItemsDialog(QtWidgets.QDialog):
 
         # =====================================================================
 
-        self.table = widgets.PasteItemTableView(current_source, context)
+        self.source_choice_widget = widgets.PasteItemTableView(current_source, context)
 
-        layout.addWidget(self.table)
+        layout.addWidget(self.source_choice_widget)
 
         # In the event of a double click we want to trigger a paste of the
         # selected item.
-        self.table.doubleClicked.connect(self.acceptDoubleClick)
+        self.source_choice_widget.doubleClicked.connect(self.acceptDoubleClick)
 
         # =====================================================================
 
@@ -215,13 +215,13 @@ class PasteItemsDialog(QtWidgets.QDialog):
 
         # Whenever the selection of the table is changed we need to verify
         # something is chosen
-        self.table.selection_model.selectionChanged.connect(self._verifySelection)
+        self.source_choice_widget.selection_model.selectionChanged.connect(self._verifySelection)
 
     def paste(self):
         """Paste the selected files into the scene."""
         self.accept()
 
-        to_load = self.table.getSourcesToLoad()
+        to_load = self.source_choice_widget.getSourcesToLoad()
 
         api.pasteItemsFromSources(to_load, self.editor, self.pos, self.mousepos)
 

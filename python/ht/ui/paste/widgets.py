@@ -96,6 +96,33 @@ class PasteButtonBox(_CustomButtonBox):
         )
 
 
+class _FileChooserWidget(QtWidgets.QWidget):
+
+    def __init__(self, parent=None):
+        super(FileChooserWidget, self).__init__(parent)
+
+        self.setProperty("houdiniStyle", True)
+
+        layout = QtWidgets.QHBoxLayout()
+
+        self.setLayout(layout)
+
+        self.path = QtWidgets.QLineEdit()
+        layout.addWidget(self.path)
+
+        self.button = hou.qt.createFileChooserButton()
+        layout.addWidget(self.button)
+
+        self.button.fileSelected.connect(self.setPath)
+
+    def setPath(self, path):
+        self.path.setText(path)
+
+class PasteChosenFileWidget(QtWidgets.QWidget):
+
+    def __init__(self, parent=None):
+        pass
+
 
 class PasteItemTableView(QtWidgets.QTableView):
 
@@ -128,6 +155,14 @@ class PasteItemTableView(QtWidgets.QTableView):
 
     def setSource(self, source):
         self.table_model.setSource(source)
+
+    def verifySelection(self, new_selection, old_selection):
+        """Verify the selection to enable the Paste button.
+
+        The selection is valid if one or more rows is selected.
+
+        """
+        return bool(self.selection_model.selectedRows())
 
 
 class LabeledSourceWidget(QtWidgets.QWidget):
