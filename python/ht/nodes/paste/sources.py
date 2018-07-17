@@ -6,18 +6,11 @@ import os
 
 import hou
 
+
 class SourceManager(object):
 
     def __init__(self):
         self._sources = []
-
-        self._sources.extend(
-            (
-                VarTmpCPIOSource(),
-                HomeToolDir(),
-              #  FileChooserCPIOSource(),
-            )
-        )
 
     @property
     def sources(self):
@@ -27,6 +20,7 @@ class SourceManager(object):
 
 
 class CopyPasteSource(object):
+    """Base class for managing copy/paste items"""
     __metaclass__ = abc.ABCMeta
 
     def __init__(self):
@@ -54,6 +48,7 @@ class CopyPasteSource(object):
 
 
 class CPIOFileCopyPasteSource(CopyPasteSource):
+    """Class responsible for handling cpio file sources arranged in context folders."""
 
     def __init__(self):
         super(CPIOFileCopyPasteSource, self).__init__()
@@ -101,7 +96,7 @@ class CPIOFileCopyPasteSource(CopyPasteSource):
 
 
 class HomeToolDir(CPIOFileCopyPasteSource):
-
+    """Copy/Paste items from ~/tooldev/copypaste."""
     _base_path = os.path.join(os.path.expanduser("~"), "tooldev", "copypaste")
 
     @property
@@ -114,9 +109,9 @@ class HomeToolDir(CPIOFileCopyPasteSource):
 
 
 class VarTmpCPIOSource(CPIOFileCopyPasteSource):
+    """Copy/Paste items from /var/tmp/copypaste."""
 
     _base_path = "/var/tmp/copypaste"
-
 
     @property
     def display_name(self):
@@ -127,22 +122,23 @@ class VarTmpCPIOSource(CPIOFileCopyPasteSource):
         return hou.qt.createIcon("book")
 
 
-class FileChooserCPIOSource(CPIOFileCopyPasteSource):
-
-    _base_path = None
-
-    @property
-    def display_name(self):
-        return "Choose A File"
-
-    @property
-    def icon(self):
-        return hou.qt.createIcon("SOP_file")
+# class FileChooserCPIOSource(CPIOFileCopyPasteSource):
+#
+#     _base_path = None
+#
+#     @property
+#     def display_name(self):
+#         return "Choose A File"
+#
+#     @property
+#     def icon(self):
+#         return hou.qt.createIcon("SOP_file")
 
 
 
 class CopyPasteItemSource(object):
     """Class responsible for loading and saving items from a source."""
+
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, context):
@@ -174,7 +170,7 @@ class CopyPasteItemSource(object):
 
 
 class CPIOCopyPasteItemSource(CopyPasteItemSource):
-    """Class to load and save items from cpio files."""
+    """Class to load and save items from .cpio files."""
 
     def __init__(self, context, file_path):
         super(CPIOCopyPasteItemSource, self).__init__(context)

@@ -2,7 +2,7 @@
 
 from PySide2 import QtWidgets
 
-from ht.nodes.paste.sources import SourceManager
+import ht.nodes.paste
 from ht.ui.paste import models
 
 import hou
@@ -152,8 +152,7 @@ class _SourceChooserWidget(QtWidgets.QComboBox):
 
     def __init__(self, parent=None):
         super(_SourceChooserWidget, self).__init__(parent)
-        # TODO: Don't init every time, use session version
-        self._manager = SourceManager()
+        self._manager = ht.nodes.paste.MANAGER
 
         for source in self.manager.sources:
             self.addItem(source.icon, source.display_name, source)
