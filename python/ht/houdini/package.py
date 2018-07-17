@@ -197,7 +197,7 @@ class HoudiniBuildData(object):
             type_data = version_data["types"]
 
             if system in type_data:
-                return type_data[system]
+                return type_data[system].get("arch")
 
             raise UnsupportedMachineArchitectureError(
                 "Machine architecture not supported for {}".format(major_minor)
