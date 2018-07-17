@@ -1,0 +1,2 @@
+h.tool:copy_items	"Copy Items to File"	"Shelf Tool: Copy Items to File"	 Alt+Ctrl+C
+h.tool:paste_items	"Paste Items from File"	"Shelf Tool: Paste Items from File"	 Alt+Ctrl+V
