@@ -40,7 +40,7 @@ def createEventHandler(uievent, pending_actions):
                 return None, True
 
             dialog = dialogs.CopyItemsDialog(items, parent, parent=hou.qt.mainWindow())
-            dialog.exec_()
+            dialog.show()
 
             # This is a one off event so we don't care what happens after this.
             return None, True
@@ -62,7 +62,7 @@ def createEventHandler(uievent, pending_actions):
                 pos = None
 
             dialog = dialogs.PasteItemsDialog(editor, pos, mousepos, parent=hou.qt.mainWindow())
-            dialog.exec_()
+            dialog.show()
 
             # This is a one off event so we don't care what happens after this.
             return None, True
