@@ -9,7 +9,7 @@ import re
 # DD Imports
 from PySide2 import QtWidgets
 
-from ht.nodes.paste import api, utils
+from ht.nodes.paste import MANAGER, api, utils
 from ht.ui.paste import widgets
 
 # Houdini Imports
@@ -27,6 +27,8 @@ class CopyItemsDialog(QtWidgets.QDialog):
 
         self.parent_node = parent_node
         self.items = items
+
+        self.context = self.parent_node.childTypeCategory().name()
 
         self.setWindowTitle("Copy Items")
         self.setProperty("houdiniStyle", True)
@@ -61,11 +63,12 @@ class CopyItemsDialog(QtWidgets.QDialog):
         """Copy the selected items to a file based on the description."""
         self.accept()
 
-        context = self.parent_node.childTypeCategory().name()
+#        context = self.parent_node.childTypeCategory().name()
 
-        source = self.source_chooser.getSource()
+        file_source = self.choose_widget.get_source()
+        #source = self.choose_widget.getSource()
 
-        file_source = source.create_source(context, self.description.text())
+        #file_source = source.create_source(self.context, self.description.text())
 
         # Save the items to target.
         api.saveItemsToSource(file_source, self.parent_node, self.items)
@@ -75,47 +78,8 @@ class CopyItemsDialog(QtWidgets.QDialog):
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
-        self.source_chooser = widgets.LabeledSourceWidget("Copy items to")
-        layout.addWidget(self.source_chooser)
-
-        current_source = self.source_chooser.getSource()
-
-        # =====================================================================
-
-        context = self.parent_node.childTypeCategory().name()
-    #    self.table = widgets.PasteItemTableView(current_source, context, multi_select=False)
-      #  layout.addWidget(self.table)
-
-        # =====================================================================
-
-        layout.addWidget(QtWidgets.QLabel("Enter a description (ie: a cool box)"))
-
-        # =====================================================================
-
-        self.description = QtWidgets.QLineEdit()
-        layout.addWidget(self.description)
-
-        # =====================================================================
-
-        warning_layout = QtWidgets.QHBoxLayout()
-        layout.addLayout(warning_layout)
-
-        self.warning_icon = QtWidgets.QLabel()
-        warning_layout.addWidget(self.warning_icon)
-
-        warning_icon = hou.qt.createIcon("DIALOG_warning")
-        self.warning_icon.setPixmap(warning_icon.pixmap(14, 14))
-        self.warning_icon.setHidden(True)
-
-        self.warning_label = QtWidgets.QLabel()
-        warning_layout.addWidget(self.warning_label)
-
-        warning_layout.addStretch(1)
-
-        # =====================================================================
-
-        self.item_list = widgets.CopyItemListView(self.items)
-        layout.addWidget(self.item_list)
+        self.choose_widget = widgets.ChooseCopySourceWidget(self.context)
+        layout.addWidget(self.choose_widget)
 
         # =====================================================================
 
@@ -128,8 +92,18 @@ class CopyItemsDialog(QtWidgets.QDialog):
 
         # =====================================================================
 
-        self.description.textChanged.connect(self._validateDescription)
+        self.choose_widget.target_valid_signal.connect(self.button_box.accept_button.setEnabled)
 
+
+def _buildWidgetsForSources(context):
+    source_widgets = []
+
+    for source in MANAGER.sources:
+        widget = widgets._getChooserForSource(source, context)
+
+        source_widgets.append(widget)
+
+    return source_widgets
 
 class PasteItemsDialog(QtWidgets.QDialog):
     """Dialog to paste items."""
@@ -150,57 +124,22 @@ class PasteItemsDialog(QtWidgets.QDialog):
         self.setMinimumWidth(550)
         self.setMinimumHeight(350)
 
-        self.source_chooser.menu.currentIndexChanged.connect(self._sourceChanged)
-
-    def _sourceChanged(self, index):
-        source = self.source_chooser.menu.manager.sources[index]
-
-        self.source_choice_widget.setSource(source)
-
-    def _verifySelection(self, new_selection, old_selection):
-        """Verify the selection to enable the Paste button.
-
-        The selection is valid if one or more rows is selected.
-
-        """
-        valid = self.source_choice_widget.verifySelection(new_selection, old_selection)
-
-        # Enable/disable button based on the validity of the selection.
+    def _setAcceptEnabled(self, valid):
         self.button_box.accept_button.setEnabled(valid)
-
-    def acceptDoubleClick(self, index):
-        """Accept a double click and paste the selected item."""
-        if not index.isValid():
-            return
-
-        self.paste()
 
     def initUI(self):
         """Initialize the UI."""
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
-        # =====================================================================
-
-        self.source_chooser = widgets.LabeledSourceWidget("Paste items from")
-        layout.addWidget(self.source_chooser)
-
-        current_source = self.source_chooser.getSource()
-
-        # =====================================================================
-
         context = self.editor.pwd().childTypeCategory().name()
-        layout.addWidget(widgets.ContextDisplayWidget(context))
 
-        # =====================================================================
+        self.choose_widget = widgets.ChoosePasteSourceWidget(context)
 
-        self.source_choice_widget = widgets.PasteItemTableView(current_source, context)
+        self.choose_widget.performPasteSignal.connect(self.paste)
+        self.choose_widget.source_valid_signal.connect(self._setAcceptEnabled)
 
-        layout.addWidget(self.source_choice_widget)
-
-        # In the event of a double click we want to trigger a paste of the
-        # selected item.
-        self.source_choice_widget.doubleClicked.connect(self.acceptDoubleClick)
+        layout.addWidget(self.choose_widget)
 
         # =====================================================================
 
@@ -211,17 +150,11 @@ class PasteItemsDialog(QtWidgets.QDialog):
         self.button_box.accepted.connect(self.paste)
         self.button_box.rejected.connect(self.reject)
 
-        # =====================================================================
-
-        # Whenever the selection of the table is changed we need to verify
-        # something is chosen
-        self.source_choice_widget.selection_model.selectionChanged.connect(self._verifySelection)
-
     def paste(self):
         """Paste the selected files into the scene."""
         self.accept()
 
-        to_load = self.source_choice_widget.getSourcesToLoad()
+        to_load = self.choose_widget.getSourcesToLoad()
 
         api.pasteItemsFromSources(to_load, self.editor, self.pos, self.mousepos)
 
@@ -237,7 +170,8 @@ def copyItem(item):
 
     # Run the copy dialog.
     dialog = CopyItemsDialog(items, parent, parent=hou.qt.mainWindow())
-    dialog.exec_()
+
+    dialog.show()
 
 
 def copyItems(scriptargs):
@@ -272,11 +206,13 @@ def copyItems(scriptargs):
 
     # Run the copy dialog.
     dialog = CopyItemsDialog(items, parent, parent=hou.qt.mainWindow())
-    dialog.exec_()
+#    dialog.exec_()
+    dialog.show()
 
 
 def pasteItems(scriptargs=None):
     """Paste items into the current context."""
+    print scriptargs
     # Try to find the current pane/context/level.
     current_pane = utils.findCurrentPaneTab(scriptargs)
 
@@ -295,4 +231,4 @@ def pasteItems(scriptargs=None):
 
     # Run the paste dialog.
     dialog = PasteItemsDialog(current_pane, pos, pos, parent=hou.qt.mainWindow())
-    dialog.exec_()
+    dialog.show()

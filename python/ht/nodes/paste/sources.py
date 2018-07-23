@@ -3,6 +3,7 @@
 import abc
 import getpass
 import os
+import re
 
 import hou
 
@@ -70,13 +71,16 @@ class CPIOFileCopyPasteSource(CopyPasteSource):
 
             context_sources = self.sources.setdefault(context, [])
 
-            context_sources.extend(
-                [CPIOCopyPasteItemSource(context, os.path.join(context_path, p)) for p in sorted(files)]
-            )
+            for p in sorted(files):
+                if re.match("\w+:[\w_-]+\.cpio", p) is not None:
+                    context_sources.append(CPIOCopyPasteItemSource(context, os.path.join(context_path, p)))
 
-    def create_source(self, context, description, author=None):
+    def create_source(self, context, description, author=None, base_path=None):
         if author is None:
             author = getpass.getuser()
+
+        if base_path is None:
+            base_path = self._base_path
 
         clean_description = description.replace(" ", "-")
 
@@ -84,7 +88,7 @@ class CPIOFileCopyPasteSource(CopyPasteSource):
         # by a :.
         file_name = "{}:{}.cpio".format(author, clean_description)
 
-        file_path = os.path.join(self._base_path, context, file_name)
+        file_path = os.path.join(base_path, context, file_name)
 
         source = CPIOCopyPasteItemSource(context, file_path)
         self.sources[context] = source
@@ -122,17 +126,17 @@ class VarTmpCPIOSource(CPIOFileCopyPasteSource):
         return hou.qt.createIcon("book")
 
 
-# class FileChooserCPIOSource(CPIOFileCopyPasteSource):
-#
-#     _base_path = None
-#
-#     @property
-#     def display_name(self):
-#         return "Choose A File"
-#
-#     @property
-#     def icon(self):
-#         return hou.qt.createIcon("SOP_file")
+class FileChooserCPIOSource(CPIOFileCopyPasteSource):
+
+     _base_path = None
+
+     @property
+     def display_name(self):
+         return "Choose A File"
+
+     @property
+     def icon(self):
+         return hou.qt.createIcon("SOP_file")
 
 
 
