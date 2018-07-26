@@ -3,13 +3,8 @@
 # IMPORTS
 # ==============================================================================
 
-# Python Imports
-import os
-
 # DD Imports
 from PySide2 import QtCore
-
-from ht.nodes.paste import utils
 
 # Houdini Imports
 import hou
