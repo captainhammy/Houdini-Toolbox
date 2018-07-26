@@ -78,7 +78,7 @@ class CopyItemsDialog(QtWidgets.QDialog):
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
-        self.choose_widget = widgets.ChooseCopySourceWidget(self.context)
+        self.choose_widget = widgets.ChooseCopySourceWidget(self.context, self.items)
         layout.addWidget(self.choose_widget)
 
         # =====================================================================

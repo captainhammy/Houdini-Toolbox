@@ -74,7 +74,7 @@ class PasteTableModel(QtCore.QAbstractTableModel):
         self.context = context
         self.sources = source.get_sources(context)
 
-    def setSource(self, source):
+    def set_source(self, source):
         self.sources = source.get_sources(self.context)
         self.modelReset.emit()
 

@@ -105,7 +105,7 @@ class CopyHelperChooserWidget(QtWidgets.QWidget):
 
         self.target_valid = True
 
-    def getPath(self):
+    def get_path(self):
         return None
 
 
@@ -133,25 +133,25 @@ class CopyFileChooserWidget(QtWidgets.QWidget):
 
         layout.addWidget(self.button)
 
-        self.button.fileSelected.connect(self.setPath)
+        self.button.fileSelected.connect(self.set_path)
 
-        self.path.textChanged.connect(self.verifySelection)
+        self.path.textChanged.connect(self.verify_selection)
 
 #    def createSource(self):
 #        sources = [ht.nodes.paste.sources.CPIOCopyPasteItemSource("Object", self.path.text().strip())]
 #        return sources
 
-    def getPath(self):
+    def get_path(self):
         return hou.expandString(self.path.text().strip())
 
-    def setPath(self, path):
+    def set_path(self, path):
         self.path.setText(path)
 
-    def setSource(self, source):
+    def set_source(self, source):
         pass
 
-    def verifySelection(self, *args, **kwargs):
-        valid = os.path.isdir(self.getPath())
+    def verify_selection(self, *args, **kwargs):
+        valid = os.path.isdir(self.get_path())
         self.target_valid = valid
 
         self.target_updated_signal.emit()
@@ -179,21 +179,21 @@ class PasteFileChooserWidget(QtWidgets.QWidget):
 
         layout.addWidget(self.button)
 
-        self.button.fileSelected.connect(self.setPath)
+        self.button.fileSelected.connect(self.set_path)
 
-        self.path.textChanged.connect(self.verifySelection)
+        self.path.textChanged.connect(self.verify_selection)
 
-    def getSourcesToLoad(self):
+    def get_sources_to_load(self):
         sources = [ht.nodes.paste.sources.CPIOCopyPasteItemSource("Object", self.path.text().strip())]
         return sources
 
-    def setPath(self, path):
+    def set_path(self, path):
         self.path.setText(path)
 
-    def setSource(self, source):
+    def set_source(self, source):
         pass
 
-    def verifySelection(self, *args, **kwargs):
+    def verify_selection(self, *args, **kwargs):
         valid = os.path.exists(self.path.text().strip())
 
         self.sourceAbleToPasteSignal.emit(valid)
@@ -240,28 +240,28 @@ class PasteItemTableView(QtWidgets.QTableView):
 
         self.selection_model = self.selectionModel()
 
-        self.selection_model.selectionChanged.connect(self.verifySelection)
+        self.selection_model.selectionChanged.connect(self.verify_selection)
 
-        self.doubleClicked.connect(self.acceptDoubleClick)
+        self.doubleClicked.connect(self.accept_double_click)
 
-    def acceptDoubleClick(self, index):
+    def accept_double_click(self, index):
         """Accept a double click and paste the selected item."""
         if not index.isValid():
             return
 
         self.performPasteSignal.emit()
 
-    def getSourcesToLoad(self):
+    def get_sources_to_load(self):
         # Get selected rows from the table.
         indexes = self.selection_model.selectedRows()
 
         # Get the selected sources from the model based on the indexes.
         return [self.table_model.sources[index.row()] for index in indexes]
 
-    def setSource(self, source):
-        self.table_model.setSource(source)
+    def set_source(self, source):
+        self.table_model.set_source(source)
 
-    def verifySelection(self, new_selection, old_selection):
+    def verify_selection(self, new_selection, old_selection):
         """Verify the selection to enable the Paste button.
 
         The selection is valid if one or more rows is selected.
@@ -286,8 +286,8 @@ class LabeledSourceWidget(QtWidgets.QWidget):
         self.menu = _SourceChooserWidget()
         layout.addWidget(self.menu, 1)
 
-    def getSource(self):
-        return self.menu.getSource()
+    def get_source(self):
+        return self.menu.get_source()
 
 
 class _SourceChooserWidget(QtWidgets.QComboBox):
@@ -299,7 +299,7 @@ class _SourceChooserWidget(QtWidgets.QComboBox):
         for source in self.manager.sources:
             self.addItem(source.icon, source.display_name, source)
 
-    def getSource(self):
+    def get_source(self):
         return self.itemData(self.currentIndex())
 
     @property
@@ -375,9 +375,9 @@ class CopyDescriptionWidget(QtWidgets.QWidget):
 
         # =====================================================================
 
-        self.description.textChanged.connect(self._validateDescription)
+        self.description.textChanged.connect(self._validate_description)
 
-    def _validateDescription(self):
+    def _validate_description(self):
         """Validate desriptions against bad characters."""
         value = self.description.text()
 
@@ -403,7 +403,7 @@ class CopyDescriptionWidget(QtWidgets.QWidget):
 class ChooseCopySourceWidget(QtWidgets.QWidget):
     target_valid_signal = QtCore.Signal(bool)
 
-    def __init__(self, context, parent=None):
+    def __init__(self, context, items, parent=None):
         super(ChooseCopySourceWidget, self).__init__(parent)
 
         self.context = context
@@ -436,9 +436,13 @@ class ChooseCopySourceWidget(QtWidgets.QWidget):
 
         layout.addWidget(self.source_chooser)
 
-        self.source_menu.menu.currentIndexChanged.connect(self._sourceChanged)
+        layout.addWidget(ContextDisplayWidget(context))
 
-    def _sourceChanged(self, index):
+        layout.addWidget(CopyItemListView(items))
+
+        self.source_menu.menu.currentIndexChanged.connect(self._source_changed)
+
+    def _source_changed(self, index):
         self.source_chooser.setCurrentIndex(index)
 
         self._validate_inputs()
@@ -456,21 +460,19 @@ class ChooseCopySourceWidget(QtWidgets.QWidget):
     def get_source(self):
         description = self.description_widget.description.text()
 
-        source = self.source_menu.getSource()
+        source = self.source_menu.get_source()
 
         source_widget = self.source_chooser.currentWidget()
 
         base_path = None
 
         if isinstance(source_widget, CopyFileChooserWidget):
-            base_path = source_widget.getPath()
+            base_path = source_widget.get_path()
 
         file_source = source.create_source(self.context, description, base_path=base_path)
 
-
-        print file_source
-
         return file_source
+
 
 class ChoosePasteSourceWidget(QtWidgets.QWidget):
     source_valid_signal = QtCore.Signal(bool)
@@ -504,12 +506,12 @@ class ChoosePasteSourceWidget(QtWidgets.QWidget):
 
         layout.addWidget(self.source_chooser)
 
-        self.source_menu.menu.currentIndexChanged.connect(self._sourceChanged)
+        self.source_menu.menu.currentIndexChanged.connect(self._source_changed)
 
-    def _sourceChanged(self, index):
+    def _source_changed(self, index):
         self.source_chooser.setCurrentIndex(index)
         self.source_valid_signal.emit(False)
 
-    def getSourcesToLoad(self):
+    def get_sources_to_load(self):
         current = self.source_chooser.currentWidget()
-        return current.getSourcesToLoad()
+        return current.get_sources_to_load()
