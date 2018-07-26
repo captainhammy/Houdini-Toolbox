@@ -4,7 +4,7 @@ from PySide2 import QtCore, QtWidgets
 import os
 import re
 
-import ht.nodes.paste
+import ht.ui.paste
 from ht.ui.paste import models
 
 import hou
@@ -138,7 +138,7 @@ class CopyFileChooserWidget(QtWidgets.QWidget):
         self.path.textChanged.connect(self.verify_selection)
 
 #    def createSource(self):
-#        sources = [ht.nodes.paste.sources.CPIOCopyPasteItemSource("Object", self.path.text().strip())]
+#        sources = [ht.ui.paste.sources.CPIOCopyPasteItemSource("Object", self.path.text().strip())]
 #        return sources
 
     def get_path(self):
@@ -184,7 +184,7 @@ class PasteFileChooserWidget(QtWidgets.QWidget):
         self.path.textChanged.connect(self.verify_selection)
 
     def get_sources_to_load(self):
-        sources = [ht.nodes.paste.sources.CPIOCopyPasteItemSource("Object", self.path.text().strip())]
+        sources = [ht.ui.paste.sources.CPIOCopyPasteItemSource("Object", self.path.text().strip())]
         return sources
 
     def set_path(self, path):
@@ -201,7 +201,7 @@ class PasteFileChooserWidget(QtWidgets.QWidget):
 
 def _getCopyChooserForSource(source, context):
 
-    if isinstance(source, ht.nodes.paste.sources.FileChooserCPIOSource):
+    if isinstance(source, ht.ui.paste.sources.FileChooserCPIOSource):
 
         return CopyFileChooserWidget(context)
 
@@ -211,7 +211,7 @@ def _getCopyChooserForSource(source, context):
 
 def _getPasteChooserForSource(source, context):
 
-    if isinstance(source, ht.nodes.paste.sources.FileChooserCPIOSource):
+    if isinstance(source, ht.ui.paste.sources.FileChooserCPIOSource):
 
         return PasteFileChooserWidget(context)
 
@@ -294,7 +294,7 @@ class _SourceChooserWidget(QtWidgets.QComboBox):
 
     def __init__(self, parent=None):
         super(_SourceChooserWidget, self).__init__(parent)
-        self._manager = ht.nodes.paste.MANAGER
+        self._manager = ht.ui.paste.MANAGER
 
         for source in self.manager.sources:
             self.addItem(source.icon, source.display_name, source)
@@ -319,7 +319,7 @@ def getContextIcon(context):
 def _buildCopyWidgetsForSources(context):
     source_widgets = []
 
-    for source in ht.nodes.paste.MANAGER.sources:
+    for source in ht.ui.paste.MANAGER.sources:
         widget = _getCopyChooserForSource(source, context)
 
         source_widgets.append(widget)
@@ -330,7 +330,7 @@ def _buildCopyWidgetsForSources(context):
 def _buildPasteWidgetsForSources(context):
     source_widgets = []
 
-    for source in ht.nodes.paste.MANAGER.sources:
+    for source in ht.ui.paste.MANAGER.sources:
         widget = _getPasteChooserForSource(source, context)
 
         source_widgets.append(widget)

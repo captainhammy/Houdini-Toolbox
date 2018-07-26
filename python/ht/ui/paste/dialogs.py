@@ -6,7 +6,6 @@
 # DD Imports
 from PySide2 import QtWidgets
 
-from ht.nodes.paste import MANAGER
 from ht.ui.paste import utils, widgets
 
 # Houdini Imports
