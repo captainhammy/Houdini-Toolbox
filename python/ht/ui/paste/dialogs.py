@@ -3,14 +3,11 @@
 # IMPORTS
 # ==============================================================================
 
-# Python Imports
-import re
-
 # DD Imports
 from PySide2 import QtWidgets
 
-from ht.nodes.paste import MANAGER, api, utils
-from ht.ui.paste import widgets
+from ht.nodes.paste import MANAGER
+from ht.ui.paste import utils, widgets
 
 # Houdini Imports
 import hou
@@ -38,40 +35,14 @@ class CopyItemsDialog(QtWidgets.QDialog):
 
         self.setMinimumWidth(350)
 
-    def _validateDescription(self):
-        """Validate desriptions against bad characters."""
-        value = self.description.text()
-
-        if not value:
-            valid = False
-
-        else:
-            valid = not bool(re.search(r"[^a-zA-Z0-9_ ]", value))
-
-        self.button_box.accept_button.setEnabled(valid)
-        self.warning_icon.setHidden(valid)
-
-        if not valid:
-            self.warning_label.setText(
-                "Description can only contain [a-zA-Z0-9_ ]"
-            )
-
-        else:
-            self.warning_label.setText("")
-
     def copy(self):
         """Copy the selected items to a file based on the description."""
         self.accept()
 
-#        context = self.parent_node.childTypeCategory().name()
-
         file_source = self.choose_widget.get_source()
-        #source = self.choose_widget.getSource()
-
-        #file_source = source.create_source(self.context, self.description.text())
 
         # Save the items to target.
-        api.saveItemsToSource(file_source, self.parent_node, self.items)
+        utils.save_items_to_source(file_source, self.parent_node, self.items)
 
     def initUI(self):
         """Inititialize the UI."""
@@ -95,15 +66,6 @@ class CopyItemsDialog(QtWidgets.QDialog):
         self.choose_widget.target_valid_signal.connect(self.button_box.accept_button.setEnabled)
 
 
-def _buildWidgetsForSources(context):
-    source_widgets = []
-
-    for source in MANAGER.sources:
-        widget = widgets._getChooserForSource(source, context)
-
-        source_widgets.append(widget)
-
-    return source_widgets
 
 class PasteItemsDialog(QtWidgets.QDialog):
     """Dialog to paste items."""
@@ -124,9 +86,6 @@ class PasteItemsDialog(QtWidgets.QDialog):
         self.setMinimumWidth(550)
         self.setMinimumHeight(350)
 
-    def _setAcceptEnabled(self, valid):
-        self.button_box.accept_button.setEnabled(valid)
-
     def initUI(self):
         """Initialize the UI."""
         layout = QtWidgets.QVBoxLayout()
@@ -137,8 +96,6 @@ class PasteItemsDialog(QtWidgets.QDialog):
         self.choose_widget = widgets.ChoosePasteSourceWidget(context)
 
         self.choose_widget.performPasteSignal.connect(self.paste)
-        self.choose_widget.source_valid_signal.connect(self._setAcceptEnabled)
-
         layout.addWidget(self.choose_widget)
 
         # =====================================================================
@@ -150,13 +107,15 @@ class PasteItemsDialog(QtWidgets.QDialog):
         self.button_box.accepted.connect(self.paste)
         self.button_box.rejected.connect(self.reject)
 
+        self.choose_widget.source_valid_signal.connect(self.button_box.accept_button.setEnabled)
+
     def paste(self):
         """Paste the selected files into the scene."""
         self.accept()
 
-        to_load = self.choose_widget.getSourcesToLoad()
+        to_load = self.choose_widget.get_sources_to_load()
 
-        api.pasteItemsFromSources(to_load, self.editor, self.pos, self.mousepos)
+        utils.paste_items_from_sources(to_load, self.editor, self.pos, self.mousepos)
 
 
 # ==============================================================================
@@ -177,13 +136,13 @@ def copyItem(item):
 def copyItems(scriptargs):
     """Copy selected items from a pane tab to a target file."""
     # Find the current network editor pane.
-    current_pane = utils.findCurrentPaneTab(scriptargs)
+    current_pane = utils.find_current_pane_tab(scriptargs)
 
     # Couldn't determine where to paste so we display a warning
     # and abort.
     if current_pane is None:
         hou.ui.displayMessage(
-            "Can not copy items",
+            "Cannot copy items",
             help="Could not determine copy context",
             severity=hou.severityType.Warning,
         )
@@ -206,15 +165,13 @@ def copyItems(scriptargs):
 
     # Run the copy dialog.
     dialog = CopyItemsDialog(items, parent, parent=hou.qt.mainWindow())
-#    dialog.exec_()
     dialog.show()
 
 
 def pasteItems(scriptargs=None):
     """Paste items into the current context."""
-    print scriptargs
     # Try to find the current pane/context/level.
-    current_pane = utils.findCurrentPaneTab(scriptargs)
+    current_pane = utils.find_current_pane_tab(scriptargs)
 
     # Couldn't determine where to paste so we display a warning
     # and abort.
