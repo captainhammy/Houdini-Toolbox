@@ -9,6 +9,27 @@ import hou
 import nodegraphutils
 
 # ==============================================================================
+# GLOBALS
+# ==============================================================================
+
+_CONTEXT_ICON_MAP = {
+    "Chop": "chop",
+    "ChopNet": "chop",
+    "Cop2": "cop2",
+    "CopNet": "cop2",
+    "Director": "root",
+    "Dop": "dop",
+    "Object": "obj",
+    "Particle": "pop",
+    "Pop": "pop",
+    "Driver": "rop",
+    "Shop": "shop",
+    "Sop": "sop",
+    "Vop": "vop",
+    "VopNet": "vopnet",
+}
+
+# ==============================================================================
 # FUNCTIONS
 # ==============================================================================
 
@@ -37,6 +58,15 @@ def find_current_pane_tab(scriptargs):
                     break
 
     return pane
+
+
+def get_context_icon(context):
+    icon_name = _CONTEXT_ICON_MAP.get(context)
+
+    if icon_name is not None:
+        icon_name = "NETWORKS_{}".format(icon_name)
+
+    return hou.qt.createIcon(icon_name).pixmap(16, 16)
 
 
 def paste_items_from_sources(sources, editor, pos=None, mousepos=None):

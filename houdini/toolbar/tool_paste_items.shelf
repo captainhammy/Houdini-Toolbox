@@ -5,9 +5,9 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
   <tool name="paste_items" label="Paste Items from File" icon="BUTTONS_paste">
-    <script scriptType="python"><![CDATA[import ht.ui.paste.dialogs
+    <script scriptType="python"><![CDATA[import ht.ui.paste
 
-ht.ui.paste.dialogs.pasteItems(kwargs)
+ht.ui.paste.pasteItems(kwargs)
 ]]></script>
     <toolMenuContext name="viewer">
       <contextNetType>OBJ</contextNetType>

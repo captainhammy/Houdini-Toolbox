@@ -5,27 +5,10 @@ import os
 import re
 
 import ht.ui.paste
-from ht.ui.paste import models
+from ht.ui.paste import MANAGER, models, utils
 
 import hou
 
-
-_CONTEXT_ICON_MAP = {
-    "Chop": "chop",
-    "ChopNet": "chop",
-    "Cop2": "cop2",
-    "CopNet": "cop2",
-    "Director": "root",
-    "Dop": "dop",
-    "Object": "obj",
-    "Particle": "pop",
-    "Pop": "pop",
-    "Driver": "rop",
-    "Shop": "shop",
-    "Sop": "sop",
-    "Vop": "vop",
-    "VopNet": "vopnet",
-}
 
 
 class ContextDisplayWidget(QtWidgets.QWidget):
@@ -36,7 +19,7 @@ class ContextDisplayWidget(QtWidgets.QWidget):
         self.setLayout(layout)
 
         label = QtWidgets.QLabel()
-        icon = getContextIcon(context).pixmap(16, 16)
+        icon = utils.get_context_icon(context)
         label.setPixmap(icon)
         layout.addWidget(label)
 
@@ -147,9 +130,6 @@ class CopyFileChooserWidget(QtWidgets.QWidget):
     def set_path(self, path):
         self.path.setText(path)
 
-    def set_source(self, source):
-        pass
-
     def verify_selection(self, *args, **kwargs):
         valid = os.path.isdir(self.get_path())
         self.target_valid = valid
@@ -189,9 +169,6 @@ class PasteFileChooserWidget(QtWidgets.QWidget):
 
     def set_path(self, path):
         self.path.setText(path)
-
-    def set_source(self, source):
-        pass
 
     def verify_selection(self, *args, **kwargs):
         valid = os.path.exists(self.path.text().strip())
@@ -258,9 +235,6 @@ class PasteItemTableView(QtWidgets.QTableView):
         # Get the selected sources from the model based on the indexes.
         return [self.table_model.sources[index.row()] for index in indexes]
 
-    def set_source(self, source):
-        self.table_model.set_source(source)
-
     def verify_selection(self, new_selection, old_selection):
         """Verify the selection to enable the Paste button.
 
@@ -294,7 +268,7 @@ class _SourceChooserWidget(QtWidgets.QComboBox):
 
     def __init__(self, parent=None):
         super(_SourceChooserWidget, self).__init__(parent)
-        self._manager = ht.ui.paste.MANAGER
+        self._manager = MANAGER
 
         for source in self.manager.sources:
             self.addItem(source.icon, source.display_name, source)
@@ -307,19 +281,13 @@ class _SourceChooserWidget(QtWidgets.QComboBox):
         return self._manager
 
 
-def getContextIcon(context):
-    icon_name = _CONTEXT_ICON_MAP.get(context)
 
-    if icon_name is not None:
-        icon_name = "NETWORKS_{}".format(icon_name)
-
-    return hou.qt.createIcon(icon_name)
 
 
 def _buildCopyWidgetsForSources(context):
     source_widgets = []
 
-    for source in ht.ui.paste.MANAGER.sources:
+    for source in MANAGER.sources:
         widget = _getCopyChooserForSource(source, context)
 
         source_widgets.append(widget)
@@ -330,7 +298,7 @@ def _buildCopyWidgetsForSources(context):
 def _buildPasteWidgetsForSources(context):
     source_widgets = []
 
-    for source in ht.ui.paste.MANAGER.sources:
+    for source in MANAGER.sources:
         widget = _getPasteChooserForSource(source, context)
 
         source_widgets.append(widget)

@@ -41,7 +41,7 @@ class CopyItemsListModel(QtCore.QAbstractListModel):
                 try:
                     return hou.qt.createIcon(item.type().icon())
 
-                except hou.OperationFailed as inst:
+                except hou.OperationFailed:
                     return None
 
             elif isinstance(item, hou.NetworkBox):
@@ -59,7 +59,7 @@ class CopyItemsListModel(QtCore.QAbstractListModel):
 
 
 class PasteTableModel(QtCore.QAbstractTableModel):
-    """Table model to display files available to copy."""
+    """Table model to display files available to paste."""
 
     header_labels = ("User", "Description")
 
@@ -68,10 +68,6 @@ class PasteTableModel(QtCore.QAbstractTableModel):
 
         self.context = context
         self.sources = source.get_sources(context)
-
-    def set_source(self, source):
-        self.sources = source.get_sources(self.context)
-        self.modelReset.emit()
 
     def columnCount(self, parent):
         """The number of columns."""
