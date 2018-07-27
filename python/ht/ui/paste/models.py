@@ -1,10 +1,12 @@
+"""Custom models for Copy/Paste widgets"""
 
 # ==============================================================================
 # IMPORTS
 # ==============================================================================
 
-# DD Imports
+# Standard Library Imports
 from PySide2 import QtCore
+from operator import attrgetter
 
 # Houdini Imports
 import hou
@@ -67,7 +69,11 @@ class PasteTableModel(QtCore.QAbstractTableModel):
         super(PasteTableModel, self).__init__(parent)
 
         self.context = context
-        self.sources = source.get_sources(context)
+
+        sources = source.get_sources(context)
+        sources.sort(key=attrgetter("author", "description"))
+
+        self.sources = sources
 
     def columnCount(self, parent):
         """The number of columns."""

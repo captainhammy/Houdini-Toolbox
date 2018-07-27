@@ -1,14 +1,24 @@
+"""Classes for finding, copying and pasting of files."""
 
+# ==============================================================================
+# IMPORTS
+# ==============================================================================
 
+# Standard Library Imports
 import abc
 import getpass
 import os
 import re
 
+# Houdini Imports
 import hou
 
+# ==============================================================================
+# CLASSES
+# ==============================================================================
 
 class SourceManager(object):
+    """Manager class for all source objects."""
 
     def __init__(self):
         self._sources = []
@@ -69,7 +79,7 @@ class CPIOFileCopyPasteSource(CopyPasteSource):
 
             context_sources = self.sources.setdefault(context, [])
 
-            for p in sorted(files):
+            for p in files:
                 if re.match("\w+:[\w_-]+\.cpio", p) is not None:
                     context_sources.append(CPIOCopyPasteItemSource(context, os.path.join(context_path, p)))
 

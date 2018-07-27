@@ -3,7 +3,7 @@
 # IMPORTS
 # ==============================================================================
 
-# DD Imports
+# Standard Library Imports
 from PySide2 import QtWidgets
 
 from ht.ui.paste import utils, widgets
