@@ -7,7 +7,7 @@
   <tool name="copy_items" label="Copy Items to File" icon="BUTTONS_copy">
     <script scriptType="python"><![CDATA[import ht.ui.paste
 
-ht.ui.paste.copyItems(kwargs)
+ht.ui.paste.copy_items(kwargs)
 ]]></script>
     <toolMenuContext name="viewer">
       <contextNetType>OBJ</contextNetType>

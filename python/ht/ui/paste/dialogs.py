@@ -65,7 +65,6 @@ class CopyItemsDialog(QtWidgets.QDialog):
         self.choose_widget.target_valid_signal.connect(self.button_box.accept_button.setEnabled)
 
 
-
 class PasteItemsDialog(QtWidgets.QDialog):
     """Dialog to paste items."""
 
@@ -121,7 +120,7 @@ class PasteItemsDialog(QtWidgets.QDialog):
 # FUNCTIONS
 # ==============================================================================
 
-def copyItem(item):
+def copy_item(item):
     """Copy a single item to a target file."""
     items = (item,)
     parent = item.parent()
@@ -132,7 +131,7 @@ def copyItem(item):
     dialog.show()
 
 
-def copyItems(scriptargs):
+def copy_items(scriptargs):
     """Copy selected items from a pane tab to a target file."""
     # Find the current network editor pane.
     current_pane = utils.find_current_pane_tab(scriptargs)
@@ -167,7 +166,7 @@ def copyItems(scriptargs):
     dialog.show()
 
 
-def pasteItems(scriptargs=None):
+def paste_items(scriptargs=None):
     """Paste items into the current context."""
     # Try to find the current pane/context/level.
     current_pane = utils.find_current_pane_tab(scriptargs)

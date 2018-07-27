@@ -18,8 +18,6 @@ class SourceManager(object):
         return self._sources
 
 
-
-
 class CopyPasteSource(object):
     """Base class for managing copy/paste items"""
     __metaclass__ = abc.ABCMeta
@@ -91,7 +89,9 @@ class CPIOFileCopyPasteSource(CopyPasteSource):
         file_path = os.path.join(base_path, context, file_name)
 
         source = CPIOCopyPasteItemSource(context, file_path)
-        self.sources[context] = source
+
+        context_sources = self.sources.setdefault(context, [])
+        context_sources.append(source)
 
         return source
 

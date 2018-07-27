@@ -7,7 +7,7 @@
 		<label>To File...</label>
 		<scriptCode><![CDATA[import ht.ui.paste
 
-ht.ui.paste.copyItem(kwargs['node'])
+ht.ui.paste.copy_item(kwargs['node'])
 ]]></scriptCode>
 	    </scriptItem>
 	</subMenu>

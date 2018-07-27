@@ -7,7 +7,7 @@
   <tool name="paste_items" label="Paste Items from File" icon="BUTTONS_paste">
     <script scriptType="python"><![CDATA[import ht.ui.paste
 
-ht.ui.paste.pasteItems(kwargs)
+ht.ui.paste.paste_items(kwargs)
 ]]></script>
     <toolMenuContext name="viewer">
       <contextNetType>OBJ</contextNetType>
