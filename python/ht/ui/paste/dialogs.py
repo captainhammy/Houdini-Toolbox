@@ -93,7 +93,7 @@ class PasteItemsDialog(QtWidgets.QDialog):
 
         self.choose_widget = widgets.ChoosePasteSourceWidget(context)
 
-        self.choose_widget.performPasteSignal.connect(self.paste)
+        self.choose_widget.perform_paste_signal.connect(self.paste)
         layout.addWidget(self.choose_widget)
 
         # =====================================================================

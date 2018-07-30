@@ -5,9 +5,9 @@
 	<subMenu id="opmenu.save_menu">
 	    <scriptItem id="ht.save_item_to_file">
 		<label>To File...</label>
-		<scriptCode><![CDATA[import ht.ui.paste
+		<scriptCode><![CDATA[from ht.ui.paste.dialogs import copy_item
 
-ht.ui.paste.copy_item(kwargs['node'])
+copy_item(kwargs['node'])
 ]]></scriptCode>
 	    </scriptItem>
 	</subMenu>

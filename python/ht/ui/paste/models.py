@@ -70,10 +70,10 @@ class PasteTableModel(QtCore.QAbstractTableModel):
 
         self.context = context
 
-        sources = source.get_sources(context)
-        sources.sort(key=attrgetter("author", "description"))
+        items = source.get_sources(context)
+        items.sort(key=attrgetter("author", "description"))
 
-        self.sources = sources
+        self.items = items
 
     def columnCount(self, parent):
         """The number of columns."""
@@ -88,13 +88,13 @@ class PasteTableModel(QtCore.QAbstractTableModel):
         column = index.column()
 
         if role == QtCore.Qt.DisplayRole:
-            source = self.sources[row]
+            item = self.items[row]
 
             if column == 0:
-                return source.author
+                return item.author
 
             else:
-                return source.description
+                return item.description
 
     def flags(self, index):
         """Item flags.
@@ -120,4 +120,4 @@ class PasteTableModel(QtCore.QAbstractTableModel):
         Equal to the number of files we can paste.
 
         """
-        return len(self.sources)
+        return len(self.items)

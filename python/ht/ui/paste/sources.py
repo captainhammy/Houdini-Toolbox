@@ -10,6 +10,10 @@ import getpass
 import os
 import re
 
+# Houdini Toolbox Imports
+import ht.ui.paste.widgets
+
+
 # Houdini Imports
 import hou
 
@@ -55,9 +59,17 @@ class CopyPasteSource(object):
     def get_sources(self, context):
         pass
 
+    @abc.abstractmethod
+    def copy_helper_widget(self):
+        pass
+
+    @abc.abstractmethod
+    def paste_helper_widget(self):
+        pass
+
 
 class CPIOFileCopyPasteSource(CopyPasteSource):
-    """Class responsible for handling cpio file sources arranged in context folders."""
+    """Class responsible for handling .cpio file sources arranged in context folders."""
 
     def __init__(self):
         super(CPIOFileCopyPasteSource, self).__init__()
@@ -81,7 +93,7 @@ class CPIOFileCopyPasteSource(CopyPasteSource):
 
             for p in files:
                 if re.match("\w+:[\w_-]+\.cpio", p) is not None:
-                    context_sources.append(CPIOCopyPasteItemSource(context, os.path.join(context_path, p)))
+                    context_sources.append(CPIOCopyPasteItemFile(context, os.path.join(context_path, p)))
 
     def create_source(self, context, description, author=None, base_path=None):
         if author is None:
@@ -98,7 +110,7 @@ class CPIOFileCopyPasteSource(CopyPasteSource):
 
         file_path = os.path.join(base_path, context, file_name)
 
-        source = CPIOCopyPasteItemSource(context, file_path)
+        source = CPIOCopyPasteItemFile(context, file_path)
 
         context_sources = self.sources.setdefault(context, [])
         context_sources.append(source)
@@ -108,8 +120,14 @@ class CPIOFileCopyPasteSource(CopyPasteSource):
     def get_sources(self, context):
         return self.sources.get(context, [])
 
+    def copy_helper_widget(self, *args, **kwargs):
+        return ht.ui.paste.widgets.BaseCopyHelperWidget(self, *args, **kwargs)
 
-class HomeToolDir(CPIOFileCopyPasteSource):
+    def paste_helper_widget(self, *args, **kwargs):
+        return ht.ui.paste.widgets.DirectoryItemsPasteHelperWidget(self, *args, **kwargs)
+
+
+class HomeToolDirSource(CPIOFileCopyPasteSource):
     """Copy/Paste items from ~/tooldev/copypaste."""
     _base_path = os.path.join(os.path.expanduser("~"), "tooldev", "copypaste")
 
@@ -138,15 +156,23 @@ class VarTmpCPIOSource(CPIOFileCopyPasteSource):
 
 class FileChooserCPIOSource(CPIOFileCopyPasteSource):
 
-     _base_path = None
+    _base_path = None
 
-     @property
-     def display_name(self):
-         return "Choose A File"
+    @property
+    def display_name(self):
+        return "Choose A File"
 
-     @property
-     def icon(self):
-         return hou.qt.createIcon("SOP_file")
+    @property
+    def icon(self):
+        return hou.qt.createIcon("SOP_file")
+
+    def copy_helper_widget(self, *args, **kwargs):
+        return ht.ui.paste.widgets.FileChooserCopyHelperWidget(self, *args, **kwargs)
+
+    def paste_helper_widget(self, *args, **kwargs):
+        return ht.ui.paste.widgets.FileChooserPasteHelperWidget(self, *args, **kwargs)
+
+
 
 
 
@@ -183,11 +209,11 @@ class CopyPasteItemSource(object):
         pass
 
 
-class CPIOCopyPasteItemSource(CopyPasteItemSource):
+class CPIOCopyPasteItemFile(CopyPasteItemSource):
     """Class to load and save items from .cpio files."""
 
     def __init__(self, context, file_path):
-        super(CPIOCopyPasteItemSource, self).__init__(context)
+        super(CPIOCopyPasteItemFile, self).__init__(context)
 
         self._file_path = file_path
 
@@ -204,7 +230,6 @@ class CPIOCopyPasteItemSource(CopyPasteItemSource):
     @property
     def description(self):
         return self._description
-
 
     @property
     def display_name(self):
