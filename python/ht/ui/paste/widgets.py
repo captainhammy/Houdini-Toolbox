@@ -204,7 +204,7 @@ class FileChooserPasteHelperWidget(QtWidgets.QWidget):
 
     def get_sources_to_load(self):
         """Get the sources to load."""
-        sources = [ht.ui.paste.sources.CPIOCopyPasteItemSource("Object", self.path.text().strip())]
+        sources = [ht.ui.paste.sources.CPIOCopyPasteItemFile("Object", self.path.text().strip())]
         return sources
 
     def verify_selection(self, *args, **kwargs):
