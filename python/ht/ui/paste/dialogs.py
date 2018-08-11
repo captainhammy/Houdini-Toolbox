@@ -32,7 +32,7 @@ class CopyItemsDialog(QtWidgets.QDialog):
 
         self.initUI()
 
-        self.setMinimumWidth(350)
+        self.setMinimumWidth(650)
 
     def copy(self):
         """Copy the selected items to a file based on the description."""
@@ -81,7 +81,7 @@ class PasteItemsDialog(QtWidgets.QDialog):
 
         self.initUI()
 
-        self.setMinimumWidth(550)
+        self.setMinimumWidth(650)
         self.setMinimumHeight(350)
 
     def initUI(self):

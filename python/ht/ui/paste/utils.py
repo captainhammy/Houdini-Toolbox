@@ -4,6 +4,8 @@
 # IMPORTS
 # ==============================================================================
 
+import datetime
+
 # Houdini Imports
 import hou
 import nodegraphutils
@@ -32,6 +34,15 @@ _CONTEXT_ICON_MAP = {
 # ==============================================================================
 # FUNCTIONS
 # ==============================================================================
+
+
+def date_from_string(value):
+    return datetime.datetime.strptime(value, "%m/%d/%Y %H:%M")
+
+
+def date_to_string(date):
+    return date.strftime("%m/%d/%Y %H:%M")
+
 
 def find_current_pane_tab(scriptargs):
     """Attempt to find the current pane tab."""
