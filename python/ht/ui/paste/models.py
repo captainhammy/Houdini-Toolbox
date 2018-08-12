@@ -17,50 +17,6 @@ import hou
 # CLASSES
 # ==============================================================================
 
-class CopyItemsListModel(QtCore.QAbstractListModel):
-    """Simple model to display item paths and icons."""
-
-    def __init__(self, items, parent=None):
-        super(CopyItemsListModel, self).__init__(parent)
-
-        self.items = items
-
-    def columnCount(self, parent):
-        """The number of columns in the view."""
-        return 1
-
-    def data(self, index, role):
-        """Get item data."""
-        row = index.row()
-        item = self.items[row]
-
-        if role == QtCore.Qt.DisplayRole:
-            return item.path()
-
-        if role == QtCore.Qt.DecorationRole:
-            # Use node type icons.
-            if isinstance(item, hou.Node):
-                # This might fail in the event nodes don't have icons, or icons
-                # that don't exist.
-                try:
-                    return hou.qt.createIcon(item.type().icon())
-
-                except hou.OperationFailed:
-                    return None
-
-            elif isinstance(item, hou.NetworkBox):
-                return hou.qt.createIcon("BUTTONS_network_box")
-
-            elif isinstance(item, hou.StickyNote):
-                return hou.qt.createIcon("BUTTONS_network_sticky")
-
-            else:
-                return None
-
-    def rowCount(self, parent):
-        """The number of rows in the view."""
-        return len(self.items)
-
 
 class PasteTableModel(QtCore.QAbstractTableModel):
     """Table model to display files available to paste."""
@@ -134,11 +90,16 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
         super(BasicSourceItemTableModel, self).__init__(parent)
 
         self.context = context
+        self.source = source
 
-        items = source.get_sources(context)
-        items.sort(key=attrgetter("description"))
+        self.items = []
 
-        self.items = items
+        self.refresh()
+
+    def refresh(self):
+        self.items = self.source.get_sources(self.context)
+        self.items.sort(key=attrgetter("name"))
+        self.modelReset.emit()
 
     def columnCount(self, parent):
         """The number of columns."""

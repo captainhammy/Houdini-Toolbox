@@ -1,5 +1,5 @@
 
-from ht.ui.paste.sources import HomeToolDirSource, SourceManager, VarTmpCPIOSource
+from ht.ui.paste.sources import HomeToolDirSource, SourceManager#, VarTmpCPIOSource
 #from ht.ui.paste.sources import FileChooserCPIOSource,
 
 MANAGER = SourceManager()

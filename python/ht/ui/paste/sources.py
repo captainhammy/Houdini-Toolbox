@@ -17,8 +17,6 @@ import re
 from ht.ui.paste import utils
 import ht.ui.paste.widgets
 
-
-
 # Houdini Imports
 import hou
 
@@ -240,18 +238,18 @@ class HomeToolDirSource(CopyPasteSource):
         self._init_sources()
 
 
-class VarTmpCPIOSource(CPIOHierarchicalUserFileCopyPasteSource):
-    """Copy/Paste items from /var/tmp/copypaste."""
-
-    _base_path = "/var/tmp/copypaste"
-
-    @property
-    def display_name(self):
-        return "/var/tmp/copypaste"
-
-    @property
-    def icon(self):
-        return hou.qt.createIcon("book")
+# class VarTmpCPIOSource(CPIOHierarchicalUserFileCopyPasteSource):
+#     """Copy/Paste items from /var/tmp/copypaste."""
+#
+#     _base_path = "/var/tmp/copypaste"
+#
+#     @property
+#     def display_name(self):
+#         return "/var/tmp/copypaste"
+#
+#     @property
+#     def icon(self):
+#         return hou.qt.createIcon("book")
 
 
 # class FileChooserCPIOSource(CPIOFileCopyPasteSource):
@@ -271,6 +269,9 @@ class VarTmpCPIOSource(CPIOHierarchicalUserFileCopyPasteSource):
 #
 #     def paste_helper_widget(self, *args, **kwargs):
 #         return ht.ui.paste.widgets.FileChooserPasteHelperWidget(self, *args, **kwargs)
+
+
+
 
 
 

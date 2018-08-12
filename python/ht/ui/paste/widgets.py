@@ -10,7 +10,7 @@ import os
 import re
 
 import ht.ui.paste
-from ht.ui.paste import models, utils
+from ht.ui.paste import models
 
 # Houdini Imports
 import hou
@@ -52,23 +52,6 @@ class _NewOrExistingWidget(QtWidgets.QComboBox):
         return self.itemText(self.currentIndex())
 
 
-class _SourceChooserWidget(QtWidgets.QComboBox):
-    """Custom QComboBox to select a source."""
-
-    def __init__(self, parent=None):
-        super(_SourceChooserWidget, self).__init__(parent)
-
-        for source in ht.ui.paste.MANAGER.sources:
-            self.addItem(source.icon, source.display_name, source)
-
-    def get_current_source(self):
-        """Get the currently selected source."""
-        return self.itemData(self.currentIndex())
-
-    def get_sources(self):
-        return [self.itemData(i) for i in range(self.count())]
-
-
 class RepositoryWidget(QtWidgets.QWidget):
     """Widget displaying a label and a source chooser."""
 
@@ -81,49 +64,18 @@ class RepositoryWidget(QtWidgets.QWidget):
         label = QtWidgets.QLabel("Repository")
         layout.addWidget(label)
 
-        self.menu = _SourceChooserWidget()
+        self.menu = QtWidgets.QComboBox()
         layout.addWidget(self.menu, 1)
+
+        for source in ht.ui.paste.MANAGER.sources:
+            self.menu.addItem(source.icon, source.display_name, source)
 
     def get_current_source(self):
         """Get the selected source."""
-        return self.menu.get_current_source()
+        return self.menu.itemData(self.menu.currentIndex())
 
     def get_sources(self):
-        return self.menu.get_sources()
-
-
-class ContextDisplayWidget(QtWidgets.QWidget):
-    """Display a Houdini context's icon and name."""
-
-    def __init__(self, context, parent=None):
-        super(ContextDisplayWidget, self).__init__(parent)
-        layout = QtWidgets.QHBoxLayout()
-        self.setLayout(layout)
-
-        label = QtWidgets.QLabel()
-        icon = ht.ui.paste.utils.get_context_icon(context)
-        label.setPixmap(icon)
-        layout.addWidget(label)
-
-        label = QtWidgets.QLabel(context)
-        layout.addWidget(label, 1)
-
-
-class CopyItemDescriptionWidget(QtWidgets.QWidget):
-    """Widget to enter an item description."""
-
-    def __init__(self, parent=None):
-        super(CopyItemDescriptionWidget, self).__init__(parent)
-
-        layout = QtWidgets.QVBoxLayout()
-        self.setLayout(layout)
-
-        layout.addWidget(QtWidgets.QLabel("Optional description"))
-
-        # =====================================================================
-
-        self.name = QtWidgets.QLineEdit()
-        layout.addWidget(self.name)
+        return [self.menu.itemData(i) for i in range(self.menu.count())]
 
 
 class CopyItemNameWidget(QtWidgets.QWidget):
@@ -178,7 +130,6 @@ class CopyItemNameWidget(QtWidgets.QWidget):
 
         warning_layout.addStretch(1)
 
-
         # =====================================================================
 
         self.name.textChanged.connect(self._validate_name)
@@ -202,7 +153,7 @@ class CopyItemNameWidget(QtWidgets.QWidget):
 
         if value in self.invalid_names:
             self.target_valid = False
-            warning_message = "{} already exists".format(value)
+            warning_message = "'{}' already exists".format(value)
 
         if value:
             self.warning_icon.setHidden(self.target_valid)
@@ -218,18 +169,6 @@ class CopyItemNameWidget(QtWidgets.QWidget):
 
         # Emit changed signal.
         self.target_updated_signal.emit()
-
-
-class CopyItemListView(QtWidgets.QListView):
-    """A list of items to be copied."""
-
-    def __init__(self, items, parent=None):
-        super(CopyItemListView, self).__init__(parent)
-
-        self.list_model = ht.ui.paste.models.CopyItemsListModel(items)
-        self.setModel(self.list_model)
-        self.setAlternatingRowColors(True)
-        self.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
 
 
 class CopyButtonBox(_CustomButtonBox):
@@ -257,9 +196,6 @@ class PasteButtonBox(_CustomButtonBox):
 class BaseCopyHelperWidget(QtWidgets.QWidget):
     """A default widget for additional copy related options."""
 
-    # Signal to emit if anything is changed.
-    target_updated_signal = QtCore.Signal()
-
     def __init__(self, source, context, parent=None):
         super(BaseCopyHelperWidget, self).__init__(parent)
 
@@ -274,11 +210,28 @@ class BaseCopyHelperWidget(QtWidgets.QWidget):
         return None
 
 
+class BasePasteHelperWidget(QtWidgets.QWidget):
+    """A default widget for additional paste related options."""
+
+    def __init__(self, source, context, parent=None):
+        super(BasePasteHelperWidget, self).__init__(parent)
+
+        self.context = context
+        self.source = source
+
+        # This widget doesn't have to do anything so just say it is valid.
+        self.target_valid = True
+
+    def get_path(self):
+        """Do nothing since this widget provides no more info"""
+        return None
+
+    def get_source(self):
+        return None
+
+
 class FileChooserCopyHelperWidget(BaseCopyHelperWidget):
     """Widget for selecting a target directory when copying."""
-
-    # Signal to emit if anything is changed.
-    target_updated_signal = QtCore.Signal()
 
     def __init__(self, source, context, parent=None):
         super(FileChooserCopyHelperWidget, self).__init__(source, context, parent)
@@ -426,10 +379,16 @@ class DirectoryItemsPasteHelperWidget(QtWidgets.QTableView):
 
 class BasicSourceItemTable(QtWidgets.QTableView):
 
-    def __init__(self, source, context, selection_mode=QtWidgets.QAbstractItemView.SingleSelection, parent=None):
+    perform_operation_signal = QtCore.Signal()
+    valid_sources_signal = QtCore.Signal(bool)
+
+    def __init__(self, source, context, selection_mode=QtWidgets.QAbstractItemView.SingleSelection,
+                 allow_double_click=False, allow_delete=False, parent=None):
         super(BasicSourceItemTable, self).__init__(parent)
         self.source = source
         self.context = context
+
+        self.allow_delete = allow_delete
 
         self.table_model = ht.ui.paste.models.BasicSourceItemTableModel(source, context)
 
@@ -444,8 +403,15 @@ class BasicSourceItemTable(QtWidgets.QTableView):
 
         self.selection_model = self.selectionModel()
 
-
         self.resizeColumnsToContents()
+
+        if allow_double_click:
+            self.doubleClicked.connect(self.accept_double_click)
+
+        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.open_menu)
+
+        
 
     def get_selected_sources(self):
         indexes = self.selection_model.selectedRows()
@@ -454,187 +420,39 @@ class BasicSourceItemTable(QtWidgets.QTableView):
         return [self.table_model.items[index.row()] for index in indexes]
 
     def has_rows_selected(self):
-        bool(self.selection_model.selectedRows())
-
-
-
-class HomeToolDirItemsCopyHelperWidget(BaseCopyHelperWidget):
-
-    target_valid_signal = QtCore.Signal(bool)
-
-    def __init__(self, source, context, parent=None):
-        super(HomeToolDirItemsCopyHelperWidget, self).__init__(source, context, parent)
-
-        layout = QtWidgets.QVBoxLayout()
-        self.setLayout(layout)
-
-        self.new_or_existing =_NewOrExistingWidget()
-        layout.addWidget(self.new_or_existing)
-
-        invalid_names = ("foobles",)
-
-        self.name_widget = CopyItemNameWidget(invalid_names=invalid_names)
-        layout.addWidget(self.name_widget)
-
-        self.table = BasicSourceItemTable(source, context)
-        layout.addWidget(self.table)
-
-        # self.existing_table = QtWidgets.QTableView()
-        # layout.addWidget(self.existing_table)
-        #
-        # self.table_model = ht.ui.paste.models.BasicSourceItemTableModel(source, context)
-        #
-        # self.existing_table.setModel(self.table_model)
-        # self.existing_table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        # self.existing_table.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
-        #
-        # self.existing_table.verticalHeader().setVisible(False)
-        # self.existing_table.horizontalHeader().setHighlightSections(False)
-        # self.existing_table.horizontalHeader().setStretchLastSection(True)
-        # self.existing_table.setAlternatingRowColors(True)
-        #
-        # self.selection_model = self.existing_table.selectionModel()
-
-        self.new_or_existing.currentIndexChanged.connect(self._mode_changed)
-
-        self._mode_changed(0)
-
-        self.name_widget.target_updated_signal.connect(self._validate_options)
-
-        # TODO: this
-        self.table.selection_model.selectionChanged.connect(self._verify_selection)
-
-
-        # self.existing_table.resizeColumnsToContents()
-
-    def _mode_changed(self, index):
-        if index == 0:
-            self.table.setEnabled(False)
-            self.table.clearSelection()
-            self.name_widget.setEnabled(True)
-
-        else:
-            self.table.setEnabled(True)
-            self.name_widget.setEnabled(False)
-
-    def _verify_selection(self, new_selection, old_selection):
-        """Verify the selection to enable the Paste button.
-
-        The selection is valid if one or more rows is selected.
-
-        """
-        self._validate_options()
-
-    def _validate_options(self):
-        mode = self.new_or_existing.currentIndex()
-
-        if mode == 0:
-            if self.name_widget.target_valid:
-                # TODO: check not existing
-                self.target_valid_signal.emit(True)
-
-            else:
-                self.target_valid_signal.emit(False)
-
-        else:
-            self.target_valid_signal.emit(self.table.has_rows_selected())
-
-    def get_source(self):
-        mode = self.new_or_existing.currentIndex()
-
-        if mode == 0:
-            name = self.name_widget.name.text()
-
-            description = self.name_widget.description.text()
-            if not description:
-                description = None
-
-            return self.source.create_source(self.context, name, description)
-
-        else:
-            sources = self.table.get_selected_sources()
-
-            return sources[0]
-
-
-class HomeToolDirItemsPasteHelperWidget(QtWidgets.QTableView):
-    """Widget for selected files to paste from a source."""
-
-    # Signal that indicates whether or not the paste target is valid.
-    paste_target_valid = QtCore.Signal(bool)
-
-    # Signal used to signal a paste operation (like when double clicked)
-    perform_paste_signal = QtCore.Signal()
-
-    def __init__(self, source, context, parent=None):
-        super(HomeToolDirItemsPasteHelperWidget, self).__init__(parent)
-
-        self.source = source
-
-        self.table_model = ht.ui.paste.models.BasicSourceItemTableModel(source, context)
-
-        self.setModel(self.table_model)
-        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-
-        self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-
-        self.verticalHeader().setVisible(False)
-        self.horizontalHeader().setHighlightSections(False)
-        self.horizontalHeader().setStretchLastSection(True)
-        self.setAlternatingRowColors(True)
-
-        self.selection_model = self.selectionModel()
-
-        self.selection_model.selectionChanged.connect(self.verify_selection)
-
-        self.doubleClicked.connect(self.accept_double_click)
-
-        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self.openMenu)
-
-        self.resizeColumnsToContents()
+        return bool(self.selection_model.selectedRows())
 
     def accept_double_click(self, index):
         """Accept a double click and paste the selected item."""
         if not index.isValid():
             return
 
-        # When there is a double click we want to immediately paste the clicked
-        # item so emit a signal to let the parent know this is the case
-        self.perform_paste_signal.emit()
+        # When there is a double click we want to immediately perform the
+        # action on the item item so emit a signal to let the parent know this is the case.
+        self.perform_operation_signal.emit()
 
-    def get_sources_to_load(self):
-        """Get the sources to load."""
-        # Get selected rows from the table.
-        indexes = self.selection_model.selectedRows()
-
-        # Get the selected sources from the model based on the indexes.
-        return [self.table_model.items[index.row()] for index in indexes]
-
-    def verify_selection(self, new_selection, old_selection):
-        """Verify the selection to enable the Paste button.
-
-        The selection is valid if one or more rows is selected.
-
-        """
-        valid = bool(self.selection_model.selectedRows())
-
-        self.paste_target_valid.emit(valid)
-
-    def openMenu(self, position):
+    def open_menu(self, position):
         """Open the RMB context menu."""
         menu = QtWidgets.QMenu(self)
 
         menu.addAction(
-            "Delete",
-            self.delete_selected,
-            QtGui.QKeySequence(QtCore.Qt.Key_Delete),
+            "Refresh",
+            self._refresh_source,
         )
+
+        if self.allow_delete:
+            menu.addSeparator()
+
+            menu.addAction(
+                "Delete",
+                self._delete_selected,
+                QtGui.QKeySequence(QtCore.Qt.Key_Delete),
+            )
 
         menu.exec_(self.mapToGlobal(position))
 
-    def delete_selected(self):
-        selected = self.get_sources_to_load()
+    def _delete_selected(self):
+        selected = self.get_selected_sources()
 
         result = hou.ui.displayMessage(
             "Are you sure you want to delete these items?",
@@ -655,206 +473,140 @@ class HomeToolDirItemsPasteHelperWidget(QtWidgets.QTableView):
             self.source.destroy_item(item)
 
         self.clearSelection()
+
+        self._refresh_source()
+
+    def _refresh_source(self):
         self.source.refresh()
-        self.table_model.modelReset.emit()
+        self.table_model.refresh()
 
     def keyPressEvent(self, event):
         """Handle keystrokes."""
         key = event.key()
 
-        if key == QtCore.Qt.Key_Delete:
-            self.delete_selected()
+        if self.allow_delete and key == QtCore.Qt.Key_Delete:
+            self._delete_selected()
             return
 
-        super(HomeToolDirItemsPasteHelperWidget, self).keyPressEvent(event)
+        super(BasicSourceItemTable, self).keyPressEvent(event)
 
-class VarTmpCopyWidget(QtWidgets.QWidget):
 
-    def __init__(self, source, context):
+
+class HomeToolDirItemsCopyHelperWidget(BaseCopyHelperWidget):
+
+    valid_source_signal = QtCore.Signal(bool)
+
+    def __init__(self, source, context, parent=None):
+        super(HomeToolDirItemsCopyHelperWidget, self).__init__(source, context, parent)
+
+        layout = QtWidgets.QVBoxLayout()
+        self.setLayout(layout)
+
+        self.new_or_existing = _NewOrExistingWidget()
+        layout.addWidget(self.new_or_existing)
+
+        invalid_names = [item.name for item in source.get_sources(context)]
+
+        self.name_widget = CopyItemNameWidget(invalid_names=invalid_names)
+        layout.addWidget(self.name_widget)
+
+        self.table = BasicSourceItemTable(source, context)
+        layout.addWidget(self.table)
+
+        self.new_or_existing.currentIndexChanged.connect(self._mode_changed)
+
+        self._mode_changed(0)
+
+        self.name_widget.target_updated_signal.connect(self._validate_options)
+
+        self.table.selection_model.selectionChanged.connect(self._on_table_selection_changed)
+
+    def _mode_changed(self, index):
+        if index == 0:
+            self.table.setEnabled(False)
+            self.table.clearSelection()
+            self.name_widget.setEnabled(True)
+
+        else:
+            self.table.setEnabled(True)
+            self.name_widget.setEnabled(False)
+
+        self._validate_options()
+
+    def _on_table_selection_changed(self, new_selection, old_selection):
+        """Verify the selection to enable the Paste button.
+
+        The selection is valid if one or more rows is selected.
+
+        """
+        self._validate_options()
+
+    def _validate_options(self):
+        mode = self.new_or_existing.currentIndex()
+
+        if mode == 0:
+            if self.name_widget.target_valid:
+                # TODO: check not existing
+                self.valid_source_signal.emit(True)
+
+            else:
+                self.valid_source_signal.emit(False)
+
+        else:
+            self.valid_source_signal.emit(self.table.has_rows_selected())
+
+    def get_source(self):
+        mode = self.new_or_existing.currentIndex()
+
+        if mode == 0:
+            name = self.name_widget.name.text()
+
+            description = self.name_widget.description.text()
+            if not description:
+                description = None
+
+            return self.source.create_source(self.context, name, description)
+
+        else:
+            sources = self.table.get_selected_sources()
+
+            return sources[0]
+
+
+class HomeToolDirItemsPasteHelperWidget(QtWidgets.QWidget):
+
+    perform_operation_signal = QtCore.Signal()
+    valid_sources_signal = QtCore.Signal(bool)
+
+    def __init__(self, source, context, parent=None):
+        super(HomeToolDirItemsPasteHelperWidget, self).__init__(parent)
+
         self.source = source
         self.context = context
 
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
-        self.description_widget = CopyItemNameWidget()
-        layout.addWidget(self.description_widget)
-
-        self.description_widget.target_updated_signal.connect(self._validate_inputs)
-
-    def _validate_inputs(self):
-        """Validate all the input widgets."""
-        description_valid = self.description_widget.target_valid
-
-#        source_widget = self.source_chooser.currentWidget()
-#        extra_valid = source_widget.target_valid
-
-        all_valid = all([description_valid])#, extra_valid])
-
-        # Emit a signal to indicate whether or not all the inputs are valid.
-        self.target_valid_signal.emit(all_valid)
-
-    # TODO: better name since this is creating
-    def get_source(self):
-        """Create and get the target source."""
-        description = self.description_widget.description.text()
-
-        source = self.source_menu.get_current_source()
-
-        source_widget = self.source_chooser.currentWidget()
-
-        base_path = None
-
-        if isinstance(source_widget, FileChooserCopyHelperWidget):
-            base_path = source_widget.get_path()
-
-        file_source = source.create_source(self.context, description, base_path=base_path)
-
-        return file_source
-
-
-
-
-class ChooseCopySourceWidget(QtWidgets.QWidget):
-    """Widget for selecting the copy target source."""
-
-    # Signal to emit if anything is changed.
-    target_valid_signal = QtCore.Signal(bool)
-
-    def __init__(self, context, items, parent=None):
-        super(ChooseCopySourceWidget, self).__init__(parent)
-
-        self.context = context
-
-        layout = QtWidgets.QVBoxLayout()
-        self.setLayout(layout)
-
-        # =====================================================================
-
-        self.source_menu = RepositoryWidget()
-        layout.addWidget(self.source_menu)
-
-        # =====================================================================
-
-        # Use a QStackedWidget to hold the widgets for each source.
-        self.source_chooser = QtWidgets.QStackedWidget()
-        layout.addWidget(self.source_chooser)
-
-        # Add all source helper widgets to the stack.
-        for source in self.source_menu.get_sources():
-            widget = source.copy_helper_widget(context)
-
-         #   widget.target_updated_signal.connect(self._validate_inputs)
-
-            widget.target_valid_signal.connect(self._validate_inputs)
-            self.source_chooser.addWidget(widget)
-
-        layout.addWidget(self.source_chooser)
-
-
-#        layout.addWidget(CopyItemListView(items))
-
-        self.source_menu.menu.currentIndexChanged.connect(self._source_changed)
-
-    def _source_changed(self, index):
-        """Update the displayed widget to match the selected source."""
-        self.source_chooser.setCurrentIndex(index)
-
-        # Validate inputs.
-        # self._validate_inputs()
-
-    def _validate_inputs(self, valid):
-
-        self.target_valid_signal.emit(valid)
-
-    # def _validate_inputs(self):
-    #     """Validate all the input widgets."""
-    #     description_valid = self.description_widget.target_valid
-    #
-    #     source_widget = self.source_chooser.currentWidget()
-    #     extra_valid = source_widget.target_valid
-    #
-    #     all_valid = all([description_valid, extra_valid])
-    #
-    #     # Emit a signal to indicate whether or not all the inputs are valid.
-    #     self.target_valid_signal.emit(all_valid)
-
-    def get_source(self):
-        """Create or get the target source."""
-        source_widget = self.source_chooser.currentWidget()
-
-        return source_widget.get_source()
-
-
-class ChoosePasteSourceWidget(QtWidgets.QWidget):
-    """Widget for selecting the paste target source."""
-
-    # Signal to indicate if the inputs are valid or not.
-    source_valid_signal = QtCore.Signal(bool)
-
-    # Signal used to signal a paste operation (like when double clicked)
-    perform_paste_signal = QtCore.Signal()
-
-    def __init__(self, context, parent=None):
-        super(ChoosePasteSourceWidget, self).__init__(parent)
-
-        layout = QtWidgets.QVBoxLayout()
-        self.setLayout(layout)
-
-        # =====================================================================
-
-        self.source_menu = RepositoryWidget()
-        layout.addWidget(self.source_menu)
-
-        # =====================================================================
-
-        test_layout = QtWidgets.QHBoxLayout()
-        layout.addLayout(test_layout)
-
-        test_layout.addWidget(ContextDisplayWidget(context))
-
-        refresh_button = QtWidgets.QToolButton()
-
-        refresh_button.setIcon(hou.qt.createIcon("BUTTONS_reload"))
-        refresh_button.setToolTip("Refresh list of items")
-
-        icon_size = hou.ui.scaledSize(16)
-        button_size = hou.ui.scaledSize(24)
-        refresh_button.setProperty("flat", True)
-
-        refresh_button.setIconSize(QtCore.QSize(icon_size, icon_size))
-        refresh_button.setFixedSize(button_size, button_size)
-
-        test_layout.addWidget(refresh_button)
-
-
-        #layout.addWidget(ContextDisplayWidget(context))
-
-        # =====================================================================
-
-        # Use a QStackedWidget to hold the widgets for each source.
-        self.source_chooser = QtWidgets.QStackedWidget()
-
-        # Add all source helper widgets to the stack.
-        for source in self.source_menu.get_sources():
-            widget = source.paste_helper_widget(context)
-            widget.paste_target_valid.connect(self.source_valid_signal.emit)
-            widget.perform_paste_signal.connect(self.perform_paste_signal.emit)
-            self.source_chooser.addWidget(widget)
-
-        layout.addWidget(self.source_chooser)
-
-        self.source_menu.menu.currentIndexChanged.connect(self._source_changed)
-
-    def _source_changed(self, index):
-        """Update the displayed widget to match the selected source."""
-        self.source_chooser.setCurrentIndex(index)
-
-        # Emit that we are not valid since the source was changed.
-        self.source_valid_signal.emit(False)
-
-    # TODO: rename?
-    def get_sources_to_load(self):
-        """Get the sources to paste."""
-        current = self.source_chooser.currentWidget()
-        return current.get_sources_to_load()
+        # We want to be able to multi-select, delete and double click on items.
+        self.table = BasicSourceItemTable(
+            source,
+            context,
+            selection_mode=QtWidgets.QAbstractItemView.ExtendedSelection,
+            allow_delete=True,
+            allow_double_click=True
+        )
+        layout.addWidget(self.table)
+
+        self.table.perform_operation_signal.connect(self.perform_operation_signal.emit)
+        self.table.selection_model.selectionChanged.connect(self._on_table_selection_changed)
+
+    def _on_table_selection_changed(self, new_selection, old_selection):
+        """Verify the selection to enable the Paste button.
+
+        The selection is valid if one or more rows is selected.
+
+        """
+        self.valid_sources_signal.emit(self.table.has_rows_selected())
+
+    def get_sources(self):
+        return self.table.get_selected_sources()
