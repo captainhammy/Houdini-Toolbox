@@ -1,0 +1,15 @@
+<mainMenu>
+    <menuBar>
+        <subMenu id="ht_menu">
+            <label>Houdini Toolbox</label>
+
+            <actionItem id="h.tool:copy_items">
+                <label>Copy Items to File</label>
+            </actionItem>
+
+            <actionItem id="h.tool:paste_items">
+                <label>Paste Items from File</label>
+            </actionItem>
+        </subMenu>
+    </menuBar>
+</mainMenu>

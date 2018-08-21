@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<menuDocument>
+    <menu>
+	<subMenu id="opmenu.save_menu">
+	    <scriptItem id="ht.save_item_to_file">
+		<label>To File...</label>
+		<scriptCode><![CDATA[from ht.ui.paste import copy_item
+
+copy_item(kwargs['node'])
+]]></scriptCode>
+	    </scriptItem>
+	</subMenu>
+    </menu>
+</menuDocument>
