@@ -165,7 +165,6 @@ class HomeToolDirSource(CopyPasteSource):
                     context_sources = self.sources.setdefault(item.context, [])
                     context_sources.append(item)
 
-
     @property
     def display_name(self):
         return "~/tooldev"
@@ -251,102 +250,6 @@ class HomeToolDirSource(CopyPasteSource):
 #     def icon(self):
 #         return hou.qt.createIcon("book")
 
-
-class FileChooserCPIOSource(CopyPasteSource):
-
-    _base_path = None
-
-    _extension = ".cpio"
-
-    def __init__(self):
-        super(FileChooserCPIOSource, self).__init__()
-
-        #self._init_sources()
-
-    @property
-    def display_name(self):
-        return "Choose A File"
-#
-    @property
-    def icon(self):
-        return hou.qt.createIcon("SOP_file")
-
-    def copy_helper_widget(self, *args, **kwargs):
-        return ht.ui.paste.helpers.FileChooserCopyHelperWidget(self, *args, **kwargs)
-
-    def paste_helper_widget(self, *args, **kwargs):
-        return ht.ui.paste.helpers.FileChooserPasteHelperWidget(self, *args, **kwargs)
-
-    def pack_name(self, name):
-        return name.replace(" ", "--")
-
-    def unpack_name(self, name):
-        return name.replace("--", " ")
-
-    def refresh(self):
-        pass
-
-    def get_sources(self):
-        pass
-
-    def create_source(self, context, name, description=None):
-        pass
-
-    def destroy_item(self, item):
-        context_sources = self.sources.get(item.context, {})
-
-        if item in context_sources:
-            item.destroy()
-            context_sources.remove(item)
-
-    def _create_sidecar_file(self, base_path, data):
-        sidecar_path = base_path.replace(self._extension, ".json")
-
-        with open(sidecar_path, 'w') as handle:
-            json.dump(data, handle, indent=4)
-
-        return sidecar_path
-
-    def create_source(self, context, name, description=None):
-        clean_name = self.pack_name(name)
-
-        # The file name consists of the user name and the description, separated
-        # by a :.
-        file_name = "{}:{}{}".format(context, clean_name, self._extension)
-
-        file_path = os.path.join(self._base_path, file_name)
-
-        sidecar_data = {
-            "author": getpass.getuser(),
-            "name": name,
-            "context": context,
-            "date": ht.ui.paste.utils.date_to_string(datetime.datetime.now())
-        }
-
-        if description is not None:
-            sidecar_data["description"] = description
-
-        sidecar_path = self._create_sidecar_file(file_path, sidecar_data)
-
-        source = CPIOContextCopyPasteItemFile(file_path, context, name, sidecar_path)
-
-        context_sources = self.sources.setdefault(context, [])
-        context_sources.append(source)
-
-        return source
-
-    @staticmethod
-    def read_sidecar_file(base_path):
-        sidecar_path = base_path.replace(FileChooserCPIOSource._extension, ".json")
-
-        if os.path.exists(sidecar_path):
-            with open(sidecar_path) as handle:
-                data = json.load(handle)
-
-        else:
-            data = {}
-
-        return data
 
 class CopyPasteItemSource(object):
     """Class responsible for loading and saving items from a source."""

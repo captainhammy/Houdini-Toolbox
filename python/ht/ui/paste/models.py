@@ -8,81 +8,15 @@
 from PySide2 import QtCore
 from operator import attrgetter
 
+# Houdini Toolbox Imports
 from ht.ui.paste import utils
-
-# Houdini Imports
-import hou
 
 # ==============================================================================
 # CLASSES
 # ==============================================================================
 
-
-class PasteTableModel(QtCore.QAbstractTableModel):
-    """Table model to display files available to paste."""
-
-    header_labels = ("User", "Description")
-
-    def __init__(self, source, context, parent=None):
-        super(PasteTableModel, self).__init__(parent)
-
-        self.context = context
-
-        items = source.get_sources(context)
-        items.sort(key=attrgetter("author", "description"))
-
-        self.items = items
-
-    def columnCount(self, parent):
-        """The number of columns."""
-        return 2
-
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        """Get item data."""
-        if not index.isValid():
-            return
-
-        row = index.row()
-        column = index.column()
-
-        if role == QtCore.Qt.DisplayRole:
-            item = self.items[row]
-
-            if column == 0:
-                return item.author
-
-            else:
-                return item.description
-
-    def flags(self, index):
-        """Item flags.
-
-        We want items to be enabled and selectable.
-        """
-        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
-
-    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
-        """Populate column headers with our labels."""
-        if role == QtCore.Qt.DisplayRole and orientation == QtCore.Qt.Horizontal:
-            return self.header_labels[section]
-
-        return QtCore.QAbstractTableModel.headerData(self, section, orientation, role)
-
-    def index(self, row, column, parent=QtCore.QModelIndex()):
-        """Create model indexes for items."""
-        return self.createIndex(row, column, parent)
-
-    def rowCount(self, parent):
-        """The number of rows.
-
-        Equal to the number of files we can paste.
-
-        """
-        return len(self.items)
-
-
 class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
-    """Table model to display files available to paste."""
+    """Table model to display items available to paste."""
 
     header_labels = ("Name", "Description", "Author", "Date")
 
@@ -95,11 +29,6 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
         self.items = []
 
         self.refresh()
-
-    def refresh(self):
-        self.items = self.source.get_sources(self.context)
-        self.items.sort(key=attrgetter("name"))
-        self.modelReset.emit()
 
     def columnCount(self, parent):
         """The number of columns."""
@@ -146,6 +75,12 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
     def index(self, row, column, parent=QtCore.QModelIndex()):
         """Create model indexes for items."""
         return self.createIndex(row, column, parent)
+
+    def refresh(self):
+        """Refresh the internal items list."""
+        self.items = self.source.get_sources(self.context)
+        self.items.sort(key=attrgetter("name"))
+        self.modelReset.emit()
 
     def rowCount(self, parent):
         """The number of rows.

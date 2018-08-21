@@ -1,4 +1,5 @@
 """Dialogs related to copying/pasting items."""
+
 # ==============================================================================
 # IMPORTS
 # ==============================================================================
@@ -57,7 +58,6 @@ class CopyItemsDialog(QtWidgets.QDialog):
         # Add all source helper widgets to the stack.
         for source in self.source_menu.get_sources():
             widget = source.copy_helper_widget(self.context)
-            # widget.valid_source_signal.connect(self.source_valid_signal.emit)
             widget.valid_source_signal.connect(self.button_box.accept_button.setEnabled)
 
             self.source_chooser.addWidget(widget)
@@ -139,74 +139,74 @@ class PasteItemsDialog(QtWidgets.QDialog):
         utils.paste_items_from_sources(to_load, self.editor, self.pos, self.mousepos)
 
 
-# ==============================================================================
-# FUNCTIONS
-# ==============================================================================
-
-def copy_item(item):
-    """Copy a single item to a target file."""
-    items = (item,)
-    parent = item.parent()
-
-    # Run the copy dialog.
-    dialog = CopyItemsDialog(items, parent, parent=hou.qt.mainWindow())
-
-    dialog.show()
-
-
-def copy_items(scriptargs):
-    """Copy selected items from a pane tab to a target file."""
-    # Find the current network editor pane.
-    current_pane = utils.find_current_pane_tab(scriptargs)
-
-    # Couldn't determine where to paste so we display a warning
-    # and abort.
-    if current_pane is None:
-        hou.ui.displayMessage(
-            "Cannot copy items",
-            help="Could not determine copy context",
-            severity=hou.severityType.Warning,
-        )
-
-        return
-
-    parent = current_pane.pwd()
-
-    items = parent.selectedItems(True, True)
-
-    # If there are no items elected display a warning and abort.
-    if not items:
-        hou.ui.displayMessage(
-            "Could not copy items",
-            help="No selected nodes",
-            severity=hou.severityType.Warning,
-        )
-
-        return
-
-    # Run the copy dialog.
-    dialog = CopyItemsDialog(items, parent, parent=hou.qt.mainWindow())
-    dialog.show()
-
-
-def paste_items(scriptargs=None):
-    """Paste items into the current context."""
-    # Try to find the current pane/context/level.
-    current_pane = utils.find_current_pane_tab(scriptargs)
-
-    # Couldn't determine where to paste so we display a warning
-    # and abort.
-    if current_pane is None:
-        hou.ui.displayMessage(
-            "Could not paste items",
-            help="Could not determine paste context",
-            severity=hou.severityType.Warning,
-        )
-
-        return
-
-    pos = current_pane.cursorPosition()
-
-    # Run the paste dialog.
-    dialog = PasteItemsDialog(current_pane, pos, pos, parent=hou.qt.mainWindow())
-    dialog.show()
+# # ==============================================================================
+# # FUNCTIONS
+# # ==============================================================================
+#
+# def copy_item(item):
+#     """Copy a single item to a target file."""
+#     items = (item,)
+#     parent = item.parent()
+#
+#     # Run the copy dialog.
+#     dialog = CopyItemsDialog(items, parent, parent=hou.qt.mainWindow())
+#
+#     dialog.show()
+#
+#
+# def copy_items(scriptargs):
+#     """Copy selected items from a pane tab to a target file."""
+#     # Find the current network editor pane.
+#     current_pane = utils.find_current_pane_tab(scriptargs)
+#
+#     # Couldn't determine where to paste so we display a warning
+#     # and abort.
+#     if current_pane is None:
+#         hou.ui.displayMessage(
+#             "Cannot copy items",
+#             help="Could not determine copy context",
+#             severity=hou.severityType.Warning,
+#         )
+#
+#         return
+#
+#     parent = current_pane.pwd()
+#
+#     items = parent.selectedItems(True, True)
+#
+#     # If there are no items elected display a warning and abort.
+#     if not items:
+#         hou.ui.displayMessage(
+#             "Could not copy items",
+#             help="No selected nodes",
+#             severity=hou.severityType.Warning,
+#         )
+#
+#         return
+#
+#     # Run the copy dialog.
+#     dialog = CopyItemsDialog(items, parent, parent=hou.qt.mainWindow())
+#     dialog.show()
+#
+#
+# def paste_items(scriptargs=None):
+#     """Paste items into the current context."""
+#     # Try to find the current pane/context/level.
+#     current_pane = utils.find_current_pane_tab(scriptargs)
+#
+#     # Couldn't determine where to paste so we display a warning
+#     # and abort.
+#     if current_pane is None:
+#         hou.ui.displayMessage(
+#             "Could not paste items",
+#             help="Could not determine paste context",
+#             severity=hou.severityType.Warning,
+#         )
+#
+#         return
+#
+#     pos = current_pane.cursorPosition()
+#
+#     # Run the paste dialog.
+#     dialog = PasteItemsDialog(current_pane, pos, pos, parent=hou.qt.mainWindow())
+#     dialog.show()
