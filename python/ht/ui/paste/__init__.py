@@ -61,6 +61,29 @@ def copy_items(scriptargs=None):
     dialog.show()
 
 
+def copy_items_from_graph(editor):
+    """Copy items from a network editor event."""
+    parent = editor.pwd()
+
+    items = parent.selectedItems(True, True)
+
+    # If there are no items selected then display an error and abort.
+    if not items:
+        hou.ui.displayMessage(
+            "Could not copy selected items",
+            help="Nothing was selected",
+            severity=hou.severityType.Error,
+        )
+
+        return None, True
+
+    dialog = dialogs.CopyItemsDialog(items, parent, parent=hou.qt.mainWindow())
+    dialog.show()
+
+    # This is a one off event so we don't care what happens after this.
+    return None, True
+
+
 def paste_items(scriptargs=None):
     """Paste items into the current context."""
     # Try to find the current pane/context/level.
@@ -82,6 +105,30 @@ def paste_items(scriptargs=None):
     # Run the paste dialog.
     dialog = dialogs.PasteItemsDialog(current_pane, pos, pos, parent=hou.qt.mainWindow())
     dialog.show()
+
+
+def paste_items_to_graph(eventtype, editor, uievent):
+    """Paste items from a network editor event."""
+    if eventtype == "keyhit":
+        mousepos = uievent.mousepos
+
+    elif eventtype == "menukeyhit":
+        mousepos = editor.screenBounds().center()
+
+    else:
+        mousepos = None
+
+    if mousepos is not None:
+        pos = editor.posFromScreen(mousepos)
+
+    else:
+        pos = None
+
+    dialog = dialogs.PasteItemsDialog(editor, pos, mousepos, parent=hou.qt.mainWindow())
+    dialog.show()
+
+    # This is a one off event so we don't care what happens after this.
+    return None, True
 
 # ==============================================================================
 

@@ -5,11 +5,10 @@
 # ==============================================================================
 
 # Houdini Toolbox Imports
-from ht.ui.paste import dialogs
+from ht.ui import paste
 
 # Houdini Imports
 from canvaseventtypes import KeyboardEvent
-import hou
 from nodegraphdisplay import setKeyPrompt
 
 # ==============================================================================
@@ -25,46 +24,9 @@ def createEventHandler(uievent, pending_actions):
         key = uievent.key
 
         if setKeyPrompt(editor, key, "h.tool:copy_items", eventtype):
-            parent = editor.pwd()
-
-            items = parent.selectedItems(True, True)
-
-            # If there are no items selected then display an error and abort.
-            if not items:
-                hou.ui.displayMessage(
-                    "Could not copy selected items",
-                    help="Nothing was selected",
-                    severity=hou.severityType.Error,
-                )
-
-                return None, True
-
-            dialog = dialogs.CopyItemsDialog(items, parent, parent=hou.qt.mainWindow())
-            dialog.show()
-
-            # This is a one off event so we don't care what happens after this.
-            return None, True
+            return paste.copy_items_from_graph(editor)
 
         elif setKeyPrompt(editor, key, "h.tool:paste_items", eventtype):
-            if eventtype == "keyhit":
-                mousepos = uievent.mousepos
-
-            elif eventtype == "menukeyhit":
-                mousepos = editor.screenBounds().center()
-
-            else:
-                mousepos = None
-
-            if mousepos is not None:
-                pos = editor.posFromScreen(mousepos)
-
-            else:
-                pos = None
-
-            dialog = dialogs.PasteItemsDialog(editor, pos, mousepos, parent=hou.qt.mainWindow())
-            dialog.show()
-
-            # This is a one off event so we don't care what happens after this.
-            return None, True
+            return paste.paste_items_to_graph(eventtype, editor, uievent)
 
     return None, False
