@@ -85,6 +85,8 @@ def paste_items(scriptargs=None):
 
 # ==============================================================================
 
+# Global manager for sources
 MANAGER = SourceManager()
 
+# Add any relevant sources.
 MANAGER.sources.append(HomeToolDirSource())
