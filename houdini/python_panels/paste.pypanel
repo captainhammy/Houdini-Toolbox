@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pythonPanelDocument>
+  <!-- This file contains definitions of Python interfaces and the
+ interfaces menu.  It should not be hand-edited when it is being
+ used by the application.  Note, that two definitions of the
+ same interface or of the interfaces menu are not allowed
+ in a single file. -->
+  <interface name="copypaste" label="Copy Paste" icon="BUTTONS_copy" help_url="">
+    <script><![CDATA[import ht.ui.paste.models
+import ht.ui.paste.widgets
+
+reload(ht.ui.paste.models)
+reload(ht.ui.paste.widgets)
+
+def createInterface():
+    widget = ht.ui.paste.widgets.RepoExplorer()
+    
+    return widget
+]]></script>
+    <includeInPaneTabMenu menu_position="900" create_separator="true"/>
+    <includeInToolbarMenu menu_position="900" create_separator="true"/>
+    <help><![CDATA[ ]]></help>
+  </interface>
+</pythonPanelDocument>

@@ -9,7 +9,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 import re
 
 import ht.ui.paste
-from ht.ui.paste import models
+from ht.ui.paste import models, utils
 
 # Houdini Imports
 import hou
@@ -332,3 +332,292 @@ class WarningWidget(QtWidgets.QWidget):
         """Set the warning text and icon."""
         self.label.setText(message)
         self.icon.setHidden(False)
+
+
+class RepoExplorerView(QtWidgets.QTreeView):
+
+    items_selected_signal = QtCore.Signal(bool)
+
+    def __init__(self, parent=None):
+        super(RepoExplorerView, self).__init__(parent)
+
+        self.root = models.TreeNode()
+
+        model = models.CopyPasteBrowserModel(self.root)
+
+        #self.setModel(model)
+
+        self.proxy_model = models.LeafFilterProxyModel()
+        self.proxy_model.setSourceModel(model)
+        self.setModel(self.proxy_model)
+
+
+        self.setSortingEnabled(True)
+
+        self.setAlternatingRowColors(True)
+        self.expandAll()
+        self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+
+        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.open_menu)
+
+        self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+
+        selection_model = self.selectionModel()
+        selection_model.selectionChanged.connect(self._check_for_selection)
+
+        self.expanded.connect(self._handle_expanded)
+        self.collapsed.connect(self._handle_collapsed)
+
+        self.proxy_model.setDynamicSortFilter(True)
+        self.proxy_model.dataChanged.connect(self.test)
+
+    def test(self, *args, **kwargs):
+        print args, kwargs
+
+    def _check_for_selection(self, old_selection, new_selection):
+        selected = self.selectionModel().selectedIndexes()
+
+        self.items_selected_signal.emit(bool(selected))
+
+    def _delete_selected(self):
+        indexes = self.selectionModel().selectedIndexes()
+
+        model = self.model()
+        source_model = model.sourceModel()
+
+        for index in indexes:
+            index = model.mapToSource(index)
+
+            if index.column() == 0:
+                print source_model.getNode(index)
+
+
+
+
+    def _handle_collapsed(self, index):
+        model = self.model()
+        source_model = model.sourceModel()
+
+        real_index = model.mapToSource(index)
+
+        node = source_model.getNode(real_index)
+        node.expanded = False
+
+    def _handle_expanded(self, index):
+        model = self.model()
+        source_model = model.sourceModel()
+
+        real_index = model.mapToSource(index)
+
+        node = source_model.getNode(real_index)
+        node.expanded = True
+
+
+    def _refresh_sources(self):
+        print "refreshing"
+
+    def paste_selected(self):
+        indexes = self.selectionModel().selectedIndexes()
+
+        model = self.model()
+        source_model = model.sourceModel()
+
+        context_map = {}
+
+        for index in indexes:
+            index = model.mapToSource(index)
+
+            if index.column() == 0:
+                node = source_model.getNode(index)
+
+                category = hou.nodeTypeCategories()[node.item.context]
+
+                sources = context_map.setdefault(category, [])
+
+                sources.append(node.item)
+
+        for category in context_map:
+            pane_tab = utils.find_network_pane_for_category(category)
+
+            if pane_tab is not None:
+                items = context_map[category]
+
+                utils.paste_items_from_sources(items, pane_tab)
+
+        self.selectionModel().clearSelection()
+
+    def keyPressEvent(self, event):
+        """Handle keystrokes."""
+        key = event.key()
+
+        if key == QtCore.Qt.Key_Delete:
+            self._delete_selected()
+
+            return
+
+        super(RepoExplorerView, self).keyPressEvent(event)
+
+    def open_menu(self, position):
+        """Open the RMB context menu."""
+
+        index = self.indexAt(position)
+
+        menu = QtWidgets.QMenu(self)
+
+        if index.isValid():
+            model = self.model()
+            source_model = model.sourceModel()
+
+            index = model.mapToSource(index)
+
+            node = source_model.getNode(index)
+
+            if isinstance(node, models.ItemSourceNode):
+                menu.addAction(
+                    "Paste",
+                    self.paste_selected,
+                )
+
+                menu.addAction(
+                    "Delete",
+                    self._delete_selected,
+                    QtGui.QKeySequence(QtCore.Qt.Key_Delete),
+                )
+
+                menu.addSeparator()
+
+        menu.addAction(
+            "Refresh",
+            self._refresh_sources,
+        )
+
+        menu.exec_(self.mapToGlobal(position))
+
+class RepoToolbar(QtWidgets.QToolBar):
+
+    copy_selected_signal = QtCore.Signal()
+    paste_items_signal = QtCore.Signal()
+
+    def __init__(self, parent=None):
+        super(RepoToolbar, self).__init__(parent)
+
+        self.setIconSize(QtCore.QSize(24, 24))
+
+        copy_button = QtWidgets.QToolButton(self)
+        self.addWidget(copy_button)
+
+        copy_action = QtWidgets.QAction(
+            hou.qt.createIcon("BUTTONS_copy", 18, 18),
+            "Copy selected items",
+            self,
+            triggered=self.copy_selected_signal.emit
+        )
+
+        copy_button.setDefaultAction(copy_action)
+
+        self.paste_button = QtWidgets.QToolButton(self)
+        self.addWidget(self.paste_button)
+
+        paste_action = QtWidgets.QAction(
+            hou.qt.createIcon("BUTTONS_paste", 18, 18),
+            "Paste items",
+            self,
+            triggered=self.paste_items_signal.emit
+        )
+
+        self.paste_button.setDefaultAction(paste_action)
+
+        self.paste_button.setEnabled(False)
+
+        spacer = QtWidgets.QWidget()
+        spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+        self.addWidget(spacer)
+
+        refresh_button = QtWidgets.QToolButton(self)
+        self.addWidget(refresh_button)
+
+        refresh_action = QtWidgets.QAction(
+            hou.qt.createIcon("BUTTONS_reload", 18, 18),
+            "Refresh",
+            self,
+            triggered=self._refresh
+        )
+
+        refresh_button.setDefaultAction(refresh_action)
+
+
+    def _copy_selected(self):
+        print "copying"
+
+    def _paste_selected(self):
+        print "pasting"
+
+    def _refresh(self):
+        print "refreshing"
+
+
+class FilterWidget(QtWidgets.QWidget):
+    """This class represents a Filter widget."""
+
+    def __init__(self, parent=None):
+        super(FilterWidget, self).__init__(parent)
+
+        layout = QtWidgets.QHBoxLayout()
+        self.setLayout(layout)
+
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        layout.addWidget(QtWidgets.QLabel("Filter"))
+
+        self.field = QtWidgets.QLineEdit()
+        layout.addWidget(self.field)
+
+        self.field.setToolTip("Filter the list of AOVs by name.")
+
+
+class RepoExplorer(QtWidgets.QWidget):
+
+    def __init__(self, parent=None):
+        super(RepoExplorer, self).__init__(parent)
+
+        self.setProperty("houdiniStyle", True)
+
+        layout = QtWidgets.QVBoxLayout()
+        self.setLayout(layout)
+
+        self.tree = RepoExplorerView()
+        layout.addWidget(self.tree)
+
+        self.filter = FilterWidget()
+        layout.addWidget(self.filter)
+
+        self.filter.field.textChanged.connect(self.build_filter)
+        #self.filter.field.textChanged.connect(self.tree.proxy_model.setFilterWildcard)
+       # self.filter.field.textChanged.connect(self.tree.proxy_model.set_filter_string)
+
+        self.toolbar = RepoToolbar()
+        layout.addWidget(self.toolbar)
+
+        self.tree.items_selected_signal.connect(self.update_tool_buttons)
+
+        self.toolbar.copy_selected_signal.connect(self.copy_items)
+        self.toolbar.paste_items_signal.connect(self.tree.paste_selected)
+
+    def build_filter(self, value):
+
+        if not value:
+            value = "*"
+        else:
+            value = "*" + value + "*"
+
+        self.tree.proxy_model.setFilterWildcard(value)
+
+    def copy_items(self):
+        pane_tab = utils.find_network_pane_from_selection()
+
+        ht.ui.paste.copy_items({"pane": pane_tab})
+
+    def update_tool_buttons(self, items_selected):
+        self.toolbar.paste_button.setEnabled(items_selected)

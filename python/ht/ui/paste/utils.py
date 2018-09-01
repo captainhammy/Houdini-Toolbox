@@ -38,9 +38,9 @@ def find_current_pane_tab(scriptargs):
         # in that case we look for a pane tab that is current and has a selection.
         if pane is None:
             # Find all displayed NetworkEditor panes
-            network_panes = [panetab for panetab in desktop.paneTabs()
-                             if isinstance(panetab, hou.NetworkEditor) and
-                             panetab.isCurrentTab()]
+            network_panes = [pane_tab for pane_tab in desktop.paneTabs()
+                             if isinstance(pane_tab, hou.NetworkEditor) and
+                             pane_tab.isCurrentTab()]
 
             # Look for any panes with a selection.
             for network_pane in network_panes:
@@ -49,6 +49,41 @@ def find_current_pane_tab(scriptargs):
                     break
 
     return pane
+
+
+def find_network_pane_for_category(category):
+    """Search for visible NetworkEditor pane tabs matching a node type category."""
+    desktop = hou.ui.curDesktop()
+
+    network_panes = [pane_tab for pane_tab in desktop.paneTabs()
+                     if isinstance(pane_tab, hou.NetworkEditor) and
+                     pane_tab.pwd().childTypeCategory() == category and
+                     pane_tab.isCurrentTab()]
+
+    if network_panes:
+        return network_panes[0]
+
+    return None
+
+
+def find_network_pane_from_selection():
+    items = hou.selectedItems()
+
+    if not items:
+        return None
+
+    parent = items[0].parent()
+
+    desktop = hou.ui.curDesktop()
+
+    network_panes = [pane_tab for pane_tab in desktop.paneTabs()
+                     if isinstance(pane_tab, hou.NetworkEditor) and
+                     pane_tab.pwd() == parent and pane_tab.isCurrentTab()]
+
+    if network_panes:
+        return network_panes[0]
+
+    return None
 
 
 def paste_items_from_sources(sources, editor, pos=None, mousepos=None):
