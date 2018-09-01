@@ -23,13 +23,18 @@ def copy_item(item):
     # Run the copy dialog.
     dialog = dialogs.CopyItemsDialog(items, parent, parent=hou.qt.mainWindow())
 
-    dialog.show()
+    dialog.exec_()
 
 
 def copy_items(scriptargs=None):
     """Copy selected items from a pane tab to a target file."""
     # Find the current network editor pane.
     current_pane = utils.find_current_pane_tab(scriptargs)
+
+    # Check to make sure the pane is a network editor.  If it isn't we can't
+    # do much.
+    if not isinstance(current_pane, hou.NetworkEditor):
+        current_pane = None
 
     # Couldn't determine where to paste so we display a warning
     # and abort.
@@ -58,7 +63,7 @@ def copy_items(scriptargs=None):
 
     # Run the copy dialog.
     dialog = dialogs.CopyItemsDialog(items, parent, parent=hou.qt.mainWindow())
-    dialog.show()
+    dialog.exec_()
 
 
 def copy_items_from_graph(editor):
@@ -78,7 +83,7 @@ def copy_items_from_graph(editor):
         return None, True
 
     dialog = dialogs.CopyItemsDialog(items, parent, parent=hou.qt.mainWindow())
-    dialog.show()
+    dialog.exec_()
 
     # This is a one off event so we don't care what happens after this.
     return None, True
@@ -104,7 +109,7 @@ def paste_items(scriptargs=None):
 
     # Run the paste dialog.
     dialog = dialogs.PasteItemsDialog(current_pane, pos, pos, parent=hou.qt.mainWindow())
-    dialog.show()
+    dialog.exec_()
 
 
 def paste_items_to_graph(eventtype, editor, uievent):
@@ -125,7 +130,7 @@ def paste_items_to_graph(eventtype, editor, uievent):
         pos = None
 
     dialog = dialogs.PasteItemsDialog(editor, pos, mousepos, parent=hou.qt.mainWindow())
-    dialog.show()
+    dialog.exec_()
 
     # This is a one off event so we don't care what happens after this.
     return None, True
