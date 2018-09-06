@@ -495,7 +495,7 @@ class HoudiniBuildManager(object):
 
         # If the default could not be found (or none was specified) use the
         # latest build.
-        if default is None:
+        if default is None and self.installed:
             default = self.installed[-1]
 
         return default
