@@ -45,6 +45,9 @@ class HoudiniWrapper(object):
         self._nojemalloc = self.arguments.nojemalloc
         self._silent = self.arguments.silent
         self._testpath = self.arguments.testpath
+        self._log_level = self.arguments.log_level
+
+        os.environ["HT_LOG_LEVEL"] = self._log_level
 
         self._print("Houdini Wrapper:\n", colored="darkyellow")
 
@@ -412,40 +415,47 @@ def _buildParser():
     )
 
     parser.add_argument(
-        "-dumpenv",
+        "--dumpenv",
         action="store_true",
         help="Display environment variables and values."
     )
 
     parser.add_argument(
-        "-nojemalloc",
+        "--log-level",
+        help="The Python logging level.",
+        default="INFO",
+        choices=["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"],
+    )
+
+    parser.add_argument(
+        "--nojemalloc",
         action="store_true",
         help="Launch Houdini in debugging mode without jemalloc."
     )
 
     parser.add_argument(
-        "-silent",
+        "--silent",
         action="store_true",
         default=False,
         help="Don't output verbose information."
     )
 
     parser.add_argument(
-        "-testpath",
+        "--testpath",
         action="store_true",
         default=False,
         help="Don't include any non-standard environment settings."
     )
 
     parser.add_argument(
-        "-version",
+        "--version",
         nargs="?",
         default="default",
         help="Set the package version."
     )
 
     parser.add_argument(
-        "-var",
+        "--var",
         action="append",
         nargs="?",
         help="Specify env vars to be set. e.g. -var FOO=5"
@@ -455,27 +465,27 @@ def _buildParser():
     install_group = parser.add_mutually_exclusive_group()
 
     install_group.add_argument(
-        "-install",
+        "--install",
         action="store_true",
         default=False,
         help="Install a Houdini build."
     )
 
     install_group.add_argument(
-        "-uninstall",
+        "--uninstall",
         action="store_true",
         default=False,
         help="Uninstall a Houdini build."
     )
 
     install_group.add_argument(
-        "-dlinstall",
+        "--dlinstall",
         nargs=1,
         help="Download and install today's Houdini build."
     )
 
     parser.add_argument(
-        "-create_symlink",
+        "--create_symlink",
         action="store_true",
         default=True,
         help="Create a major.minor symlink"
