@@ -900,7 +900,6 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
 
         #grid_layout.addWidget(QtWidgets.QLabel("File Path"), 2, 0)
 
-
 #        self.file_widget = widgets.FileChooser()
 #        grid_layout.addWidget(self.file_widget, 2, 1)
 
