@@ -50,7 +50,7 @@ class AOVSourceManager(object):
             return self._otl_sources[section]
 
         # Create and store a reference to the source
-        source = AOVAssetSection(section)
+        source = AOVAssetSectionSource(section)
         self._otl_sources[section] = source
 
         return source
