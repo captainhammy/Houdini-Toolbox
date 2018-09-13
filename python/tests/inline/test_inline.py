@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/env hython
 """This script is a unit test suite for the inline.py module.
 
 It can be executed directly from the command line, or directly using python or
@@ -9,16 +9,30 @@ have the Houdini environments sourced.
 
 """
 
-# Standard Library Imports
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Python Imports
+import coverage
+
 import datetime
 import os
 import sys
 import unittest
 
 # Houdini Imports
-import ht.inline
+import hou
+
+# =============================================================================
+# GLOBALS
+# =============================================================================
 
 OBJ = hou.node("/obj")
+
+# =============================================================================
+# FUNCTIONS
+# =============================================================================
 
 def getObjGeo(nodePath):
     """Get the geometry from the display node of a Geometry object."""
@@ -2056,6 +2070,8 @@ class TestInlineCpp(unittest.TestCase):
         # Destroy the dummy definition.
         node_type.definition().destroy()
 
+# =============================================================================
+
 if __name__ == '__main__':
     # Load the testing hip file.
     try:
@@ -2065,6 +2081,18 @@ if __name__ == '__main__':
     except hou.LoadWarning:
         pass
 
+    cov = coverage.Coverage(source=["ht.inline"])
+    cov.start()
+
+    import ht.inline
+
     # Run the tests.
-    unittest.main()
+    try:
+        unittest.main()
+
+    finally:
+        cov.stop()
+        cov.save()
+
+        cov.html_report()
 

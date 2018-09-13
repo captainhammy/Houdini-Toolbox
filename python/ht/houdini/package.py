@@ -21,9 +21,6 @@ import tempfile
 # Third Party Imports
 from mechanize import Browser, LinkNotFoundError
 
-# Houdini Toolbox Imports
-import ht.utils
-
 # =============================================================================
 # GLOBALS
 # =============================================================================
@@ -841,7 +838,7 @@ class HoudiniSettingsManager(object):
 
         with open(config_path) as handle:
             # Get the json data.
-            data = json.load(handle, object_hook=ht.utils.convertFromUnicode)
+            data = json.load(handle)
 
             # Construct settings objects for available data.
             self._environment = HoudiniEnvironmentSettings(
@@ -864,7 +861,7 @@ class HoudiniSettingsManager(object):
             )
 
         with open(build_config_path) as handle:
-            data = json.load(handle, object_hook=ht.utils.convertFromUnicode)
+            data = json.load(handle)
 
             self._build_data = HoudiniBuildData(data)
 
@@ -1092,7 +1089,7 @@ def _getSESIAuthInfo():
         )
 
     with open(auth_path) as handle:
-        data = json.load(handle, object_hook=ht.utils.convertFromUnicode)
+        data = json.load(handle)
 
     return data["username"], data["password"]
 
