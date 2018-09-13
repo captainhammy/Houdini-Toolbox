@@ -2,6 +2,16 @@
 
 <menuDocument>
     <menu>
+	<subMenu id="opmenu.actions_menu">
+	    <scriptItem id="ht.absolute_reference_copy">
+		<label>Create Reference Copy (absolute)</label>
+		<insertAfter>opmenu.refcopy</insertAfter>
+		<scriptCode><![CDATA[node = kwargs['node']
+
+node.parent().copyItems([node], channel_reference_originals=True, relative_references=False)
+]]></scriptCode>
+	    </scriptItem>
+	</subMenu>
 	<subMenu id="opmenu.save_menu">
 	    <scriptItem id="ht.save_item_to_file">
 		<label>To File...</label>
