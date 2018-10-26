@@ -3,7 +3,7 @@
 
     "types": {
         "Linux": {
-            "arch": "linux_x86_64_gcc4.8",
+            "arch": "linux_x86_64_gcc6.3",
             "ext": "tar.gz",
             "installer_args": [
                 "--no-license",
@@ -17,32 +17,41 @@
         },
 
         "Windows": {
-            "arch": "win64-vc14",
+            "arch": "win64-vc141",
             "ext": "exe"
         },
 
         "Darwin": {
-            "arch": "macosx_x86_64_clang6.1_10.10",
+            "arch": "macosx_x86_64_clang9.0_10.13",
             "ext": "dmg"
         }
     },
 
     "versions": {
+        "17.4": {
+            "reference_date": ["25/10/18", 56]
+        },       
+        
         "17.0": {
-            "reference_date": ["25/10/18", 381],
+            "reference_date": ["25/10/18", 381]
+        },
+        
+        "16.5": {
+            "reference_date": ["18/7/18", 536],
             "types": {
                 "Linux": {
-                    "arch": "linux_x86_64_gcc6.3"
+                    "arch": "linux_x86_64_gcc4.8"
                 }
             }
         },
         
-        "16.5": {
-            "reference_date": ["18/7/18", 536]
-        },
-        
         "16.0": {
-            "reference_date": ["6/09/17", 721]
+            "reference_date": ["6/09/17", 721],
+            "types": {
+                "Linux": {
+                    "arch": "linux_x86_64_gcc4.8"
+                }
+            }
         }
     }
 }
