@@ -47,7 +47,7 @@ class AOVManagerWidget(QtWidgets.QWidget):
         self.invalidAOVSelectedSignal.connect(self.select_widget.install_bar.disableHandler)
 
         # Really need a signal?  Maybe just refresh everything?
-        manager.MANAGER.initInterface()
+        manager.MANAGER.init_interface()
         manager.MANAGER.interface.aovAddedSignal.connect(self.select_widget.aov_tree.insertAOV)
         manager.MANAGER.interface.aovRemovedSignal.connect(self.select_widget.aov_tree.removeAOV)
         manager.MANAGER.interface.groupAddedSignal.connect(self.select_widget.aov_tree.insertGroup)
@@ -778,7 +778,7 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
             hou.qt.createIcon("COMMON_file"),
             "Load AOVs from .json files.",
             self,
-            triggered=manager.loadJsonFiles
+            triggered=manager.load_json_files
         )
 
         load_file_button.setDefaultAction(load_file_action)
@@ -1087,7 +1087,7 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
                     if names:
                         value = "{} {}".format(value, " ".join(names))
 
-                    aovs = manager.MANAGER.getAOVsFromString(value)
+                    aovs = manager.MANAGER.get_aovs_from_string(value)
 
                     if aovs:
                         new_data.extend(aovs)
@@ -1415,7 +1415,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
             if names:
                 value = "{} {}".format(value, " ".join(names))
 
-            items.extend(manager.MANAGER.getAOVsFromString(value))
+            items.extend(manager.MANAGER.get_aovs_from_string(value))
 
         if items:
             self.installSignal.emit(items)

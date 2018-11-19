@@ -33,7 +33,7 @@ class SohoHookManager(object):
     # METHODS
     # =========================================================================
 
-    def callHook(self, name, *args, **kwargs):
+    def call_hook(self, name, *args, **kwargs):
         """Call all hook functions for a given soho hook name."""
         from IFDapi import ray_comment
 
@@ -60,21 +60,13 @@ class SohoHookManager(object):
 
         return False
 
-    def registerHook(self, name, hook):
+    def register_hook(self, name, hook):
         """Register a hook function for a given soho hook name."""
         hooks = self.hooks.setdefault(name, [])
 
         hooks.append(hook)
 
 # =============================================================================
-# FUNCTIONS
-# =============================================================================
 
-def getManager():
-    """Get the shared hook manager."""
-    return _HOOK_MANAGER
-
-# =============================================================================
-
-_HOOK_MANAGER = SohoHookManager()
+MANAGER = SohoHookManager()
 

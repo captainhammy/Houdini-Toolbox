@@ -5,18 +5,16 @@
 # =============================================================================
 
 # Houdini-Toolbox Imports
-from ht.sohohooks.manager import getManager
+from ht.sohohooks.manager import MANAGER
 
-from ht.sohohooks.aovs.manager import AOVManager
+from ht.sohohooks.aovs import manager
 
 # =============================================================================
 
-hook_manager = getManager()
-
 # Register the aov adding function with the soho hook manager so it will
 # function.
-hook_manager.registerHook(
+MANAGER.register_hook(
     "post_cameraDisplay",
-    AOVManager.addAOVsToIfd
+    manager.MANAGER.add_aovs_to_ifd
 )
 

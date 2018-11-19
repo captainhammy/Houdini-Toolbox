@@ -671,24 +671,24 @@ class NewAOVDialog(_BaseAOVDialog):
 #                        "{} already exists in file, overwrite?".format(new_aov.variable),
 #                        buttons=("Cancel", "OK"),
 #                        severity=hou.severityType.Warning,
-#                        details=str(existing_aov.getData()),
+#                        details=str(existing_aov.as_data()),
 #                        details_expanded=True,
 #                    )
 #
 #                    if choice == 0:
 #                        return
 
-#                    aov_file.replaceAOV(new_aov)
+#                    aov_file.replace_aov(new_aov)
 
 #                else:
-#                    aov_file.addAOV(new_aov)
+#                    aov_file.add_aov(new_aov)
 
 #            else:
-#                aov_file.addAOV(new_aov)
+#                aov_file.add_aov(new_aov)
 
-        aov_file.addAOV(aov)
+        aov_file.add_aov(aov)
 
-        aov_file.writeToFile()
+        aov_file.write_to_file()
 
         self.newAOVSignal.emit(aov)
 
@@ -751,8 +751,8 @@ class EditAOVDialog(_BaseAOVDialog):
 
         # Open file for writing.
         aov_file = manager.AOVFile(self.aov.path)
-        aov_file.replaceAOV(self.aov)
-        aov_file.writeToFile()
+        aov_file.replace_aov(self.aov)
+        aov_file.write_to_file()
 
         self.aovUpdatedSignal.emit(self.aov)
 
@@ -1088,9 +1088,9 @@ class NewGroupDialog(_BaseGroupDialog):
 
         aov_file = manager.AOVFile(group.path)
 
-        aov_file.addGroup(group)
+        aov_file.add_group(group)
 
-        aov_file.writeToFile()
+        aov_file.write_to_file()
 
         self.newAOVGroupSignal.emit(group)
 
@@ -1151,7 +1151,7 @@ class EditGroupDialog(_BaseGroupDialog):
 
         aov_file = manager.AOVFile(group.path)
         aov_file.replaceGroup(group)
-        aov_file.writeToFile()
+        aov_file.write_to_file()
 
         self.groupUpdatedSignal.emit(group)
 
@@ -1246,10 +1246,10 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
 
         if choice == 1:
             aov_file = manager.AOVFile(self.aov.path)
-            aov_file.removeAOV(self.aov)
-            aov_file.writeToFile()
+            aov_file.remove_aov(self.aov)
+            aov_file.write_to_file()
 
-            manager.MANAGER.removeAOV(self.aov)
+            manager.MANAGER.remove_aov(self.aov)
 
     # =========================================================================
 
@@ -1422,7 +1422,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         if choice == 1:
             aov_file = manager.AOVFile(self.group.path)
             aov_file.removeGroup(self.group)
-            aov_file.writeToFile()
+            aov_file.write_to_file()
 
             manager.MANAGER.removeGroup(self.group)
 
@@ -1582,7 +1582,7 @@ def createNewAOV(aov=None):
         dialog.initFromAOV(aov)
 
     dialog.newAOVSignal.connect(
-        manager.MANAGER.addAOV
+        manager.MANAGER.add_aov
     )
 
     dialog.show()
@@ -1598,7 +1598,7 @@ def createNewGroup(aovs=()):
         new_group_dialog.setSelectedAOVs(aovs)
 
     new_group_dialog.newAOVGroupSignal.connect(
-        manager.MANAGER.addGroup
+        manager.MANAGER.add_group
     )
 
     new_group_dialog.show()
