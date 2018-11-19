@@ -25,7 +25,7 @@ class PyFilterOperation(object):
     # SPECIAL METHODS
     # =========================================================================
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return "<PyFilterOperation: {}>".format(
             self.__class__.__name__
         )
@@ -36,7 +36,7 @@ class PyFilterOperation(object):
 
     @property
     def data(self):
-        """Data dictionary for sharing between stages and filter calls."""
+        """dict: Data dictionary for sharing between stages and filter calls."""
         return self._data
 
     @property
@@ -51,12 +51,12 @@ class PyFilterOperation(object):
     # =========================================================================
 
     @staticmethod
-    def buildArgString(*args, **kwargs):
+    def build_arg_string(*args, **kwargs):
         """Build an argument string for this operation."""
         pass
 
     @staticmethod
-    def registerParserArgs(parser):
+    def register_parser_args(parser):
         """Register any argument parser args this filter cares about."""
         pass
 
@@ -64,11 +64,11 @@ class PyFilterOperation(object):
     # METHODS
     # =========================================================================
 
-    def processParsedArgs(self, filter_args):
+    def process_parsed_args(self, filter_args):
         """Process any parsed args that the operation may be interested in."""
         pass
 
-    def shouldRun(self):
+    def should_run(self):
         """Determine whether or not this filter should be run."""
         return True
 
@@ -76,7 +76,7 @@ class PyFilterOperation(object):
 # FUNCTIONS
 # =============================================================================
 
-def logFilter(method_or_name):
+def log_filter(method_or_name):
     """Custom filter logging decorator.
 
     You can decorate each filter* method of a PyFilterOperation class to

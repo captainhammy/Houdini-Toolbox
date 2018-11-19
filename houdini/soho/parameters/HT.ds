@@ -36,7 +36,7 @@
             menutoggle	{
                 [ "from ht.sohohooks.aovs import manager" ]
                 [ "" ]
-                [ "return manager.buildMenuScript()" ]
+                [ "return manager.build_menu_script()" ]
                 language	python
             }
             range	{ 0 1 }
@@ -82,7 +82,7 @@
 	    range	{ 0 1 }
 	    export	none
 	    parmtag	{ "button_icon" "hicon:/SVGIcons.index?ROP_soho.svg" }
-	    parmtag	{ "script_callback" "__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.setMantraCommand(hou.pwd())" }
+	    parmtag	{ "script_callback" "__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.set_mantra_command(hou.pwd())" }
 	    parmtag	{ "script_callback_language" "python" }
 	}
 	parm {
@@ -122,7 +122,7 @@
 	    label	"Resolution"
 	    type	label
 	    nolabel
-	    default	{ "`pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.buildResolutionScaleDisplay(hou.pwd())\")`" }
+	    default	{ "`pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.build_resolution_scale_display(hou.pwd())\")`" }
 	    hidewhen	"{ enable_ip_override == 0 } { ip_override_camerares == 0 }"
 	    range	{ 0 1 }
 	    export	none
@@ -143,7 +143,7 @@
 	    label	"Pixel Samples"
 	    type	label
 	    nolabel
-	    default	{ "`pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.buildPixleSampleScaleDisplay(hou.pwd())\")`" }
+	    default	{ "`pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.build_pixel_sample_scale_display(hou.pwd())\")`" }
 	    hidewhen	"{ enable_ip_override == 0 }"
 	    range	{ 0 1 }
 	    export	none
@@ -208,6 +208,45 @@
 	    range	{ 0 1 }
 	    export	none
 	}
-
+	parm {
+	    name	"ip_disable_matte"
+	    label	"Disable Matte/Phantom Objects"
+	    type	toggle
+	    default	{ "0" }
+	    help	"Disable any matte or phantom objects."
+	    disablewhen	"{ enable_ip_override == 0 }"
+	    range	{ 0 1 }
+	    export	none
+	}
+	parm {
+	    name	"ip_bucket_size"
+	    label	"Bucket Size"
+	    type	integer
+	    default	{ "10" }
+	    disablewhen	"{ enable_ip_override == 0 }"
+	    range	{ 0 32 }
+	}
+	parm {
+	    name	"ip_transparent"
+	    label	"Stochastic Transparency"
+	    type	toggle
+	    nolabel
+	    joinnext
+	    default	{ "off" }
+	    disablewhen	"{ enable_ip_override == 0 }"
+	    range	{ 0 1 }
+	    parmtag	{ "autoscope" "0000000000000000" }
+	    parmtag	{ "spare_category" "Sampling" }
+	}
+	parm {
+	    name	"ip_transparent_samples"
+	    label	"Stochastic Samples"
+	    type	integer
+	    default	{ "4" }
+	    disablewhen	"{ enable_ip_override == 0 } { ip_transparent == 0 }"
+	    range	{ 1 16 }
+	    parmtag	{ "autoscope" "0000000000000000" }
+	    parmtag	{ "spare_category" "Sampling" }
+	}
     }
 }

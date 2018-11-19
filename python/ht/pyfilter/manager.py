@@ -8,7 +8,6 @@ actions.
 
 # Standard Library Imports
 import argparse
-import logging
 import json
 
 # Houdini Toolbox Imports
@@ -26,10 +25,12 @@ class PyFilterManager(object):
         self._operations = []
 
         # Populate the list of operations.
-        self._registerOperations()
+        self._register_operations()
 
         # Build and parse any arguments.
-        self._parsePyFilterArgs()
+        filter_args = self._get_parsed_args()
+
+        self._process_parsed_args(filter_args)
 
     # =========================================================================
     # PROPERTIES
@@ -37,48 +38,39 @@ class PyFilterManager(object):
 
     @property
     def data(self):
-        """Data dictionary that can be used to pass information."""
+        """dict: Data dictionary that can be used to pass information."""
         return self._data
 
     @property
     def operations(self):
-        """A list of registered operations."""
+        """list: A list of registered operations."""
         return self._operations
 
     # =========================================================================
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    def _parsePyFilterArgs(self):
+    def _get_parsed_args(self):
         """Parse any args passed to PyFilter."""
-        parser = argparse.ArgumentParser()
+        parser = _build_parser()
 
-        self._registerParserArgs(parser)
+        self._register_parser_args(parser)
 
         filter_args = parser.parse_known_args()[0]
 
-        self._processParsedArgs(filter_args)
+        return filter_args
 
-    def _processParsedArgs(self, filter_args):
+    def _process_parsed_args(self, filter_args):
         """Allow operations to process any args that were parsed."""
         for operation in self.operations:
-            operation.processParsedArgs(filter_args)
+            operation.process_parsed_args(filter_args)
 
-    def _registerOperations(self):
+    def _register_operations(self):
         """Register operations that should be run by the manager."""
-        import hou
-
-        # Look for files containing a list of operations.
-        try:
-            files = hou.findFiles("pyfilter/operations.json")
-
-        # If no files could be found then abort.
-        except hou.OperationFailed:
-            return
+        files = _find_operation_files()
 
         for filepath in files:
-            with open(filepath) as fp:
-                data = json.load(fp)
+            data = _get_operation_data(filepath)
 
             if "operations" not in data:
                 continue
@@ -87,17 +79,19 @@ class PyFilterManager(object):
                 module_name, class_name = operation
 
                 # Import the operation class.
-                cls = getattr(
-                    __import__(module_name, {}, {}, [class_name]),
-                    class_name
-                )
+                cls = _get_class(module_name, class_name)
 
-                logger.debug("Registering {}".format(class_name))
+                logger.debug(
+                    "Registering {} ({})".format(
+                        class_name,
+                        module_name
+                    )
+                )
 
                 # Add an instance of it to our operations list.
                 self.operations.append(cls(self))
 
-    def _registerParserArgs(self, parser):
+    def _register_parser_args(self, parser):
         """Register any necessary args with our parser.
 
         This allows filter operations to have their necessary args parsed and
@@ -105,19 +99,19 @@ class PyFilterManager(object):
 
         """
         for operation in self.operations:
-            operation.registerParserArgs(parser)
+            operation.register_parser_args(parser)
 
     # =========================================================================
     # METHODS
     # =========================================================================
 
-    def runFilters(self, stage, *args, **kwargs):
+    def run_operations_for_stage(self, stage, *args, **kwargs):
         """Run all filter operations for the specified stage."""
         results = []
 
         for operation in self.operations:
             # Skip operations that should not be run.
-            if not operation.shouldRun():
+            if not operation.should_run():
                 continue
 
             # Attempt to find the function for this stage.
@@ -133,3 +127,57 @@ class PyFilterManager(object):
 
         return True in results
 
+# =============================================================================
+# NON-PUBLIC FUNCTIONS
+# =============================================================================
+
+def _build_parser():
+    """Build a default parser to be used."""
+    parser = argparse.ArgumentParser()
+
+    return parser
+
+
+def _find_operation_files():
+    """Find any operation loading files."""
+    import hou
+
+    # Look for files containing a list of operations.
+    try:
+        files = hou.findFiles("pyfilter/operations.json")
+
+    # If no files could be found then abort.
+    except hou.OperationFailed:
+        logger.debug("Could not find any operations to load")
+        files = ()
+
+    return files
+
+
+def _get_class(module_name, class_name):
+    """Try to import class_name from module_name."""
+    try:
+        cls = getattr(
+            __import__(module_name, {}, {}, [class_name]),
+            class_name
+        )
+
+    except ImportError:
+        cls = None
+
+    return cls
+
+
+def _get_operation_data(file_path):
+    """Get operation data from a file path."""
+    try:
+        with open(file_path) as fp:
+            data = json.load(fp)
+
+    except (IOError, ValueError) as inst:
+        logger.error("Error loading operation data from {}".format(file_path))
+        logger.exception(inst)
+
+        data = {}
+
+    return data

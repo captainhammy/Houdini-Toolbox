@@ -6,13 +6,12 @@
 
 # Houdini Toolbox Imports
 from ht.pyfilter.logger import logger
-from ht.pyfilter.operations.operation import PyFilterOperation, logFilter
-from ht.pyfilter.property import setProperty
+from ht.pyfilter.operations.operation import PyFilterOperation, log_filter
+from ht.pyfilter.property import set_property
 
 # =============================================================================
 # CLASSES
 # =============================================================================
-
 
 class SetPrimaryImage(PyFilterOperation):
     """Operation to modify the primary image path.
@@ -31,7 +30,7 @@ class SetPrimaryImage(PyFilterOperation):
 
     @property
     def disable_primary_image(self):
-        """Disable primary image generation."""
+        """bool: Disable primary image generation."""
         return self._disable_primary_image
 
     @disable_primary_image.setter
@@ -40,7 +39,7 @@ class SetPrimaryImage(PyFilterOperation):
 
     @property
     def primary_image_path(self):
-        """The primary image path to set."""
+        """str: The primary image path to set."""
         return self._primary_image_path
 
     @primary_image_path.setter
@@ -52,40 +51,44 @@ class SetPrimaryImage(PyFilterOperation):
     # =========================================================================
 
     @staticmethod
-    def buildArgString(primary_image_path=None, disable_primary_image=False):
+    def build_arg_string(primary_image_path=None, disable_primary_image=False):
         """Build an argument string for this operation."""
         args = []
 
         if primary_image_path is not None:
-            args.append("-primary_image_path {}".format(primary_image_path))
+            args.append("--primary-image-path={}".format(primary_image_path))
 
         if disable_primary_image:
-            args.append("-disable_primary_image")
+            args.append("--disable-primary-image")
 
         return " ".join(args)
 
     @staticmethod
-    def registerParserArgs(parser):
+    def register_parser_args(parser):
         """Register interested parser args for this operation."""
-        parser.add_argument("-primary_image_path")
+        parser.add_argument("--primary-image-path", dest="primary_image_path")
 
-        parser.add_argument("-disable_primary_image", action="store_true")
+        parser.add_argument(
+            "--disable-primary-image",
+            action="store_true",
+            dest="disable_primary_image"
+        )
 
     # =========================================================================
     # METHODS
     # =========================================================================
 
-    @logFilter
+    @log_filter
     def filterCamera(self):
         """Apply camera properties."""
         if self.disable_primary_image:
             logger.info("Disabling primary image")
-            setProperty("image:filename", "null:")
+            set_property("image:filename", "null:")
 
         elif self.primary_image_path is not None:
-            setProperty("image:filename", self.primary_image_path)
+            set_property("image:filename", self.primary_image_path)
 
-    def processParsedArgs(self, filter_args):
+    def process_parsed_args(self, filter_args):
         """Process any of our interested arguments if they were passed."""
         if filter_args.disable_primary_image:
             self.disable_primary_image = True
@@ -93,7 +96,7 @@ class SetPrimaryImage(PyFilterOperation):
         if filter_args.primary_image_path is not None:
             self.primary_image_path = filter_args.primary_image_path
 
-    def shouldRun(self):
+    def should_run(self):
         """Run if the operation is disabling the primary image or needs to set
         the image path.
 

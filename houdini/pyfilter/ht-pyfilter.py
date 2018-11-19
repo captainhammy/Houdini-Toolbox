@@ -42,7 +42,7 @@ def filterCamera():
     """
     logger.debug("filterCamera")
 
-    PYFILTER_MANAGER.runFilters("filterCamera")
+    PYFILTER_MANAGER.run_operations_for_stage("filterCamera")
 
 def filterCameraSegment():
     """Modify properties for a camera motion segment.
@@ -53,14 +53,14 @@ def filterCameraSegment():
     """
     logger.debug("filterCameraSegment")
 
-    PYFILTER_MANAGER.runFilters("filterCameraSegment")
+    PYFILTER_MANAGER.run_operations_for_stage("filterCameraSegment")
 
 
 def filterEndRender():
     """Perform actions just after the image has been rendered."""
     logger.debug("filterEndRender")
 
-    PYFILTER_MANAGER.runFilters("filterEndRender")
+    PYFILTER_MANAGER.run_operations_for_stage("filterEndRender")
 
 
 def filterError(level, message, prefix):
@@ -69,7 +69,7 @@ def filterError(level, message, prefix):
     This function allows you to disable the printing of messages.
 
     """
-    result = PYFILTER_MANAGER.runFilters("filterError", level, message, prefix)
+    result = PYFILTER_MANAGER.run_operations_for_stage("filterError", level, message, prefix)
 
     return result
 
@@ -83,7 +83,7 @@ def filterFog():
     """
     logger.debug("filterFog ({})".format(mantra.property("object:name")[0]))
 
-    PYFILTER_MANAGER.runFilters("filterFog")
+    PYFILTER_MANAGER.run_operations_for_stage("filterFog")
 
 
 def filterGeometry():
@@ -96,7 +96,7 @@ def filterGeometry():
     """
     logger.debug("filterGeometry")
 
-    PYFILTER_MANAGER.runFilters("filterGeometry")
+    PYFILTER_MANAGER.run_operations_for_stage("filterGeometry")
 
 
 def filterInstance():
@@ -108,7 +108,7 @@ def filterInstance():
 
     """
     logger.debug("filterInstance ({})".format(mantra.property("object:name")[0]))
-    PYFILTER_MANAGER.runFilters("filterInstance")
+    PYFILTER_MANAGER.run_operations_for_stage("filterInstance")
 
 
 def filterLight():
@@ -121,7 +121,7 @@ def filterLight():
     """
     logger.debug("filterLight ({})".format(mantra.property("object:name")[0]))
 
-    PYFILTER_MANAGER.runFilters("filterLight")
+    PYFILTER_MANAGER.run_operations_for_stage("filterLight")
 
 
 def filterMaterial():
@@ -134,7 +134,7 @@ def filterMaterial():
     """
     logger.debug("filterMaterial")
 
-    PYFILTER_MANAGER.runFilters("filterMaterial")
+    PYFILTER_MANAGER.run_operations_for_stage("filterMaterial")
 
 
 def filterOutputAssets(assets):
@@ -146,7 +146,7 @@ def filterOutputAssets(assets):
     """
     logger.debug("filterOutputAssets")
 
-    PYFILTER_MANAGER.runFilters("filterOutputAssets")
+    PYFILTER_MANAGER.run_operations_for_stage("filterOutputAssets")
 
 
 def filterPlane():
@@ -159,14 +159,14 @@ def filterPlane():
     else:
         logger.debug("filterPlane ({} -> {})".format(variable, channel))
 
-    PYFILTER_MANAGER.runFilters("filterPlane")
+    PYFILTER_MANAGER.run_operations_for_stage("filterPlane")
 
 
 def filterQuit():
     """Perform actions just before Mantra quits."""
     logger.debug("filterQuit")
 
-    PYFILTER_MANAGER.runFilters("filterQuit")
+    PYFILTER_MANAGER.run_operations_for_stage("filterQuit")
 
 
 def filterRender():
@@ -179,7 +179,7 @@ def filterRender():
     """
     logger.debug("filterRender")
 
-    PYFILTER_MANAGER.runFilters("filterRender")
+    PYFILTER_MANAGER.run_operations_for_stage("filterRender")
 
 
 def main():

@@ -13,9 +13,8 @@ import json
 
 # Houdini Toolbox Imports
 from ht.pyfilter.logger import logger
-from ht.pyfilter.operations.operation import PyFilterOperation, logFilter
-from ht.pyfilter.property import getProperty, setProperty
-import ht.utils
+from ht.pyfilter.operations.operation import PyFilterOperation, log_filter
+from ht.pyfilter.property import get_property, set_property
 
 # =============================================================================
 # CLASSES
@@ -34,7 +33,7 @@ class PropertySetterManager(object):
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    def _loadFromData(self, data):
+    def _load_from_data(self, data):
         """Build PropertySetter objects from data."""
         # Process each filter stage name and it's data.
         for stage_name, stage_data in data.iteritems():
@@ -75,13 +74,13 @@ class PropertySetterManager(object):
                                 item["rendertype"] = rendertype
 
                         # Process the child data block.
-                        _processBlock(
+                        _process_block(
                             properties, stage_name, name, block
                         )
 
                 # Normal data.
                 else:
-                    _processBlock(
+                    _process_block(
                         properties, stage_name, property_name, property_block
                     )
 
@@ -91,14 +90,14 @@ class PropertySetterManager(object):
 
     @property
     def properties(self):
-        """Dictionary containing properties."""
+        """dict: Dictionary containing properties."""
         return self._properties
 
     # =========================================================================
     # METHODS
     # =========================================================================
 
-    def loadFromFile(self, filepath):
+    def load_from_file(self, filepath):
         """Load properties from a file."""
         logger.debug("Reading properties from {}".format(filepath))
 
@@ -106,15 +105,15 @@ class PropertySetterManager(object):
         with open(filepath) as f:
             data = json.load(f)
 
-        self._loadFromData(data)
+        self._load_from_data(data)
 
-    def parseFromString(self, property_string):
+    def parse_from_string(self, property_string):
         """Load properties from a string."""
         data = json.loads(property_string)
 
-        self._loadFromData(data)
+        self._load_from_data(data)
 
-    def setProperties(self, stage):
+    def set_properties(self, stage):
         """Apply properties."""
         if stage in self.properties:
             for prop in self.properties[stage]:
@@ -140,8 +139,8 @@ class PropertySetter(object):
         self._find_file = False
         self._rendertype = None
 
-        if "findFile" in property_block:
-            self.find_file = property_block["findFile"]
+        if "findfile" in property_block:
+            self.find_file = property_block["findfile"]
 
         if "enabled" in property_block:
             self.enabled = property_block["enabled"]
@@ -150,7 +149,7 @@ class PropertySetter(object):
             self.rendertype = property_block["rendertype"]
 
         # Perform any value cleanup.
-        self._processValue()
+        self._process_value()
 
     # =========================================================================
     # SPECIAL METHODS
@@ -169,7 +168,7 @@ class PropertySetter(object):
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    def _processValue(self):
+    def _process_value(self):
         """Perform operations and cleanup of the value data."""
         import hou
 
@@ -212,7 +211,7 @@ class PropertySetter(object):
 
     @property
     def enabled(self):
-        """Is the property setting enabled."""
+        """bool: Is the property setting enabled."""
         return self._enabled
 
     @enabled.setter
@@ -223,7 +222,7 @@ class PropertySetter(object):
 
     @property
     def find_file(self):
-        """Is the value the name of a file to find."""
+        """bool: Is the value the name of a file to find."""
         return self._find_file
 
     @find_file.setter
@@ -232,14 +231,14 @@ class PropertySetter(object):
 
     @property
     def name(self):
-        """The name of the property to set."""
+        """str: The name of the property to set."""
         return self._name
 
     # =========================================================================
 
     @property
     def rendertype(self):
-        """Apply to specific render types."""
+        """str: Apply to specific render types."""
         return self._rendertype
 
     @rendertype.setter
@@ -248,7 +247,7 @@ class PropertySetter(object):
 
     @property
     def value(self):
-        """The value to set the property."""
+        """object: The value to set the property."""
         return self._value
 
     @value.setter
@@ -259,7 +258,7 @@ class PropertySetter(object):
     # METHODS
     # =========================================================================
 
-    def setProperty(self):
+    def set_property(self):
         """Set the property to the value."""
         import hou
 
@@ -270,7 +269,7 @@ class PropertySetter(object):
         # Is this property being applied to a specific render type.
         if self.rendertype is not None:
             # Get the rendertype for the current pass.
-            rendertype = getProperty("renderer:rendertype")
+            rendertype = get_property("renderer:rendertype")
 
             # If the type pattern doesn't match, abort.
             if not hou.patternMatch(self.rendertype, rendertype):
@@ -281,7 +280,7 @@ class PropertySetter(object):
         )
 
         # Update the property value.
-        setProperty(self.name, self.value)
+        set_property(self.name, self.value)
 
 
 class MaskedPropertySetter(PropertySetter):
@@ -337,27 +336,27 @@ class MaskedPropertySetter(PropertySetter):
     # METHODS
     # =========================================================================
 
-    def setProperty(self):
+    def set_property(self):
         """Set the property under mantra."""
         import hou
 
         # Is this property being applied using a name mask.
         if self.mask is not None:
             # Get the name of the item that is currently being filtered.
-            filtered_item = getProperty(self.mask_property_name)
+            filtered_item = get_property(self.mask_property_name)
 
             # If the mask pattern doesn't match, abort.
             if not hou.patternMatch(self.mask, filtered_item):
                 return
 
         # Call the super class function to set the property.
-        super(MaskedPropertySetter, self).setProperty()
+        super(MaskedPropertySetter, self).set_property()
 
 
 class SetProperties(PyFilterOperation):
     """Operation to set misc properties passed along as a string or file path.
 
-    This operation creates and uses the -properties and -propertiesfile args.
+    This operation creates and uses the --properties and --properties-file args.
 
     """
 
@@ -380,68 +379,69 @@ class SetProperties(PyFilterOperation):
     # =========================================================================
 
     @staticmethod
-    def buildArgString(properties=None, properties_file=None):
+    def build_arg_string(properties=None, properties_file=None):
         args = []
 
         if properties is not None:
             args.append(
-                '-properties="{}"'.format(
+                '--properties="{}"'.format(
                     json.dumps(properties).replace('"', '\\"')
                 )
             )
 
         if properties_file is not None:
-            args.append("-propertiesfile={}".format(properties_file))
+            args.append("--properties-file={}".format(properties_file))
 
         return " ".join(args)
 
     @staticmethod
-    def registerParserArgs(parser):
+    def register_parser_args(parser):
         """Register interested parser args for this operation."""
         parser.add_argument(
-            "-properties",
+            "--properties",
             nargs=1,
             action="store",
             help="Specify a property dictionary on the command line."
         )
 
         parser.add_argument(
-            "-propertiesfile",
+            "--properties-file",
             nargs=1,
             action="store",
             help="Use a file to define render properties to override.",
+            dest="properties_file"
         )
 
     # =========================================================================
     # METHODS
     # =========================================================================
 
-    @logFilter
+    @log_filter
     def filterCamera(self):
         """Apply camera properties."""
-        self.property_manager.setProperties("camera")
+        self.property_manager.set_properties("camera")
 
-    @logFilter("object:name")
+    @log_filter("object:name")
     def filterInstance(self):
         """Apply object properties."""
-        self.property_manager.setProperties("instance")
+        self.property_manager.set_properties("instance")
 
-    @logFilter("object:name")
+    @log_filter("object:name")
     def filterLight(self):
         """Apply light properties."""
-        self.property_manager.setProperties("light")
+        self.property_manager.set_properties("light")
 
-    def processParsedArgs(self, filter_args):
+    def process_parsed_args(self, filter_args):
         """Process any of our interested arguments if they were passed."""
         if filter_args.properties is not None:
             for prop in filter_args.properties:
-                self.property_manager.parseFromString(prop)
+                self.property_manager.parse_from_string(prop)
 
-        if filter_args.propertiesfile is not None:
-            for filepath in filter_args.propertiesfile:
-                self.property_manager.loadFromFile(filepath)
+        if filter_args.properties_file is not None:
+            for filepath in filter_args.properties_file:
+                self.property_manager.load_from_file(filepath)
 
-    def shouldRun(self):
+    def should_run(self):
         """Only run if there are properties to set."""
         return any(self._property_manager.properties)
 
@@ -450,7 +450,7 @@ class SetProperties(PyFilterOperation):
 # =============================================================================
 
 
-def _createPropertySetter(stage_name, property_name, property_block):
+def _create_property_setter(stage_name, property_name, property_block):
     """Create a PropertySetter based on data."""
     # Handle masked properties.
     if "mask" in property_block:
@@ -485,7 +485,7 @@ def _createPropertySetter(stage_name, property_name, property_block):
     return PropertySetter(property_name, property_block)
 
 
-def _processBlock(properties, stage_name, name, block):
+def _process_block(properties, stage_name, name, block):
     """Process a data block to add properties."""
     # If we want to set the same property with different settings multiple
     # times (eg. different masks) we can have a list of objects instead.
@@ -498,7 +498,7 @@ def _processBlock(properties, stage_name, name, block):
     if isinstance(block, Iterable):
         # Process any properties in the block.
         for property_elem in block:
-            prop = _createPropertySetter(
+            prop = _create_property_setter(
                 stage_name,
                 name,
                 property_elem

@@ -3,7 +3,7 @@
     "camera": {
         "renderer:tilecallback": {
             "value": "mantraTileCallback.py",
-            "findFile": true,
+            "findfile": true,
             "enabled": false
         },
 
