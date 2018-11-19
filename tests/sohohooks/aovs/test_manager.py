@@ -43,7 +43,7 @@ class Test_AOVManager(unittest.TestCase):
 
         self.patcher.stop()
 
-    @patch("__main__.manager.AOVManager._init_from_files")
+    @patch("ht.sohohooks.aovs.manager.AOVManager._init_from_files")
     def test___init__(self, mock_init):
         mgr = manager.AOVManager()
 
@@ -54,14 +54,14 @@ class Test_AOVManager(unittest.TestCase):
 
     # _build_intrinsic_groups
 
-    @patch("__main__.manager.IntrinsicAOVGroup", autospec=True)
+    @patch("ht.sohohooks.aovs.manager.IntrinsicAOVGroup", autospec=True)
     @patch.object(manager.AOVManager, "add_group")
     @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test__build_intrinsic_groups__new_group(self, mock_aovs, mock_groups, mock_add, mock_int_group):
 
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
         mock_aov.intrinsics = ["int1"]
 
         mock_groups.return_value = {}
@@ -81,7 +81,7 @@ class Test_AOVManager(unittest.TestCase):
     @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test__build_intrinsic_groups__existing_group(self, mock_aovs, mock_groups, mock_add):
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
         mock_aov.intrinsics = ["int1"]
 
         mock_group = MagicMock(spec=aov.IntrinsicAOVGroup)
@@ -99,8 +99,8 @@ class Test_AOVManager(unittest.TestCase):
 
     @patch.object(manager.AOVManager, "_build_intrinsic_groups")
     @patch.object(manager.AOVManager, "_merge_readers")
-    @patch("__main__.manager.AOVFile", autospec=True)
-    @patch("__main__.manager._find_aov_files")
+    @patch("ht.sohohooks.aovs.manager.AOVFile", autospec=True)
+    @patch("ht.sohohooks.aovs.manager._find_aov_files")
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test__init_from_files(self, mock_find, mock_file, mock_merge, mock_build):
         mock_find.return_value = ["/path/to/file1.json"]
@@ -117,10 +117,10 @@ class Test_AOVManager(unittest.TestCase):
     @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test__init_group_members(self, mock_aovs):
-        mock_group = MagicMock(spec=aov.AOVGroup)
+        mock_group = MagicMock(spec=manager.AOVGroup)
         mock_group.includes = ["N", "P"]
 
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
 
         mock_aovs.return_value = {
             "N": mock_aov,
@@ -137,7 +137,7 @@ class Test_AOVManager(unittest.TestCase):
     @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test__init_reader_aovs__new_aov(self, mock_aovs, mock_add):
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
         mock_aov.variable = "N"
 
         mock_reader = MagicMock(spec=manager.AOVFile)
@@ -154,11 +154,11 @@ class Test_AOVManager(unittest.TestCase):
     @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test__init_reader_aovs__matches_existing_priority_same(self, mock_aovs, mock_add):
-        mock_new_aov = MagicMock(spec=aov.AOV)
+        mock_new_aov = MagicMock(spec=manager.AOV)
         mock_new_aov.variable = "N"
         mock_new_aov.priority = 3
 
-        mock_existing_aov = MagicMock(spec=aov.AOV)
+        mock_existing_aov = MagicMock(spec=manager.AOV)
         mock_existing_aov.variable = "N"
         mock_existing_aov.priority = 3
 
@@ -176,11 +176,11 @@ class Test_AOVManager(unittest.TestCase):
     @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test__init_reader_aovs__matches_existing_priority_lower(self, mock_aovs, mock_add):
-        mock_new_aov = MagicMock(spec=aov.AOV)
+        mock_new_aov = MagicMock(spec=manager.AOV)
         mock_new_aov.variable = "N"
         mock_new_aov.priority = 3
 
-        mock_existing_aov = MagicMock(spec=aov.AOV)
+        mock_existing_aov = MagicMock(spec=manager.AOV)
         mock_existing_aov.variable = "N"
         mock_existing_aov.priority = 2
 
@@ -201,7 +201,7 @@ class Test_AOVManager(unittest.TestCase):
     @patch.object(manager.AOVManager, "_init_group_members")
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test__init_reader_groups__new_group(self, mock_init, mock_groups, mock_add):
-        mock_group = MagicMock(spec=aov.AOV)
+        mock_group = MagicMock(spec=manager.AOV)
         mock_group.name = "name"
 
         mock_reader = MagicMock(spec=manager.AOVFile)
@@ -221,14 +221,14 @@ class Test_AOVManager(unittest.TestCase):
     @patch.object(manager.AOVManager, "_init_group_members")
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test__init_reader_groups__matches_existing_priority_same(self, mock_init, mock_groups, mock_add):
-        mock_new_group = MagicMock(spec=aov.AOV)
+        mock_new_group = MagicMock(spec=manager.AOV)
         mock_new_group.name = "name"
         mock_new_group.priority = 3
 
         mock_reader = MagicMock(spec=manager.AOVFile)
         mock_reader.groups = [mock_new_group]
 
-        mock_existing_group = MagicMock(spec=aov.AOV)
+        mock_existing_group = MagicMock(spec=manager.AOV)
         mock_existing_group.name = "name"
         mock_existing_group.priority = 3
 
@@ -246,14 +246,14 @@ class Test_AOVManager(unittest.TestCase):
     @patch.object(manager.AOVManager, "_init_group_members")
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test__init_reader_groups__matches_existing_priority_lower(self, mock_init, mock_groups, mock_add):
-        mock_new_group = MagicMock(spec=aov.AOV)
+        mock_new_group = MagicMock(spec=manager.AOV)
         mock_new_group.name = "name"
         mock_new_group.priority = 3
 
         mock_reader = MagicMock(spec=manager.AOVFile)
         mock_reader.groups = [mock_new_group]
 
-        mock_existing_group = MagicMock(spec=aov.AOV)
+        mock_existing_group = MagicMock(spec=manager.AOV)
         mock_existing_group.name = "name"
         mock_existing_group.priority = 2
 
@@ -315,7 +315,7 @@ class Test_AOVManager(unittest.TestCase):
 
         mock_aovs.return_value = aovs
 
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
         mock_aov.variable = "P"
 
         mgr = manager.AOVManager()
@@ -333,7 +333,7 @@ class Test_AOVManager(unittest.TestCase):
         aovs = {}
         mock_aovs.return_value = aovs
 
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
         mock_aov.variable = "P"
 
         mgr = manager.AOVManager()
@@ -390,11 +390,11 @@ class Test_AOVManager(unittest.TestCase):
 
         self.mock_soho.SohoParm.assert_has_calls(calls)
 
-    @patch("__main__.manager.flatten_aov_items")
+    @patch("ht.sohohooks.aovs.manager.flatten_aov_items")
     @patch.object(manager.AOVManager, "get_aovs_from_string")
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test_add_aovs_to_ifd__non_opid(self, mock_get, mock_flattened):
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
         mock_aov.variable = "P"
 
         mock_wrangler = MagicMock()
@@ -433,11 +433,11 @@ class Test_AOVManager(unittest.TestCase):
 
         self.mock_api.ray_comment.assert_not_called()
 
-    @patch("__main__.manager.flatten_aov_items")
+    @patch("ht.sohohooks.aovs.manager.flatten_aov_items")
     @patch.object(manager.AOVManager, "get_aovs_from_string")
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test_add_aovs_to_ifd__opid(self, mock_get, mock_flattened):
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
         mock_aov.variable = "Op_Id"
 
         mock_wrangler = MagicMock()
@@ -486,7 +486,7 @@ class Test_AOVManager(unittest.TestCase):
 
         mock_groups.return_value = groups
 
-        mock_group = MagicMock(spec=aov.AOVGroup)
+        mock_group = MagicMock(spec=manager.AOVGroup)
         mock_group.name = "name"
 
         mgr = manager.AOVManager()
@@ -504,7 +504,7 @@ class Test_AOVManager(unittest.TestCase):
         groups = {}
         mock_groups.return_value = groups
 
-        mock_group = MagicMock(spec=aov.AOVGroup)
+        mock_group = MagicMock(spec=manager.AOVGroup)
         mock_group.name = "name"
 
         mgr = manager.AOVManager()
@@ -547,8 +547,8 @@ class Test_AOVManager(unittest.TestCase):
     @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test_get_aovs_from_string__aovs_match_spaces(self, mock_aovs, mock_groups):
-        mock_aov_n = MagicMock(spec=aov.AOV)
-        mock_aov_p = MagicMock(spec=aov.AOV)
+        mock_aov_n = MagicMock(spec=manager.AOV)
+        mock_aov_p = MagicMock(spec=manager.AOV)
 
         mock_aovs.return_value = {"N": mock_aov_n, "P": mock_aov_p}
         mock_groups.return_value = {}
@@ -565,8 +565,8 @@ class Test_AOVManager(unittest.TestCase):
     @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test_get_aovs_from_string__aovs_match_commas(self, mock_aovs, mock_groups):
-        mock_aov_n = MagicMock(spec=aov.AOV)
-        mock_aov_p = MagicMock(spec=aov.AOV)
+        mock_aov_n = MagicMock(spec=manager.AOV)
+        mock_aov_p = MagicMock(spec=manager.AOV)
 
         mock_aovs.return_value = {"N": mock_aov_n, "P": mock_aov_p}
         mock_groups.return_value = {}
@@ -583,8 +583,8 @@ class Test_AOVManager(unittest.TestCase):
     @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test_get_aovs_from_string__groups_match_spaces(self, mock_aovs, mock_groups):
-        mock_group1 = MagicMock(spec=aov.AOVGroup)
-        mock_group2 = MagicMock(spec=aov.AOVGroup)
+        mock_group1 = MagicMock(spec=manager.AOVGroup)
+        mock_group2 = MagicMock(spec=manager.AOVGroup)
 
         mock_aovs.return_value = {}
         mock_groups.return_value = {"group1": mock_group1, "group2": mock_group2}
@@ -601,8 +601,8 @@ class Test_AOVManager(unittest.TestCase):
     @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test_get_aovs_from_string__groups_match_commas(self, mock_aovs, mock_groups):
-        mock_group1 = MagicMock(spec=aov.AOVGroup)
-        mock_group2 = MagicMock(spec=aov.AOVGroup)
+        mock_group1 = MagicMock(spec=manager.AOVGroup)
+        mock_group2 = MagicMock(spec=manager.AOVGroup)
 
         mock_aovs.return_value = {}
         mock_groups.return_value = {"group1": mock_group1, "group2": mock_group2}
@@ -635,7 +635,7 @@ class Test_AOVManager(unittest.TestCase):
     # load
 
     @patch.object(manager.AOVManager, "_merge_readers")
-    @patch("__main__.manager.AOVFile", autospec=True)
+    @patch("ht.sohohooks.aovs.manager.AOVFile", autospec=True)
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test_load(self, mock_file, mock_merge):
         mgr = manager.AOVManager()
@@ -667,10 +667,10 @@ class Test_AOVManager(unittest.TestCase):
     @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test_remove_aov__no_match(self, mock_aovs, mock_interface):
-        mock_aov1 = MagicMock(spec=aov.AOV)
+        mock_aov1 = MagicMock(spec=manager.AOV)
         mock_aov1.variable = "P"
 
-        mock_aov2 = MagicMock(spec=aov.AOV)
+        mock_aov2 = MagicMock(spec=manager.AOV)
         mock_aov2.variable = "N"
 
         aovs = {"N": mock_aov2}
@@ -688,7 +688,7 @@ class Test_AOVManager(unittest.TestCase):
     def test_remove_aov__match_no_interface(self, mock_aovs, mock_interface):
         mock_interface.return_value = None
 
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
         mock_aov.variable = "P"
 
         aovs = {"P": mock_aov}
@@ -707,7 +707,7 @@ class Test_AOVManager(unittest.TestCase):
         interface = MagicMock()
         mock_interface.return_value = interface
 
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
         mock_aov.variable = "P"
 
         aovs = {"P": mock_aov}
@@ -727,10 +727,10 @@ class Test_AOVManager(unittest.TestCase):
     @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
     def test_remove_group__no_match(self, mock_groups, mock_interface):
-        mock_group1 = MagicMock(spec=aov.AOVGroup)
+        mock_group1 = MagicMock(spec=manager.AOVGroup)
         mock_group1.name = "group1"
 
-        mock_group2 = MagicMock(spec=aov.AOVGroup)
+        mock_group2 = MagicMock(spec=manager.AOVGroup)
         mock_group2.name = "group2"
 
         groups = {"group2": mock_group2}
@@ -748,7 +748,7 @@ class Test_AOVManager(unittest.TestCase):
     def test_remove_group__match_no_interface(self, mock_groups, mock_interface):
         mock_interface.return_value = None
 
-        mock_group = MagicMock(spec=aov.AOVGroup)
+        mock_group = MagicMock(spec=manager.AOVGroup)
         mock_group.name = "group"
 
         groups = {"group": mock_group}
@@ -767,7 +767,7 @@ class Test_AOVManager(unittest.TestCase):
         interface = MagicMock()
         mock_interface.return_value = interface
 
-        mock_group = MagicMock(spec=aov.AOVGroup)
+        mock_group = MagicMock(spec=manager.AOVGroup)
         mock_group.name = "group"
 
         groups = {"group": mock_group}
@@ -816,7 +816,7 @@ class Test_AOVFile(unittest.TestCase):
     # _create_aovs
 
     @patch.object(manager.AOVFile, "aovs", new_callable=PropertyMock)
-    @patch("__main__.manager.AOV", autospec=True)
+    @patch("ht.sohohooks.aovs.manager.AOV", autospec=True)
     @patch.object(manager.AOVFile, "path", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test__create_aovs(self, mock_path, mock_aov, mock_aovs):
@@ -845,7 +845,7 @@ class Test_AOVFile(unittest.TestCase):
 
     @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "path", new_callable=PropertyMock)
-    @patch("__main__.manager.AOVGroup", autospec=True)
+    @patch("ht.sohohooks.aovs.manager.AOVGroup", autospec=True)
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test__create_groups_minimal(self, mock_group, mock_path, mock_groups):
         group_data = {}
@@ -867,8 +867,8 @@ class Test_AOVFile(unittest.TestCase):
 
     @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "path", new_callable=PropertyMock)
-    @patch("__main__.manager.os.path.expandvars")
-    @patch("__main__.manager.AOVGroup", autospec=True)
+    @patch("ht.sohohooks.aovs.manager.os.path.expandvars")
+    @patch("ht.sohohooks.aovs.manager.AOVGroup", autospec=True)
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test__create_groups_all_data(self, mock_group, mock_expand, mock_path, mock_groups):
         group_data = {
@@ -904,7 +904,7 @@ class Test_AOVFile(unittest.TestCase):
 
     @patch.object(manager.AOVFile, "_create_groups")
     @patch.object(manager.AOVFile, "_create_aovs")
-    @patch("__main__.manager.json.load")
+    @patch("ht.sohohooks.aovs.manager.json.load")
     @patch.object(manager.AOVFile, "path", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test__init_from_file__no_items(self, mock_path, mock_load, mock_create_aovs, mock_create_groups):
@@ -923,7 +923,7 @@ class Test_AOVFile(unittest.TestCase):
 
     @patch.object(manager.AOVFile, "_create_groups")
     @patch.object(manager.AOVFile, "_create_aovs")
-    @patch("__main__.manager.json.load")
+    @patch("ht.sohohooks.aovs.manager.json.load")
     @patch.object(manager.AOVFile, "path", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test__init_from_file__items(self, mock_path, mock_load, mock_create_aovs, mock_create_groups):
@@ -951,7 +951,7 @@ class Test_AOVFile(unittest.TestCase):
 
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test_aovs(self):
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
 
         aov_file = manager.AOVFile(None)
 
@@ -964,7 +964,7 @@ class Test_AOVFile(unittest.TestCase):
 
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test_groups(self):
-        mock_group = MagicMock(spec=aov.AOVGroup)
+        mock_group = MagicMock(spec=manager.AOVGroup)
 
         aov_file = manager.AOVFile(None)
 
@@ -987,7 +987,7 @@ class Test_AOVFile(unittest.TestCase):
             aov_file.path = "/some/path"
 
     @patch.object(manager.AOVFile, "path", new_callable=PropertyMock)
-    @patch("__main__.manager.os.path.isfile")
+    @patch("ht.sohohooks.aovs.manager.os.path.isfile")
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test_exists(self, mock_isfile, mock_path):
         aov_file = manager.AOVFile(None)
@@ -1004,7 +1004,7 @@ class Test_AOVFile(unittest.TestCase):
     @patch.object(manager.AOVFile, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test_add_aov(self, mock_aovs):
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
 
         aov_file = manager.AOVFile(None)
         aov_file.add_aov(mock_aov)
@@ -1016,7 +1016,7 @@ class Test_AOVFile(unittest.TestCase):
     @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test_add_group(self, mock_groups):
-        mock_group = MagicMock(spec=aov.AOVGroup)
+        mock_group = MagicMock(spec=manager.AOVGroup)
 
         aov_file = manager.AOVFile(None)
         aov_file.add_group(mock_group)
@@ -1028,7 +1028,7 @@ class Test_AOVFile(unittest.TestCase):
     @patch.object(manager.AOVFile, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test_contains_aov(self, mock_aovs):
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
 
         aov_file = manager.AOVFile(None)
         result = aov_file.contains_aov(mock_aov)
@@ -1042,7 +1042,7 @@ class Test_AOVFile(unittest.TestCase):
     @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test_contains_group(self, mock_groups):
-        mock_group = MagicMock(spec=aov.AOVGroup)
+        mock_group = MagicMock(spec=manager.AOVGroup)
 
         aov_file = manager.AOVFile(None)
         result = aov_file.contains_group(mock_group)
@@ -1056,7 +1056,7 @@ class Test_AOVFile(unittest.TestCase):
     @patch.object(manager.AOVFile, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test_remove_aov(self, mock_aovs):
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
 
         aovs = [mock_aov]
         mock_aovs.return_value = aovs
@@ -1071,7 +1071,7 @@ class Test_AOVFile(unittest.TestCase):
     @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test_remove_group(self, mock_groups):
-        mock_group = MagicMock(spec=aov.AOVGroup)
+        mock_group = MagicMock(spec=manager.AOVGroup)
 
         groups = [mock_group]
         mock_groups.return_value = groups
@@ -1086,7 +1086,7 @@ class Test_AOVFile(unittest.TestCase):
     @patch.object(manager.AOVFile, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test_replace_aov(self, mock_aovs):
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
 
         mock_aovs.return_value.index.return_value = 3
 
@@ -1101,7 +1101,7 @@ class Test_AOVFile(unittest.TestCase):
     @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test_replace_group(self, mock_groups):
-        mock_group = MagicMock(spec=aov.AOVGroup)
+        mock_group = MagicMock(spec=manager.AOVGroup)
 
         mock_groups.return_value.index.return_value = 2
 
@@ -1113,7 +1113,7 @@ class Test_AOVFile(unittest.TestCase):
 
     # write_to_file
 
-    @patch("__main__.manager.json.dump")
+    @patch("ht.sohohooks.aovs.manager.json.dump")
     @patch.object(manager.AOVFile, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
@@ -1132,18 +1132,18 @@ class Test_AOVFile(unittest.TestCase):
 
             mock_dump.assert_called_with({}, mock_handle.return_value, indent=4)
 
-    @patch("__main__.manager.json.dump")
+    @patch("ht.sohohooks.aovs.manager.json.dump")
     @patch.object(manager.AOVFile, "path", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "aovs", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
     @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
     def test_write_to_file(self, mock_groups, mock_aovs, mock_path, mock_dump):
-        mock_group = MagicMock(spec=aov.AOVGroup)
+        mock_group = MagicMock(spec=manager.AOVGroup)
         mock_group.as_data.return_value = {"group_key": "group_value"}
 
         mock_groups.return_value = [mock_group]
 
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
         mock_aov.as_data.return_value = {"aov_key": "aov_value"}
 
         mock_aovs.return_value = [mock_aov]
@@ -1166,8 +1166,8 @@ class Test_AOVFile(unittest.TestCase):
 class Test__find_aov_files(unittest.TestCase):
     """Test ht.sohohooks.manager._find_aov_files."""
 
-    @patch("__main__.manager.glob.glob")
-    @patch("__main__.manager._get_aov_path_folders")
+    @patch("ht.sohohooks.aovs.manager.glob.glob")
+    @patch("ht.sohohooks.aovs.manager._get_aov_path_folders")
     def test_aov_path(self, mock_get_folders, mock_glob):
         mock_get_folders.return_value = ("/path/to/folder", )
         mock_glob.return_value = ["path1", "path2"]
@@ -1182,8 +1182,8 @@ class Test__find_aov_files(unittest.TestCase):
         mock_glob.assert_called_with(os.path.join("/path/to/folder", "*.json"))
 
 
-    @patch("__main__.manager.glob.glob")
-    @patch("__main__.manager._find_houdinipath_aov_folders")
+    @patch("ht.sohohooks.aovs.manager.glob.glob")
+    @patch("ht.sohohooks.aovs.manager._find_houdinipath_aov_folders")
     def test_houdini_path(self, mock_find, mock_glob):
         mock_find.return_value = ["/path/to/folder"]
         mock_glob.return_value = ["path1", "path2"]
@@ -1201,7 +1201,7 @@ class Test__find_aov_files(unittest.TestCase):
 class Test__find_houdinipath_aov_folders(unittest.TestCase):
     """Test ht.sohohooks.manager._find_houdinipath_aov_folders."""
 
-    @patch("__main__.manager.hou.findDirectories")
+    @patch("ht.sohohooks.aovs.manager.hou.findDirectories")
     def test_no_dirs(self, mock_find):
         def raise_error(*args, **kwargs):
             raise hou.OperationFailed()
@@ -1212,7 +1212,7 @@ class Test__find_houdinipath_aov_folders(unittest.TestCase):
 
         self.assertEqual(result, ())
 
-    @patch("__main__.manager.hou.findDirectories")
+    @patch("ht.sohohooks.aovs.manager.hou.findDirectories")
     def test_dirs(self, mock_find):
         result = manager._find_houdinipath_aov_folders()
 
@@ -1233,7 +1233,7 @@ class Test__get_aov_path_folders(unittest.TestCase):
 
         self.assertEqual(result, ("path1", "path2"))
 
-    @patch("__main__.manager._find_houdinipath_aov_folders")
+    @patch("ht.sohohooks.aovs.manager._find_houdinipath_aov_folders")
     def test_hpath_no_folders(self, mock_find):
         mock_find.return_value = ()
 
@@ -1246,7 +1246,7 @@ class Test__get_aov_path_folders(unittest.TestCase):
 
         self.assertEqual(result, ("path1", "path2", "&"))
 
-    @patch("__main__.manager._find_houdinipath_aov_folders")
+    @patch("ht.sohohooks.aovs.manager._find_houdinipath_aov_folders")
     def test_hpath_folders(self, mock_find):
         mock_find.return_value = ("hpath1", "hpath2")
 
@@ -1263,13 +1263,13 @@ class Test__get_aov_path_folders(unittest.TestCase):
 class Test_build_menu_script(unittest.TestCase):
     """Test ht.sohohooks.manager.build_menu_script."""
 
-    @patch("__main__.manager.MANAGER", autospec=True)
+    @patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
     def test_no_groups(self, mock_manager):
         mock_manager.groups = None
 
-        mock_aov1 = MagicMock(spec=aov.AOV)
-        mock_aov2 = MagicMock(spec=aov.AOV)
-        mock_aov3 = MagicMock(spec=aov.AOV)
+        mock_aov1 = MagicMock(spec=manager.AOV)
+        mock_aov2 = MagicMock(spec=manager.AOV)
+        mock_aov3 = MagicMock(spec=manager.AOV)
 
         mock_manager.aovs = {"P": mock_aov1, "N": mock_aov2, "A": mock_aov3}
 
@@ -1277,11 +1277,11 @@ class Test_build_menu_script(unittest.TestCase):
 
         self.assertEqual(result, ("A", "A", "N", "N", "P", "P"))
 
-    @patch("__main__.manager.MANAGER", autospec=True)
+    @patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
     def test_with_groups(self, mock_manager):
-        mock_group1 = MagicMock(spec=aov.AOVGroup)
-        mock_group2 = MagicMock(spec=aov.AOVGroup)
-        mock_group3 = MagicMock(spec=aov.AOVGroup)
+        mock_group1 = MagicMock(spec=manager.AOVGroup)
+        mock_group2 = MagicMock(spec=manager.AOVGroup)
+        mock_group3 = MagicMock(spec=manager.AOVGroup)
 
         mock_manager.groups = {
             "foo": mock_group1,
@@ -1289,9 +1289,9 @@ class Test_build_menu_script(unittest.TestCase):
             "test": mock_group3,
         }
 
-        mock_aov1 = MagicMock(spec=aov.AOV)
-        mock_aov2 = MagicMock(spec=aov.AOV)
-        mock_aov3 = MagicMock(spec=aov.AOV)
+        mock_aov1 = MagicMock(spec=manager.AOV)
+        mock_aov2 = MagicMock(spec=manager.AOV)
+        mock_aov3 = MagicMock(spec=manager.AOV)
 
         mock_manager.aovs = {"P": mock_aov1, "N": mock_aov2, "A": mock_aov3}
 
@@ -1306,14 +1306,14 @@ class Test_flatten_aov_items(unittest.TestCase):
     """Test ht.sohohooks.manager.flatten_aov_items."""
 
     def test(self):
-        mock_aov = MagicMock(spec=aov.AOV)
+        mock_aov = MagicMock(spec=manager.AOV)
 
-        mock_group_aov = MagicMock(spec=aov.AOV)
+        mock_group_aov = MagicMock(spec=manager.AOV)
 
-        mock_group = MagicMock(spec=aov.AOVGroup)
+        mock_group = MagicMock(spec=manager.AOVGroup)
         type(mock_group).aovs = PropertyMock(return_value = [mock_group_aov])
 
-        result = manager.flatten_aov_items([mock_aov, mock_group])
+        result = manager.flatten_aov_items((mock_aov, mock_group))
 
         self.assertEqual(result, (mock_aov, mock_group_aov))
 
@@ -1321,9 +1321,9 @@ class Test_flatten_aov_items(unittest.TestCase):
 class Test_load_json_files(unittest.TestCase):
     """Test ht.sohohooks.manager.load_json_files."""
 
-    @patch("__main__.manager.MANAGER", autospec=True)
-    @patch("__main__.manager.os.path.exists")
-    @patch("__main__.manager.os.path.expandvars")
+    @patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
+    @patch("ht.sohohooks.aovs.manager.os.path.exists")
+    @patch("ht.sohohooks.aovs.manager.os.path.expandvars")
     def test(self, mock_expand, mock_exists, mock_manager):
         mock_expand.side_effect = ("expanded1", "expanded2")
 

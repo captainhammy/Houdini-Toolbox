@@ -22,9 +22,9 @@ reload(manager)
 class TestManager(unittest.TestCase):
     """Test ht.pyfilter.manager.PyFilterManager object."""
 
-    @patch("__main__.manager.PyFilterManager._process_parsed_args")
-    @patch("__main__.manager.PyFilterManager._get_parsed_args")
-    @patch("__main__.manager.PyFilterManager._register_operations")
+    @patch("ht.pyfilter.manager.PyFilterManager._process_parsed_args")
+    @patch("ht.pyfilter.manager.PyFilterManager._get_parsed_args")
+    @patch("ht.pyfilter.manager.PyFilterManager._register_operations")
     def test___init__(self, mock_register, mock_parse, mock_process):
         mgr = manager.PyFilterManager()
 
@@ -60,7 +60,7 @@ class TestManager(unittest.TestCase):
     # Methods
 
     @patch.object(manager.PyFilterManager, "_register_parser_args")
-    @patch("__main__.manager._build_parser")
+    @patch("ht.pyfilter.manager._build_parser")
     @patch.object(manager.PyFilterManager, "__init__", lambda x: None)
     def test__get_parsed_args(self, mock_build_parser, mock_register_args):
         mock_parser = MagicMock(argparse.ArgumentParser)
@@ -88,10 +88,10 @@ class TestManager(unittest.TestCase):
 
         mock_operation.process_parsed_args.assert_called_with(mock_args)
 
-    @patch("__main__.manager.logger")
-    @patch("__main__.manager._get_class")
-    @patch("__main__.manager._get_operation_data")
-    @patch("__main__.manager._find_operation_files")
+    @patch("ht.pyfilter.manager.logger")
+    @patch("ht.pyfilter.manager._get_class")
+    @patch("ht.pyfilter.manager._get_operation_data")
+    @patch("ht.pyfilter.manager._find_operation_files")
     @patch.object(manager.PyFilterManager, "__init__", lambda x: None)
     def test__register_operations__no_data(self, mock_find_files, mock_get_data, mock_get_class, mock_logger):
         filepath = "/path/to/file.json"
@@ -107,10 +107,10 @@ class TestManager(unittest.TestCase):
         mock_get_data.assert_called_with(filepath)
         mock_get_class.assert_not_called()
 
-    @patch("__main__.manager.logger")
-    @patch("__main__.manager._get_class")
-    @patch("__main__.manager._get_operation_data")
-    @patch("__main__.manager._find_operation_files")
+    @patch("ht.pyfilter.manager.logger")
+    @patch("ht.pyfilter.manager._get_class")
+    @patch("ht.pyfilter.manager._get_operation_data")
+    @patch("ht.pyfilter.manager._find_operation_files")
     @patch.object(manager.PyFilterManager, "__init__", lambda x: None)
     def test__register_operations(self, mock_find_files, mock_get_data, mock_get_class, mock_logger):
         filepath = "/path/to/file.json"
@@ -216,7 +216,7 @@ class Test__build_parser(unittest.TestCase):
 class Test__find_operation_files(unittest.TestCase):
     """Test ht.pyfilter.manager._find_operation_files."""
 
-    @patch("__main__.manager.logger")
+    @patch("ht.pyfilter.manager.logger")
     @patch("hou.findFiles")
     def test_no_files(self, mock_find_files, mock_logger):
         def raise_exc(*args, **kwargs):
@@ -268,7 +268,7 @@ class Test__get_class(unittest.TestCase):
 class Test__get_operation_data(unittest.TestCase):
     """Test ht.pyfilter.manager._get_operation_data."""
 
-    @patch("__main__.manager.logger")
+    @patch("ht.pyfilter.manager.logger")
     @patch("__builtin__.open")
     def test_IOError(self, mock_open, mock_logger):
         file_path = "/path/to/data.json"
@@ -277,7 +277,7 @@ class Test__get_operation_data(unittest.TestCase):
         result = manager._get_operation_data(file_path)
         self.assertEqual(result, {})
 
-    @patch("__main__.manager.logger")
+    @patch("ht.pyfilter.manager.logger")
     @patch("json.load")
     @patch("__builtin__.open", new_callable=mock_open)
     def test_ValueError(self, mock_open_file, mock_load, mock_logger):

@@ -35,10 +35,14 @@ class Test_ZDepthPass(unittest.TestCase):
         self.patcher = patch.dict("sys.modules", modules)
         self.patcher.start()
 
+        self.log_patcher = patch("ht.pyfilter.operations.operation.logger", autospec=True)
+        self.log_patcher.start()
+
     def tearDown(self):
         super(Test_ZDepthPass, self).tearDown()
 
         self.patcher.stop()
+        self.log_patcher.stop()
 
     def test___init__(self):
         mock_manager = MagicMock(spec=PyFilterManager)
@@ -102,8 +106,8 @@ class Test_ZDepthPass(unittest.TestCase):
 
     # Methods
 
-    @patch("__main__.zdepth.set_property")
-    @patch("__main__.zdepth.get_property")
+    @patch("ht.pyfilter.operations.zdepth.set_property")
+    @patch("ht.pyfilter.operations.zdepth.get_property")
     @patch.object(zdepth.ZDepthPass, "__init__", lambda x, y: None)
     def test_filterInstance__obj_matte(self, mock_get, mock_set):
         mock_get.side_effect = (True, False, "")
@@ -119,8 +123,8 @@ class Test_ZDepthPass(unittest.TestCase):
 
         mock_set.asset_has_calls(calls)
 
-    @patch("__main__.zdepth.set_property")
-    @patch("__main__.zdepth.get_property")
+    @patch("ht.pyfilter.operations.zdepth.set_property")
+    @patch("ht.pyfilter.operations.zdepth.get_property")
     @patch.object(zdepth.ZDepthPass, "__init__", lambda x, y: None)
     def test_filterInstance__obj_phantom(self, mock_get, mock_set):
         mock_get.side_effect = (False, True, "")
@@ -136,8 +140,8 @@ class Test_ZDepthPass(unittest.TestCase):
 
         mock_set.asset_has_calls(calls)
 
-    @patch("__main__.zdepth.set_property")
-    @patch("__main__.zdepth.get_property")
+    @patch("ht.pyfilter.operations.zdepth.set_property")
+    @patch("ht.pyfilter.operations.zdepth.get_property")
     @patch.object(zdepth.ZDepthPass, "__init__", lambda x, y: None)
     def test_filterInstance__surface_matte(self, mock_get, mock_set):
         mock_get.side_effect = (False, False, "matte")
@@ -153,8 +157,8 @@ class Test_ZDepthPass(unittest.TestCase):
 
         mock_set.asset_has_calls(calls)
 
-    @patch("__main__.zdepth.set_property")
-    @patch("__main__.zdepth.get_property")
+    @patch("ht.pyfilter.operations.zdepth.set_property")
+    @patch("ht.pyfilter.operations.zdepth.get_property")
     @patch.object(zdepth.ZDepthPass, "__init__", lambda x, y: None)
     def test_filterInstance__set_shader(self, mock_get, mock_set):
         mock_get.side_effect = (False, False, "")
@@ -171,8 +175,8 @@ class Test_ZDepthPass(unittest.TestCase):
 
         mock_set.asset_has_calls(calls)
 
-    @patch("__main__.zdepth.set_property")
-    @patch("__main__.zdepth.get_property")
+    @patch("ht.pyfilter.operations.zdepth.set_property")
+    @patch("ht.pyfilter.operations.zdepth.get_property")
     @patch.object(zdepth.ZDepthPass, "__init__", lambda x, y: None)
     def test_filterPlane_Pz(self, mock_get, mock_set):
         mock_get.return_value = "Pz"
@@ -186,8 +190,8 @@ class Test_ZDepthPass(unittest.TestCase):
 
         mock_set.assert_not_called()
 
-    @patch("__main__.zdepth.set_property")
-    @patch("__main__.zdepth.get_property")
+    @patch("ht.pyfilter.operations.zdepth.set_property")
+    @patch("ht.pyfilter.operations.zdepth.get_property")
     @patch.object(zdepth.ZDepthPass, "__init__", lambda x, y: None)
     def test_filterPlane_Pz_already_set(self, mock_get, mock_set):
         mock_get.return_value = "Pz"
@@ -199,8 +203,8 @@ class Test_ZDepthPass(unittest.TestCase):
 
         mock_set.assert_called_with("plane:disable", True)
 
-    @patch("__main__.zdepth.set_property")
-    @patch("__main__.zdepth.get_property")
+    @patch("ht.pyfilter.operations.zdepth.set_property")
+    @patch("ht.pyfilter.operations.zdepth.get_property")
     @patch.object(zdepth.ZDepthPass, "__init__", lambda x, y: None)
     def test_filterPlane_no_pz_C(self, mock_get, mock_set):
         mock_get.return_value = "C"
@@ -214,8 +218,8 @@ class Test_ZDepthPass(unittest.TestCase):
 
         mock_set.assert_not_called()
 
-    @patch("__main__.zdepth.set_property")
-    @patch("__main__.zdepth.get_property")
+    @patch("ht.pyfilter.operations.zdepth.set_property")
+    @patch("ht.pyfilter.operations.zdepth.get_property")
     @patch.object(zdepth.ZDepthPass, "__init__", lambda x, y: None)
     def test_filterPlane_no_pz_Of(self, mock_get, mock_set):
         mock_get.return_value = "Of"
@@ -229,8 +233,8 @@ class Test_ZDepthPass(unittest.TestCase):
 
         mock_set.assert_called_with("plane:disable", True)
 
-    @patch("__main__.zdepth.set_property")
-    @patch("__main__.zdepth.get_property")
+    @patch("ht.pyfilter.operations.zdepth.set_property")
+    @patch("ht.pyfilter.operations.zdepth.get_property")
     @patch.object(zdepth.ZDepthPass, "__init__", lambda x, y: None)
     def test_filterPlane_not_set_misc_channel(self, mock_get, mock_set):
         mock_get.return_value = "channel1"
@@ -252,8 +256,8 @@ class Test_ZDepthPass(unittest.TestCase):
 
         mock_set.assert_has_calls(calls)
 
-    @patch("__main__.zdepth.set_property")
-    @patch("__main__.zdepth.get_property")
+    @patch("ht.pyfilter.operations.zdepth.set_property")
+    @patch("ht.pyfilter.operations.zdepth.get_property")
     @patch.object(zdepth.ZDepthPass, "__init__", lambda x, y: None)
     def test_filterPlane_set_pz_misc(self, mock_get, mock_set):
         mock_get.return_value = "channel1"

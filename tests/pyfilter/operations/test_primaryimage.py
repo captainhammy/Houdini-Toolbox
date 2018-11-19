@@ -15,8 +15,18 @@ cov.start()
 reload(primaryimage)
 
 
-class TestOperation(unittest.TestCase):
+class Test_SetPrimaryImage(unittest.TestCase):
     """Test the ht.pyfilter.operations.primaryimage.SetPrimaryImage object."""
+
+    def setUp(self):
+        super(Test_SetPrimaryImage, self).setUp()
+
+        self.patcher = patch("ht.pyfilter.operations.operation.logger", autospec=True)
+        self.patcher.start()
+
+    def tearDown(self):
+        super(Test_SetPrimaryImage, self).tearDown()
+        self.patcher.stop()
 
     def test___init__(self):
         mock_manager = MagicMock(spec=PyFilterManager)
@@ -85,8 +95,8 @@ class TestOperation(unittest.TestCase):
 
     # Methods
 
-    @patch("__main__.primaryimage.logger")
-    @patch("__main__.primaryimage.set_property")
+    @patch("ht.pyfilter.operations.primaryimage.logger")
+    @patch("ht.pyfilter.operations.primaryimage.set_property")
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
     def test_filterCamera__disable(self, mock_set, mock_logger):
         op = primaryimage.SetPrimaryImage(None)
@@ -96,8 +106,8 @@ class TestOperation(unittest.TestCase):
 
         mock_set.assert_called_with("image:filename", "null:")
 
-    @patch("__main__.primaryimage.logger")
-    @patch("__main__.primaryimage.set_property")
+    @patch("ht.pyfilter.operations.primaryimage.logger")
+    @patch("ht.pyfilter.operations.primaryimage.set_property")
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
     def test_filterCamera__path(self, mock_set, mock_logger):
         path = "/path/to/images.exr"
@@ -110,8 +120,8 @@ class TestOperation(unittest.TestCase):
 
         mock_set.assert_called_with("image:filename", path)
 
-    @patch("__main__.primaryimage.logger")
-    @patch("__main__.primaryimage.set_property")
+    @patch("ht.pyfilter.operations.primaryimage.logger")
+    @patch("ht.pyfilter.operations.primaryimage.set_property")
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
     def test_filterCamera__no_op(self, mock_set, mock_logger):
         path = "/path/to/images.exr"

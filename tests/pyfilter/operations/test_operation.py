@@ -14,8 +14,18 @@ cov.start()
 
 reload(operation)
 
-class TestOperation(unittest.TestCase):
+class Test_PyFilterOperation(unittest.TestCase):
     """Test the ht.pyfilter.operations.operation.PyFilterOperation object."""
+
+    def setUp(self):
+        super(Test_PyFilterOperation, self).setUp()
+
+        self.patcher = patch("ht.pyfilter.operations.operation.logger", autospec=True)
+        self.patcher.start()
+
+    def tearDown(self):
+        super(Test_PyFilterOperation, self).tearDown()
+        self.patcher.stop()
 
     def test___init__(self):
         mock_manager = MagicMock(spec=PyFilterManager)
