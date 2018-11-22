@@ -6,7 +6,7 @@ actions.
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Python Imports
 import argparse
 import json
 

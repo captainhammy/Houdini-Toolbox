@@ -4,7 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Python Imports
 import os
 
 # Houdini Toolbox Imports

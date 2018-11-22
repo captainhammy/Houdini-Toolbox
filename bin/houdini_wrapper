@@ -5,7 +5,7 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Python Imports
 import os
 import signal
 import sys

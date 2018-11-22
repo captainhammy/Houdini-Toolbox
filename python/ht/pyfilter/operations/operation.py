@@ -4,7 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Python Imports
 from functools import wraps
 
 # Houdini Toolbox Imports

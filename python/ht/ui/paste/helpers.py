@@ -4,7 +4,7 @@
 # IMPORTS
 # ==============================================================================
 
-# Standard Library Imports
+# Python Imports
 from PySide2 import QtCore, QtWidgets
 
 # Houdini Toolbox Imports

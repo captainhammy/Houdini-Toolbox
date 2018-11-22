@@ -4,7 +4,7 @@
 # IMPORTS
 # ==============================================================================
 
-# Standard Library Imports
+# Python Imports
 from PySide2 import QtCore, QtGui, QtWidgets
 import re
 

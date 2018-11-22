@@ -7,7 +7,7 @@ colors in Houdini.
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Python Imports
 import glob
 import json
 import os
@@ -21,7 +21,6 @@ import hou
 # =============================================================================
 # CLASSES
 # =============================================================================
-
 
 class StyleManager(object):
     """Manage and apply Houdini node styles.

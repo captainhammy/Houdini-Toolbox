@@ -6,7 +6,7 @@ related applications based on arguments.
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Python Imports
 import os
 import subprocess
 import sys
@@ -20,7 +20,6 @@ import ht.utils
 # =============================================================================
 # CLASSES
 # =============================================================================
-
 
 class HoudiniWrapper(object):
     """Initialize the environment and run Houdini related application.

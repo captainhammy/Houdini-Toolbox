@@ -4,7 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Python Imports
 from datetime import datetime
 import glob
 import json
@@ -31,7 +31,6 @@ PACKAGE_CONFIG_FILE = "houdini_package_config.json"
 # =============================================================================
 # CLASSES
 # =============================================================================
-
 
 class HoudiniBase(object):
     """This class represents a Houdini build on disk.
