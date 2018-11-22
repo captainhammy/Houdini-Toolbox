@@ -456,3 +456,4 @@ def set_mantra_command(node):
     cmd = "mantra `pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.build_pyfilter_command_from_node(hou.pwd())\")`"
 
     node.parm("soho_pipecmd").set(cmd)
+

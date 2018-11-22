@@ -1,17 +1,19 @@
+"""Test the ht.sohohooks.aovs.manager module."""
 
-import coverage
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Python Imports
+from mock import MagicMock, PropertyMock, call, mock_open, patch
 import os
 import unittest
 
-from mock import MagicMock, PropertyMock, call, mock_open, patch
-
+# Houdini Toolbox Imports
 from ht.sohohooks.aovs import aov, manager
 
+# Houdini Imports
 import hou
-
-cov = coverage.Coverage(data_suffix=True, source=["ht.sohohooks.aovs.manager"], branch=True)
-
-cov.start()
 
 reload(manager)
 
@@ -1356,6 +1358,7 @@ if __name__ == '__main__':
         unittest.main()
 
     finally:
-        cov.stop()
-        cov.html_report()
-        cov.save()
+        pass
+#        cov.stop()
+#        cov.html_report()
+ #       cov.save()

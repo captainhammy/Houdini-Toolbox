@@ -1,18 +1,22 @@
+"""Test the ht.pyfilter.operations.operation module."""
 
+# =============================================================================
+# IMPORTS
+# =============================================================================
 
-import coverage
+# Python Imports
+from mock import MagicMock, patch
 import unittest
 
-from mock import MagicMock, patch
-
-from ht.pyfilter.operations import operation
+# Houdini Toolbox Imports
 from ht.pyfilter.manager import PyFilterManager
-
-cov = coverage.Coverage(source=["ht.pyfilter.operations.operation"], branch=True)
-
-cov.start()
+from ht.pyfilter.operations import operation
 
 reload(operation)
+
+# =============================================================================
+# CLASSES
+# =============================================================================
 
 class Test_PyFilterOperation(unittest.TestCase):
     """Test the ht.pyfilter.operations.operation.PyFilterOperation object."""
@@ -79,12 +83,4 @@ class Test_PyFilterOperation(unittest.TestCase):
 # =============================================================================
 
 if __name__ == '__main__':
-    try:
-        # Run the tests.
-        unittest.main()
-
-    finally:
-        cov.stop()
-        cov.save()
-
-        cov.html_report()
+    unittest.main()

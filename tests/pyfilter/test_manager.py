@@ -1,23 +1,26 @@
+"""Test the ht.pyfilter.manager module."""
 
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Python Imports
 import argparse
-import coverage
-import sys
+from mock import MagicMock, mock_open, patch
 import unittest
 
-from mock import MagicMock, PropertyMock, mock_open, patch
-
+# Houdini Toolbox Imports
 from ht.pyfilter import manager
-
 from ht.pyfilter.operations.operation import PyFilterOperation
 
+# Houdini Imports
 import hou
-
-cov = coverage.Coverage(source=["ht.pyfilter.manager"], branch=True)
-
-cov.start()
 
 reload(manager)
 
+# =============================================================================
+# CLASSES
+# =============================================================================
 
 class TestManager(unittest.TestCase):
     """Test ht.pyfilter.manager.PyFilterManager object."""
@@ -302,14 +305,5 @@ class Test__get_operation_data(unittest.TestCase):
 # =============================================================================
 
 if __name__ == '__main__':
+    unittest.main()
 
-
-    try:
-        # Run the tests.
-        unittest.main()
-
-    finally:
-        cov.stop()
-        cov.save()
-
-        cov.html_report()

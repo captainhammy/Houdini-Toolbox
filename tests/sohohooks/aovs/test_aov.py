@@ -1,15 +1,15 @@
+"""Test the ht.sohohooks.aovs.aov module."""
 
-import coverage
+# =============================================================================
+# IMPORTS
+# =============================================================================
 
+# Python Imports
+from mock import MagicMock, PropertyMock, call, patch
 import unittest
 
-from mock import MagicMock, PropertyMock, call, patch
-
+# Houdini Toolbox Imports
 from ht.sohohooks.aovs import aov
-
-cov = coverage.Coverage(data_suffix=True, source=["ht.sohohooks.aovs.aov"], branch=True)
-
-cov.start()
 
 reload(aov)
 
@@ -44,7 +44,7 @@ class Test_AOV(unittest.TestCase):
     def test___init__(self, mock_copy, mock_update):
         data = {"key1", "value1"}
 
-        inst = aov.AOV(data)
+        aov.AOV(data)
 
         mock_copy.assert_called_with(aov._DEFAULT_AOV_DATA)
         mock_update.assert_called_with(data)
@@ -1559,12 +1559,4 @@ class Test__write_single_channel(unittest.TestCase):
 # =============================================================================
 
 if __name__ == '__main__':
-    # Run the tests.
-    try:
-        unittest.main()
-
-    finally:
-        cov.stop()
-        cov.html_report()
-        cov.save()
-
+    unittest.main()

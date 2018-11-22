@@ -566,7 +566,6 @@ class IntrinsicAOVGroup(AOVGroup):
 # EXCEPTIONS
 # =============================================================================
 
-
 class AOVError(Exception): # pragma: no cover
     """AOV exception base class."""
     pass

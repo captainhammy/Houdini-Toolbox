@@ -1,11 +1,10 @@
-"""This module contains tests for the pyfilter.utils module."""
+"""Test the ht.pyfilter.utils module."""
 
 # =============================================================================
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-import coverage
+# Python Imports
 from mock import MagicMock, patch
 import unittest
 
@@ -14,9 +13,6 @@ from ht.pyfilter import utils
 
 # Houdini Imports
 import hou
-
-cov = coverage.coverage(data_suffix=True, source=["ht.pyfilter.utils"], branch=True)
-cov.start()
 
 reload(utils)
 
@@ -127,12 +123,4 @@ class Test_build_pyfilter_command(unittest.TestCase):
 # =============================================================================
 
 if __name__ == '__main__':
-    # Run the tests.
-    try:
-        unittest.main()
-
-    finally:
-        cov.stop()
-        cov.html_report()
-        cov.save()
-
+    unittest.main()

@@ -27,3 +27,6 @@ $(CLOBBERDIRS):
 .PHONY: subdirs $(CLOBBERDIRS)
 .PHONY: install clean clobber
 
+run-tests:
+	hython bin/run_tests.py
+

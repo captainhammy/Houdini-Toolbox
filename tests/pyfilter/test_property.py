@@ -1,18 +1,22 @@
+"""Test the ht.pyfilter.property module."""
 
-import coverage
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Python Imports
 import json
+from mock import MagicMock, patch
 import unittest
 
-from mock import MagicMock, patch
-
+# Houdini Toolbox Imports
 from ht.pyfilter import property as prop
-
-cov = coverage.Coverage(source=["ht.pyfilter.property"], branch=True)
-
-cov.start()
 
 reload(prop)
 
+# =============================================================================
+# CLASSES
+# =============================================================================
 
 class Test__parse_string_for_bool(unittest.TestCase):
     """Test ht.pyfilter.property._parse_string_for_bool."""
@@ -255,12 +259,4 @@ class Test_set_property(unittest.TestCase):
 # =============================================================================
 
 if __name__ == '__main__':
-    try:
-        # Run the tests.
-        unittest.main()
-
-    finally:
-        cov.stop()
-        cov.save()
-
-        cov.html_report()
+    unittest.main()

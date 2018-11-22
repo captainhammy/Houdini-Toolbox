@@ -1,19 +1,23 @@
+"""Test the ht.pyfilter.operations.primaryimage module."""
 
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Python Imports
 import argparse
-import coverage
+from mock import MagicMock, call, patch
 import unittest
 
-from mock import MagicMock, call, patch
-
-from ht.pyfilter.operations import primaryimage
+# Houdini Toolbox Imports
 from ht.pyfilter.manager import PyFilterManager
-
-cov = coverage.Coverage(source=["ht.pyfilter.operations.primaryimage"], branch=True)
-
-cov.start()
+from ht.pyfilter.operations import primaryimage
 
 reload(primaryimage)
 
+# =============================================================================
+# CLASSES
+# =============================================================================
 
 class Test_SetPrimaryImage(unittest.TestCase):
     """Test the ht.pyfilter.operations.primaryimage.SetPrimaryImage object."""
@@ -195,12 +199,4 @@ class Test_SetPrimaryImage(unittest.TestCase):
 # =============================================================================
 
 if __name__ == '__main__':
-    try:
-        # Run the tests.
-        unittest.main()
-
-    finally:
-        cov.stop()
-        cov.save()
-
-        cov.html_report()
+    unittest.main()

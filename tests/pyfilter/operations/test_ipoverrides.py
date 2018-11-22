@@ -4,21 +4,17 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Python Imports
 import argparse
-import coverage
 from mock import MagicMock, call, patch
 import unittest
 
 # Houdini Toolbox Imports
-from ht.pyfilter.operations import ipoverrides
 from ht.pyfilter.manager import PyFilterManager
+from ht.pyfilter.operations import ipoverrides
 
 # Houdini Imports
 import hou
-
-cov = coverage.coverage(data_suffix=True, source=["ht.pyfilter.operations.ipoverrides"], branch=True)
-cov.start()
 
 reload(ipoverrides)
 
@@ -31,7 +27,7 @@ class Test_IpOverrides(unittest.TestCase):
     class.
 
     """
-
+    
     def setUp(self):
         super(Test_IpOverrides, self).setUp()
 
@@ -63,7 +59,7 @@ class Test_IpOverrides(unittest.TestCase):
     # Properties
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_property__bucket_size(self):
+    def test_bucket_size(self):
         op = ipoverrides.IpOverrides(None)
         op._bucket_size = 16
         self.assertEqual(op.bucket_size, 16)
@@ -74,7 +70,7 @@ class Test_IpOverrides(unittest.TestCase):
         self.assertEqual(op._bucket_size, 16)
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_property__disable_aovs(self):
+    def test_disable_aovs(self):
         op = ipoverrides.IpOverrides(None)
         op._disable_aovs = True
         self.assertTrue(op.disable_aovs)
@@ -85,7 +81,7 @@ class Test_IpOverrides(unittest.TestCase):
         self.assertTrue(op._disable_aovs)
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_property__disable_blur(self):
+    def test_disable_blur(self):
         op = ipoverrides.IpOverrides(None)
         op._disable_blur = True
         self.assertTrue(op.disable_blur)
@@ -96,7 +92,7 @@ class Test_IpOverrides(unittest.TestCase):
         self.assertTrue(op._disable_blur)
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_property__disable_deep(self):
+    def test_disable_deep(self):
         op = ipoverrides.IpOverrides(None)
         op._disable_deep = True
         self.assertTrue(op.disable_deep)
@@ -107,7 +103,7 @@ class Test_IpOverrides(unittest.TestCase):
         self.assertTrue(op._disable_deep)
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_property__disable_displacement(self):
+    def test_disable_displacement(self):
         op = ipoverrides.IpOverrides(None)
         op._disable_displacement = True
         self.assertTrue(op.disable_displacement)
@@ -118,7 +114,7 @@ class Test_IpOverrides(unittest.TestCase):
         self.assertTrue(op._disable_displacement)
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_property__disable_matte(self):
+    def test_disable_matte(self):
         op = ipoverrides.IpOverrides(None)
         op._disable_matte = True
         self.assertTrue(op.disable_matte)
@@ -129,7 +125,7 @@ class Test_IpOverrides(unittest.TestCase):
         self.assertTrue(op._disable_matte)
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_property__disable_subd(self):
+    def test_disable_subd(self):
         op = ipoverrides.IpOverrides(None)
         op._disable_subd = True
         self.assertTrue(op.disable_subd)
@@ -140,7 +136,7 @@ class Test_IpOverrides(unittest.TestCase):
         self.assertTrue(op._disable_subd)
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_property__res_scale(self):
+    def test_res_scale(self):
         op = ipoverrides.IpOverrides(None)
         op._res_scale = 0.5
         self.assertEqual(op.res_scale, 0.5)
@@ -151,7 +147,7 @@ class Test_IpOverrides(unittest.TestCase):
         self.assertEqual(op._res_scale, 0.5)
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_property__sample_scale(self):
+    def test_sample_scale(self):
         op = ipoverrides.IpOverrides(None)
         op._sample_scale = 0.5
         self.assertEqual(op.sample_scale, 0.5)
@@ -162,7 +158,7 @@ class Test_IpOverrides(unittest.TestCase):
         self.assertEqual(op._sample_scale, 0.5)
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_property__transparent_samples(self):
+    def test_transparent_samples(self):
         op = ipoverrides.IpOverrides(None)
         op._transparent_samples = 4
         self.assertEqual(op.transparent_samples, 4)
@@ -857,7 +853,7 @@ class Test___scale_sample_value(unittest.TestCase):
 class Test_build_arg_string_from_node(unittest.TestCase):
     """Test the ht.pyfilter.operations.ipoverrides.build_arg_string_from_node."""
 
-    @patch.object(ipoverrides.IpOverrides, "build_arg_string")
+    @patch("ht.pyfilter.operations.ipoverrides.IpOverrides.build_arg_string")
     def test(self, mock_build):
         mock_node = MagicMock()
         mock_node.evalParm.return_value = 0
@@ -902,7 +898,7 @@ class Test_build_arg_string_from_node(unittest.TestCase):
             transparent_samples=parm_data["ip_transparent_samples"],
         )
 
-    @patch.object(ipoverrides.IpOverrides, "build_arg_string")
+    @patch("ht.pyfilter.operations.ipoverrides.IpOverrides.build_arg_string")
     def test_no_scales(self, mock_build):
         mock_node = MagicMock()
         mock_node.evalParm.return_value = 0
@@ -1099,10 +1095,4 @@ class Test_set_mantra_command(unittest.TestCase):
 
 if __name__ == '__main__':
     # Run the tests.
-    try:
-        unittest.main()
-
-    finally:
-        cov.stop()
-        cov.html_report()
-        cov.save()
+    unittest.main()

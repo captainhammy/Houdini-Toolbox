@@ -4,18 +4,14 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Python Imports
 import argparse
-import coverage
 from mock import MagicMock, call, patch
 import unittest
 
 # Houdini Toolbox Imports
 from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.operations import zdepth
-
-cov = coverage.coverage(data_suffix=True, source=["ht.pyfilter.operations.zdepth"], branch=True)
-cov.start()
 
 reload(zdepth)
 
@@ -308,10 +304,4 @@ class Test_ZDepthPass(unittest.TestCase):
 # =============================================================================
 
 if __name__ == '__main__':
-    # Run the tests.
-    try:
-        unittest.main()
-    finally:
-        cov.stop()
-        cov.html_report()
-        cov.save()
+    unittest.main()
