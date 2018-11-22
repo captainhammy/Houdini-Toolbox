@@ -13,14 +13,11 @@ have the Houdini environments sourced.
 # =============================================================================
 
 # Python Imports
-import coverage
-
-import datetime
 import os
-import sys
 import unittest
 
-import ht.inline
+# Houdini Toolbox Imports
+import ht.inline.api
 
 # Houdini Imports
 import hou
@@ -36,17 +33,17 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 # FUNCTIONS
 # =============================================================================
 
-def getObjGeo(nodePath):
+def get_obj_geo(nodePath):
     """Get the geometry from the display node of a Geometry object."""
     return OBJ.node(nodePath).displayNode().geometry()
 
-def getObjGeoCopy(nodePath):
+def get_obj_geo_copy(nodePath):
     """Get a copy of the geometry from the display node of a Geometry object."""
     # Create a new hou.Geometry object.
     geo = hou.Geometry()
 
     # Get the geometry object's geo.
-    sourceGeo = getObjGeo(nodePath)
+    sourceGeo = get_obj_geo(nodePath)
 
     # Merge the geo to copy it.
     geo.merge(sourceGeo)
@@ -59,12 +56,6 @@ class TestInlineCpp(unittest.TestCase):
 
     """
 
-    def setUp(self):
-	pass
-
-    def tearDown(self):
-	pass
-
     @classmethod
     def setUpClass(cls):
         hou.hipFile.load(os.path.join(THIS_DIR, "test_inline.hip"))
@@ -73,25 +64,22 @@ class TestInlineCpp(unittest.TestCase):
     def tearDownClass(cls):
         hou.hipFile.clear()
 
-    def test_getAttribOwnerFromGeometryType(self):
-        self.assertEquals(ht.inline._getAttribOwnerFromGeometryType(hou.Vertex), 0)
-        self.assertEquals(ht.inline._getAttribOwnerFromGeometryType(hou.Point), 1)
-        self.assertEquals(ht.inline._getAttribOwnerFromGeometryType(hou.Prim), 2)
-        self.assertEquals(ht.inline._getAttribOwnerFromGeometryType(hou.Face), 2)
-        self.assertEquals(ht.inline._getAttribOwnerFromGeometryType(hou.Volume), 2)
-        self.assertEquals(ht.inline._getAttribOwnerFromGeometryType(hou.Polygon), 2)
-        self.assertEquals(ht.inline._getAttribOwnerFromGeometryType(hou.Geometry), 3)
+    def test_get_attrib_owner_from_geometry_type(self):
+        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_type(hou.Vertex), 0)
+        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_type(hou.Point), 1)
+        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_type(hou.Prim), 2)
+        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_type(hou.Face), 2)
+        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_type(hou.Volume), 2)
+        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_type(hou.Polygon), 2)
+        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_type(hou.Geometry), 3)
 
-        self.assertRaises(
-            TypeError,
-            ht.inline._getAttribOwnerFromGeometryType,
-            None,
-        )
+        with self.assertRaises(TypeError):
+            ht.inline.api._get_attrib_owner_from_geometry_type(None)
 
     def test_getVariable(self):
-        hipName = hou.getVariable("HIPNAME")
+        hip_name = hou.getVariable("HIPNAME")
 
-        self.assertEqual(hipName, os.path.splitext(os.path.basename(hou.hipFile.path()))[0])
+        self.assertEqual(hip_name, os.path.splitext(os.path.basename(hou.hipFile.path()))[0])
 
     def test_setVariable(self):
         value = 22
@@ -147,7 +135,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(values, target)
 
     def test_isReadOnly(self):
-        geo = getObjGeo("test_isReadOnly")
+        geo = get_obj_geo("test_isReadOnly")
 
         self.assertTrue(geo.isReadOnly)
 
@@ -156,24 +144,24 @@ class TestInlineCpp(unittest.TestCase):
         self.assertFalse(geo.isReadOnly())
 
     def test_numPoints(self):
-        geo = getObjGeo("test_numPoints")
+        geo = get_obj_geo("test_numPoints")
 
         self.assertEqual(geo.numPoints(), 5000)
 
     def test_numPrims(self):
-        geo = getObjGeo("test_numPrims")
+        geo = get_obj_geo("test_numPrims")
 
         self.assertEqual(geo.numPrims(), 12)
 
     def test_packGeometry(self):
-        geo = getObjGeo("test_packGeometry")
+        geo = get_obj_geo("test_packGeometry")
 
         prim = geo.prims()[0]
 
         self.assertTrue(isinstance(prim, hou.PackedGeometry))
 
     def test_sortByAttribute(self):
-        geo = getObjGeoCopy("test_sortByAttribute")
+        geo = get_obj_geo_copy("test_sortByAttribute")
 
         attrib = geo.findPrimAttrib("id")
 
@@ -184,7 +172,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(values, range(10))
 
     def test_sortByAttributeReversed(self):
-        geo = getObjGeoCopy("test_sortByAttribute")
+        geo = get_obj_geo_copy("test_sortByAttribute")
 
         attrib = geo.findPrimAttrib("id")
 
@@ -195,30 +183,23 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(values, list(reversed(range(10))))
 
     def test_sortByAttributeInvalidIndex(self):
-        geo = getObjGeoCopy("test_sortByAttribute")
+        geo = get_obj_geo_copy("test_sortByAttribute")
 
         attrib = geo.findPrimAttrib("id")
 
-        self.assertRaises(
-            IndexError,
-            geo.sortByAttribute,
-            attrib,
-            1
-        )
+        with self.assertRaises(IndexError):
+            geo.sortByAttribute(attrib, 1)
 
     def test_sortByAttributeDetail(self):
-        geo = getObjGeoCopy("test_sortByAttribute")
+        geo = get_obj_geo_copy("test_sortByAttribute")
 
         attrib = geo.findGlobalAttrib("varmap")
 
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.sortByAttribute,
-            attrib
-        )
+        with self.assertRaises(hou.OperationFailed):
+            geo.sortByAttribute(attrib)
 
     def test_sortAlongAxisPoints(self):
-        geo = getObjGeoCopy("test_sortAlongAxisPoints")
+        geo = get_obj_geo_copy("test_sortAlongAxisPoints")
 
         geo.sortAlongAxis(hou.geometryType.Points, 0)
 
@@ -227,7 +208,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(values, range(10))
 
     def test_sortAlongAxisPrims(self):
-        geo = getObjGeoCopy("test_sortAlongAxisPrims")
+        geo = get_obj_geo_copy("test_sortAlongAxisPrims")
 
         geo.sortAlongAxis(hou.geometryType.Primitives, 2)
 
@@ -243,7 +224,7 @@ class TestInlineCpp(unittest.TestCase):
         SEED = 11
         TARGET = [5, 9, 3, 8, 0, 2, 6, 1, 4, 7]
 
-        geo = getObjGeoCopy("test_sortRandomlyPoints")
+        geo = get_obj_geo_copy("test_sortRandomlyPoints")
         geo.sortRandomly(hou.geometryType.Points, SEED)
 
         values = [int(val) for val in geo.pointFloatAttribValues("id")]
@@ -254,7 +235,7 @@ class TestInlineCpp(unittest.TestCase):
         SEED = 345
         TARGET = [4, 0, 9, 2, 1, 8, 3, 6, 7, 5]
 
-        geo = getObjGeoCopy("test_sortRandomlyPrims")
+        geo = get_obj_geo_copy("test_sortRandomlyPrims")
         geo.sortRandomly(hou.geometryType.Primitives, SEED)
 
         values = [int(val) for val in geo.primFloatAttribValues("id")]
@@ -265,7 +246,7 @@ class TestInlineCpp(unittest.TestCase):
         OFFSET = -18
         TARGET = [8, 9, 0, 1, 2, 3, 4, 5, 6, 7]
 
-        geo = getObjGeoCopy("test_shiftElementsPoints")
+        geo = get_obj_geo_copy("test_shiftElementsPoints")
         geo.shiftElements(hou.geometryType.Points, OFFSET)
 
         values = [int(val) for val in geo.pointFloatAttribValues("id")]
@@ -276,7 +257,7 @@ class TestInlineCpp(unittest.TestCase):
         OFFSET = 6
         TARGET = [4, 5, 6, 7, 8, 9, 0, 1, 2, 3]
 
-        geo = getObjGeoCopy("test_shiftElementsPrims")
+        geo = get_obj_geo_copy("test_shiftElementsPrims")
         geo.shiftElements(hou.geometryType.Primitives, OFFSET)
 
         values = [int(val) for val in geo.primFloatAttribValues("id")]
@@ -287,7 +268,7 @@ class TestInlineCpp(unittest.TestCase):
         TARGET = range(10)
         TARGET.reverse()
 
-        geo = getObjGeoCopy("test_reverseSortPoints")
+        geo = get_obj_geo_copy("test_reverseSortPoints")
         geo.reverseSort(hou.geometryType.Points)
 
         values = [int(val) for val in geo.pointFloatAttribValues("id")]
@@ -298,7 +279,7 @@ class TestInlineCpp(unittest.TestCase):
         TARGET = range(10)
         TARGET.reverse()
 
-        geo = getObjGeoCopy("test_reverseSortPrims")
+        geo = get_obj_geo_copy("test_reverseSortPrims")
         geo.reverseSort(hou.geometryType.Primitives)
 
         values = [int(val) for val in geo.primFloatAttribValues("id")]
@@ -309,7 +290,7 @@ class TestInlineCpp(unittest.TestCase):
         TARGET = [4, 3, 5, 2, 6, 1, 7, 0, 8, 9]
         POSITION = hou.Vector3(4, 1, 2)
 
-        geo = getObjGeoCopy("test_sortByProximityPoints")
+        geo = get_obj_geo_copy("test_sortByProximityPoints")
         geo.sortByProximityToPosition(hou.geometryType.Points, POSITION)
 
         values = [int(val) for val in geo.pointFloatAttribValues("id")]
@@ -320,7 +301,7 @@ class TestInlineCpp(unittest.TestCase):
         TARGET = [6, 7, 5, 8, 4, 9, 3, 2, 1, 0]
         POSITION = hou.Vector3(3, -1, 2)
 
-        geo = getObjGeoCopy("test_sortByProximityPrims")
+        geo = get_obj_geo_copy("test_sortByProximityPrims")
         geo.sortByProximityToPosition(hou.geometryType.Primitives, POSITION)
 
         values = [int(val) for val in geo.primFloatAttribValues("id")]
@@ -330,7 +311,7 @@ class TestInlineCpp(unittest.TestCase):
     def test_sortByVertexOrder(self):
         TARGET = range(10)
 
-        geo = getObjGeoCopy("test_sortByVertexOrder")
+        geo = get_obj_geo_copy("test_sortByVertexOrder")
         geo.sortByVertexOrder()
 
         values = [int(val) for val in geo.pointFloatAttribValues("id")]
@@ -361,15 +342,12 @@ class TestInlineCpp(unittest.TestCase):
     def test_createNPointsInvalidNumber(self):
         geo = hou.Geometry()
 
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.createNPoints,
-            -4
-        )
+        with self.assertRaises(hou.OperationFailed):
+            geo.createNPoints(-4)
 
     def test_mergePointGroup(self):
         geo = hou.Geometry()
-        sourceGeo = getObjGeo("test_mergePointGroup")
+        sourceGeo = get_obj_geo("test_mergePointGroup")
 
         group = sourceGeo.pointGroups()[0]
 
@@ -379,7 +357,7 @@ class TestInlineCpp(unittest.TestCase):
 
     def test_mergePoints(self):
         geo = hou.Geometry()
-        sourceGeo = getObjGeo("test_mergePoints")
+        sourceGeo = get_obj_geo("test_mergePoints")
 
         points = sourceGeo.globPoints("0 6 15 35-38 66")
 
@@ -389,7 +367,7 @@ class TestInlineCpp(unittest.TestCase):
 
     def test_mergePrimGroup(self):
         geo = hou.Geometry()
-        sourceGeo = getObjGeo("test_mergePrimGroup")
+        sourceGeo = get_obj_geo("test_mergePrimGroup")
 
         group = sourceGeo.primGroups()[0]
 
@@ -399,7 +377,7 @@ class TestInlineCpp(unittest.TestCase):
 
     def test_mergePrims(self):
         geo = hou.Geometry()
-        sourceGeo = getObjGeo("test_mergePrims")
+        sourceGeo = get_obj_geo("test_mergePrims")
 
         prims = sourceGeo.globPrims("0 6 15 35-38 66")
 
@@ -409,7 +387,7 @@ class TestInlineCpp(unittest.TestCase):
 
 
     def test_copyPointAttributeValues(self):
-        source = getObjGeo("test_copyPointAttributeValues")
+        source = get_obj_geo("test_copyPointAttributeValues")
 
         attribs = source.pointAttribs()
 
@@ -429,7 +407,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(p2.position(), hou.Vector3(-5, 0, 5))
 
     def test_copyPrimAttributeValues(self):
-        source = getObjGeo("test_copyPrimAttributeValues")
+        source = get_obj_geo("test_copyPrimAttributeValues")
 
         attribs = source.primAttribs()
 
@@ -449,7 +427,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(p2.attribValue("prnum"), 4)
 
     def test_pointAdjacentPolygons(self):
-        geo = getObjGeo("test_pointAdjacentPolygons")
+        geo = get_obj_geo("test_pointAdjacentPolygons")
 
         TARGET = geo.globPrims("1 2")
 
@@ -458,7 +436,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(prims, TARGET)
 
     def test_edgeAdjacentPolygons(self):
-        geo = getObjGeo("test_edgeAdjacentPolygons")
+        geo = get_obj_geo("test_edgeAdjacentPolygons")
 
         TARGET = geo.globPrims("2")
 
@@ -467,7 +445,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(prims, TARGET)
 
     def test_connectedPrims(self):
-        geo = getObjGeo("test_connectedPrims")
+        geo = get_obj_geo("test_connectedPrims")
 
         TARGET = geo.prims()
 
@@ -476,7 +454,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(prims, TARGET)
 
     def test_connectedPoints(self):
-        geo = getObjGeo("test_connectedPoints")
+        geo = get_obj_geo("test_connectedPoints")
 
         TARGET = geo.globPoints("1 3 5 7")
 
@@ -485,7 +463,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(points, TARGET)
 
     def test_referencingVertices(self):
-        geo = getObjGeo("test_referencingVertices")
+        geo = get_obj_geo("test_referencingVertices")
 
         TARGET = geo.globVertices("0v2 1v3 2v1 3v0")
 
@@ -494,7 +472,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(verts, TARGET)
 
     def test_pointStringTableIndices(self):
-        geo = getObjGeo("test_pointStringTableIndices")
+        geo = get_obj_geo("test_pointStringTableIndices")
 
         TARGET = (0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1)
 
@@ -503,7 +481,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(attr.stringTableIndices(), TARGET)
 
     def test_primStringTableIndices(self):
-        geo = getObjGeo("test_primStringTableIndices")
+        geo = get_obj_geo("test_primStringTableIndices")
 
         TARGET = (0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4)
 
@@ -512,7 +490,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(attr.stringTableIndices(), TARGET)
 
     def test_vertexStringAttribValues(self):
-        geo = getObjGeo("test_vertexStringAttribValues")
+        geo = get_obj_geo("test_vertexStringAttribValues")
 
         TARGET = ('vertex0', 'vertex1', 'vertex2', 'vertex3', 'vertex4', 'vertex5', 'vertex6', 'vertex7')
 
@@ -521,7 +499,7 @@ class TestInlineCpp(unittest.TestCase):
     def test_setVertexStringAttribValues(self):
         TARGET = ('vertex0', 'vertex1', 'vertex2', 'vertex3', 'vertex4')
 
-        geo = getObjGeoCopy("test_setVertexStringAttribValues")
+        geo = get_obj_geo_copy("test_setVertexStringAttribValues")
         attr = geo.findVertexAttrib("test")
 
         geo.setVertexStringAttribValues("test", TARGET)
@@ -536,36 +514,26 @@ class TestInlineCpp(unittest.TestCase):
     def test_setVertexStringAttribValuesInvalidAttribute(self):
         TARGET = ('vertex0', 'vertex1', 'vertex2', 'vertex3', 'vertex4')
 
-        geo = getObjGeoCopy("test_setVertexStringAttribValues")
+        geo = get_obj_geo_copy("test_setVertexStringAttribValues")
 
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.setVertexStringAttribValues,
-            "thing", TARGET
-        )
+        with self.assertRaises(hou.OperationFailed):
+            geo.setVertexStringAttribValues("thing", TARGET)
 
     def test_setVertexStringAttribValuesInvalidAttributeType(self):
         TARGET = ('vertex0', 'vertex1', 'vertex2', 'vertex3', 'vertex4')
 
-        geo = getObjGeoCopy("test_setVertexStringAttribValues")
+        geo = get_obj_geo_copy("test_setVertexStringAttribValues")
 
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.setVertexStringAttribValues,
-            "notstring", TARGET
-        )
+        with self.assertRaises(hou.OperationFailed):
+            geo.setVertexStringAttribValues("notstring", TARGET)
 
     def test_setPrimStringAttribValuesInvalidAttributeSize(self):
         TARGET = ('vertex0', 'vertex1', 'vertex2', 'vertex3')
 
-        geo = getObjGeoCopy("test_setVertexStringAttribValues")
+        geo = get_obj_geo_copy("test_setVertexStringAttribValues")
 
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.setVertexStringAttribValues,
-            "test", TARGET
-        )
-
+        with self.assertRaises(hou.OperationFailed):
+            geo.setVertexStringAttribValues("test", TARGET)
 
     def test_setSharedPointStringAttrib(self):
         TARGET = ["point0"]*5
@@ -603,7 +571,7 @@ class TestInlineCpp(unittest.TestCase):
     def test_setSharedPrimStringAttrib(self):
         TARGET = ["value"]*5
 
-        geo = getObjGeoCopy("test_setSharedPrimStringAttrib")
+        geo = get_obj_geo_copy("test_setSharedPrimStringAttrib")
 
         attr = geo.findPrimAttrib("test")
 
@@ -616,7 +584,7 @@ class TestInlineCpp(unittest.TestCase):
     def test_setSharedPrimStringAttribGroup(self):
         TARGET = ["value"]*3 + ["", ""]
 
-        geo = getObjGeoCopy("test_setSharedPrimStringAttrib")
+        geo = get_obj_geo_copy("test_setSharedPrimStringAttrib")
 
         attr = geo.findPrimAttrib("test")
 
@@ -629,7 +597,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(vals, TARGET)
 
     def test_hasEdge(self):
-        geo = getObjGeo("test_hasEdge")
+        geo = get_obj_geo("test_hasEdge")
 
         face = geo.iterPrims()[0]
 
@@ -639,7 +607,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertTrue(face.hasEdge(p0, p1))
 
     def test_hasEdgeFail(self):
-        geo = getObjGeo("test_hasEdge")
+        geo = get_obj_geo("test_hasEdge")
 
         face = geo.iterPrims()[0]
 
@@ -649,7 +617,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertTrue(face.hasEdge(p0, p2))
 
     def test_sharedEdges(self):
-        geo = getObjGeo("test_sharedEdges")
+        geo = get_obj_geo("test_sharedEdges")
 
         pr0, pr1 = geo.prims()
 
@@ -664,7 +632,7 @@ class TestInlineCpp(unittest.TestCase):
 
 
     def test_insertVertex(self):
-        geo = getObjGeoCopy("test_insertVertex")
+        geo = get_obj_geo_copy("test_insertVertex")
 
         face = geo.iterPrims()[0]
 
@@ -675,35 +643,27 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(face.vertex(2).point(), pt)
 
     def test_insertVertexNegativeIndex(self):
-        geo = getObjGeoCopy("test_insertVertex")
+        geo = get_obj_geo_copy("test_insertVertex")
 
         face = geo.iterPrims()[0]
 
         pt = geo.createPoint(hou.Vector3(0.5, 0, 0.5))
 
-        self.assertRaises(
-            IndexError,
-            face.insertVertex,
-            pt,
-            -1
-        )
+        with self.assertRaises(IndexError):
+            face.insertVertex(pt, -1)
 
     def test_insertVertexInvalidIndex(self):
-        geo = getObjGeoCopy("test_insertVertex")
+        geo = get_obj_geo_copy("test_insertVertex")
 
         face = geo.iterPrims()[0]
 
         pt = geo.createPoint(hou.Vector3(0.5, 0, 0.5))
 
-        self.assertRaises(
-            IndexError,
-            face.insertVertex,
-            pt,
-            10
-        )
+        with self.assertRaises(IndexError):
+            face.insertVertex(pt, 10)
 
     def test_deleteVertex(self):
-        geo = getObjGeoCopy("test_deleteVertex")
+        geo = get_obj_geo_copy("test_deleteVertex")
 
         face = geo.iterPrims()[0]
 
@@ -712,29 +672,23 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(len(face.vertices()), 3)
 
     def test_deleteVertexNegativeIndex(self):
-        geo = getObjGeoCopy("test_deleteVertex")
+        geo = get_obj_geo_copy("test_deleteVertex")
 
         face = geo.iterPrims()[0]
 
-        self.assertRaises(
-            IndexError,
-            face.deleteVertex,
-            -1
-        )
+        with self.assertRaises(IndexError):
+            face.deleteVertex(-1)
 
     def test_deleteVertexInvalidIndex(self):
-        geo = getObjGeoCopy("test_deleteVertex")
+        geo = get_obj_geo_copy("test_deleteVertex")
 
         face = geo.iterPrims()[0]
 
-        self.assertRaises(
-            IndexError,
-            face.deleteVertex,
-            10
-        )
+        with self.assertRaises(IndexError):
+            face.deleteVertex(10)
 
     def test_setPoint(self):
-        geo = getObjGeoCopy("test_setPoint")
+        geo = get_obj_geo_copy("test_setPoint")
 
         face = geo.iterPrims()[0]
         pt = geo.iterPoints()[4]
@@ -744,34 +698,26 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(face.vertex(3).point().number(), 4)
 
     def test_setPointNegativeIndex(self):
-        geo = getObjGeoCopy("test_setPoint")
+        geo = get_obj_geo_copy("test_setPoint")
 
         face = geo.iterPrims()[0]
         pt = geo.iterPoints()[4]
 
-        self.assertRaises(
-            IndexError,
-            face.setPoint,
-            -1,
-            pt
-        )
+        with self.assertRaises(IndexError):
+            face.setPoint(-1, pt)
 
     def test_setPointInvalidIndex(self):
-        geo = getObjGeoCopy("test_setPoint")
+        geo = get_obj_geo_copy("test_setPoint")
 
         face = geo.iterPrims()[0]
         pt = geo.iterPoints()[4]
 
-        self.assertRaises(
-            IndexError,
-            face.setPoint,
-            10,
-            pt
-        )
+        with self.assertRaises(IndexError):
+            face.setPoint(10, pt)
 
     def test_baryCenter(self):
         TARGET = hou.Vector3(1.5, 1, -1)
-        geo = getObjGeoCopy("test_baryCenter")
+        geo = get_obj_geo_copy("test_baryCenter")
 
         prim = geo.iterPrims()[0]
 
@@ -779,7 +725,7 @@ class TestInlineCpp(unittest.TestCase):
 
     def test_primitiveArea(self):
         TARGET = 4.375
-        geo = getObjGeoCopy("test_primitiveArea")
+        geo = get_obj_geo_copy("test_primitiveArea")
 
         prim = geo.iterPrims()[0]
 
@@ -787,7 +733,7 @@ class TestInlineCpp(unittest.TestCase):
 
     def test_perimeter(self):
         TARGET = 6.5
-        geo = getObjGeoCopy("test_perimeter")
+        geo = get_obj_geo_copy("test_perimeter")
 
         prim = geo.iterPrims()[0]
 
@@ -795,7 +741,7 @@ class TestInlineCpp(unittest.TestCase):
 
     def test_reversePrim(self):
         TARGET = hou.Vector3(0, -1, 0)
-        geo = getObjGeoCopy("test_reversePrim")
+        geo = get_obj_geo_copy("test_reversePrim")
 
         prim = geo.iterPrims()[0]
         prim.reverse()
@@ -804,7 +750,7 @@ class TestInlineCpp(unittest.TestCase):
 
     def test_makeUnique(self):
         TARGET = 28
-        geo = getObjGeoCopy("test_makeUnique")
+        geo = get_obj_geo_copy("test_makeUnique")
 
         prim = geo.iterPrims()[4]
         prim.makeUnique()
@@ -813,61 +759,58 @@ class TestInlineCpp(unittest.TestCase):
 
     def test_primBoundingBox(self):
         TARGET = hou.BoundingBox(-0.75, 0, -0.875, 0.75, 1.5, 0.875)
-        geo = getObjGeoCopy("test_primBoundingBox")
+        geo = get_obj_geo_copy("test_primBoundingBox")
 
         prim = geo.iterPrims()[0]
 
         self.assertEqual(prim.boundingBox(), TARGET)
 
     def test_computePointNormals(self):
-        geo = getObjGeoCopy("test_computePointNormals")
+        geo = get_obj_geo_copy("test_computePointNormals")
 
         geo.computePointNormals()
 
         self.assertNotEqual(geo.findPointAttrib("N"), None)
 
     def test_addPointNormalAttribute(self):
-        geo = getObjGeoCopy("test_addPointNormalAttribute")
+        geo = get_obj_geo_copy("test_addPointNormalAttribute")
 
         self.assertNotEqual(geo.addPointNormals(), None)
 
     def test_addPointVelocityAttribute(self):
-        geo = getObjGeoCopy("test_addPointVelocityAttribute")
+        geo = get_obj_geo_copy("test_addPointVelocityAttribute")
 
         self.assertNotEqual(geo.addPointVelocity(), None)
 
     def test_addColorAttributePoint(self):
-        geo = getObjGeoCopy("test_addColorAttribute")
+        geo = get_obj_geo_copy("test_addColorAttribute")
 
         result = geo.addColorAttribute(hou.attribType.Point)
 
         self.assertNotEqual(result, None)
 
     def test_addColorAttributePrim(self):
-        geo = getObjGeoCopy("test_addColorAttribute")
+        geo = get_obj_geo_copy("test_addColorAttribute")
 
         result = geo.addColorAttribute(hou.attribType.Prim)
 
         self.assertNotEqual(result, None)
 
     def test_addColorAttributeVertex(self):
-        geo = getObjGeoCopy("test_addColorAttribute")
+        geo = get_obj_geo_copy("test_addColorAttribute")
 
         result = geo.addColorAttribute(hou.attribType.Vertex)
 
         self.assertNotEqual(result, None)
 
     def test_addColorAttributePoint(self):
-        geo = getObjGeoCopy("test_addColorAttribute")
+        geo = get_obj_geo_copy("test_addColorAttribute")
 
-        self.assertRaises(
-            hou.TypeError,
-            geo.addColorAttribute,
-            hou.attribType.Global
-        )
+        with self.assertRaises(hou.TypeError):
+            geo.addColorAttribute(hou.attribType.Global)
 
     def test_convex(self):
-        geo = getObjGeoCopy("test_convex")
+        geo = get_obj_geo_copy("test_convex")
 
         geo.convex()
 
@@ -877,7 +820,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(len(verts), 486)
 
     def test_clip(self):
-        geo = getObjGeoCopy("test_clip")
+        geo = get_obj_geo_copy("test_clip")
 
         origin = hou.Vector3(0, 0, 0)
 
@@ -890,7 +833,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(len(geo.iterPoints()), 60)
 
     def test_clipBelow(self):
-        geo = getObjGeoCopy("test_clipBelow")
+        geo = get_obj_geo_copy("test_clipBelow")
 
         origin = hou.Vector3(0, -0.7, -0.9)
 
@@ -903,7 +846,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(len(geo.iterPoints()), 81)
 
     def test_clipGroup(self):
-        geo = getObjGeoCopy("test_clipGroup")
+        geo = get_obj_geo_copy("test_clipGroup")
 
         group = geo.primGroups()[0]
 
@@ -936,14 +879,14 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(len(geo.primGroups()), 0)
 
     def test_destroyUnusedPoints(self):
-        geo = getObjGeoCopy("test_destroyUnusedPoints")
+        geo = get_obj_geo_copy("test_destroyUnusedPoints")
 
         geo.destroyUnusedPoints()
 
         self.assertEqual(len(geo.iterPoints()), 20)
 
     def test_destroyUnusedPointsGroup(self):
-        geo = getObjGeoCopy("test_destroyUnusedPointsGroup")
+        geo = get_obj_geo_copy("test_destroyUnusedPointsGroup")
 
         group = geo.pointGroups()[0]
 
@@ -952,21 +895,21 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(len(geo.iterPoints()), 3729)
 
     def test_consolidatePoints(self):
-        geo = getObjGeoCopy("test_consolidatePoints")
+        geo = get_obj_geo_copy("test_consolidatePoints")
 
         geo.consolidatePoints()
 
         self.assertEqual(len(geo.iterPoints()), 100)
 
     def test_consolidatePointsDist(self):
-        geo = getObjGeoCopy("test_consolidatePointsDist")
+        geo = get_obj_geo_copy("test_consolidatePointsDist")
 
         geo.consolidatePoints(3)
 
         self.assertEqual(len(geo.iterPoints()), 16)
 
     def test_consolidatePointsGroup(self):
-        geo = getObjGeoCopy("test_consolidatePointsGroup")
+        geo = get_obj_geo_copy("test_consolidatePointsGroup")
 
         group = geo.pointGroups()[0]
 
@@ -975,14 +918,14 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(len(geo.iterPoints()), 212)
 
     def test_uniquePoints(self):
-        geo = getObjGeoCopy("test_uniquePoints")
+        geo = get_obj_geo_copy("test_uniquePoints")
 
         geo.uniquePoints()
 
         self.assertEqual(len(geo.iterPoints()), 324)
 
     def test_uniquePointsPointGroup(self):
-        geo = getObjGeoCopy("test_uniquePointsPointGroup")
+        geo = get_obj_geo_copy("test_uniquePointsPointGroup")
 
         group = geo.pointGroups()[0]
         geo.uniquePoints(group)
@@ -991,7 +934,7 @@ class TestInlineCpp(unittest.TestCase):
 
 
     def test_renamePointGroup(self):
-        geo = getObjGeoCopy("test_renamePointGroup")
+        geo = get_obj_geo_copy("test_renamePointGroup")
 
         group = geo.pointGroups()[0]
 
@@ -1002,20 +945,16 @@ class TestInlineCpp(unittest.TestCase):
 
 
     def test_renamePointGroupSameName(self):
-        geo = getObjGeoCopy("test_renamePointGroup")
+        geo = get_obj_geo_copy("test_renamePointGroup")
 
         group = geo.pointGroups()[0]
         name = group.name()
 
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.renameGroup,
-            group,
-            name
-        )
+        with self.assertRaises(hou.OperationFailed):
+            geo.renameGroup(group, name)
 
     def test_renamePrimGroup(self):
-        geo = getObjGeoCopy("test_renamePrimGroup")
+        geo = get_obj_geo_copy("test_renamePrimGroup")
 
         group = geo.primGroups()[0]
 
@@ -1025,20 +964,16 @@ class TestInlineCpp(unittest.TestCase):
         self.assertTrue(result.name() == "test_group")
 
     def test_renamePrimGroupSameName(self):
-        geo = getObjGeoCopy("test_renamePrimGroup")
+        geo = get_obj_geo_copy("test_renamePrimGroup")
 
         group = geo.primGroups()[0]
         name = group.name()
 
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.renameGroup,
-            group,
-            name
-        )
+        with self.assertRaises(hou.OperationFailed):
+            geo.renameGroup(group, name)
 
     def test_renameEdgeGroup(self):
-        geo = getObjGeoCopy("test_renameEdgeGroup")
+        geo = get_obj_geo_copy("test_renameEdgeGroup")
 
         group = geo.edgeGroups()[0]
 
@@ -1048,22 +983,18 @@ class TestInlineCpp(unittest.TestCase):
         self.assertTrue(result.name() == "test_group")
 
     def test_renameEdgeGroupSameName(self):
-        geo = getObjGeoCopy("test_renameEdgeGroup")
+        geo = get_obj_geo_copy("test_renameEdgeGroup")
 
         group = geo.edgeGroups()[0]
         name = group.name()
 
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.renameGroup,
-            group,
-            name
-        )
+        with self.assertRaises(hou.OperationFailed):
+            geo.renameGroup(group, name)
 
     def test_groupBoundingBoxPoint(self):
         TARGET = hou.BoundingBox(-4, 0, -1, -2, 0, 2)
 
-        geo = getObjGeo("test_groupBoundingBoxPoint")
+        geo = get_obj_geo("test_groupBoundingBoxPoint")
 
         group = geo.pointGroups()[0]
         bbox = group.boundingBox()
@@ -1073,7 +1004,7 @@ class TestInlineCpp(unittest.TestCase):
     def test_groupBoundingBoxPrim(self):
         TARGET = hou.BoundingBox(-5, 0, -4, 4, 0, 5)
 
-        geo = getObjGeo("test_groupBoundingBoxPrim")
+        geo = get_obj_geo("test_groupBoundingBoxPrim")
 
         group = geo.primGroups()[0]
         bbox = group.boundingBox()
@@ -1083,7 +1014,7 @@ class TestInlineCpp(unittest.TestCase):
     def test_groupBoundingBoxEdge(self):
         TARGET = hou.BoundingBox(-5, 0, -5, 4, 0, 5)
 
-        geo = getObjGeo("test_groupBoundingBoxEdge")
+        geo = get_obj_geo("test_groupBoundingBoxEdge")
 
         group = geo.edgeGroups()[0]
         bbox = group.boundingBox()
@@ -1091,7 +1022,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(bbox, TARGET)
 
     def test_pointGroupSize(self):
-        geo = getObjGeo("test_pointGroupSize")
+        geo = get_obj_geo("test_pointGroupSize")
 
         group = geo.pointGroups()[0]
 
@@ -1099,7 +1030,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(len(group), 12)
 
     def test_primGroupSize(self):
-        geo = getObjGeo("test_primGroupSize")
+        geo = get_obj_geo("test_primGroupSize")
 
         group = geo.primGroups()[0]
 
@@ -1107,7 +1038,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(len(group), 39)
 
     def test_edgeGroupSize(self):
-        geo = getObjGeo("test_edgeGroupSize")
+        geo = get_obj_geo("test_edgeGroupSize")
 
         group = geo.edgeGroups()[0]
 
@@ -1115,7 +1046,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(len(group), 52)
 
     def test_togglePoint(self):
-        geo = getObjGeoCopy("test_togglePoint")
+        geo = get_obj_geo_copy("test_togglePoint")
 
         group = geo.pointGroups()[0]
         point = geo.iterPoints()[0]
@@ -1125,7 +1056,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertTrue(group.contains(point))
 
     def test_togglePrim(self):
-        geo = getObjGeoCopy("test_togglePrim")
+        geo = get_obj_geo_copy("test_togglePrim")
 
         group = geo.primGroups()[0]
         prim = geo.iterPrims()[0]
@@ -1135,7 +1066,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertTrue(group.contains(prim))
 
     def test_toggleEntriesPoint(self):
-        geo = getObjGeoCopy("test_toggleEntriesPoint")
+        geo = get_obj_geo_copy("test_toggleEntriesPoint")
 
         vals = geo.globPoints(" ".join([str(val) for val in range(1, 100, 2)]))
 
@@ -1145,7 +1076,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEquals(group.points(), vals)
 
     def test_toggleEntriesPrim(self):
-        geo = getObjGeoCopy("test_toggleEntriesPrim")
+        geo = get_obj_geo_copy("test_toggleEntriesPrim")
 
         vals = geo.globPrims(" ".join([str(val) for val in range(0, 100, 2)]))
 
@@ -1155,7 +1086,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEquals(group.prims(), vals)
 
     def test_toggleEntriesEdge(self):
-        geo = getObjGeoCopy("test_toggleEntriesEdge")
+        geo = get_obj_geo_copy("test_toggleEntriesEdge")
 
         group = geo.edgeGroups()[0]
         group.toggleEntries()
@@ -1163,7 +1094,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEquals(len(group.edges()),  20)
 
     def test_copyPointGroup(self):
-        geo = getObjGeoCopy("test_copyPointGroup")
+        geo = get_obj_geo_copy("test_copyPointGroup")
 
         group = geo.pointGroups()[0]
 
@@ -1172,31 +1103,25 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEquals(group.points(), new_group.points())
 
     def test_copyPointGroupSameName(self):
-        geo = getObjGeoCopy("test_copyPointGroup")
+        geo = get_obj_geo_copy("test_copyPointGroup")
 
         group = geo.pointGroups()[0]
 
-        self.assertRaises(
-            hou.OperationFailed,
-            group.copy,
-            group.name()
-        )
+        with self.assertRaises(hou.OperationFailed):
+            group.copy(group.name())
 
     def test_copyPointGroupExisting(self):
-        geo = getObjGeoCopy("test_copyPointGroupExisting")
+        geo = get_obj_geo_copy("test_copyPointGroupExisting")
 
         group = geo.pointGroups()[-1]
 
         other_group = geo.pointGroups()[0]
 
-        self.assertRaises(
-            hou.OperationFailed,
-            group.copy,
-            other_group.name()
-        )
+        with self.assertRaises(hou.OperationFailed):
+            group.copy(other_group.name())
 
     def test_copyPrimGroup(self):
-        geo = getObjGeoCopy("test_copyPrimGroup")
+        geo = get_obj_geo_copy("test_copyPrimGroup")
 
         group = geo.primGroups()[0]
 
@@ -1205,31 +1130,25 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEquals(group.prims(), new_group.prims())
 
     def test_copyPrimGroupSameName(self):
-        geo = getObjGeoCopy("test_copyPrimGroup")
+        geo = get_obj_geo_copy("test_copyPrimGroup")
 
         group = geo.primGroups()[0]
 
-        self.assertRaises(
-            hou.OperationFailed,
-            group.copy,
-            group.name()
-        )
+        with self.assertRaises(hou.OperationFailed):
+            group.copy(group.name())
 
     def test_copyPrimGroupExisting(self):
-        geo = getObjGeoCopy("test_copyPrimGroupExisting")
+        geo = get_obj_geo_copy("test_copyPrimGroupExisting")
 
         group = geo.primGroups()[-1]
 
         other_group = geo.primGroups()[0]
 
-        self.assertRaises(
-            hou.OperationFailed,
-            group.copy,
-            other_group.name()
-        )
+        with self.assertRaises(hou.OperationFailed):
+            group.copy(other_group.name())
 
     def test_pointGroupContainsAny(self):
-        geo = getObjGeoCopy("test_pointGroupContainsAny")
+        geo = get_obj_geo_copy("test_pointGroupContainsAny")
 
         group1 = geo.pointGroups()[0]
         group2 = geo.pointGroups()[1]
@@ -1237,7 +1156,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertTrue(group1.containsAny(group2))
 
     def test_pointGroupContainsAnyFalse(self):
-        geo = getObjGeoCopy("test_pointGroupContainsAnyFalse")
+        geo = get_obj_geo_copy("test_pointGroupContainsAnyFalse")
 
         group1 = geo.pointGroups()[0]
         group2 = geo.pointGroups()[1]
@@ -1245,7 +1164,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertFalse(group1.containsAny(group2))
 
     def test_primGroupContainsAny(self):
-        geo = getObjGeoCopy("test_primGroupContainsAny")
+        geo = get_obj_geo_copy("test_primGroupContainsAny")
 
         group1 = geo.primGroups()[0]
         group2 = geo.primGroups()[1]
@@ -1253,7 +1172,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertTrue(group1.containsAny(group2))
 
     def test_primGroupContainsAnyFalse(self):
-        geo = getObjGeoCopy("test_primGroupContainsAnyFalse")
+        geo = get_obj_geo_copy("test_primGroupContainsAnyFalse")
 
         group1 = geo.primGroups()[0]
         group2 = geo.primGroups()[1]
@@ -1261,7 +1180,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertFalse(group1.containsAny(group2))
 
     def test_convertPrimToPointGroup(self):
-        geo = getObjGeoCopy("test_convertPrimToPointGroup")
+        geo = get_obj_geo_copy("test_convertPrimToPointGroup")
 
         group = geo.primGroups()[0]
 
@@ -1273,7 +1192,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(len(geo.primGroups()), 0)
 
     def test_convertPrimToPointGroupWithName(self):
-        geo = getObjGeoCopy("test_convertPrimToPointGroup")
+        geo = get_obj_geo_copy("test_convertPrimToPointGroup")
 
         group = geo.primGroups()[0]
 
@@ -1282,7 +1201,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(new_group.name(), "new_group")
 
     def test_convertPrimToPointGroupNoDestroy(self):
-        geo = getObjGeoCopy("test_convertPrimToPointGroup")
+        geo = get_obj_geo_copy("test_convertPrimToPointGroup")
 
         group = geo.primGroups()[0]
 
@@ -1292,7 +1211,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(len(geo.primGroups()), 1)
 
     def test_convertPointToPrimGroup(self):
-        geo = getObjGeoCopy("test_convertPointToPrimGroup")
+        geo = get_obj_geo_copy("test_convertPointToPrimGroup")
 
         group = geo.pointGroups()[0]
 
@@ -1304,7 +1223,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(len(geo.pointGroups()), 0)
 
     def test_convertPointToPrimGroupWithName(self):
-        geo = getObjGeoCopy("test_convertPointToPrimGroup")
+        geo = get_obj_geo_copy("test_convertPointToPrimGroup")
 
         group = geo.pointGroups()[0]
 
@@ -1313,7 +1232,7 @@ class TestInlineCpp(unittest.TestCase):
         self.assertEqual(new_group.name(), "new_group")
 
     def test_convertPointToPrimGroupNoDestroy(self):
-        geo = getObjGeoCopy("test_convertPointToPrimGroup")
+        geo = get_obj_geo_copy("test_convertPointToPrimGroup")
 
         group = geo.pointGroups()[0]
 
@@ -1327,42 +1246,36 @@ class TestInlineCpp(unittest.TestCase):
     # =========================================================================
 
     def test_hasUngroupedPoints(self):
-        geo = getObjGeo("test_hasUngroupedPoints")
+        geo = get_obj_geo("test_hasUngroupedPoints")
 
         self.assertTrue(geo.hasUngroupedPoints())
 
     def test_hasUngroupedPointsFalse(self):
-        geo = getObjGeo("test_hasUngroupedPointsFalse")
+        geo = get_obj_geo("test_hasUngroupedPointsFalse")
 
         self.assertFalse(geo.hasUngroupedPoints())
 
     def test_groupUngroupedPoints(self):
-        geo = getObjGeoCopy("test_groupUngroupedPoints")
+        geo = get_obj_geo_copy("test_groupUngroupedPoints")
 
         group = geo.groupUngroupedPoints("ungrouped")
 
         self.assertEquals(len(group.points()), 10)
 
     def test_groupUngroupedPointsExistingName(self):
-        geo = getObjGeoCopy("test_groupUngroupedPoints")
+        geo = get_obj_geo_copy("test_groupUngroupedPoints")
 
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.groupUngroupedPoints,
-            "group1"
-        )
+        with self.assertRaises(hou.OperationFailed):
+            geo.groupUngroupedPoints("group1")
 
     def test_groupUngroupedPointsNoName(self):
-        geo = getObjGeoCopy("test_groupUngroupedPoints")
+        geo = get_obj_geo_copy("test_groupUngroupedPoints")
 
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.groupUngroupedPoints,
-            ""
-        )
+        with self.assertRaises(hou.OperationFailed):
+            geo.groupUngroupedPoints("")
 
     def test_groupUngroupedPointsFalse(self):
-        geo = getObjGeoCopy("test_groupUngroupedPointsFalse")
+        geo = get_obj_geo_copy("test_groupUngroupedPointsFalse")
 
         group = geo.groupUngroupedPoints("ungrouped")
 
@@ -1373,42 +1286,36 @@ class TestInlineCpp(unittest.TestCase):
     # =========================================================================
 
     def test_hasUngroupedPrims(self):
-        geo = getObjGeo("test_hasUngroupedPrims")
+        geo = get_obj_geo("test_hasUngroupedPrims")
 
         self.assertTrue(geo.hasUngroupedPrims())
 
     def test_hasUngroupedPrims(self):
-        geo = getObjGeo("test_hasUngroupedPrimsFalse")
+        geo = get_obj_geo("test_hasUngroupedPrimsFalse")
 
         self.assertFalse(geo.hasUngroupedPrims())
 
     def test_groupUngroupedPrims(self):
-        geo = getObjGeoCopy("test_groupUngroupedPrims")
+        geo = get_obj_geo_copy("test_groupUngroupedPrims")
 
         group = geo.groupUngroupedPrims("ungrouped")
 
         self.assertEquals(len(group.prims()), 3)
 
     def test_groupUngroupedPrimsExistingName(self):
-        geo = getObjGeoCopy("test_groupUngroupedPrims")
+        geo = get_obj_geo_copy("test_groupUngroupedPrims")
 
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.groupUngroupedPrims,
-            "group1"
-        )
+        with self.assertRaises(hou.OperationFailed):
+            geo.groupUngroupedPrims("group1")
 
     def test_groupUngroupedPrimsNoName(self):
-        geo = getObjGeoCopy("test_groupUngroupedPrims")
+        geo = get_obj_geo_copy("test_groupUngroupedPrims")
 
-        self.assertRaises(
-            hou.OperationFailed,
-            geo.groupUngroupedPrims,
-            ""
-        )
+        with self.assertRaises(hou.OperationFailed):
+            geo.groupUngroupedPrims("")
 
     def test_groupUngroupedPrimsFalse(self):
-        geo = getObjGeoCopy("test_groupUngroupedPrimsFalse")
+        geo = get_obj_geo_copy("test_groupUngroupedPrimsFalse")
 
         group = geo.groupUngroupedPrims("ungrouped")
 
@@ -1524,10 +1431,8 @@ class TestInlineCpp(unittest.TestCase):
         node = OBJ.node("test_evalAsVector/node")
         parm = node.parmTuple("not_vec")
 
-        self.assertRaises(
-            hou.Error,
-            parm.evalAsVector
-        )
+        with self.assertRaises(hou.Error):
+            parm.evalAsVector()
 
     def test_isColor(self):
         node = OBJ.node("test_isColor/node")
@@ -1551,10 +1456,8 @@ class TestInlineCpp(unittest.TestCase):
         node = OBJ.node("test_evalAsColor/node")
         parm = node.parmTuple("not_color")
 
-        self.assertRaises(
-            hou.Error,
-            parm.evalAsColor
-        )
+        with self.assertRaises(hou.Error):
+            parm.evalAsColor()
 
     def test_getReferencedNodeAbsoluate(self):
         node = OBJ.node("test_getReferencedNode/node")
@@ -1576,19 +1479,15 @@ class TestInlineCpp(unittest.TestCase):
         node = OBJ.node("test_getReferencedNode/node")
         parm = node.parm("non_string")
 
-        self.assertRaises(
-            hou.Error,
-            parm.getReferencedNode
-        )
+        with self.assertRaises(hou.Error):
+            parm.getReferencedNode()
 
     def test_getReferencedNodeNonRef(self):
         node = OBJ.node("test_getReferencedNode/node")
         parm = node.parm("non_reference")
 
-        self.assertRaises(
-            hou.Error,
-            parm.getReferencedNode
-        )
+        with self.assertRaises(hou.Error):
+            parm.getReferencedNode()
 
     def test_evalAsStripSingle(self):
         node = OBJ.node("test_evalAsStrip/node")
@@ -1702,18 +1601,13 @@ class TestInlineCpp(unittest.TestCase):
         node = OBJ.node("test_getMultiParmInstanceIndex/object_merge")
         parm = node.parm("numobj")
 
-        self.assertRaises(
-            hou.OperationFailed,
-            parm.getMultiParmInstanceIndex
-        )
+        with self.assertRaises(hou.OperationFailed):
+            parm.getMultiParmInstanceIndex()
 
         parm_tuple = node.parmTuple("numobj")
 
-        self.assertRaises(
-            hou.OperationFailed,
-            parm_tuple.getMultiParmInstanceIndex
-        )
-
+        with self.assertRaises(hou.OperationFailed):
+            parm_tuple.getMultiParmInstanceIndex()
 
     def test_getMultiParmInstances(self):
         node = OBJ.node("test_getMultiParmInstances/null1")
@@ -2082,25 +1976,6 @@ class TestInlineCpp(unittest.TestCase):
 
 # =============================================================================
 
-#hou.hipFile.load(os.path.join(THIS_DIR, "test_inline.hip"))
-
 if __name__ == '__main__':
-    # Load the testing hip file.
-
-#    hou.hipFile.load(os.path.join(THIS_DIR, "test_inline.hip"))
-
-    cov = coverage.Coverage(source=["ht.inline"])
-    cov.start()
-
-    import ht.inline
-
-    # Run the tests.
-    try:
-        unittest.main()
-
-    finally:
-        cov.stop()
-        cov.save()
-
-        cov.html_report()
+    unittest.main()
 
