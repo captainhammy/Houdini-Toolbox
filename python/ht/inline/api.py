@@ -2517,4 +2517,3 @@ def isDummy(self):
         self.nodeTypeCategory().name(),
         self.nodeTypeName()
     )
-

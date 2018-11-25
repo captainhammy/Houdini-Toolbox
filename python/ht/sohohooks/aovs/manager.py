@@ -36,7 +36,7 @@ class AOVManager(object):
     # SPECIAL METHODS
     # =========================================================================
 
-    def __repr__(self): # pragma: no cover
+    def __repr__(self):
         return "<AOVManager AOVs:{} groups:{}>".format(
             len(self.aovs),
             len(self.groups),

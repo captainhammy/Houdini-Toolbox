@@ -25,7 +25,7 @@ class PyFilterOperation(object):
     # SPECIAL METHODS
     # =========================================================================
 
-    def __repr__(self): # pragma: no cover
+    def __repr__(self):
         return "<PyFilterOperation: {}>".format(
             self.__class__.__name__
         )

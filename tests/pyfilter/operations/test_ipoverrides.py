@@ -465,7 +465,7 @@ class Test_IpOverrides(unittest.TestCase):
 
         op.filterInstance()
 
-        self.assertEqual(mock_set.call_count, 0)
+        mock_set.assert_not_called()
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
@@ -576,7 +576,7 @@ class Test_IpOverrides(unittest.TestCase):
         op.filterInstance()
 
         mock_get.assert_has_calls([call("object:matte"), call("object:phantom"), call("object:surface")])
-        self.assertEqual(mock_set.call_count, 0)
+        mock_set.assert_not_called()
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
@@ -596,7 +596,7 @@ class Test_IpOverrides(unittest.TestCase):
 
         op.filterMaterial()
 
-        self.assertEqual(mock_set.call_count, 0)
+        mock_set.assert_not_called()
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch("ht.pyfilter.operations.ipoverrides.get_property")
@@ -606,8 +606,8 @@ class Test_IpOverrides(unittest.TestCase):
         op._disable_aovs = False
         op.filterPlane()
 
-        self.assertEqual(mock_set.call_count, 0)
-        self.assertEqual(mock_get.call_count, 0)
+        mock_get.assert_not_called()
+        mock_set.assert_not_called()
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch("ht.pyfilter.operations.ipoverrides.get_property")
@@ -646,7 +646,7 @@ class Test_IpOverrides(unittest.TestCase):
 
         op.filterPlane()
 
-        self.assertEqual(mock_set.call_count, 0)
+        mock_set.assert_not_called()
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
     def test_process_parsed_args(self):

@@ -253,30 +253,30 @@ class Test_AOV(unittest.TestCase):
     # _update_data
 
     @patch("ht.sohohooks.aovs.aov.AOV._verify_internal_data")
+    @patch("ht.sohohooks.aovs.aov.ALLOWABLE_VALUES", return_value={})
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
-    def test__update_data__unknown(self, mock_verify):
+    def test__update_data__unknown(self, mock_allowable, mock_verify):
         inst = aov.AOV(None)
         inst._data = {}
 
         data = {"key": None}
 
-        with patch.dict(aov.ALLOWABLE_VALUES, {}, clear=True):
-            inst._update_data(data)
+        inst._update_data(data)
 
         self.assertEqual(inst._data, {})
 
         mock_verify.assert_called()
 
     @patch("ht.sohohooks.aovs.aov.AOV._verify_internal_data")
+    @patch("ht.sohohooks.aovs.aov.ALLOWABLE_VALUES", return_value={})
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
-    def test__update_data__settable(self, mock_verify):
+    def test__update_data__settable(self, mock_allowable, mock_verify):
         inst = aov.AOV(None)
         inst._data = {"key": None}
 
         data = {"key": "value"}
 
-        with patch.dict(aov.ALLOWABLE_VALUES, {}, clear=True):
-            inst._update_data(data)
+        inst._update_data(data)
 
         self.assertEqual(inst._data, {"key": "value"})
 

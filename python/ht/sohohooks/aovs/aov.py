@@ -58,7 +58,7 @@ class AOV(object):
     def __hash__(self):
         return hash(self.variable)
 
-    def __repr__(self): # pragma: no cover
+    def __repr__(self):
         return "<AOV {} ({})>".format(self.variable, self.vextype)
 
     def __str__(self):
@@ -444,7 +444,7 @@ class AOVGroup(object):
 
         return -1
 
-    def __repr__(self): # pragma: no cover
+    def __repr__(self):
         return "<{} {} ({} AOVs)>".format(
             self.__class__.__name__,
             self.name,
