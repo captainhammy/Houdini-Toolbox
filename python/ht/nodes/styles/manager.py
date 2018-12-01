@@ -13,7 +13,8 @@ import json
 import os
 
 # Houdini Toolbox Imports
-from ht.nodes.styles.styles import StyleConstant, StyleEntry, ConstantEntry
+from ht.nodes.styles.styles import ConstantRule, StyleConstant, StyleRule
+from ht.nodes.styles import constants
 
 # Houdini Imports
 import hou
@@ -23,18 +24,16 @@ import hou
 # =============================================================================
 
 class StyleManager(object):
-    """Manage and apply Houdini node styles.
-
-    """
+    """Manage and apply Houdini node styles."""
 
     def __init__(self):
         self._constants = {}
-        self._names = {}
-        self._nodes = {}
-        self._tools = {}
+        self._name_rules = {}
+        self._node_type_rules = {}
+        self._tool_rules = {}
 
         # Build mappings for this object.
-        self._buildMappings()
+        self._build()
 
     # =========================================================================
     # SPECIAL METHODS
@@ -47,17 +46,47 @@ class StyleManager(object):
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    def _buildConstantsFromData(self, all_data):
+    def _build(self):
+        """Build styling data from files.
+
+        :return:
+
+        """
+        files = _find_files()
+
+        all_data = []
+
+        # Read all the target files in reverse.
+        for path in reversed(files):
+            # Open the target file and load the data.
+            with open(path) as handle:
+                data = json.load(handle)
+
+            data[constants.PATH_KEY] = path
+            all_data.append(data)
+
+        self._build_constants_from_data(all_data)
+
+        self._build_rules_from_data(all_data)
+
+    def _build_constants_from_data(self, all_data):
+        """Build style constants from data..
+
+        :param all_data: Base data definitions
+        :type all_data: list
+        :return:
+
+        """
         for data in all_data:
-            path = data["path"]
+            path = data[constants.PATH_KEY]
 
             # Process any constants first so they can be used by assignments.
-            if "constants" in data:
-                for name, entry in data["constants"].iteritems():
+            if constants.CONSTANT_DEFINITION_KEY in data:
+                for name, entry in data[constants.CONSTANT_DEFINITION_KEY].iteritems():
                     # Get the color from the info.
 
-                    color, color_type = _buildColor(entry)
-                    shape = _buildShape(entry)
+                    color, color_type = _build_color(entry)
+                    shape = _build_shape(entry)
 
                     # Store the constant under its name.
                     self.constants[name] = StyleConstant(
@@ -68,186 +97,166 @@ class StyleManager(object):
                         path
                     )
 
-    def _buildEntriesFromData(self, all_data):
-        for data in all_data:
-            path = data["path"]
+    def _build_rules_from_data(self, all_data):
+        """Build style rules from data.
 
-            # Process each of the different types of color assignments.
-            for assign_type in ("names", "nodes", "tools"):
-                # Ensure the type exists in the data.
-                if assign_type not in data:
-                    continue
-
-                # Get the mapping dictionary from the manager.
-                color_type_map = getattr(self, assign_type)
-
-                # Process each category in the data.
-                for category_name, entries in data[assign_type].iteritems():
-                    # Get a mapping list for the category name.
-                    category_list = color_type_map.setdefault(
-                        category_name,
-                        {}
-                    )
-
-                    # Process each entry.  The entry name can be a node
-                    # type name, Tab menu folder name, or manager/generator.
-                    for entry in entries:
-                        # Get the entry name.
-                        entry_name = entry["name"]
-
-                        if "constant" in entry:
-                            constant_name = entry["constant"]
-
-                            # Ensure the constant exists.  If not, raise an
-                            # exception.
-                            if constant_name not in self.constants:
-                                raise ConstantDoesNotExistError(constant_name)
-
-                            # Add a ConstantEntry to the list.
-                            category_list[entry_name] = ConstantEntry(
-                                entry_name,
-                                constant_name,
-                                path
-                            )
-
-                            continue
-
-                        # Build the color from the raw data.
-                        color, color_type = _buildColor(entry)
-
-                        shape = _buildShape(entry)
-
-                        # Add a ColorEntry to the list.
-                        category_list[entry_name] = StyleEntry(
-                            entry_name,
-                            color,
-                            color_type,
-                            shape,
-                            path
-                        )
-
-    def _buildMappings(self):
-        """Build mappings from files."""
-        files = _findFiles()
-
-        all_data = []
-
-        # Read all the target files in reverse.
-        for path in reversed(files):
-            # Open the target file.
-            with open(path) as handle:
-                # Load the json data and convert the data from unicde.
-                data = json.load(handle)
-
-            data["path"] = path
-            all_data.append(data)
-
-        self._buildConstantsFromData(all_data)
-
-        self._buildEntriesFromData(all_data)
-
-    def _getManagerGeneratorStyle(self, node_type):
-        """Look for a color match based on the node type being a manager or
-        generator type.
+        :param all_data: Base data definitions
+        :type all_data: list
+        :return:
 
         """
-        categories = (node_type.category().name(), "all")
+        for data in all_data:
+            if constants.RULES_KEY in data:
+                rules_data = data[constants.RULES_KEY]
+
+                path = data[constants.PATH_KEY]
+
+                for rule_type, rule_data in rules_data.iteritems():
+                    # Get the mapping dictionary from the manager.
+                    rule_type_map = getattr(self, rule_type)
+
+                    # Process each category in the data.
+                    for category_name, rules in rule_data.iteritems():
+                        # Get a mapping list for the category name.
+                        category_map = rule_type_map.setdefault(category_name, {})
+
+                        _build_category_rules(rules, category_map, path, self.constants)
+
+    def _get_manager_generator_style(self, node_type):
+        """Look for a style match based on the node type being a manager or
+        generator type.
+
+        :param node_type: A manager/generator node type
+        :type node_type: hou.NodeType
+        :return: An applicable styling object.
+        :rtype: StyleConstant|StyleRule
+
+        """
+        categories = (node_type.category().name(), constants.ALL_CATEGORY_KEY)
 
         for category_name in categories:
-            # Check if the category has any entries.
-            if category_name in self.nodes:
-                category_entries = self.nodes[category_name]
+            # Check if the category has any rules.
+            if category_name in self.node_type_rules:
+                category_rules = self.node_type_rules[category_name]
 
                 # The node type is a manager.
                 if node_type.isManager():
-                    # Check for a manager entry under the category.
-                    if "manager" in category_entries:
-                        return self._resolveEntry(category_entries["manager"])
+                    # Check for a manager rule under the category.
+                    if constants.MANAGER_TYPE_KEY in category_rules:
+                        return self._resolve_rule(category_rules[constants.MANAGER_TYPE_KEY])
 
                 # The node type is a generator.
                 elif node_type.isGenerator():
-                    # Check for a generator entry under the category.
-                    if "generator" in category_entries:
-                        return self._resolveEntry(category_entries["generator"])
+                    # Check for a generator rule under the category.
+                    if constants.GENERATOR_TYPE_KEY in category_rules:
+                        return self._resolve_rule(category_rules[constants.GENERATOR_TYPE_KEY])
+
+                else:
+                    raise hou.OperationFailed(
+                        "{} is not a manager or a generator type".format(
+                            node_type.nameWithCategory()
+                        )
+                    )
 
         return None
 
-    def _getNameEntry(self, node):
-        """Look for a color match based on the node name."""
+    def _get_name_style(self, node):
+        """Look for a style match based on the node name.
+
+        :param node: Node to style by name.
+        :type node: hou.Node
+        :return: An applicable styling object.
+        :rtype: StyleConstant|StyleRule
+
+        """
         # The node name.
         name = node.name()
 
-        categories = (node.type().category().name(), "all")
+        categories = (node.type().category().name(), constants.ALL_CATEGORY_KEY)
 
         for category_name in categories:
-            # Check for entries for the node type category.
-            if category_name in self.names:
-                # Check if the name matches any of the category entries.
-                for color_entry in self.names[category_name].itervalues():
-                    if hou.patternMatch(color_entry.name, name):
-                        return self._resolveEntry(color_entry)
+            # Check for rules for the node type category.
+            if category_name in self.name_rules:
+                # Check if the name matches any of the category rules.
+                for rule in self.name_rules[category_name].itervalues():
+                    if hou.patternMatch(rule.name, name):
+                        return self._resolve_rule(rule)
 
         return None
 
-    def _getToolStyle(self, node_type):
-        """Look for a color match based on the node type's Tab menu
-        locations.
+    def _get_node_type_style(self, node_type):
+        """Look for a style match based on the node type's name.
+
+        :param node_type: Node type to style by name
+        :type node_type: hou.NodeType
+        :return: An applicable styling object.
+        :rtype: StyleConstant|StyleRule
 
         """
-        categories = (node_type.category().name(), "all")
-
-        for category_name in categories:
-            # Check for entries for the node type category.
-            if category_name in self.tools:
-                # Get any Tab menu locations the node type might show up in.
-                menu_locations = _getToolMenuLocations(node_type)
-
-                # Process the locations, looking for the first match.
-                for location in menu_locations:
-                    # Check if the node name is in the mapping.
-
-                    # Check if the location matches any of the category entries.
-                    for color_entry in self.tools[category_name].itervalues():
-                        if hou.patternMatch(color_entry.name, location):
-                            return self._resolveEntry(color_entry)
-
-        return None
-
-    def _getTypeStyle(self, node_type):
-        """Look for a color match based on the node type's name."""
         type_name = node_type.nameComponents()[2]
 
         # Get the category name from the node and also check the 'all'
         # category.
-        categories = (node_type.category().name(), "all")
+        categories = (node_type.category().name(), constants.ALL_CATEGORY_KEY)
 
         for category_name in categories:
-            # Check if the category has any entries.
-            if category_name in self.nodes:
+            # Check if the category has any rules.
+            if category_name in self.node_type_rules:
                 # Check if the node type name matches any of the category
-                # entries.
-                for style_entry in self.nodes[category_name].itervalues():
-                    if hou.patternMatch(style_entry.name, type_name):
-                        return self._resolveEntry(style_entry)
+                # rules.
+                for rule in self.node_type_rules[category_name].itervalues():
+                    if hou.patternMatch(rule.name, type_name):
+                        return self._resolve_rule(rule)
 
         return None
 
-    def _resolveEntry(self, entry):
+    def _get_tool_style(self, node_type):
+        """Look for a color match based on the node type's Tab menu
+        locations.
+
+        :param node_type: Node type to style by tab menu location
+        :type node_type: hou.NodeType
+        :return: An applicable styling object.
+        :rtype: StyleConstant|StyleRule
+
+        """
+        categories = (node_type.category().name(), constants.ALL_CATEGORY_KEY)
+        # Get any Tab menu locations the node type might show up in.
+        menu_locations = _get_tool_menu_locations(node_type)
+
+        for category_name in categories:
+            # Check for rules for the node type category.
+            if category_name in self.tool_rules:
+                # Process the locations, looking for the first match.
+                for location in menu_locations:
+                    # Check if the location matches any of the category rules.
+                    for rule in self.tool_rules[category_name].itervalues():
+                        if hou.patternMatch(rule.name, location):
+                            return self._resolve_rule(rule)
+
+        return None
+
+    def _resolve_rule(self, rule):
         """Resolve the entry to a color.
 
-        The entry might a color or a constant so this will return the actual
-        color.
+        The entry might a style or a constant so this will return the actual
+        style.
+
+        :param rule: A rule object to resolve.
+        :type rule: ConstantRule|StyleRule
+        :return: A resolved rule.
+        :rtype: StyleConstant|StyleRule
 
         """
         # If the entry object is a ColorEntry then we can just return the
         # color.
-        if isinstance(entry, StyleEntry):
-            return entry
+        if isinstance(rule, StyleRule):
+            return rule
 
-        # Otherwise it is a ConstantEntry so we have to resolve the constant
+        # Otherwise it is a ConstantRule so we have to resolve the constant
         # name and return its color.
         else:
-            constant_name = entry.constant_name
+            constant_name = rule.constant_name
             return self.constants[constant_name]
 
     # =========================================================================
@@ -256,88 +265,90 @@ class StyleManager(object):
 
     @property
     def constants(self):
-        """A dictionary of constant styles."""
+        """dict: A dictionary of constant styles."""
         return self._constants
 
     @property
-    def names(self):
-        """A dictionary of node name styles."""
-        return self._names
+    def name_rules(self):
+        """dict: A dictionary of node name styles."""
+        return self._name_rules
 
     @property
-    def nodes(self):
-        """A dictionary of node type name styles."""
-        return self._nodes
+    def node_type_rules(self):
+        """dict: A dictionary of node type name styles."""
+        return self._node_type_rules
 
     @property
-    def tools(self):
-        """A dictionary of tool menu location styles."""
-        return self._tools
-
-    # =========================================================================
-    # STATIC METHODS
-    # =========================================================================
-
-    @staticmethod
-    def from_session():
-        """Find or create a StyleManager for the session."""
-        if not hasattr(hou.session, "style_manager"):
-            hou.session.style_manager = StyleManager()
-
-        return hou.session.style_manager
+    def tool_rules(self):
+        """dict: A dictionary of tool menu location styles."""
+        return self._tool_rules
 
     # =========================================================================
     # METHODS
     # =========================================================================
 
-    def styleNode(self, node):
-        """Color the node given its properties.
+    def style_node(self, node):
+        """Style the node given its properties.
 
-        This function will attempt to color the node by first matching its
+        This function will attempt to style the node by first matching its
         node type name, then the tab menu location and the whether or not it
         is a manager or generator type.
 
+        :param node: A node to style
+        :type node: hou.Node
+        :return:
+
         """
+
         node_type = node.type()
 
         # Look for a match with the node type name.
-        style = self._getTypeStyle(node_type)
+        style = self._get_node_type_style(node_type)
 
         # Look for a match given the node's Tab menu entries.
         if style is None:
-            style = self._getToolStyle(node_type)
+            style = self._get_tool_style(node_type)
 
         if style is None:
             # Check if the node is a manager or generator.
             if node_type.isManager() or node_type.isGenerator():
-                style = self._getManagerGeneratorStyle(node_type)
+                style = self._get_manager_generator_style(node_type)
 
         # If a color was found, set it.
         if style is not None:
-            style.applyToNode(node)
+            style.apply_to_node(node)
 
-    def styleNodeByName(self, node):
-        """Color the node given its name."""
+    def style_node_by_name(self, node):
+        """Style the node given its name.
+
+        :param node: A node to style
+        :type node: hou.Node
+        :return:
+
+        """
         # Look for a name entry for the node's type category.
-        style = self._getNameEntry(node)
+        style = self._get_name_style(node)
 
         # If a color was found, set the node to it.
         if style is not None:
-            style.applyToNode(node)
+            style.apply_to_node(node)
 
     def reload(self):
-        """Reload all color mappings."""
-        self.constants.clear()
-        self.names.clear()
-        self.nodes.clear()
-        self.tools.clear()
+        """Reload all color mappings.
 
-        self._buildMappings()
+        :return:
+
+        """
+        self.constants.clear()
+        self.name_rules.clear()
+        self.node_type_rules.clear()
+        self.tool_rules.clear()
+
+        self._build()
 
 # =============================================================================
 # EXCEPTIONS
 # =============================================================================
-
 
 class ConstantDoesNotExistError(Exception):
     """Exception raised when a color attempts to reference a non-existent
@@ -345,47 +356,97 @@ class ConstantDoesNotExistError(Exception):
 
     """
 
-    pass
-
-
 class InvalidColorTypeError(Exception):
     """Exception raised when a color is not a valid type defined in
     hou.colorType.
 
     """
 
-    pass
-
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-def _buildShape(data):
-    shape = data.get("shape")
+def _build_category_rules(rules, category_map, path, constant_map):
+    """Build constant and style rules.
 
-    return shape
+    :param rules: Rule data
+    :type rules: list(dict)
+    :param category_map: Mapping of rules for a category.
+    :type category_map: dict
+    :param path: The source file path.
+    :type path: str
+    :param constant_map: Dictionary of known constants.
+    :type constant_map: dict
+    :return:
+
+    """
+    # Process each rule.  The rule name can be a node
+    # type name, Tab menu folder name, or manager/generator.
+    for rule_data in rules:
+        # Get the rule name.
+        rule_name = rule_data[constants.RULE_NAME_KEY]
+
+        # Handle constants.
+        if constants.RULE_CONSTANT_KEY in rule_data:
+            constant_name = rule_data[constants.RULE_CONSTANT_KEY]
+
+            # Ensure the constant exists.  If not, raise an
+            # exception.
+            if constant_name not in constant_map:
+                raise ConstantDoesNotExistError(constant_name)
+
+            rule = ConstantRule(
+                rule_name,
+                constant_name,
+                path
+            )
+
+        # Handle styles.
+        else:
+            # Build the style data from the raw data.
+            color, color_type = _build_color(rule_data)
+            shape = _build_shape(rule_data)
+
+            # Add a StyleRule to the list.
+            rule = StyleRule(
+                rule_name,
+                color,
+                color_type,
+                shape,
+                path
+            )
+
+        # Add the rule to the map.
+        category_map[rule_name] = rule
 
 
-def _buildColor(entry):
-    """Build a hou.Color object from data."""
-    data = entry.get("color")
+def _build_color(rule):
+    """Build a hou.Color object from data.
+
+    :param rule: Style information
+    :type rule: dict
+    :return: Color information
+    :rtype: (hou.Color, str)
+
+    """
+    data = rule.get(constants.RULE_COLOR_KEY)
 
     if data is None:
         return None, None
 
-    value = data["value"]
-
-    # Create an empty color value since we don't know the color format yet.
-    color = hou.Color()
-
     # Try to get the associated hou.colorType object from the type.
     try:
-        color_type = getattr(hou.colorType, data["type"])
+        color_type = getattr(hou.colorType, data[constants.RULE_COLOR_TYPE_KEY])
 
     # Catch the AttributeError generated by invalid types and raise an
     # InvalidColorTypeError instead.
     except AttributeError:
-        raise InvalidColorTypeError(data["type"])
+        raise InvalidColorTypeError(data[constants.RULE_COLOR_TYPE_KEY])
+
+    value = data[constants.RULE_COLOR_VALUE_KEY]
+
+    # Create an empty color value since we don't know the color format yet.
+    color = hou.Color()
 
     # Set the color value given the specified type.
     if color_type == hou.colorType.RGB:
@@ -405,14 +466,34 @@ def _buildColor(entry):
     elif color_type == hou.colorType.LAB:
         color.setLAB(value)
 
-    elif color_type == hou.colorType.XYZ:
+    # XYZ
+    else:
         color.setXYZ(value)
 
-    return color, data["type"]
+    return color, data[constants.RULE_COLOR_TYPE_KEY]
 
 
-def _findFiles():
-    """Find any .json files that should be read."""
+def _build_shape(rule):
+    """Build shape information.
+
+    :param rule: Style information
+    :type rule: dict
+    :return: Shape name
+    :rtype: str
+
+    """
+    shape = rule.get(constants.RULE_SHAPE_KEY)
+
+    return shape
+
+
+def _find_files():
+    """Find any .json files that should be read.
+
+    :return: Any found style files.
+    :rtype: (str)
+
+    """
     try:
         directories = hou.findDirectories("config/styles")
 
@@ -424,11 +505,18 @@ def _findFiles():
     for directory in directories:
         all_files.extend(glob.glob(os.path.join(directory, "*.json")))
 
-    return all_files
+    return tuple(all_files)
 
 
-def _getToolMenuLocations(node_type):
-    """Get any Tab menu locations the tool for the node type lives in."""
+def _get_tool_menu_locations(node_type):
+    """Get any Tab menu locations the tool for the node type lives in.
+
+    :param node_type: A node type to get Tab menu locations for
+    :type node_type: hou.NodeType
+    :return: Any Tab menu locations the node type's tool appears under
+    :rtype: (str)
+
+    """
     # Need to get all of Houdini's tools.
     tools = hou.shelves.tools()
 
@@ -448,3 +536,6 @@ def _getToolMenuLocations(node_type):
 
     return ()
 
+# =============================================================================
+
+MANAGER = StyleManager()

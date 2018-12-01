@@ -1,207 +1,209 @@
 
 {
     "constants": {
-	"DEFAULT": {
+        "DEFAULT": {
             "color": {
                 "type": "RGB",
                 "value": 0.8
             },
             "shape": "classic",
-	    "comment": "Default node style."
-	}, 
+            "comment": "Default node style."
+        }, 
 
-	"BLACK": {
+        "BLACK": {
             "color": {
                 "type": "RGB",
                 "value": 0
             }
-	},
+        },
 
-	"DARKGREY": {
+        "DARKGREY": {
             "color": {
                 "type": "RGB",
                 "value": 0.36
             }
-	},
+        },
 
-	"ORANGE": {
+        "ORANGE": {
             "color": {
                 "type": "HSV",
                 "value": [45.0, 1.0, 0.8]
             }
-	},
+        },
 
-	"PURPLE": {
+        "PURPLE": {
             "color": {
                 "type": "RGB",
                 "value": [0.4, 0.2, 0.6]
             }
-	},
+        },
 
-	"HOLYSHITTHISISAREALLYLONGNAME": {
+        "HOLYSHITTHISISAREALLYLONGNAME": {
             "color": {
                 "type": "RGB",
                 "value": [0.8, 0.2, 0.2]
             }
-	},
+        },
 
-	"PINK": {
+        "PINK": {
             "color": {
                 "type": "HSV",
                 "value": [300, 0.59, 0.9]
             }
-	}
+        }
     },
 
-    "nodes": {
-	"all": [
-	    {
-		"name": "generator",
-                "color": {
-		    "type": "RGB",
-		    "value": [0.4, 1 ,1]
+    "rules": {
+        "node_type_rules": {
+            "all": [
+                {
+                    "name": "generator",
+                    "color": {
+                        "type": "RGB",
+                        "value": [0.4, 1 ,1]
+                    }
+                },
+
+                {
+                    "name": "manager",
+                    "color": {
+                        "type": "RGB",
+                        "value": [0.4, 1, 0.4]
+                    }
+                },
+
+                {
+                    "name": "null",
+                    "constant": "BLACK"
+                },
+
+                {
+                    "name": "switch",
+                    "shape": "decision",
+                    "color": {
+                        "type": "RGB",
+                        "value": 0.36
+                    }
+                },
+
+                {
+                    "name": "subnet",
+                    "constant": "ORANGE"
+                },
+
+                {
+                    "name": "merge",
+                    "constant": "DARKGREY"
+                },
+
+                {
+                    "name": "dopnet",
+                    "color": {
+                        "type": "RGB",
+                        "value": [0, 0.4, 1]
+                    }
+                },
+
+                {
+                    "name": "file",
+                    "color": {
+                        "type": "HSV",
+                        "value": [45.0, 1.0, 0.8]
+                    }
                 }
-	    },
+            ],
 
-	    {
-		"name": "manager",
-                "color": {
-                    "type": "RGB",
-                    "value": [0.4, 1, 0.4]
+            "Object": [
+                {
+                    "name": "generator",
+                    "constant": "DEFAULT",
+                    "comment": "Since all objects are generators, leave them the default color."
+                },
+
+                {
+                    "name": "geo",
+                    "color": {
+                        "type": "RGB",
+                        "value": [0, 0.4, 0]
+                    }
+                },
+
+                {       
+                    "name": "cam",
+                    "color": {
+                        "type": "RGB",
+                        "value": 1
+                    }
+                },
+
+                {
+                    "name": "light",
+                    "color": {
+                        "type": "RGB",
+                        "value": [1, 0, 0]
+                    }
+                },
+
+                {
+                    "name": "*light*",
+                    "color": {
+                        "type": "RGB",
+                        "value": [1, 0.8, 0]
+                    }
                 }
-	    },
+            ],
 
-	    {
-		"name": "null",
-                "constant": "BLACK"
-	    },
-
-	    {
-		"name": "switch",
-                "shape": "decision",
-                "color": {
-                    "type": "RGB",
-                    "value": 0.36
+            "Vop": [
+                {
+                    "name": "global",
+                    "constant": "PURPLE"
                 }
-	    },
+            ]
+        },
 
-	    {
-		"name": "subnet",
-                "constant": "ORANGE"
-	    },
-
-	    {
-		"name": "merge",
-                "constant": "DARKGREY"
-	    },
-
-	    {
-		"name": "dopnet",
-                "color": {
-                    "type": "RGB",
-                    "value": [0, 0.4, 1]
+        "tool_rules" : {
+            "Vop": [
+                {
+                    "name": "Utility",
+                    "color": {
+                        "type": "RGB",
+                        "value": [1, 0.8, 0]
+                    }
                 }
-	    },
+            ],
 
-            {
-                "name": "file",
-                "color": {
-                    "type": "HSV",
-                    "value": [45.0, 1.0, 0.8]
+            "all": [
+                {
+                    "name": "*Assets*",
+                    "color": {
+                        "type": "RGB",
+                        "value": [0, 0.8, 0.3]
+                    }
                 }
-            }
-	],
+            ]
+        },
 
-	"Object": [
-	    {
-		"name": "generator",
-		"constant": "DEFAULT",
-		"comment": "Since all objects are generators, leave them the default color."
-	    },
-
-	    {
-		"name": "geo",
-                "color": {
-                    "type": "RGB",
-                    "value": [0, 0.4, 0]
+        "name_rules": {
+            "all": [
+                {
+                    "name": "OUT",
+                    "color" : {
+                        "type": "RGB",
+                        "value": [0, 0.8, 0]
+                    }
                 }
-	    },
+            ],
 
-	    {	
-		"name": "cam",
-                "color": {
-                    "type": "RGB",
-                    "value": 1
+            "Object": [
+                {
+                    "name": "*TEST*",
+                    "color": {
+                        "type": "RGB",
+                        "value": [1, 0, 0.5]
+                    }
                 }
-	    },
-
-	    {
-		"name": "light",
-                "color": {
-                    "type": "RGB",
-                    "value": [1, 0, 0]
-                }
-	    },
-
-	    {
-		"name": "*light*",
-                "color": {
-                    "type": "RGB",
-                    "value": [1, 0.8, 0]
-                }
-	    }
-	],
-
-	"Vop": [
-	    {
-		"name": "global",
-		"constant": "PURPLE"
-	    }
-	]
-    },
-
-    "tools" : {
-	"Vop": [
-	    {
-		"name": "Utility",
-                "color": {
-                    "type": "RGB",
-                    "value": [1, 0.8, 0]
-                }
-	    }
-	],
-
-	"all": [
-	    {
-		"name": "*Assets*",
-                "color": {
-                    "type": "RGB",
-                    "value": [0, 0.8, 0.3]
-                }
-	    }
-	]
-    },
-
-    "names": {
-	"all": [
-	    {
-		"name": "OUT",
-                "color" : {
-    		    "type": "RGB",
-		    "value": [0, 0.8, 0]
-                }
-	    }
-	],
-
-	"Object": [
-	    {
-		"name": "*TEST*",
-                "color": {
-    		    "type": "RGB",
-		    "value": [1, 0, 0.5]
-                }
-	    }
-	]
+            ]
+        }
     }
 }
 

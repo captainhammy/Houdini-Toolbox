@@ -13,7 +13,21 @@ import re
 
 
 class StyleConstant(object):
-    """This class represents a named constant style."""
+    """This class represents a named constant style.
+
+    :param name: The constant's name.
+    :type name: str
+    :param color: The constant's color.
+    :type color: hou.Color
+    :param color_type: The color type.
+    :type color_type: str
+    :param shape: The constant's shape.
+    :type shape: str
+    :param file_path: The path to the definition file.
+    :type file_path: str
+    :return:
+
+    """
 
     def __init__(self, name, color, color_type, shape, file_path=None):
         self._color = color
@@ -26,15 +40,12 @@ class StyleConstant(object):
     # SPECIAL METHODS
     # =========================================================================
 
-    def __eq__(self, entry):
+    def __eq__(self, rule):
         # For our purposes we only care if the names match.
-        return self.name == entry.name
+        return self.name == rule.name
 
     def __repr__(self):
-        return "<StyleConstant {} ({})>".format(
-            self.name,
-            self.color
-        )
+        return "<StyleConstant {} ({})>".format(self.name, self.color)
 
     # =========================================================================
     # PROPERTIES
@@ -42,7 +53,7 @@ class StyleConstant(object):
 
     @property
     def color(self):
-        """The mapped color."""
+        """hou.Color: The mapped color."""
         return self._color
 
     @color.setter
@@ -53,7 +64,7 @@ class StyleConstant(object):
 
     @property
     def color_type(self):
-        """The mapped color type."""
+        """str: The mapped color type."""
         return self._color_type
 
     @color_type.setter
@@ -63,8 +74,22 @@ class StyleConstant(object):
     # =========================================================================
 
     @property
+    def file_path(self):
+        """str: Path the definition was from."""
+        return self._file_path
+
+    # =========================================================================
+
+    @property
+    def name(self):
+        """str: The name the color is mapped to."""
+        return self._name
+
+    # =========================================================================
+
+    @property
     def shape(self):
-        """The mapped shape."""
+        """str: The mapped shape."""
         return self._shape
 
     @shape.setter
@@ -72,24 +97,17 @@ class StyleConstant(object):
         self._shape = shape
 
     # =========================================================================
-
-    @property
-    def file_path(self):
-        """Path the definition was from."""
-        return self._file_path
-
-    # =========================================================================
-
-    @property
-    def name(self):
-        """The name the color is mapped to."""
-        return self._name
-
-    # =========================================================================
     # METHODS
     # =========================================================================
 
-    def applyToNode(self, node):
+    def apply_to_node(self, node):
+        """Apply styling to a node.
+
+        :param node: Node to apply to
+        :type node: hou.Node
+        :return:
+
+        """
         if self.color is not None:
             node.setColor(self.color)
 
@@ -97,8 +115,20 @@ class StyleConstant(object):
             node.setUserData("nodeshape", self.shape)
 
 
-class StyleEntry(object):
+class StyleRule(object):
     """This class represents a color application bound to a name.
+
+    :param name: The rules's name.
+    :type name: str
+    :param color: The rules's color.
+    :type color: hou.Color
+    :param color_type: The rules's color type.
+    :type color_type: str
+    :param shape: The rules's shape.
+    :type shape: str
+    :param file_path: The path to the definition file.
+    :type file_path: str
+    :return:
 
     """
 
@@ -118,15 +148,12 @@ class StyleEntry(object):
         return self.name == entry.name
 
     def __repr__(self):
-        return "<StyleEntry {} ({})>".format(
-            self.name,
-            self.color
-        )
+        return "<StyleRule {} ({})>".format(self.name, self.color)
 
     def __str__(self):
-        value = self._getTypedColorValue()
+        value = self._get_typed_color_value()
 
-        strs = [re.sub("\.*0+$", "", "{:0.3f}".format(val)) for val in value]
+        strs = [re.sub("\\.*0+$", "", "{:0.3f}".format(val)) for val in value]
 
         return "(" + ", ".join(strs) + ")"
 
@@ -134,7 +161,13 @@ class StyleEntry(object):
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    def _getTypedColorValue(self):
+    def _get_typed_color_value(self):
+        """Get the appropriately typed color values.
+
+        :return: The color value in the correct type.
+        :rtype: tuple(float)
+
+        """
         to_func = getattr(self.color, self.color_type.lower())
 
         return to_func()
@@ -145,34 +178,41 @@ class StyleEntry(object):
 
     @property
     def color(self):
-        """The mapped color."""
+        """hou.Color: The mapped color."""
         return self._color
 
     @property
     def color_type(self):
-        """The mapped color type."""
+        """str: The mapped color type."""
         return self._color_type
 
     @property
     def shape(self):
-        """The mapped shape name."""
+        """str: The mapped shape name."""
         return self._shape
 
     @property
     def file_path(self):
-        """Path the definition was from."""
+        """str: Path the definition was from."""
         return self._file_path
 
     @property
     def name(self):
-        """The name the style is mapped to."""
+        """str: The name the style is mapped to."""
         return self._name
 
     # =========================================================================
     # METHODS
     # =========================================================================
 
-    def applyToNode(self, node):
+    def apply_to_node(self, node):
+        """Apply styling to a node.
+
+        :param node: Node to apply to
+        :type node: hou.Node
+        :return:
+        """
+
         if self.color is not None:
             node.setColor(self.color)
 
@@ -180,8 +220,16 @@ class StyleEntry(object):
             node.setUserData("nodeshape", self.shape)
 
 
-class ConstantEntry(object):
+class ConstantRule(object):
     """This class represents a style application bound to a named constant.
+
+    :param name: The rules's name.
+    :type name: str
+    :param constant_name: The constant name.
+    :type constant_name: str
+    :param file_path: The path to the definition file.
+    :type file_path: str
+    :return:
 
     """
 
@@ -199,10 +247,7 @@ class ConstantEntry(object):
         return self.name == entry.name
 
     def __repr__(self):
-        return "<ConstantEntry {} ({})>".format(
-            self.name,
-            self.constant_name
-        )
+        return "<ConstantRule {} ({})>".format(self.name, self.constant_name)
 
     # =========================================================================
     # PROPERTIES
@@ -210,16 +255,15 @@ class ConstantEntry(object):
 
     @property
     def constant_name(self):
-        """The mapped constant."""
+        """str: The mapped constant."""
         return self._constant_name
 
     @property
     def file_path(self):
-        """Path the definition was from."""
+        """str: Path the definition was from."""
         return self._file_path
 
     @property
     def name(self):
-        """The name the style is mapped to."""
+        """str: The name the style is mapped to."""
         return self._name
-
