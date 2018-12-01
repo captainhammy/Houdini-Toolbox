@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
-from ht.events import SceneEvents, runEvent
+from ht.events import SceneEvents, run_event
 
 # =============================================================================
 # FUNCTIONS
@@ -13,7 +13,7 @@ from ht.events import SceneEvents, runEvent
 
 def main():
     """Main function."""
-    runEvent(SceneEvents.Load)
+    run_event(SceneEvents.Load)
 
 # =============================================================================
 

@@ -2,7 +2,18 @@
 [run]
 branch = True
 source =
-    ht.inline
+    ht.events.callbacks
+    ht.events.event
+    ht.events.group
+    ht.events.item
+    ht.events.manager
+    ht.events.stats
+    ht.events.events.rop_render
+    ht.events.events.scene_load
+    ht.inline.api
+    ht.nodes.styles.event
+    ht.nodes.styles.styles
+    ht.nodes.styles.manager
     ht.pyfilter.manager
     ht.pyfilter.property
     ht.pyfilter.utils

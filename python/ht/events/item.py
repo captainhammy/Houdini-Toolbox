@@ -12,7 +12,19 @@ from ht.events.stats import HoudiniEventItemStats
 # =============================================================================
 
 class HoudiniEventItem(object):
-    """Class responsible for calling callable methods."""
+    """Class responsible for calling callable methods.
+
+    :param callables: A list of callables to run.
+    :type callables: tuple
+    :param name: Optional item name.
+    :type name: str
+    :param priority: The item priority.
+    :type priority: int
+    :param stat_tags: Optional stat tags.
+    :type stat_tags: list(str)
+    :return:
+
+    """
 
     def __init__(self, callables, name=None, priority=1, stat_tags=None):
         self._callables = list(callables)
@@ -24,7 +36,14 @@ class HoudiniEventItem(object):
         self._stats = HoudiniEventItemStats(self.name, tags=stat_tags)
 
     def __eq__(self, item):
-        """Equality implementation that ignores the stats object."""
+        """Equality implementation that ignores the stats object.
+
+        :param item: The item to compare to.
+        :type item: HoudiniEventItem
+        :return: Whether the objects are equal.
+        :rtype: bool
+
+        """
         if self.name != item.name:
             return False
 
@@ -37,7 +56,14 @@ class HoudiniEventItem(object):
         return True
 
     def __ne__(self, item):
-        """Inequality implementation that ignores the stats object."""
+        """Inequality implementation that ignores the stats object.
+
+        :param item: The item to compare to.
+        :type item: HoudiniEventItem
+        :return: Whether the objects are not equal.
+        :rtype: bool
+
+        """
         return not self.__eq__(item)
 
     def __repr__(self):
@@ -111,7 +137,7 @@ class ExclusiveHoudiniEventItem(HoudiniEventItem):
     def __init__(self, callables, name, priority=1, stat_tags=None):
         super(ExclusiveHoudiniEventItem, self).__init__(callables, name, priority, stat_tags)
 
-        # Get the current entry (or add ourself if one isn't set.)
+        # Get the current entry (or add this item if one isn't set.)
         exclusive_item = self._exclusive_map.setdefault(name, self)
 
         # If this item has the higher priority then point to this item.
@@ -131,4 +157,3 @@ class ExclusiveHoudiniEventItem(HoudiniEventItem):
         # Only run this item if this item is the exclusive item for the name.
         if self._exclusive_map[self.name] == self:
             super(ExclusiveHoudiniEventItem, self).run(scriptargs)
-

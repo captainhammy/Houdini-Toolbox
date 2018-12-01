@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
-from ht.events import NodeEvents, runEvent
+from ht.events import NodeEvents, run_event
 
 # =============================================================================
 # FUNCTIONS
@@ -13,7 +13,7 @@ from ht.events import NodeEvents, runEvent
 
 def main():
     """Main function."""
-    runEvent(NodeEvents.PostLastDelete, kwargs)
+    run_event(NodeEvents.PostLastDelete, kwargs)
 
 # =============================================================================
 

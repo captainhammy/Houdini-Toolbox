@@ -1,5 +1,5 @@
-from ht.events import SceneEvents, runEvent
+from ht.events import SceneEvents, run_event
 
 # Perform any registered before scene save events.
-runEvent(SceneEvents.PreSave, kwargs)
+run_event(SceneEvents.PreSave, kwargs)
 

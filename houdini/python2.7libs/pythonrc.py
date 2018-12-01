@@ -11,4 +11,4 @@ import ht.sohohooks.aovs
 import ht.nodes.styles
 
 # Create any dynamic event handlers, such as using Python's atexit module
-ht.events.callbacks.registerCallbacks()
+ht.events.callbacks.register_callbacks()

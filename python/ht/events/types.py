@@ -11,7 +11,6 @@ from enum import Enum
 # CLASSES
 # =============================================================================
 
-
 class NodeEvents(Enum):
     """Events related to node changes.  These correspond to node based event handler scripts.
 
@@ -40,7 +39,11 @@ class SceneEvents(Enum):
     """Events related to scene events."""
 
     EmptyScene = "launcheemptyscene"  # 123.[cmd|py]
+    # Only run when 123 gets run, after LoadPost but before FinalLoad.
+    EmptyScenePostLoad = "emptyscenepostload"
     Exit = "scenequit"  # Python atexit callback
     Load = "sceneload"  # 456/[cmd|py]
     PostSave = "afterscenesave"
     PreSave = "beforesenesave"
+    # When the UI first appears and Houdini begins running the UI loop
+    WhenUIAvailable = "uiavailable"

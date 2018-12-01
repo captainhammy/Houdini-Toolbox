@@ -22,6 +22,7 @@ class Test__atexit_callback(unittest.TestCase):
 
     @patch("ht.events.callbacks.run_event")
     def test(self, mock_run):
+        """Run the Exit event."""
         callbacks._atexit_callback()
 
         mock_run.assert_called_with(SceneEvents.Exit)
@@ -32,6 +33,7 @@ class Test__emit_ui_available(unittest.TestCase):
 
     @patch("ht.events.callbacks.run_event")
     def test(self, mock_run):
+        """Run the WhenUIAvailable event."""
         callbacks._emit_ui_available()
 
         mock_run.assert_called_with(SceneEvents.WhenUIAvailable)
@@ -42,6 +44,7 @@ class Test__register_atexit(unittest.TestCase):
 
     @patch("atexit.register")
     def test(self, mock_register):
+        """Register the _at_exit_callback function."""
         callbacks._register_atexit()
 
         # Ensure we passed the _atexit_callback method to the register function.
@@ -52,6 +55,7 @@ class Test__register_when_ui_available(unittest.TestCase):
     """Test houdini_event.callbacks._register_when_ui_available."""
 
     def test(self):
+        """Register the _emit_ui_available function with hdefereval."""
         mock_hdefereval = MagicMock()
 
         # Need to mock importing hdefereval because the import will fail when
@@ -72,6 +76,7 @@ class Test_register_callbacks(unittest.TestCase):
     @patch("ht.events.callbacks._register_atexit")
     @patch("hou.isUIAvailable")
     def test_no_ui(self, mock_available, mock_atexit, mock_emit):
+        """Register callbacks when the UI is not available."""
         mock_available.return_value = False
 
         callbacks.register_callbacks()
@@ -85,6 +90,7 @@ class Test_register_callbacks(unittest.TestCase):
     @patch("ht.events.callbacks._register_atexit")
     @patch("hou.isUIAvailable")
     def test_ui_available(self, mock_available, mock_atexit, mock_emit):
+        """Register callbacks when the UI is available."""
         mock_available.return_value = True
 
         callbacks.register_callbacks()

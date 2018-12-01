@@ -23,102 +23,118 @@ class Test_HoudiniEventFactory(unittest.TestCase):
     """Test ht.events.event.HoudiniEventFactory class."""
 
     @patch.object(ht.events.event.HoudiniEventFactory, "_mappings", new_callable=PropertyMock)
-    def test_register_event_class(self, _mappings):
-        mappings = {}
-        _mappings.return_value = mappings
+    def test_get_event_type__mapped(self, mock_mappings):
+        """Test where an event mapping of the specified name exists."""
+        mock_name = MagicMock(spec=str)
 
-        mock_event = MagicMock(spec=ht.events.event.HoudiniEvent)
-
-        ht.events.event.HoudiniEventFactory.register_event_class("test", mock_event)
-
-        self.assertEqual(mappings, {"test": mock_event})
-
-    @patch.object(ht.events.event.HoudiniEventFactory, "_mappings", new_callable=PropertyMock)
-    def test_event_get_type_mapped(self, mock_mappings):
         mock_return = MagicMock(spec=ht.events.event.HoudiniEvent)
 
-        mappings = {"name": mock_return}
-        mock_mappings.return_value = mappings
+        mock_mappings.return_value = {mock_name: mock_return}
 
-        result = ht.events.event.HoudiniEventFactory.get_event_type("name")
+        result = ht.events.event.HoudiniEventFactory.get_event_type(mock_name)
 
         self.assertEqual(result, mock_return.return_value)
         mock_return.assert_called_once()
 
     @patch("ht.events.event.HoudiniEvent", autospec=True)
     @patch.object(ht.events.event.HoudiniEventFactory, "_mappings", new_callable=PropertyMock)
-    def test_event_get_type_unmapped(self, mock_mappings, mock_event):
+    def test_get_event_type__unmapped(self, mock_mappings, mock_event):
+        """Test where no mapping exists, returns the default event."""
+        mock_name = MagicMock(spec=str)
+
+        mock_event_name = MagicMock(spec=str)
+
         mock_cls = MagicMock()
 
-        mappings = {"name": mock_cls}
-        mock_mappings.return_value = mappings
+        mock_mappings.return_value = {mock_name: mock_cls}
 
-        result = ht.events.event.HoudiniEventFactory.get_event_type("missing")
+        result = ht.events.event.HoudiniEventFactory.get_event_type(mock_event_name)
 
         self.assertEqual(result, mock_event.return_value)
 
-        mock_event.assert_called_with("missing")
+        mock_event.assert_called_with(mock_event_name)
 
         mock_cls.assert_not_called()
+
+    @patch.object(ht.events.event.HoudiniEventFactory, "_mappings", new_callable=PropertyMock)
+    def test_register_event_class(self, _mappings):
+        """Test registering an event class by name."""
+        mock_event_name = MagicMock(spec=str)
+
+        mappings = {}
+        _mappings.return_value = mappings
+
+        mock_event = MagicMock(spec=ht.events.event.HoudiniEvent)
+
+        ht.events.event.HoudiniEventFactory.register_event_class(mock_event_name, mock_event)
+
+        self.assertEqual(mappings, {mock_event_name: mock_event})
 
 
 class Test_HoudiniEvent(unittest.TestCase):
     """Test ht.events.event.HoudiniEvent class."""
 
     @patch("ht.events.event.HoudiniEventStats", spec=ht.events.stats.HoudiniEventStats)
-    def test_init(self, mock_stats):
-        name = "event_name"
+    def test___init__(self, mock_stats):
+        """Test the constructor."""
+        mock_name = MagicMock(spec=str)
 
-        event = ht.events.event.HoudiniEvent(name)
+        event = ht.events.event.HoudiniEvent(mock_name)
 
         self.assertEqual(event._data, {})
         self.assertTrue(event._enabled)
         self.assertEqual(event._item_map, {})
-        self.assertEqual(event._name, name)
+        self.assertEqual(event._name, mock_name)
 
         self.assertTrue(isinstance(event._stats, ht.events.stats.HoudiniEventStats))
-        mock_stats.assert_called_with(name)
+        mock_stats.assert_called_with(mock_name)
 
     # Properties
 
     @patch.object(ht.events.event.HoudiniEvent, "__init__", lambda x, y: None)
     def test_data(self):
-        """Test 'data' access property."""
+        """Test 'data' property."""
+        mock_value = MagicMock(spec=dict)
         event = ht.events.event.HoudiniEvent(None)
-        event._data = {"foo": "bar"}
+        event._data = mock_value
 
-        self.assertEqual(event.data, {"foo": "bar"})
+        self.assertEqual(event.data, mock_value)
 
     @patch.object(ht.events.event.HoudiniEvent, "__init__", lambda x, y: None)
     def test_enabled(self):
-        """Test 'enabled' access property."""
+        """Test 'enabled' property."""
+        mock_value1 = MagicMock(spec=bool)
         event = ht.events.event.HoudiniEvent(None)
 
-        event._enabled = False
-        self.assertFalse(event.enabled)
+        event._enabled = mock_value1
+        self.assertEqual(event.enabled, mock_value1)
 
-        event.enabled = False
-        self.assertFalse(event._enabled)
+        mock_value2 = MagicMock(spec=bool)
+        event.enabled = mock_value2
+        self.assertEqual(event.enabled, mock_value2)
 
     @patch.object(ht.events.event.HoudiniEvent, "__init__", lambda x, y: None)
     def test_item_map(self):
-        """Test 'item_map' access property."""
+        """Test 'item_map' property."""
+        mock_value = MagicMock(spec=dict)
+
         event = ht.events.event.HoudiniEvent(None)
 
-        event._item_map = {"foo": "bar"}
-        self.assertEqual(event.item_map, {"foo": "bar"})
+        event._item_map = mock_value
+        self.assertEqual(event.item_map, mock_value)
 
     @patch.object(ht.events.event.HoudiniEvent, "__init__", lambda x, y: None)
     def test_name(self):
-        """Test 'name' access property."""
+        """Test 'name' property."""
+        mock_value = MagicMock(spec=str)
         event = ht.events.event.HoudiniEvent(None)
 
-        event._name = "foo"
-        self.assertEqual(event.name, "foo")
+        event._name = mock_value
+        self.assertEqual(event.name, mock_value)
 
     @patch.object(ht.events.event.HoudiniEvent, "__init__", lambda x, y: None)
     def test_stats(self):
-        """Test 'stats' access property."""
+        """Test 'stats' property."""
         event = ht.events.event.HoudiniEvent(None)
 
         mock_stats = MagicMock(spec=ht.events.stats.HoudiniEventStats)
@@ -132,7 +148,7 @@ class Test_HoudiniEvent(unittest.TestCase):
 
     @patch.object(ht.events.event.HoudiniEvent, "__init__", lambda x, y: None)
     def test_register_item__non_item(self):
-        """Test registering an object which is not an HoudiniEventItem."""
+        """Test registering an object which is not a HoudiniEventItem."""
         event = ht.events.event.HoudiniEvent(None)
 
         with self.assertRaises(TypeError):
@@ -141,19 +157,16 @@ class Test_HoudiniEvent(unittest.TestCase):
     @patch.object(ht.events.event.HoudiniEvent, "item_map", new_callable=PropertyMock)
     @patch.object(ht.events.event.HoudiniEvent, "__init__", lambda x, y: None)
     def test_register_item(self, mock_item_map):
-        """Test registering a function."""
+        """Test registering a HoudiniEventItem."""
         mock_map = {}
         mock_item_map.return_value = mock_map
 
-        priority = 3
-
         mock_item = MagicMock(spec=ht.events.item.HoudiniEventItem)
-        type(mock_item).priority = PropertyMock(return_value=priority)
 
         event = ht.events.event.HoudiniEvent(None)
         event.register_item(mock_item)
 
-        self.assertEqual(mock_map.get(priority), [mock_item])
+        self.assertEqual(mock_map, {mock_item.priority: [mock_item]})
 
     # run
 
@@ -165,12 +178,12 @@ class Test_HoudiniEvent(unittest.TestCase):
 
         event = ht.events.event.HoudiniEvent(None)
 
-        scriptargs = {"foo": "bar"}
+        scriptargs = {"key": "value"}
         event.run(scriptargs)
 
         # If the event is disabled nothing should happen and scriptargs should
         # be unchanged.
-        expected_scriptargs = {"foo": "bar"}
+        expected_scriptargs = {"key": "value"}
         self.assertEqual(scriptargs, expected_scriptargs)
 
     @patch.object(ht.events.event.HoudiniEvent, "item_map", new_callable=PropertyMock)
@@ -202,11 +215,10 @@ class Test_HoudiniEvent(unittest.TestCase):
         mock_map[15] = [mock_item3]
         mock_map[5] = [mock_item1]
 
-        scriptargs = {"foo": "bar", "order": []}
+        scriptargs = {"key": "value", "order": []}
 
         expected_scriptargs = {
-            "foo": "bar",
-            "_event_": event,
+            "key": "value",
             # We expect events to be run in decreasing priority order
             "order": [mock_item3, mock_item1, mock_item2]
         }

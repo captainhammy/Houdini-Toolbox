@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Python Imports
-from mock import patch
+from mock import MagicMock, patch
 import unittest
 
 # Houdini Toolbox Imports
@@ -21,6 +21,7 @@ class Test_HoudiniEventGroup(unittest.TestCase):
     """Test ht.events.group.HoudiniEventGroup class."""
 
     def test___init__(self):
+        """Test the constructor."""
         group = ht.events.group.HoudiniEventGroup()
 
         self.assertEqual(group._data, {})
@@ -30,17 +31,22 @@ class Test_HoudiniEventGroup(unittest.TestCase):
 
     @patch.object(ht.events.group.HoudiniEventGroup, "__init__", lambda x: None)
     def test_data(self):
+        """Test the 'data' property."""
+        mock_value = MagicMock(spec=dict)
+
         group = ht.events.group.HoudiniEventGroup()
-        group._data = {"key": "value"}
-        self.assertEqual(group.data, {"key": "value"})
+        group._data = mock_value
+        self.assertEqual(group.data, mock_value)
 
     @patch.object(ht.events.group.HoudiniEventGroup, "__init__", lambda x: None)
     def test_event_map(self):
-        """Test 'event_map' access property."""
-        group = ht.events.group.HoudiniEventGroup()
-        group._event_map = {"key": "value"}
+        """Test 'event_map' property."""
+        mock_value = MagicMock(spec=dict)
 
-        self.assertEqual(group.event_map, {"key": "value"})
+        group = ht.events.group.HoudiniEventGroup()
+        group._event_map = mock_value
+
+        self.assertEqual(group.event_map, mock_value)
 
 # =============================================================================
 

@@ -24,15 +24,19 @@ class Test_HoudiniEventItem(unittest.TestCase):
 
     @patch("ht.events.item.HoudiniEventItemStats", autospec=True)
     def test___init__(self, mock_stats):
+        """Test the constructor."""
         callables = (MagicMock(), MagicMock(), MagicMock())
+        mock_name = MagicMock(spec=str)
+        mock_priority = MagicMock(spec=int)
+        mock_tags = MagicMock(spec=list)
 
-        item = ht.events.item.HoudiniEventItem(callables, "CoolItem", 3, ["tag"])
+        item = ht.events.item.HoudiniEventItem(callables, mock_name, mock_priority, mock_tags)
 
-        mock_stats.assert_called_with("CoolItem", tags=["tag"])
+        mock_stats.assert_called_with(mock_name, tags=mock_tags)
 
         self.assertEqual(item._callables, list(callables))
-        self.assertEqual(item._name, "CoolItem")
-        self.assertEqual(item._priority, 3)
+        self.assertEqual(item._name, mock_name)
+        self.assertEqual(item._priority, mock_priority)
         self.assertEqual(item._data, {})
         self.assertEqual(item._stats, mock_stats.return_value)
 
@@ -41,6 +45,7 @@ class Test_HoudiniEventItem(unittest.TestCase):
     @patch.object(ht.events.item.HoudiniEventItem, "name", new_callable=PropertyMock)
     @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
     def test___eq__(self, mock_name, mock_callables, mock_priority):
+        """Test the equality operator."""
         callables = [MagicMock(), MagicMock(), MagicMock()]
 
         mock_callables.return_value = callables
@@ -76,6 +81,7 @@ class Test_HoudiniEventItem(unittest.TestCase):
     @patch.object(ht.events.item.HoudiniEventItem, "__eq__")
     @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
     def test___ne__(self, mock_eq):
+        """Test the not-equals operator."""
         item = ht.events.item.HoudiniEventItem(None, None, None, None)
         mock_item = MagicMock(spec=ht.events.item.HoudiniEventItem)
 
@@ -86,37 +92,47 @@ class Test_HoudiniEventItem(unittest.TestCase):
 
     @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
     def test_callables(self):
+        """Test the 'callables' property."""
+        mock_value = MagicMock(spec=list)
+
         item = ht.events.item.HoudiniEventItem(None, None, None, None)
 
-        callables = [MagicMock(), MagicMock(), MagicMock()]
-        item._callables = callables
-        self.assertEqual(item.callables, callables)
+        item._callables = mock_value
+        self.assertEqual(item.callables, mock_value)
 
     @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
     def test_data(self):
+        """Test the 'data' property."""
+        mock_value = MagicMock(spec=dict)
 
         item = ht.events.item.HoudiniEventItem(None, None, None, None)
 
-        item._data = {"key": "value"}
-        self.assertEqual(item.data, {"key": "value"})
+        item._data = mock_value
+        self.assertEqual(item.data, mock_value)
 
     @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
     def test_name(self):
-        """Test 'name' access property."""
+        """Test 'name' property."""
+        mock_value = MagicMock(spec=str)
+
         item = ht.events.item.HoudiniEventItem(None, None, None, None)
 
-        item._name = "name"
-        self.assertEqual(item.name, "name")
+        item._name = mock_value
+        self.assertEqual(item.name, mock_value)
 
     @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
     def test_priority(self):
+        """Test the 'priority' property."""
+        mock_value = MagicMock(spec=int)
+
         item = ht.events.item.HoudiniEventItem(None, None, None, None)
 
-        item._priority = 111
-        self.assertEqual(item.priority, 111)
+        item._priority = mock_value
+        self.assertEqual(item.priority, mock_value)
 
     @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
     def test_stats(self):
+        """Test the 'stats' property."""
         item = ht.events.item.HoudiniEventItem(None, None, None, None)
 
         mock_stats = MagicMock(spec=ht.events.stats.HoudiniEventItemStats)
@@ -129,6 +145,7 @@ class Test_HoudiniEventItem(unittest.TestCase):
     @patch.object(ht.events.item.HoudiniEventItem, "stats", new_callable=PropertyMock)
     @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
     def test_run(self, mock_stats, mock_callables):
+        """Test running an item."""
         item = ht.events.item.HoudiniEventItem(None, None, None, None)
 
         stats = MagicMock(spec=ht.events.stats.HoudiniEventItemStats)
@@ -147,15 +164,10 @@ class Test_HoudiniEventItem(unittest.TestCase):
         mock_func2 = MagicMock()
         mock_func2.side_effect = lambda sa: real_call_args.append(copy.copy(sa))
 
-        callables = [
-            mock_func1,
-            mock_func2
-        ]
+        mock_callables.return_value = [mock_func1, mock_func2]
 
-        mock_callables.return_value = callables
-
-        scriptargs = {"foo": "bar"}
-        run_args = {"foo": "bar", "_item_": item}
+        scriptargs = {"key": "value"}
+        run_args = {"key": "value", "_item_": item}
 
         item.run(scriptargs)
 
@@ -173,90 +185,90 @@ class Test_HoudiniEventItem(unittest.TestCase):
         self.assertEqual(real_call_args[1], run_args)
 
         # Ensure we removed the item.
-        self.assertEqual(scriptargs, {"foo": "bar"})
+        self.assertEqual(scriptargs, {"key": "value"})
 
 
 class Test_ExclusiveHoudiniEventItem(unittest.TestCase):
     """Test ht.events.item.ExclusiveHoudiniEventItem class."""
 
+    @patch.object(ht.events.item.ExclusiveHoudiniEventItem, "_exclusive_map", new_callable=PropertyMock)
     @patch.object(ht.events.item.HoudiniEventItem, "__init__")
     @patch.object(ht.events.item.ExclusiveHoudiniEventItem, "priority", new_callable=PropertyMock)
-    def test___init__(self, mock_priority, mock_super_init):
-        mock_callable = MagicMock()
-        name = "some_name"
-        priority = 4
-        stat_tags = ["foo"]
+    def test___init__(self, mock_priority, mock_super_init, mock_map):
+        """Test the constructor."""
+        mock_callables = (MagicMock(), )
+        mock_name = MagicMock(spec=str)
+        priority = MagicMock(spec=int)
+        mock_stat_tags = MagicMock(spec=list)
 
         mock_priority.return_value = priority
 
-        map_dict = {}
+        mock_map.return_value = {}
 
-        with patch.dict(ht.events.item.ExclusiveHoudiniEventItem._exclusive_map, map_dict, clear=True):
-            item = ht.events.item.ExclusiveHoudiniEventItem([mock_callable], name, priority, stat_tags)
+        item = ht.events.item.ExclusiveHoudiniEventItem(mock_callables, mock_name, priority, mock_stat_tags)
 
-            mock_super_init.assert_called_with([mock_callable], name, priority, stat_tags)
+        mock_super_init.assert_called_with(mock_callables, mock_name, priority, mock_stat_tags)
 
-            self.assertEqual(ht.events.item.ExclusiveHoudiniEventItem._exclusive_map, {name: item})
+        self.assertEqual(ht.events.item.ExclusiveHoudiniEventItem._exclusive_map, {mock_name: item})
 
+    @patch.object(ht.events.item.ExclusiveHoudiniEventItem, "_exclusive_map", new_callable=PropertyMock)
     @patch.object(ht.events.item.HoudiniEventItem, "__init__")
     @patch.object(ht.events.item.ExclusiveHoudiniEventItem, "priority", new_callable=PropertyMock)
-    def test___init__replace(self, mock_priority, mock_super_init):
+    def test___init__replace(self, mock_priority, mock_super_init, mock_map):
+        """Test the constructor when replacing an existing item."""
         mock_existing = MagicMock(spec=ht.events.item.ExclusiveHoudiniEventItem)
         mock_existing.priority = 1
 
-        mock_callable = MagicMock()
-        name = "some_name"
-        priority = 4
-        stat_tags = ["foo"]
+        mock_callables = (MagicMock(), )
+        mock_name = MagicMock(spec=str)
+        priority = MagicMock(spec=int)
+        mock_stat_tags = MagicMock(spec=list)
 
-        mock_priority.return_value = priority
+        mock_priority.return_value = 3
 
-        map_dict = {
-            name: mock_existing
-        }
+        mapping = {mock_name: mock_existing}
+        mock_map.return_value = mapping
 
-        with patch.dict(ht.events.item.ExclusiveHoudiniEventItem._exclusive_map, map_dict, clear=True):
-            item = ht.events.item.ExclusiveHoudiniEventItem([mock_callable], name, priority, stat_tags)
+        item = ht.events.item.ExclusiveHoudiniEventItem(mock_callables, mock_name, priority, mock_stat_tags)
 
-            mock_super_init.assert_called_with([mock_callable], name, priority, stat_tags)
+        mock_super_init.assert_called_with(mock_callables, mock_name, priority, mock_stat_tags)
 
-            self.assertEqual(ht.events.item.ExclusiveHoudiniEventItem._exclusive_map, {name: item})
+        self.assertEqual(mapping, {mock_name: item})
 
+    @patch.object(ht.events.item.ExclusiveHoudiniEventItem, "name", new_callable=PropertyMock)
+    @patch.object(ht.events.item.ExclusiveHoudiniEventItem, "_exclusive_map", new_callable=PropertyMock)
+    @patch.object(ht.events.item.HoudiniEventItem, "run")
     @patch("ht.events.item.ExclusiveHoudiniEventItem.__eq__")
     @patch.object(ht.events.item.ExclusiveHoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
-    def test_run__no_run(self, mock_eq):
+    def test_run__no_run(self, mock_eq, mock_super_run, mock_map, mock_name):
         mock_eq.return_value = False
 
         item = ht.events.item.ExclusiveHoudiniEventItem(None, None, None, None)
-        item._name = "some_name"
 
-        map_dict = {"some_name": item}
+        mock_map.return_value = {mock_name.return_value: item}
 
-        scriptargs = {"foo": "bar"}
+        scriptargs = {"key": "value"}
 
-        with patch.object(ht.events.item.HoudiniEventItem, "run") as mock_super_run:
-            with patch.dict(ht.events.item.ExclusiveHoudiniEventItem._exclusive_map, map_dict, clear=True):
-                item.run(scriptargs)
+        item.run(scriptargs)
+        mock_super_run.assert_not_called()
 
-            mock_super_run.assert_not_called()
-
+    @patch.object(ht.events.item.ExclusiveHoudiniEventItem, "name", new_callable=PropertyMock)
+    @patch.object(ht.events.item.ExclusiveHoudiniEventItem, "_exclusive_map", new_callable=PropertyMock)
+    @patch.object(ht.events.item.HoudiniEventItem, "run")
     @patch("ht.events.item.ExclusiveHoudiniEventItem.__eq__")
     @patch.object(ht.events.item.ExclusiveHoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
-    def test__run(self, mock_eq):
+    def test__run(self, mock_eq, mock_super_run, mock_map, mock_name):
         mock_eq.return_value = True
 
         item = ht.events.item.ExclusiveHoudiniEventItem(None, None, None, None)
-        item._name = "some_name"
 
-        map_dict = {"some_name": item}
+        mock_map.return_value = {mock_name.return_value: item}
 
-        scriptargs = {"foo": "bar"}
+        mock_scriptargs = MagicMock(spec=dict)
 
-        with patch.object(ht.events.item.HoudiniEventItem, "run") as mock_super_run:
-            with patch.dict(ht.events.item.ExclusiveHoudiniEventItem._exclusive_map, map_dict, clear=True):
-                item.run(scriptargs)
+        item.run(mock_scriptargs)
 
-            mock_super_run.assert_called_with(scriptargs)
+        mock_super_run.assert_called_with(mock_scriptargs)
 
 # =============================================================================
 

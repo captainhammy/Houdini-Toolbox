@@ -6,14 +6,14 @@
 
 # Houdini Toolbox Imports
 from ht.events.group import HoudiniEventGroup
+from ht.events.item import HoudiniEventItem
 from ht.events import NodeEvents
 
-from ht.nodes.styles.manager import StyleManager
+from ht.nodes.styles.manager import MANAGER
 
 # =============================================================================
 # CLASSES
 # =============================================================================
-
 
 class StyleNodeEvent(HoudiniEventGroup):
     """Event to style Houdini nodes based on events."""
@@ -23,26 +23,34 @@ class StyleNodeEvent(HoudiniEventGroup):
 
         self.event_map.update(
             {
-                NodeEvents.OnCreated: (self.styleNodeOnCreation,),
-                NodeEvents.OnNameChanged: (self.styleNodeByName,),
+                NodeEvents.OnCreated: HoudiniEventItem((self.style_node_on_creation,)),
+                NodeEvents.OnNameChanged: HoudiniEventItem((self.style_node_by_name,)),
             }
         )
-
     # =========================================================================
     # METHODS
     # =========================================================================
 
-    def styleNodeByName(self, scriptargs):
-        """Style a node based on a name."""
+    def style_node_by_name(self, scriptargs):
+        """Style a node based on a name.
+
+        :param scriptargs: Data passed by event runner.
+        :type scriptargs: dict
+        :return:
+
+        """
         node = scriptargs["node"]
 
-        manager = StyleManager.from_session()
-        manager.styleNodeByName(node)
+        MANAGER.style_node_by_name(node)
 
-    def styleNodeOnCreation(self, scriptargs):
-        """Style a node on creation."""
+    def style_node_on_creation(self, scriptargs):
+        """Style a node on creation."
+
+        :param scriptargs: Data passed by event runner.
+        :type scriptargs: dict
+        :return:
+
+        """
         node = scriptargs["node"]
 
-        manager = StyleManager.from_session()
-        manager.styleNode(node)
-
+        MANAGER.style_node(node)

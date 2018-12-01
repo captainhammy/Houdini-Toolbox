@@ -1,29 +1,85 @@
 """This module contains the base Houdini event class."""
 
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Python Imports
 import collections
 
-from ht.events.block import HoudiniEventBlock
-from ht.events.stats import EventStats
+# Houdini Toolbox Imports
+from ht.events.item import HoudiniEventItem
+from ht.events.stats import HoudiniEventStats
+from ht.events.types import SceneEvents
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
+class HoudiniEventFactory(object):
+    """Class responsible for determining event classes."""
+
+    _mappings = {}
+
+    def __repr__(self):
+        return "<HoudiniEventFactory>"
+
+    # =========================================================================
+    # STATIC METHODS
+    # =========================================================================
+
+    @staticmethod
+    def get_event_type(name):
+        """Get an event for a given name.
+
+        If there is no explicit mapping a base HoudiniEvent will be returned.
+
+        :param name: An event name.
+        :type name: str
+        :return: A found event class instance.
+        :rtype: HoudiniEvent
+
+        """
+        cls = HoudiniEventFactory._mappings.get(name)
+
+        if cls is not None:
+            return cls()
+
+        return HoudiniEvent(name)
+
+    @staticmethod
+    def register_event_class(name, event_class):
+        """Register an event type class to a name.
+
+        :param name: The event name
+        :type name: str
+        :param event_class: A customize subclass of HoudiniEvent.
+        :type event_class: HoudiniEvent
+        :return:
+
+        """
+        HoudiniEventFactory._mappings[name] = event_class
+
 
 class HoudiniEvent(object):
-    """The base Houdini event class."""
+    """The base Houdini event class.
+
+    :param name: THe event name.
+    :type name: str
+    :return:
+
+    """
 
     def __init__(self, name):
         self._data = {}
         self._enabled = True
-        self._event_map = {}
         self._name = name
-        self._run_count = 0
+        self._item_map = {}
 
-        self._stats = EventStats(name)
+        self._stats = HoudiniEventStats(name)
 
     def __repr__(self):
-        return "<HoudiniEvent: {}>".format(self.name)
+        return "<{}: {}>".format(self.__class__.__name__,self.name)
 
     # =========================================================================
     # PROPERTIES
@@ -31,8 +87,7 @@ class HoudiniEvent(object):
 
     @property
     def data(self):
-        """dict: Internal data for storing data that can be shared across event
-        functions."""
+        """dict: Internal data for storing data that can be shared across event functions."""
         return self._data
 
     @property
@@ -45,9 +100,9 @@ class HoudiniEvent(object):
         self._enabled = enabled
 
     @property
-    def event_map(self):
+    def item_map(self):
         """dict: Internal event map used to register the functions of this event."""
-        return self._event_map
+        return self._item_map
 
     @property
     def name(self):
@@ -63,68 +118,29 @@ class HoudiniEvent(object):
     # METHODS
     # =========================================================================
 
-    def registerBlock(self, event_block, priority=1):
-        """Register a function with a priority.
+    def register_item(self, item):
+        """Register an item to run.
 
-        :param event_block: The event block to register
-        :type event_block: HoudiniEventBlock
-        :param priority: The event priority
-        :type priority: int
+        :param: item: An item to run.
+        :type item: HoudiniEventItem
         :return:
+
         """
-        if not isinstance(event_block, HoudiniEventBlock):
-            raise TypeError(
-                "Excepted HoudiniEventBlock, got {}".format(type(event_block))
-            )
+        if not isinstance(item, HoudiniEventItem):
+            raise TypeError("Expected HoudiniEventItem, got {}".format(type(item)))
 
-        priority_map = self.event_map.setdefault(priority, [])
-
-        priority_map.append(event_block)
-
-    def registerFunction(self, func, priority=1):
-        """Register a function with a priority.
-
-        :param: func: The function to register
-        :type func: collections.Callable
-        :param priority: The function priority
-        :type priority: int
-        :return:
-        """
-        if not isinstance(func, collections.Callable):
-            raise TypeError("{} is not callable".format(func))
-
-        priority_map = self.event_map.setdefault(priority, [])
-
-        priority_map.append(func)
-
-    def registerFunctions(self, functions, priority=1):
-        """Register a list of functions with a priority.
-
-
-        :param: functions: The functions to register
-        :type functions: list(collections.Callable)
-        :param priority: The function priority
-        :type priority: int
-        :return:
-        """
-        non_callable = [func for func in functions
-                        if not isinstance(func, collections.Callable)]
-
-        if non_callable:
-            raise TypeError("Cannot register non-callable objects")
-
-        priority_map = self.event_map.setdefault(priority, [])
-
-        priority_map.extend(functions)
+        priority_items = self.item_map.setdefault(item.priority, [])
+        priority_items.append(item)
 
     def run(self, scriptargs):
-        """Run the functions with the given args.
+        """Run the items with the given args.
 
-        Functions are run in decreasing order of priority.
+        Items are run in decreasing order of priority.
 
         :param: scriptargs: Arguments passed to the event from the caller
         :type scriptargs: dict
         :return:
+
         """
         # Abort if this action should not run.
         if not self.enabled:
@@ -135,12 +151,10 @@ class HoudiniEvent(object):
 
         with self.stats:
             # Run in order of decreasing priority
-            for priority in reversed(sorted(self.event_map.keys())):
-                priority_events = self.event_map[priority]
+            for priority in reversed(sorted(self.item_map.keys())):
+                priority_items = self.item_map[priority]
 
-                for event in priority_events:
-                    if isinstance(event, HoudiniEventBlock):
-                        event.run(scriptargs)
+                for item in priority_items:
+                    item.run(scriptargs)
 
-                    else:
-                        event(scriptargs)
+        del scriptargs["_event_"]

@@ -4,35 +4,37 @@
 # IMPORTS
 # =============================================================================
 
-# Houdini Imports
-import hou
 # Houdini Toolbox Imports
-from ht.events.block import HoudiniEventBlock
+from ht.events.group import HoudiniEventGroup
+from ht.events.item import HoudiniEventItem
 from ht.events.types import SceneEvents
 
+# Houdini Imports
+import hou
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class SceneLoadEvent(HoudiniEventBlock):
+class SceneLoadEvent(HoudiniEventGroup):
     """Event to run on scene load (456)."""
-
-    _EVENT_NAME = SceneEvents.Load
 
     def __init__(self):
         super(SceneLoadEvent, self).__init__()
 
-        self._order = [
-            self.clearSessionSettings,
-        ]
+        load_item = HoudiniEventItem((self.clear_session_settings,))
+
+        self.event_map.update(
+            {
+                SceneEvents.Load: load_item
+            }
+        )
 
     # =========================================================================
     # METHODS
     # =========================================================================
 
-    def clearSessionSettings(self, scriptargs):
+    def clear_session_settings(self, scriptargs):
         """Clear out potentially annoying/bad settings."""
         # Remove an icon cache directory variable if it exists.
         hou.hscript("set -u HOUDINI_ICON_CACHE_DIR")
-

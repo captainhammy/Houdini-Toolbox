@@ -12,6 +12,7 @@ import time
 
 # Houdini Toolbox Imports
 from ht.events.group import HoudiniEventGroup
+from ht.events.item import HoudiniEventItem
 from ht.events.types import RopEvents
 
 # Houdini Imports
@@ -20,7 +21,6 @@ import hou
 # =============================================================================
 # CLASSES
 # =============================================================================
-
 
 class RopRenderEvent(HoudiniEventGroup):
     """Event to run on ROP render script events."""
@@ -33,11 +33,11 @@ class RopRenderEvent(HoudiniEventGroup):
 
         self.event_map.update(
             {
-                RopEvents.PreRender: (self.preRender,),
-                RopEvents.PreFrame: (self.preFrame,),
-                RopEvents.PostFrame: (self.postFrame,),
-                RopEvents.PostRender: (self.postRender,),
-                RopEvents.PostWrite: (self.postWrite,),
+                RopEvents.PreRender: HoudiniEventItem((self.pre_render,)),
+                RopEvents.PreFrame: HoudiniEventItem((self.pre_frame,)),
+                RopEvents.PostFrame: HoudiniEventItem((self.post_frame,)),
+                RopEvents.PostRender: HoudiniEventItem((self.post_render,)),
+                RopEvents.PostWrite: HoudiniEventItem((self.post_write,)),
             }
         )
 
@@ -45,8 +45,14 @@ class RopRenderEvent(HoudiniEventGroup):
     # METHODS
     # =========================================================================
 
-    def preFrame(self, scriptargs):
-        """Action to run before the frame starts rendering."""
+    def pre_frame(self, scriptargs):
+        """Action run before the frame starts rendering.
+
+        :param scriptargs: Event data.
+        :type scriptargs: dict
+        :return:
+
+        """
         # Store the time as the "start time" so it can be referenced after the
         # frame is completed to get the duration.
         self._frame_start = scriptargs["time"]
@@ -55,7 +61,14 @@ class RopRenderEvent(HoudiniEventGroup):
             scriptargs["frame"],
         )
 
-    def preRender(self, scriptargs):
+    def pre_render(self, scriptargs):
+        """Action run before the render starts.
+
+        :param scriptargs: Event data.
+        :type scriptargs: dict
+        :return:
+
+        """
         self._render_start = scriptargs["time"]
 
         frame_range = scriptargs["frame_range"]
@@ -72,9 +85,15 @@ class RopRenderEvent(HoudiniEventGroup):
         else:
             print "Starting render"
 
-    def postFrame(self, scriptargs):
-        """Action to run after the frame has rendered."""
-        _printFrameWrite(scriptargs)
+    def post_frame(self, scriptargs):
+        """Action run after the frame has rendered.
+
+        :param scriptargs: Event data.
+        :type scriptargs: dict
+        :return:
+
+        """
+        _print_frame_write(scriptargs)
 
         # Ensure we had a start time.
         if self._frame_start is not None:
@@ -92,7 +111,14 @@ class RopRenderEvent(HoudiniEventGroup):
                 scriptargs["frame"],
             )
 
-    def postRender(self, scriptargs):
+    def post_render(self, scriptargs):
+        """Action run after the render is complete.
+
+        :param scriptargs: Event data.
+        :type scriptargs: dict
+        :return:
+
+        """
         if self._render_start is not None:
             end_time = scriptargs["time"]
 
@@ -103,7 +129,14 @@ class RopRenderEvent(HoudiniEventGroup):
         else:
             print "Completed Render"
 
-    def postWrite(self, scriptargs):
+    def post_write(self, scriptargs):
+        """Action run after the frame is written to disk.
+
+        :param scriptargs: Event data.
+        :type scriptargs: dict
+        :return:
+
+        """
         if "path" in scriptargs:
             print "Wrote frame {} to {}".format(
                 scriptargs["frame"],
@@ -117,8 +150,15 @@ class RopRenderEvent(HoudiniEventGroup):
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
+def _get_target_file(node):
+    """Attempt to determine the target output file:
 
-def _getTargetFile(node):
+    :param node: The running node.
+    :type node: hou.RopNode
+    :return: The output file path, if any.
+    :rtype: str
+
+    """
     node_type = node.type()
     node_type_name = node_type.name()
 
@@ -136,7 +176,14 @@ def _getTargetFile(node):
             return node.evalParm("vm_picture")
 
 
-def _printFrameWrite(scriptargs):
+def _print_frame_write(scriptargs):
+    """Print that a file was written.
+
+    :param scriptargs: Event data.
+    :type scriptargs: dict
+    :return:
+
+    """
     if "path" in scriptargs:
         node = scriptargs["node"]
 
@@ -158,9 +205,15 @@ def _printFrameWrite(scriptargs):
 # FUNCTIONS
 # =============================================================================
 
+def build_scriptargs(node=None):
+    """Build relevant scriptargs for this action.
 
-def buildScriptArgs(node=None):
-    """Build relevant scriptargs for this action."""
+    :param node: Optionally rendering node.
+    :type node: hou.RopNode
+    :return: Data related to the running script parm.
+    :rtype: dict
+
+    """
     frame_range = None
 
     if node is not None:
@@ -178,6 +231,6 @@ def buildScriptArgs(node=None):
     }
 
     if node is not None:
-        scriptargs["path"] = _getTargetFile(node)
+        scriptargs["path"] = _get_target_file(node)
 
     return scriptargs

@@ -6,13 +6,13 @@
 
 # Houdini Toolbox Imports
 from ht.events.events import rop_render, scene_load
-from ht.events.manager import registerEventBlock, registerEventGroup, registerFunction, runEvent
+from ht.events.manager import register_event_group, register_function, register_item, run_event
 from ht.events.types import NodeEvents, RopEvents, SceneEvents
 
 # =============================================================================
 
 # Register the package's ROP render script events.
-registerEventGroup(rop_render.RopRenderEvent())
+register_event_group(rop_render.RopRenderEvent())
 
 # Register the package's SceneLoadEvent.
-registerEventBlock(scene_load.SceneLoadEvent())
+register_event_group(scene_load.SceneLoadEvent())

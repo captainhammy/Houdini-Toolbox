@@ -1,5 +1,5 @@
-from ht.events import SceneEvents, runEvent
+from ht.events import SceneEvents, run_event
 
 # Perform any registered after scene save events.
-runEvent(SceneEvents.PostSave, kwargs)
+run_event(SceneEvents.PostSave, kwargs)
 
