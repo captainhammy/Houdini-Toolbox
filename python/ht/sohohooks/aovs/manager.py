@@ -14,6 +14,7 @@ import os
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
+from ht.sohohooks.aovs import constants as consts
 
 # Houdini Imports
 import hou
@@ -216,8 +217,8 @@ class AOVManager(object):
 
     def clear(self):
         """Clear all definitions."""
-        self._aovs = {}
-        self._groups = {}
+        self._aovs.clear()
+        self._groups.clear()
 
     def get_aovs_from_string(self, aov_str):
         """Get a list of AOVs and AOVGroups from a string."""
@@ -306,19 +307,19 @@ class AOVFile(object):
             group = AOVGroup(name)
 
             # Process its list of AOVs to include.
-            if "include" in group_data:
-                group.includes.extend(group_data["include"])
+            if consts.GROUP_INCLUDE_KEY in group_data:
+                group.includes.extend(group_data[consts.GROUP_INCLUDE_KEY])
 
             # Set any comment.
-            if "comment" in group_data:
-                group.comment = group_data["comment"]
+            if consts.COMMENT_KEY in group_data:
+                group.comment = group_data[consts.COMMENT_KEY]
 
-            if "priority" in group_data:
-                group.priority = group_data["priority"]
+            if consts.PRIORITY_KEY in group_data:
+                group.priority = group_data[consts.PRIORITY_KEY]
 
             # Set any icon.
-            if "icon" in group_data:
-                group.icon = os.path.expandvars(group_data["icon"])
+            if consts.GROUP_ICON_KEY in group_data:
+                group.icon = os.path.expandvars(group_data[consts.GROUP_ICON_KEY])
 
             # Set the path to this file.
             group.path = self.path
@@ -331,11 +332,11 @@ class AOVFile(object):
         with open(self.path) as handle:
             data = json.load(handle)
 
-        if "definitions" in data:
-            self._create_aovs(data["definitions"])
+        if consts.FILE_DEFINITIONS_KEY in data:
+            self._create_aovs(data[consts.FILE_DEFINITIONS_KEY])
 
-        if "groups" in data:
-            self._create_groups(data["groups"])
+        if consts.FILE_GROUPS_KEY in data:
+            self._create_groups(data[consts.FILE_GROUPS_KEY])
 
     # =========================================================================
     # PROPERTIES
@@ -410,14 +411,14 @@ class AOVFile(object):
         data = {}
 
         for group in self.groups:
-            groups = data.setdefault("groups", {})
+            group_data = data.setdefault(consts.FILE_GROUPS_KEY, {})
 
-            groups.update(group.as_data())
+            group_data.update(group.as_data())
 
         for aov in self.aovs:
-            aovs = data.setdefault("definitions", [])
+            aov_data = data.setdefault(consts.FILE_DEFINITIONS_KEY, [])
 
-            aovs.append(aov.as_data())
+            aov_data.append(aov.as_data())
 
         if path is None:
             path = self.path

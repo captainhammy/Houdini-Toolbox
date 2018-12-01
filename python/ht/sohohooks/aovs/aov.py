@@ -1,6 +1,14 @@
 """This module contains classes to define AOVs and groups of AOVs."""
 
+# Python Imports
 import copy
+
+# =============================================================================
+# GLOBALS
+# =============================================================================
+
+# Houdini Toolbox Imports
+from ht.sohohooks.aovs import constants as consts
 
 # =============================================================================
 # GLOBALS
@@ -8,29 +16,33 @@ import copy
 
 # Allowable values for various settings.
 ALLOWABLE_VALUES = {
-    "lightexport": ("per-category", "per-light", "single"),
-    "quantization": ("8", "16", "half", "float"),
-    "vextype": ("float", "unitvector", "vector", "vector4")
+    consts.LIGHTEXPORT_KEY: (
+        consts.LIGHTEXPORT_PER_CATEGORY_KEY,
+        consts.LIGHTEXPORT_PER_LIGHT_KEY,
+        consts.LIGHTEXPORT_SINGLE_KEY
+    ),
+    consts.QUANTIZE_KEY: ("8", "16", "half", "float"),
+    consts.VEXTYPE_KEY: ("float", "unitvector", "vector", "vector4")
 }
 
 _DEFAULT_AOV_DATA = {
-    "variable": None,
-    "vextype": None,
-    "channel": None,
-    "componentexport": None,
-    "components": [],
-    "comment": "",
-    "exclude_from_dcm": None,
-    "intrinsics": [],
-    "lightexport": None,
-    "lightexport_scope": "*",
-    "lightexport_select": "*",
-    "path": None,
-    "pfilter": None,
-    "planefile": None,
-    "priority": -1,
-    "quantize": None,
-    "sfilter": None,
+    consts.VARIABLE_KEY: None,
+    consts.VEXTYPE_KEY: None,
+    consts.CHANNEL_KEY: None,
+    consts.COMPONENTEXPORT_KEY: None,
+    consts.COMPONENTS_KEY: [],
+    consts.COMMENT_KEY: "",
+    consts.EXCLUDE_DCM_KEY: None,
+    consts.INTRINSICS_KEY: [],
+    consts.LIGHTEXPORT_KEY: None,
+    consts.LIGHTEXPORT_SCOPE_KEY: "*",
+    consts.LIGHTEXPORT_SELECT_KEY: "*",
+    consts.PATH_KEY: None,
+    consts.PFILTER_KEY: None,
+    consts.PLANEFILE_KEY: None,
+    consts.PRIORITY_KEY: -1,
+    consts.QUANTIZE_KEY: None,
+    consts.SFILTER_KEY: None,
 }
 
 # =============================================================================
@@ -80,21 +92,21 @@ class AOV(object):
                 self.lightexport_select
             )
 
-            base_channel = data["channel"]
+            base_channel = data[consts.CHANNEL_KEY]
 
-            if self.lightexport == "per-light":
+            if self.lightexport == consts.LIGHTEXPORT_PER_LIGHT_KEY:
                 # Process each light.
                 for light in lights:
                     _write_light(light, base_channel, data, wrangler, cam, now)
 
-            elif self.lightexport == "single":
+            elif self.lightexport == consts.LIGHTEXPORT_SINGLE_KEY:
                 _write_single_channel(lights, data, wrangler, cam, now)
 
-            elif self.lightexport == "per-category":
+            elif self.lightexport == consts.LIGHTEXPORT_PER_CATEGORY_KEY:
                 _write_per_category(lights, base_channel, data, wrangler, cam, now)
 
             else:
-                raise InvalidAOVValueError("lightexport", self.lightexport)
+                raise InvalidAOVValueError(consts.LIGHTEXPORT_KEY, self.lightexport)
 
         else:
             # Write a normal AOV definition.
@@ -121,7 +133,11 @@ class AOV(object):
         self._verify_internal_data()
 
     def _verify_internal_data(self):
-        """Verify data to make sure it is valid."""
+        """Verify data to make sure it is valid.
+
+        :return:
+
+        """
         if self.variable is None:
             raise MissingVariableError()
 
@@ -134,187 +150,188 @@ class AOV(object):
 
     @property
     def channel(self):
-        """The name of the output AOV's channel."""
-        return self._data["channel"]
+        """str: The name of the output AOV's channel."""
+        return self._data[consts.CHANNEL_KEY]
 
     @channel.setter
     def channel(self, channel):
-        self._data["channel"] = channel
+        self._data[consts.CHANNEL_KEY] = channel
 
     # =========================================================================
 
     @property
     def comment(self):
-        """Optional comment about this AOV."""
-        return self._data["comment"]
+        """str: Optional comment about this AOV."""
+        return self._data[consts.COMMENT_KEY]
 
     @comment.setter
     def comment(self, comment):
-        self._data["comment"] = comment
+        self._data[consts.COMMENT_KEY] = comment
 
     # =========================================================================
 
     @property
     def componentexport(self):
-        """Whether or not components are being exported."""
-        return self._data["componentexport"]
+        """bool: Whether or not components are being exported."""
+        return self._data[consts.COMPONENTEXPORT_KEY]
 
     @componentexport.setter
     def componentexport(self, componentexport):
-        self._data["componentexport"] = componentexport
+        self._data[consts.COMPONENTEXPORT_KEY] = componentexport
 
     # =========================================================================
 
     @property
     def components(self):
-        """List of components to export."""
-        return self._data["components"]
+        """list(str): List of components to export."""
+        return self._data[consts.COMPONENTS_KEY]
 
     @components.setter
     def components(self, components):
-        self._data["components"] = components
+        self._data[consts.COMPONENTS_KEY] = components
 
     # =========================================================================
 
     @property
     def exclude_from_dcm(self):
-        """Exclude this aov from dcms."""
-        return self._data["exclude_from_dcm"]
+        """bool: Exclude this aov from dcms."""
+        return self._data[consts.EXCLUDE_DCM_KEY]
 
     @exclude_from_dcm.setter
     def exclude_from_dcm(self, exclude):
-        self._data["exclude_from_dcm"] = exclude
+        self._data[consts.EXCLUDE_DCM_KEY] = exclude
 
     # =========================================================================
 
     @property
     def intrinsics(self):
-        return self._data["intrinsics"]
+        """list(str): Any associated intrinsic names."""
+        return self._data[consts.INTRINSICS_KEY]
 
     @intrinsics.setter
     def intrinsics(self, intrinsics):
-        self._data["intrinsics"] = intrinsics
+        self._data[consts.INTRINSICS_KEY] = intrinsics
 
     # =========================================================================
 
     @property
     def lightexport(self):
-        """The light output mode."""
-        return self._data["lightexport"]
+        """str: The light output mode."""
+        return self._data[consts.LIGHTEXPORT_KEY]
 
     @lightexport.setter
     def lightexport(self, lightexport):
-        self._data["lightexport"] = lightexport
+        self._data[consts.LIGHTEXPORT_KEY] = lightexport
 
     # =========================================================================
 
     @property
     def lightexport_scope(self):
-        """The light mask."""
-        return self._data["lightexport_scope"]
+        """str: The light mask."""
+        return self._data[consts.LIGHTEXPORT_SCOPE_KEY]
 
     @lightexport_scope.setter
     def lightexport_scope(self, lightexport_scope):
-        self._data["lightexport_scope"] = lightexport_scope
+        self._data[consts.LIGHTEXPORT_SCOPE_KEY] = lightexport_scope
 
     # =========================================================================
 
     @property
     def lightexport_select(self):
-        """The light selection (categories)."""
-        return self._data["lightexport_select"]
+        """str: The light selection (categories)."""
+        return self._data[consts.LIGHTEXPORT_SELECT_KEY]
 
     @lightexport_select.setter
     def lightexport_select(self, lightexport_select):
-        self._data["lightexport_select"] = lightexport_select
+        self._data[consts.LIGHTEXPORT_SELECT_KEY] = lightexport_select
 
     # =========================================================================
 
     @property
     def path(self):
-        """The path containing the AOV definition."""
-        return self._data["path"]
+        """str: The path containing the AOV definition."""
+        return self._data[consts.PATH_KEY]
 
     @path.setter
     def path(self, path):
-        self._data["path"] = path
+        self._data[consts.PATH_KEY] = path
 
     # =========================================================================
 
     @property
     def pfilter(self):
-        """The name of the output AOV's pixel filter."""
-        return self._data["pfilter"]
+        """str: The name of the output AOV's pixel filter."""
+        return self._data[consts.PFILTER_KEY]
 
     @pfilter.setter
     def pfilter(self, pfilter):
-        self._data["pfilter"] = pfilter
+        self._data[consts.PFILTER_KEY] = pfilter
 
     # =========================================================================
 
     @property
     def planefile(self):
-        """The name of the output AOV's specific file, if any."""
-        return self._data["planefile"]
+        """str: The name of the output AOV's specific file, if any."""
+        return self._data[consts.PLANEFILE_KEY]
 
     @planefile.setter
     def planefile(self, planefile):
-        self._data["planefile"] = planefile
+        self._data[consts.PLANEFILE_KEY] = planefile
 
     # =========================================================================
 
     @property
     def priority(self):
-        """Group priority."""
-        return self._data["priority"]
+        """int: Group priority."""
+        return self._data[consts.PRIORITY_KEY]
 
     @priority.setter
     def priority(self, priority):
-        self._data["priority"] = priority
+        self._data[consts.PRIORITY_KEY] = priority
 
     # =========================================================================
 
     @property
     def quantize(self):
-        """The type of quantization for the output AOV."""
-        return self._data["quantize"]
+        """str: The type of quantization for the output AOV."""
+        return self._data[consts.QUANTIZE_KEY]
 
     @quantize.setter
     def quantize(self, quantize):
-        self._data["quantize"] = quantize
+        self._data[consts.QUANTIZE_KEY] = quantize
 
     # =========================================================================
 
     @property
     def sfilter(self):
-        """The name of the output AOV's sample filter."""
-        return self._data["sfilter"]
+        """str: The name of the output AOV's sample filter."""
+        return self._data[consts.SFILTER_KEY]
 
     @sfilter.setter
     def sfilter(self, sfilter):
-        self._data["sfilter"] = sfilter
+        self._data[consts.SFILTER_KEY] = sfilter
 
     # =========================================================================
 
     @property
     def variable(self):
-        """The name of the output AOV's vex variable."""
-        return self._data["variable"]
+        """str: The name of the output AOV's vex variable."""
+        return self._data[consts.VARIABLE_KEY]
 
     @variable.setter
     def variable(self, variable):
-        self._data["variable"] = variable
+        self._data[consts.VARIABLE_KEY] = variable
 
     # =========================================================================
 
     @property
     def vextype(self):
-        """The data type of the output AOV."""
-        return self._data["vextype"]
+        """str: The data type of the output AOV."""
+        return self._data[consts.VEXTYPE_KEY]
 
     @vextype.setter
     def vextype(self, vextype):
-        self._data["vextype"] = vextype
+        self._data[consts.VEXTYPE_KEY] = vextype
 
     # =========================================================================
     # METHODS
@@ -323,46 +340,46 @@ class AOV(object):
     def as_data(self):
         """Get a dictionary representing the AOV."""
         d = {
-            "variable": self.variable,
-            "vextype": self.vextype,
+            consts.VARIABLE_KEY: self.variable,
+            consts.VEXTYPE_KEY: self.vextype,
         }
 
         if self.channel:
-            d["channel"] = self.channel
+            d[consts.CHANNEL_KEY] = self.channel
 
         if self.quantize is not None:
-            d["quantize"] = self.quantize
+            d[consts.QUANTIZE_KEY] = self.quantize
 
         if self.sfilter is not None:
-            d["sfilter"] = self.sfilter
+            d[consts.SFILTER_KEY] = self.sfilter
 
         if self.pfilter is not None:
-            d["pfilter"] = self.pfilter
+            d[consts.PFILTER_KEY] = self.pfilter
 
         if self.exclude_from_dcm is not None:
-            d["exclude_from_dcm"] = self.exclude_from_dcm
+            d[consts.EXCLUDE_DCM_KEY] = self.exclude_from_dcm
 
         if self.componentexport is not None:
-            d["componentexport"] = self.componentexport
+            d[consts.COMPONENTEXPORT_KEY] = self.componentexport
 
             if self.components:
-                d["components"] = self.components
+                d[consts.COMPONENTS_KEY] = self.components
 
         if self.lightexport is not None:
-            d["lightexport"] = self.lightexport
+            d[consts.LIGHTEXPORT_KEY] = self.lightexport
 
-            if self.lightexport != "per-category":
-                d["lightexport_scope"] = self.lightexport_scope
-                d["lightexport_select"] = self.lightexport_select
+            if self.lightexport != consts.LIGHTEXPORT_PER_CATEGORY_KEY:
+                d[consts.LIGHTEXPORT_SCOPE_KEY] = self.lightexport_scope
+                d[consts.LIGHTEXPORT_SELECT_KEY] = self.lightexport_select
 
         if self.intrinsics:
-            d["intrinsics"] = self.intrinsics
+            d[consts.INTRINSICS_KEY] = self.intrinsics
 
         if self.comment:
-            d["comment"] = self.comment
+            d[consts.COMMENT_KEY] = self.comment
 
         if self.priority != -1:
-            d["priority"] = self.priority
+            d[consts.PRIORITY_KEY] = self.priority
 
         return d
 
@@ -406,14 +423,14 @@ class AOV(object):
             # Create a unique channel for each component and output the block.
             for component in components:
                 comp_data = copy.copy(data)
-                comp_data["channel"] = "{}_{}".format(channel, component)
-                comp_data["component"] = component
+                comp_data[consts.CHANNEL_KEY] = "{}_{}".format(channel, component)
+                comp_data[consts.COMPONENT_KEY] = component
 
                 self._light_export_planes(comp_data, wrangler, cam, now)
 
         else:
             # Update the data with the channel.
-            data["channel"] = channel
+            data[consts.CHANNEL_KEY] = channel
 
             self._light_export_planes(data, wrangler, cam, now)
 
@@ -536,15 +553,15 @@ class AOVGroup(object):
 
         d = {
             self.name: {
-                "include": includes,
+                consts.GROUP_INCLUDE_KEY: includes,
             }
         }
 
         if self.comment:
-            d[self.name]["comment"] = self.comment
+            d[self.name][consts.COMMENT_KEY] = self.comment
 
         if self.priority != -1:
-            d[self.name]["priority"] = self.priority
+            d[self.name][consts.PRIORITY_KEY] = self.priority
 
         return d
 
@@ -653,14 +670,14 @@ def _call_post_defplane(data, wrangler, cam, now):
 
     return IFDhooks.call(
         "post_defplane",
-        data["variable"],
-        data["vextype"],
+        data[consts.VARIABLE_KEY],
+        data[consts.VEXTYPE_KEY],
         -1,
         wrangler,
         cam,
         now,
-        data.get("planefile"),
-        data.get("lightexport")
+        data.get(consts.PLANEFILE_KEY),
+        data.get(consts.LIGHTEXPORT_KEY)
     )
 
 
@@ -670,14 +687,14 @@ def _call_pre_defplane(data, wrangler, cam, now):
 
     return IFDhooks.call(
         "pre_defplane",
-        data["variable"],
-        data["vextype"],
+        data[consts.VARIABLE_KEY],
+        data[consts.VEXTYPE_KEY],
         -1,
         wrangler,
         cam,
         now,
-        data.get("planefile"),
-        data.get("lightexport")
+        data.get(consts.PLANEFILE_KEY),
+        data.get(consts.LIGHTEXPORT_KEY)
     )
 
 
@@ -694,33 +711,33 @@ def _write_data_to_ifd(data, wrangler, cam, now):
     IFDapi.ray_start("plane")
 
     # Primary block information.
-    IFDapi.ray_property("plane", "variable", [data["variable"]])
-    IFDapi.ray_property("plane", "vextype", [data["vextype"]])
-    IFDapi.ray_property("plane", "channel", [data["channel"]])
+    IFDapi.ray_property("plane", "variable", [data[consts.VARIABLE_KEY]])
+    IFDapi.ray_property("plane", "vextype", [data[consts.VEXTYPE_KEY]])
+    IFDapi.ray_property("plane", "channel", [data[consts.CHANNEL_KEY]])
 
-    if "quantize" in data:
-        IFDapi.ray_property("plane", "quantize", [data["quantize"]])
+    if consts.QUANTIZE_KEY in data:
+        IFDapi.ray_property("plane", "quantize", [data[consts.QUANTIZE_KEY]])
 
     # Optional AOV information.
-    if "planefile" in data:
+    if consts.PLANEFILE_KEY in data:
         planefile = data["planefile"]
 
         if planefile is not None:
             IFDapi.ray_property("plane", "planefile", [planefile])
 
-    if "lightexport" in data:
-        IFDapi.ray_property("plane", "lightexport", [data["lightexport"]])
+    if consts.LIGHTEXPORT_KEY in data:
+        IFDapi.ray_property("plane", "lightexport", [data[consts.LIGHTEXPORT_KEY]])
 
-    if "pfilter" in data:
-        IFDapi.ray_property("plane", "pfilter", [data["pfilter"]])
+    if consts.PFILTER_KEY in data:
+        IFDapi.ray_property("plane", "pfilter", [data[consts.PFILTER_KEY]])
 
-    if "sfilter" in data:
-        IFDapi.ray_property("plane", "sfilter", [data["sfilter"]])
+    if consts.SFILTER_KEY in data:
+        IFDapi.ray_property("plane", "sfilter", [data[consts.SFILTER_KEY]])
 
-    if "component" in data:
-        IFDapi.ray_property("plane", "component", [data["component"]])
+    if consts.COMPONENT_KEY in data:
+        IFDapi.ray_property("plane", "component", [data[consts.COMPONENT_KEY]])
 
-    if "exclude_from_dcm" in data:
+    if consts.EXCLUDE_DCM_KEY in data:
         IFDapi.ray_property("plane", "excludedcm", [True])
 
     # Call the 'post_defplane' hook.
@@ -762,8 +779,8 @@ def _write_light(light, base_channel, data, wrangler, cam, now):
         soho.error("Empty suffix for per-light exports.")
         channel = base_channel
 
-    data["channel"] = channel
-    data["lightexport"] = light.getName()
+    data[consts.CHANNEL_KEY] = channel
+    data[consts.LIGHTEXPORT_KEY] = light.getName()
 
     # Write this light export to the ifd.
     _write_data_to_ifd(data, wrangler, cam, now)
@@ -777,15 +794,15 @@ def _write_per_category(lights, base_channel, data, wrangler, cam, now):
     for category, category_lights in category_map.iteritems():
         # Construct the export string to contain all the member
         # lights.
-        data["lightexport"] = ' '.join([light.getName() for light in category_lights])
+        data[consts.LIGHTEXPORT_KEY] = ' '.join([light.getName() for light in category_lights])
 
         if category is not None:
             # The channel is the regular channel named prefixed with
             # the category name.
-            data["channel"] = "{}_{}".format(category, base_channel)
+            data[consts.CHANNEL_KEY] = "{}_{}".format(category, base_channel)
 
         else:
-            data["channel"] = base_channel
+            data[consts.CHANNEL_KEY] = base_channel
 
         # Write the per-category light export to the ifd.
         _write_data_to_ifd(data, wrangler, cam, now)
@@ -803,7 +820,7 @@ def _write_single_channel(lights, data, wrangler, cam, now):
     else:
         lightexport = "__nolights__"
 
-    data["lightexport"] = lightexport
+    data[consts.LIGHTEXPORT_KEY] = lightexport
 
     # Write the combined light export to the ifd.
     _write_data_to_ifd(data, wrangler, cam, now)
