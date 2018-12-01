@@ -4,13 +4,9 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
-import collections
-
 # Houdini Toolbox Imports
 from ht.events.item import HoudiniEventItem
 from ht.events.stats import HoudiniEventStats
-from ht.events.types import SceneEvents
 
 # =============================================================================
 # CLASSES

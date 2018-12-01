@@ -74,7 +74,7 @@ class Test_HoudiniEventFactory(unittest.TestCase):
 class Test_HoudiniEvent(unittest.TestCase):
     """Test ht.events.event.HoudiniEvent class."""
 
-    @patch("ht.events.event.HoudiniEventStats", spec=ht.events.stats.HoudiniEventStats)
+    @patch("ht.events.event.HoudiniEventStats", autospec=True)
     def test___init__(self, mock_stats):
         """Test the constructor."""
         mock_name = MagicMock(spec=str)
