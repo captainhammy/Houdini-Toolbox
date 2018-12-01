@@ -124,7 +124,7 @@ class Test_AOV(unittest.TestCase):
         data = MagicMock(spec=dict)
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         inst._light_export_planes(data, mock_wrangler, mock_cam, mock_now)
 
@@ -149,7 +149,7 @@ class Test_AOV(unittest.TestCase):
 
         mock_cam = MagicMock()
         mock_cam.objectList.return_value = lights
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         inst._light_export_planes(data, mock_wrangler, mock_cam, mock_now)
 
@@ -183,7 +183,7 @@ class Test_AOV(unittest.TestCase):
 
         mock_cam = MagicMock()
         mock_cam.objectList.return_value = lights
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         inst._light_export_planes(data, mock_wrangler, mock_cam, mock_now)
 
@@ -210,7 +210,7 @@ class Test_AOV(unittest.TestCase):
 
         mock_cam = MagicMock()
         mock_cam.objectList.return_value = lights
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         inst._light_export_planes(data, mock_wrangler, mock_cam, mock_now)
 
@@ -236,7 +236,7 @@ class Test_AOV(unittest.TestCase):
 
         mock_cam = MagicMock()
         mock_cam.objectList.return_value = lights
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         with self.assertRaises(aov.InvalidAOVValueError):
             inst._light_export_planes(data, mock_wrangler, mock_cam, mock_now)
@@ -695,7 +695,7 @@ class Test_AOV(unittest.TestCase):
 
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         inst.write_to_ifd(mock_wrangler, mock_cam, mock_now)
 
@@ -718,7 +718,7 @@ class Test_AOV(unittest.TestCase):
 
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         inst.write_to_ifd(mock_wrangler, mock_cam, mock_now)
 
@@ -742,7 +742,7 @@ class Test_AOV(unittest.TestCase):
 
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         mock_parm = MagicMock()
         self.mock_soho.SohoParm.return_value = mock_parm
@@ -768,7 +768,7 @@ class Test_AOV(unittest.TestCase):
 
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         mock_parm = MagicMock()
         self.mock_soho.SohoParm.return_value = mock_parm
@@ -804,7 +804,7 @@ class Test_AOV(unittest.TestCase):
 
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         inst.write_to_ifd(mock_wrangler, mock_cam, mock_now)
 
@@ -1047,7 +1047,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         mock_aovs.return_value = [mock_aov1, mock_aov2]
 
@@ -1078,7 +1078,7 @@ class Test__build_category_map(unittest.TestCase):
 
         lights = (mock_light1, )
 
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         result = aov._build_category_map(lights, mock_now)
 
@@ -1093,7 +1093,7 @@ class Test__build_category_map(unittest.TestCase):
 
         lights = (mock_light1, )
 
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         result = aov._build_category_map(lights, mock_now)
 
@@ -1108,7 +1108,7 @@ class Test__build_category_map(unittest.TestCase):
 
         lights = (mock_light1, mock_light2)
 
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         result = aov._build_category_map(lights, mock_now)
 
@@ -1136,7 +1136,7 @@ class Test__call_post_defplane(unittest.TestCase):
 
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         with patch.dict("sys.modules", modules):
             aov._call_post_defplane(
@@ -1180,7 +1180,7 @@ class Test__call_pre_defplane(unittest.TestCase):
 
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         with patch.dict("sys.modules", modules):
             aov._call_pre_defplane(
@@ -1227,7 +1227,7 @@ class Test__write_data_to_ifd(unittest.TestCase):
         data = {}
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         aov._write_data_to_ifd(data, mock_wrangler, mock_cam, mock_now)
 
@@ -1253,7 +1253,7 @@ class Test__write_data_to_ifd(unittest.TestCase):
 
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         aov._write_data_to_ifd(data, mock_wrangler, mock_cam, mock_now)
 
@@ -1300,7 +1300,7 @@ class Test__write_data_to_ifd(unittest.TestCase):
         }
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         aov._write_data_to_ifd(data, mock_wrangler, mock_cam, mock_now)
 
@@ -1341,7 +1341,7 @@ class Test__write_data_to_ifd(unittest.TestCase):
 
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         aov._write_data_to_ifd(data, mock_wrangler, mock_cam, mock_now)
 
@@ -1374,7 +1374,7 @@ class Test__write_data_to_ifd(unittest.TestCase):
 
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         aov._write_data_to_ifd(data, mock_wrangler, mock_cam, mock_now)
 
@@ -1426,7 +1426,7 @@ class Test__write_light(unittest.TestCase):
         base_channel = "base"
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         aov._write_light(mock_light, base_channel, data, mock_wrangler, mock_cam, mock_now)
 
@@ -1456,7 +1456,7 @@ class Test__write_light(unittest.TestCase):
         base_channel = "base"
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         aov._write_light(mock_light, base_channel, data, mock_wrangler, mock_cam, mock_now)
 
@@ -1483,7 +1483,7 @@ class Test__write_light(unittest.TestCase):
         base_channel = "base"
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         aov._write_light(mock_light, base_channel, data, mock_wrangler, mock_cam, mock_now)
 
@@ -1510,7 +1510,7 @@ class Test__write_light(unittest.TestCase):
         base_channel = "base"
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         aov._write_light(mock_light, base_channel, data, mock_wrangler, mock_cam, mock_now)
 
@@ -1548,7 +1548,7 @@ class Test__write_per_category(unittest.TestCase):
         base_channel = "base"
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         aov._write_per_category(lights, base_channel, data, mock_wrangler, mock_cam, mock_now)
 
@@ -1583,7 +1583,7 @@ class Test__write_per_category(unittest.TestCase):
         base_channel = "base"
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         aov._write_per_category(lights, base_channel, data, mock_wrangler, mock_cam, mock_now)
 
@@ -1613,7 +1613,7 @@ class Test__write_single_channel(unittest.TestCase):
         data = {}
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         aov._write_single_channel(lights, data, mock_wrangler, mock_cam, mock_now)
 
@@ -1631,7 +1631,7 @@ class Test__write_single_channel(unittest.TestCase):
         data = {}
         mock_wrangler = MagicMock()
         mock_cam = MagicMock()
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         aov._write_single_channel(lights, data, mock_wrangler, mock_cam, mock_now)
 

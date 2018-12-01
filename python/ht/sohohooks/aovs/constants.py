@@ -1,6 +1,6 @@
+"""Constants related to AOVs."""
 
-VARIABLE_KEY = "variable"
-VEXTYPE_KEY = "vextype"
+
 CHANNEL_KEY = "channel"
 COMPONENTEXPORT_KEY = "componentexport"
 COMPONENT_KEY = "component"
@@ -17,6 +17,8 @@ PLANEFILE_KEY = "planefile"
 PRIORITY_KEY = "priority"
 QUANTIZE_KEY = "quantize"
 SFILTER_KEY = "sfilter"
+VARIABLE_KEY = "variable"
+VEXTYPE_KEY = "vextype"
 
 LIGHTEXPORT_PER_CATEGORY_KEY = "per-category"
 LIGHTEXPORT_PER_LIGHT_KEY = "per-light"

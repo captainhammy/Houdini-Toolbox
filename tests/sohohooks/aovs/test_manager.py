@@ -367,7 +367,7 @@ class Test_AOVManager(unittest.TestCase):
         mock_cam = MagicMock()
         mock_cam.wrangle.return_value = {}
 
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         mgr = manager.AOVManager()
 
@@ -393,7 +393,7 @@ class Test_AOVManager(unittest.TestCase):
             "enable_auto_aovs": mock_enable_result,
         }
 
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         mgr = manager.AOVManager()
 
@@ -427,7 +427,7 @@ class Test_AOVManager(unittest.TestCase):
 
         mock_get.return_value = [mock_aov]
 
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         mock_flattened.return_value = (mock_aov, )
 
@@ -470,7 +470,7 @@ class Test_AOVManager(unittest.TestCase):
 
         mock_get.return_value = [mock_aov]
 
-        mock_now = MagicMock(spec=int)
+        mock_now = MagicMock(spec=float)
 
         mock_flattened.return_value = (mock_aov, )
 
@@ -557,7 +557,7 @@ class Test_AOVManager(unittest.TestCase):
 
         result = mgr.get_aovs_from_string(pattern)
 
-        self.assertEqual(result, [])
+        self.assertEqual(result, ())
 
     @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
@@ -575,7 +575,7 @@ class Test_AOVManager(unittest.TestCase):
 
         result = mgr.get_aovs_from_string(pattern)
 
-        self.assertEqual(result, [mock_aov_n, mock_aov_p])
+        self.assertEqual(result, (mock_aov_n, mock_aov_p))
 
     @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
@@ -593,7 +593,7 @@ class Test_AOVManager(unittest.TestCase):
 
         result = mgr.get_aovs_from_string(pattern)
 
-        self.assertEqual(result, [mock_aov_n, mock_aov_p])
+        self.assertEqual(result, (mock_aov_n, mock_aov_p))
 
     @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
@@ -611,7 +611,7 @@ class Test_AOVManager(unittest.TestCase):
 
         result = mgr.get_aovs_from_string(pattern)
 
-        self.assertEqual(result, [mock_group1, mock_group2])
+        self.assertEqual(result, (mock_group1, mock_group2))
 
     @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
     @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
@@ -629,7 +629,7 @@ class Test_AOVManager(unittest.TestCase):
 
         result = mgr.get_aovs_from_string(pattern)
 
-        self.assertEqual(result, [mock_group1, mock_group2])
+        self.assertEqual(result, (mock_group1, mock_group2))
 
     # init_interface
 

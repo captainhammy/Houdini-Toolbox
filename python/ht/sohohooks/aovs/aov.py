@@ -50,7 +50,13 @@ _DEFAULT_AOV_DATA = {
 # =============================================================================
 
 class AOV(object):
-    """This class represents an AOV to be exported."""
+    """This class represents an AOV to be exported.
+
+    :param data: AOV data.
+    :type data: dict
+    :return:
+
+    """
 
     def __init__(self, data):
         self._data = copy.copy(_DEFAULT_AOV_DATA)
@@ -81,7 +87,19 @@ class AOV(object):
     # =========================================================================
 
     def _light_export_planes(self, data, wrangler, cam, now):
-        """Handle exporting the image planes based on their export settings."""
+        """Handle exporting the image planes based on their export settings.
+
+        :param data: The data to write.
+        :type data: dict
+        :param wrangler: A SOHO wrangler.
+        :type wrangler: object
+        :param cam: A SOHO camera.
+        :type cam: soho.SohoObject
+        :param now: The evaluation time.
+        :type now: float
+        :return:
+
+        """
         # Handle any light exporting.
         if self.lightexport is not None:
             # Get a list of lights matching our mask and selection.
@@ -113,7 +131,13 @@ class AOV(object):
             _write_data_to_ifd(data, wrangler, cam, now)
 
     def _update_data(self, data):
-        """Update internal data with new data."""
+        """Update internal data with new data.
+
+        :param data: AOV data.
+        :type data: dict
+        :return:
+
+        """
         for name, value in data.iteritems():
             # Check if there is a restriction on the data type.
             if name in ALLOWABLE_VALUES:
@@ -338,55 +362,70 @@ class AOV(object):
     # =========================================================================
 
     def as_data(self):
-        """Get a dictionary representing the AOV."""
-        d = {
+        """Get a dictionary representing the AOV.
+
+        :return: Data representing this object.
+        :rtype: dict
+
+        """
+        data = {
             consts.VARIABLE_KEY: self.variable,
             consts.VEXTYPE_KEY: self.vextype,
         }
 
         if self.channel:
-            d[consts.CHANNEL_KEY] = self.channel
+            data[consts.CHANNEL_KEY] = self.channel
 
         if self.quantize is not None:
-            d[consts.QUANTIZE_KEY] = self.quantize
+            data[consts.QUANTIZE_KEY] = self.quantize
 
         if self.sfilter is not None:
-            d[consts.SFILTER_KEY] = self.sfilter
+            data[consts.SFILTER_KEY] = self.sfilter
 
         if self.pfilter is not None:
-            d[consts.PFILTER_KEY] = self.pfilter
+            data[consts.PFILTER_KEY] = self.pfilter
 
         if self.exclude_from_dcm is not None:
-            d[consts.EXCLUDE_DCM_KEY] = self.exclude_from_dcm
+            data[consts.EXCLUDE_DCM_KEY] = self.exclude_from_dcm
 
         if self.componentexport is not None:
-            d[consts.COMPONENTEXPORT_KEY] = self.componentexport
+            data[consts.COMPONENTEXPORT_KEY] = self.componentexport
 
             if self.components:
-                d[consts.COMPONENTS_KEY] = self.components
+                data[consts.COMPONENTS_KEY] = self.components
 
         if self.lightexport is not None:
-            d[consts.LIGHTEXPORT_KEY] = self.lightexport
+            data[consts.LIGHTEXPORT_KEY] = self.lightexport
 
             if self.lightexport != consts.LIGHTEXPORT_PER_CATEGORY_KEY:
-                d[consts.LIGHTEXPORT_SCOPE_KEY] = self.lightexport_scope
-                d[consts.LIGHTEXPORT_SELECT_KEY] = self.lightexport_select
+                data[consts.LIGHTEXPORT_SCOPE_KEY] = self.lightexport_scope
+                data[consts.LIGHTEXPORT_SELECT_KEY] = self.lightexport_select
 
         if self.intrinsics:
-            d[consts.INTRINSICS_KEY] = self.intrinsics
+            data[consts.INTRINSICS_KEY] = self.intrinsics
 
         if self.comment:
-            d[consts.COMMENT_KEY] = self.comment
+            data[consts.COMMENT_KEY] = self.comment
 
         if self.priority != -1:
-            d[consts.PRIORITY_KEY] = self.priority
+            data[consts.PRIORITY_KEY] = self.priority
 
-        return d
+        return data
 
     # =========================================================================
 
     def write_to_ifd(self, wrangler, cam, now):
-        """Output the AOV."""
+        """Output the AOV.
+
+        :param wrangler: A SOHO wrangler.
+        :type wrangler: object
+        :param cam: A SOHO camera.
+        :type cam: soho.SohoObject
+        :param now: The evaluation time.
+        :type now: float
+        :return:
+
+        """
         import soho
 
         # The base data to pass along.
@@ -440,6 +479,10 @@ class AOV(object):
 class AOVGroup(object):
     """This class represents a group of AOV definitions.
 
+    :param name: The group name.
+    :type name: str
+    :return:
+
     """
 
     def __init__(self, name):
@@ -474,14 +517,14 @@ class AOVGroup(object):
 
     @property
     def aovs(self):
-        """A list of AOVs in the group."""
+        """list(ht.sohohooks.aovs.aov.AOV)A list of AOVs in the group."""
         return self._aovs
 
     # =========================================================================
 
     @property
     def comment(self):
-        """Optional comment about this AOV."""
+        """str: Optional comment about this AOV."""
         return self._comment
 
     @comment.setter
@@ -492,7 +535,7 @@ class AOVGroup(object):
 
     @property
     def icon(self):
-        """Optional path to an icon for this group."""
+        """str: Optional path to an icon for this group."""
         return self._icon
 
     @icon.setter
@@ -503,21 +546,21 @@ class AOVGroup(object):
 
     @property
     def includes(self):
-        """List of AOV names belonging to the group."""
+        """list(str): List of AOV names belonging to the group."""
         return self._includes
 
     # =========================================================================
 
     @property
     def name(self):
-        """The name of the group."""
+        """str: The name of the group."""
         return self._name
 
     # =========================================================================
 
     @property
     def path(self):
-        """The path containing the group definition."""
+        """str: The path containing the group definition."""
         return self._path
 
     @path.setter
@@ -528,7 +571,7 @@ class AOVGroup(object):
 
     @property
     def priority(self):
-        """Group priority."""
+        """int_ Group priority."""
         return self._priority
 
     @priority.setter
@@ -540,39 +583,62 @@ class AOVGroup(object):
     # =========================================================================
 
     def clear(self):
-        """Clear the list of AOVs belonging to this group."""
+        """Clear the list of AOVs belonging to this group.
+
+        :return:
+
+        """
         self._aovs = []
 
     def as_data(self):
-        """Get a dictionary representing the group."""
+        """Get a dictionary representing the group.
+
+        :return: Data representing this object.
+        :rtype: dict
+
+        """
         includes = []
 
         includes.extend(self.includes)
 
         includes.extend([aov.variable for aov in self.aovs])
 
-        d = {
-            self.name: {
-                consts.GROUP_INCLUDE_KEY: includes,
-            }
+        data = {
+            consts.GROUP_INCLUDE_KEY: includes,
         }
 
         if self.comment:
-            d[self.name][consts.COMMENT_KEY] = self.comment
+            data[consts.COMMENT_KEY] = self.comment
 
         if self.priority != -1:
-            d[self.name][consts.PRIORITY_KEY] = self.priority
+            data[consts.PRIORITY_KEY] = self.priority
 
-        return d
+        return {self.name: data}
 
     def write_to_ifd(self, wrangler, cam, now):
-        """Write all AOVs in the group to the ifd."""
+        """Write all AOVs in the group to the ifd.
+
+        :param wrangler: A SOHO wrangler.
+        :type wrangler: object
+        :param cam: A SOHO camera.
+        :type cam: soho.SohoObject
+        :param now: The evaluation time.
+        :type now: float
+        :return:
+
+        """
         for aov in self.aovs:
             aov.write_to_ifd(wrangler, cam, now)
 
 
 class IntrinsicAOVGroup(AOVGroup):
-    """An intrinsic grouping of AOVs."""
+    """An intrinsic grouping of AOVs.
+
+    :param name: The group name.
+    :type name: str
+    :return:
+
+    """
 
     def __init__(self, name):
         super(IntrinsicAOVGroup, self).__init__(name)
@@ -583,13 +649,21 @@ class IntrinsicAOVGroup(AOVGroup):
 # EXCEPTIONS
 # =============================================================================
 
-class AOVError(Exception): # pragma: no cover
+class AOVError(Exception):  # pragma: no cover
     """AOV exception base class."""
     pass
 
 
-class InvalidAOVValueError(AOVError): # pragma: no cover
-    """Exception for invalid AOV setting values."""
+class InvalidAOVValueError(AOVError):  # pragma: no cover
+    """Exception for invalid AOV setting values.
+
+    :param name: The invalid setting name.
+    :type name: str
+    :param value: The invalid setting value.
+    :type value: str
+    :return:
+
+    """
 
     def __init__(self, name, value):
         super(InvalidAOVValueError, self).__init__()
@@ -604,23 +678,29 @@ class InvalidAOVValueError(AOVError): # pragma: no cover
         )
 
 
-class MissingVariableError(AOVError): # pragma: no cover
+class MissingVariableError(AOVError):  # pragma: no cover
     """Exception for missing 'variable' information."""
 
     def __str__(self):
         return "Cannot create AOV: missing 'variable' value."
 
 
-class MissingVexTypeError(AOVError): # pragma: no cover
-    """Exception for missing 'vextype' information."""
+class MissingVexTypeError(AOVError):  # pragma: no cover
+    """Exception for missing 'vextype' information.
 
-    def __init__(self, vextype):
+    :param variable: The variable naming missing vextype information.
+    :type variable: str
+    :return:
+
+    """
+
+    def __init__(self, variable):
         super(MissingVexTypeError, self).__init__()
-        self.vextype = vextype
+        self.variable = variable
 
     def __str__(self):
         return "Cannot create AOV {}: missing 'vextype'.".format(
-            self.vextype
+            self.variable
         )
 
 # =============================================================================
@@ -628,6 +708,16 @@ class MissingVexTypeError(AOVError): # pragma: no cover
 # =============================================================================
 
 def _build_category_map(lights, now):
+    """Build a mapping of category names to lights.
+
+    :param lights: A list of lights.
+    :type lights: list(soho.SohoObject)
+    :param now: The evaluation time.
+    :type now: float
+    :return: The category map.
+    :rtype: dict
+
+    """
     category_map = {}
 
     # Process each selected light.
@@ -665,7 +755,20 @@ def _build_category_map(lights, now):
 
 
 def _call_post_defplane(data, wrangler, cam, now):
-    """Call the post_defplane hook."""
+    """Call the post_defplane hook.
+
+    :param data: AOV data.
+    :type data: dict
+    :param wrangler: A SOHO wrangler.
+    :type wrangler: object
+    :param cam: A SOHO camera.
+    :type cam: soho.SohoObject
+    :param now: The evaluation time.
+    :type now: float
+    :return: Whether or not the hook was successful.
+    :rtype bool
+
+    """
     import IFDhooks
 
     return IFDhooks.call(
@@ -682,7 +785,20 @@ def _call_post_defplane(data, wrangler, cam, now):
 
 
 def _call_pre_defplane(data, wrangler, cam, now):
-    """Call the pre_defplane hook."""
+    """Call the pre_defplane hook.
+
+    :param data: AOV data.
+    :type data: dict
+    :param wrangler: A SOHO wrangler.
+    :type wrangler: object
+    :param cam: A SOHO camera.
+    :type cam: soho.SohoObject
+    :param now: The evaluation time.
+    :type now: float
+    :return: Whether or not the hook was successful.
+    :rtype bool
+
+    """
     import IFDhooks
 
     return IFDhooks.call(
@@ -699,7 +815,20 @@ def _call_pre_defplane(data, wrangler, cam, now):
 
 
 def _write_data_to_ifd(data, wrangler, cam, now):
-    """Write AOV data to the ifd."""
+    """Write AOV data to the ifd.
+
+    :param data: AOV data.
+    :type data: dict
+    :param wrangler: A SOHO wrangler.
+    :type wrangler: object
+    :param cam: A SOHO camera.
+    :type cam: soho.SohoObject
+    :param now: The evaluation time.
+    :type now: float
+    :return: Whether or not the hook was successful.
+    :rtype bool
+
+    """
     import IFDapi
 
     # Call the 'pre_defplane' hook.  If the function returns True,
@@ -749,6 +878,23 @@ def _write_data_to_ifd(data, wrangler, cam, now):
 
 
 def _write_light(light, base_channel, data, wrangler, cam, now):
+    """Write a light to the ifd.
+
+    :param light: The light to write.
+    :type light: soho.SohoObject
+    :param base_channel: The channel name.
+    :type base_channel: str
+    :param data: AOV data.
+    :type data: dict
+    :param wrangler: A SOHO wrangler.
+    :type wrangler: object
+    :param cam: A SOHO camera.
+    :type cam: soho.SohoObject
+    :param now: The evaluation time.
+    :type now: float
+    :return:
+
+    """
     import soho
 
     # Try and find the suffix using the 'vm_export_suffix'
@@ -787,6 +933,23 @@ def _write_light(light, base_channel, data, wrangler, cam, now):
 
 
 def _write_per_category(lights, base_channel, data, wrangler, cam, now):
+    """Write lights to the ifd based on their category.
+
+    :param lights: The light to write.
+    :type lights: list(soho.SohoObject)
+    :param base_channel: The channel name.
+    :type base_channel: str
+    :param data: AOV data.
+    :type data: dict
+    :param wrangler: A SOHO wrangler.
+    :type wrangler: object
+    :param cam: A SOHO camera.
+    :type cam: soho.SohoObject
+    :param now: The evaluation time.
+    :type now: float
+    :return:
+
+    """
     # A mapping between category names and their member lights.
     category_map = _build_category_map(lights, now)
 
@@ -809,6 +972,21 @@ def _write_per_category(lights, base_channel, data, wrangler, cam, now):
 
 
 def _write_single_channel(lights, data, wrangler, cam, now):
+    """Write lights to the ifd as a single channel.
+
+    :param lights: The lights to write.
+    :type lights: list(soho.SohoObject)
+    :param data: AOV data.
+    :type data: dict
+    :param wrangler: A SOHO wrangler.
+    :type wrangler: object
+    :param cam: A SOHO camera.
+    :type cam: soho.SohoObject
+    :param now: The evaluation time.
+    :type now: float
+    :return:
+
+    """
     # Take all the light names and join them together.
     if lights:
         lightexport = ' '.join([light.getName() for light in lights])
