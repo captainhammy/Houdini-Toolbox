@@ -18,7 +18,7 @@ reload(callbacks)
 # =============================================================================
 
 class Test__atexit_callback(unittest.TestCase):
-    """Test houdini_event.callbacks._atexit_callback."""
+    """Test ht.events.callbacks._atexit_callback."""
 
     @patch("ht.events.callbacks.run_event")
     def test(self, mock_run):
@@ -29,7 +29,7 @@ class Test__atexit_callback(unittest.TestCase):
 
 
 class Test__emit_ui_available(unittest.TestCase):
-    """Test houdini_event.callbacks._emit_ui_available."""
+    """Test ht.events.callbacks._emit_ui_available."""
 
     @patch("ht.events.callbacks.run_event")
     def test(self, mock_run):
@@ -40,7 +40,7 @@ class Test__emit_ui_available(unittest.TestCase):
 
 
 class Test__register_atexit(unittest.TestCase):
-    """Test houdini_event.callbacks._register_atexit."""
+    """Test ht.events.callbacks._register_atexit."""
 
     @patch("atexit.register")
     def test(self, mock_register):
@@ -52,7 +52,7 @@ class Test__register_atexit(unittest.TestCase):
 
 
 class Test__register_when_ui_available(unittest.TestCase):
-    """Test houdini_event.callbacks._register_when_ui_available."""
+    """Test ht.events.callbacks._register_when_ui_available."""
 
     def test(self):
         """Register the _emit_ui_available function with hdefereval."""
@@ -70,7 +70,7 @@ class Test__register_when_ui_available(unittest.TestCase):
 
 
 class Test_register_callbacks(unittest.TestCase):
-    """Test houdini_event.callbacks.register_callbacks."""
+    """Test ht.events.callbacks.register_callbacks."""
 
     @patch("ht.events.callbacks._register_when_ui_available")
     @patch("ht.events.callbacks._register_atexit")

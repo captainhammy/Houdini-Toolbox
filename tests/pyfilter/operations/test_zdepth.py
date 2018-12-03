@@ -20,7 +20,7 @@ reload(zdepth)
 # =============================================================================
 
 class Test_ZDepthPass(unittest.TestCase):
-    """Test the houdini_submission.pyfilter.operations.zdepth.ZDepthPass class.
+    """Test the ht.pyfilter.operations.zdepth.ZDepthPass class.
 
     """
 

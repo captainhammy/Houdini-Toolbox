@@ -238,7 +238,7 @@ def register_item(item, event_name):
     """Register an item for a given event name.
 
     :param: item: The item to register.
-    :type item: houdini_events.item.HoudiniEventItem
+    :type item: ht.events.item.HoudiniEventItem
     :param: event_name: The event name.
     :type event_name: str
     :return:

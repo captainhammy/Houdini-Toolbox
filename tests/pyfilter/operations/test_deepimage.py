@@ -20,7 +20,7 @@ reload(deepimage)
 # =============================================================================
 
 class Test_DeepImage(unittest.TestCase):
-    """Test the houdini_submission.pyfilter.operations.deepimage.DeepImage class.
+    """Test the ht.pyfilter.operations.deepimage.DeepImage class.
 
     """
 

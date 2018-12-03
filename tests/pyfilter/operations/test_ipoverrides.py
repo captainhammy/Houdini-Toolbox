@@ -23,11 +23,11 @@ reload(ipoverrides)
 # =============================================================================
 
 class Test_IpOverrides(unittest.TestCase):
-    """Test the houdini_mantra_node.pyfilter.operations.ipoverrides.IpOverride
+    """Test the ht.pyfilter.operations.ipoverrides.IpOverride
     class.
 
     """
-    
+
     def setUp(self):
         super(Test_IpOverrides, self).setUp()
 
