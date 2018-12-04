@@ -13,6 +13,7 @@ import re
 from PySide2 import QtCore, QtWidgets
 
 # Houdini Toolbox Imports
+from ht.sohohooks.aovs import constants as consts
 from ht.sohohooks.aovs import manager
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.ui.aovs import uidata, utils, widgets
@@ -80,80 +81,80 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         channel_name = self.channel_name.text()
 
-        aov_data["channel"] = channel_name
+        aov_data[consts.CHANNEL_KEY] = channel_name
 
         # =====================================================================
 
         quantize = self.quantize_box.itemData(self.quantize_box.currentIndex())
 
-        aov_data["quantize"] = None
+        aov_data[consts.QUANTIZE_KEY] = None
 
         if not utils.isValueDefault(quantize, "quantize"):
-            aov_data["quantize"] = quantize
+            aov_data[consts.QUANTIZE_KEY] = quantize
 
         # =====================================================================
 
         sfilter = self.sfilter_box.itemData(self.sfilter_box.currentIndex())
 
-        aov_data["sfilter"] = None
+        aov_data[consts.SFILTER_KEY] = None
 
         if not utils.isValueDefault(sfilter, "sfilter"):
-            aov_data["sfilter"] = sfilter
+            aov_data[consts.SFILTER_KEY] = sfilter
 
         # =====================================================================
 
         pfilter = self.pfilter_widget.value()
 
         if not utils.isValueDefault(pfilter, "pfilter"):
-            aov_data["pfilter"] = pfilter
+            aov_data[consts.PFILTER_KEY] = pfilter
 
         else:
-            aov_data["pfilter"] = None
+            aov_data[consts.PFILTER_KEY] = None
 
         # =====================================================================
 
         if self.exclude_from_dcm.isChecked():
-            aov_data["exclude_from_dcm"] = True
+            aov_data[consts.EXCLUDE_DCM_KEY] = True
 
         # =====================================================================
 
         if self.componentexport.isChecked():
-            aov_data["componentexport"] = True
-            aov_data["components"] = self.components.text().split()
+            aov_data[consts.COMPONENTEXPORT_KEY] = True
+            aov_data[consts.COMPONENTS_KEY] = self.components.text().split()
 
         # =====================================================================
 
         lightexport = self.lightexport.itemData(self.lightexport.currentIndex())
 
         if lightexport:
-            aov_data["lightexport"] = lightexport
+            aov_data[consts.LIGHTEXPORT_KEY] = lightexport
 
-            if lightexport != "per-category":
-                aov_data["lightexport_scope"] = self.light_mask.text()
-                aov_data["lightexport_select"] = self.light_select.text()
+            if lightexport != consts.LIGHTEXPORT_PER_CATEGORY_KEY:
+                aov_data[consts.LIGHTEXPORT_SCOPE_KEY] = self.light_mask.text()
+                aov_data[consts.LIGHTEXPORT_SELECT_KEY] = self.light_select.text()
 
         # =====================================================================
 
         priority = self.priority.value()
 
         if not utils.isValueDefault(priority, "priority"):
-            aov_data["priority"] = priority
+            aov_data[consts.PRIORITY_KEY] = priority
 
         # =====================================================================
 
         intrinsics = self.intrinsics.text()
 
-        aov_data["intrinsics"] = intrinsics.replace(',', ' ').split()
+        aov_data[consts.INTRINSICS_KEY] = intrinsics.replace(',', ' ').split()
 
         # =====================================================================
 
         comment = self.comment.text()
 
-        aov_data["comment"] = comment
+        aov_data[consts.COMMENT_KEY] = comment
 
         # =====================================================================
 
-        aov_data["path"] = os.path.expandvars(self.file_widget.getPath())
+        aov_data[consts.PATH_KEY] = os.path.expandvars(self.file_widget.getPath())
 
         # =====================================================================
 
