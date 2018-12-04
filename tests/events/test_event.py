@@ -86,7 +86,7 @@ class Test_HoudiniEvent(unittest.TestCase):
         self.assertEqual(event._item_map, {})
         self.assertEqual(event._name, mock_name)
 
-        self.assertTrue(isinstance(event._stats, ht.events.stats.HoudiniEventStats))
+        self.assertEqual(event._stats, mock_stats.return_value)
         mock_stats.assert_called_with(mock_name)
 
     # Properties
