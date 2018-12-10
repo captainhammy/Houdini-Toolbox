@@ -8,6 +8,7 @@ actions.
 
 # Python Imports
 import argparse
+import importlib
 import json
 
 # Houdini Toolbox Imports
@@ -51,7 +52,12 @@ class PyFilterManager(object):
     # =========================================================================
 
     def _get_parsed_args(self):
-        """Parse any args passed to PyFilter."""
+        """Parse any args passed to PyFilter.
+
+        :return: Parsed filter args.
+        :rtype: argparse.Namespace
+
+        """
         parser = _build_parser()
 
         self._register_parser_args(parser)
@@ -61,16 +67,26 @@ class PyFilterManager(object):
         return filter_args
 
     def _process_parsed_args(self, filter_args):
-        """Allow operations to process any args that were parsed."""
+        """Allow operations to process any args that were parsed.
+
+        :param filter_args: The args passed to the filter command.
+        :type filter_args: argparse.Namespace
+        :return:
+
+        """
         for operation in self.operations:
             operation.process_parsed_args(filter_args)
 
     def _register_operations(self):
-        """Register operations that should be run by the manager."""
+        """Register operations that should be run by the manager.
+
+        :return:
+
+        """
         files = _find_operation_files()
 
-        for filepath in files:
-            data = _get_operation_data(filepath)
+        for file_path in files:
+            data = _get_operation_data(file_path)
 
             if "operations" not in data:
                 continue
@@ -81,12 +97,17 @@ class PyFilterManager(object):
                 # Import the operation class.
                 cls = _get_class(module_name, class_name)
 
-                logger.debug(
-                    "Registering {} ({})".format(
-                        class_name,
-                        module_name
+                if cls is None:
+                    logger.warning(
+                        "Could not load {} from {}".format(class_name, module_name)
                     )
-                )
+
+                    continue
+
+                else:
+                    logger.debug(
+                        "Registering {} ({})".format(class_name, module_name)
+                    )
 
                 # Add an instance of it to our operations list.
                 self.operations.append(cls(self))
@@ -97,6 +118,10 @@ class PyFilterManager(object):
         This allows filter operations to have their necessary args parsed and
         available.
 
+        :param parser: The argument parser to register args to.
+        :type parser: argparse.ArgumentParser
+        :return:
+
         """
         for operation in self.operations:
             operation.register_parser_args(parser)
@@ -105,8 +130,19 @@ class PyFilterManager(object):
     # METHODS
     # =========================================================================
 
-    def run_operations_for_stage(self, stage, *args, **kwargs):
-        """Run all filter operations for the specified stage."""
+    def run_operations_for_stage(self, stage_name, *args, **kwargs):
+        """Run all filter operations for the specified stage.
+
+        :param stage_name: The name of the stage to run.
+        :type stage_name: str
+        :param args: Positional arguments passed to the stage function.
+        :type args: list
+        :param kwargs: Keyword args passed to the stage function.
+        :type kwargs: dict
+        :return: Whether or any of the stage functions returned True.
+        :rtype: bool
+
+        """
         results = []
 
         for operation in self.operations:
@@ -116,7 +152,7 @@ class PyFilterManager(object):
 
             # Attempt to find the function for this stage.
             try:
-                func = getattr(operation, stage)
+                func = getattr(operation, stage_name)
 
             # Filter has no function for this stage so don't do anything.
             except AttributeError:
@@ -132,14 +168,24 @@ class PyFilterManager(object):
 # =============================================================================
 
 def _build_parser():
-    """Build a default parser to be used."""
+    """Build a default parser to be used.
+
+    :return: The argument parser to use.
+    :rtype: argparse.ArgumentParser
+
+    """
     parser = argparse.ArgumentParser()
 
     return parser
 
 
 def _find_operation_files():
-    """Find any operation loading files."""
+    """Find any operation loading files.
+
+    :return: Any found operations files.
+    :rtype: tuple(str)
+
+    """
     import hou
 
     # Look for files containing a list of operations.
@@ -155,21 +201,38 @@ def _find_operation_files():
 
 
 def _get_class(module_name, class_name):
-    """Try to import class_name from module_name."""
+    """Try to import class_name from module_name.
+
+    :param module_name: The name of the module containing the class.
+    :type module_name: str
+    :param class_name: The name of the class to get.
+    :type class_name: str
+    :return: A found class, otherwise None.
+    :rtype: type
+
+    """
+
     try:
-        cls = getattr(
-            __import__(module_name, {}, {}, [class_name]),
-            class_name
-        )
+        module = importlib.import_module(module_name)
 
     except ImportError:
         cls = None
+
+    else:
+        cls = getattr(module, class_name, None)
 
     return cls
 
 
 def _get_operation_data(file_path):
-    """Get operation data from a file path."""
+    """Get operation data from a file path.
+
+    :param file_path: The path to an operation file.
+    :type file_path: str
+    :return: Operation data.
+    :rtype: dict
+
+    """
     try:
         with open(file_path) as fp:
             data = json.load(fp)

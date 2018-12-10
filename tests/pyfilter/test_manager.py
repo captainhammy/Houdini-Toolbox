@@ -111,6 +111,36 @@ class TestManager(unittest.TestCase):
         mock_get_class.assert_not_called()
 
     @patch("ht.pyfilter.manager.logger")
+    @patch("ht.pyfilter.manager._get_class", return_value=None)
+    @patch("ht.pyfilter.manager._get_operation_data")
+    @patch("ht.pyfilter.manager._find_operation_files")
+    @patch.object(manager.PyFilterManager, "__init__", lambda x: None)
+    def test__register_operations__no_class(self, mock_find_files, mock_get_data, mock_get_class, mock_logger):
+        filepath = "/path/to/file.json"
+        mock_find_files.return_value = (filepath, )
+
+        module_name = "module_name"
+        class_name = "class_name"
+
+        data = {
+            "operations": [
+                (module_name, class_name),
+            ]
+        }
+        mock_get_data.return_value = data
+
+        mgr = manager.PyFilterManager()
+        mgr._operations = []
+
+        mgr._register_operations()
+
+        mock_get_data.assert_called_with(filepath)
+        mock_get_class.assert_called_with(module_name, class_name)
+
+        self.assertEqual(mgr._operations, [])
+        mock_logger.warning.assert_called()
+
+    @patch("ht.pyfilter.manager.logger")
     @patch("ht.pyfilter.manager._get_class")
     @patch("ht.pyfilter.manager._get_operation_data")
     @patch("ht.pyfilter.manager._find_operation_files")
@@ -241,31 +271,36 @@ class Test__find_operation_files(unittest.TestCase):
 class Test__get_class(unittest.TestCase):
     """Test ht.pyfilter.manager._get_operation_data."""
 
-    def test_ImportError(self):
-        with patch("__builtin__.__import__") as mock_import:
-            mock_import.side_effect = ImportError
+    @patch("ht.pyfilter.manager.importlib.import_module")
+    def test_ImportError(self, mock_import):
+        mock_module_name = MagicMock(spec=str)
+        mock_class_name = MagicMock(spec=str)
 
-            result = manager._get_class("foo", "bar")
+        mock_import.side_effect = ImportError
 
-            self.assertIsNone(result)
+        result = manager._get_class(mock_module_name, mock_class_name)
 
-    def test(self):
-        module_name = "module_name"
+        self.assertIsNone(result)
+
+        mock_import.assert_called_with(mock_module_name)
+
+    @patch("ht.pyfilter.manager.importlib.import_module")
+    def test(self, mock_import):
+        mock_module_name = MagicMock(spec=str)
         class_name = "class_name"
 
         mock_cls = MagicMock()
 
         mock_module = MagicMock()
-        mock_module.class_name = mock_cls
+        setattr(mock_module, class_name, mock_cls)
 
-        with patch("__builtin__.__import__") as mock_import:
-            mock_import.return_value = mock_module
+        mock_import.return_value = mock_module
 
-            result = manager._get_class(module_name, class_name)
+        result = manager._get_class(mock_module_name, class_name)
 
-            self.assertEqual(result, mock_cls)
+        self.assertEqual(result, mock_cls)
 
-            mock_import.assert_called_with(module_name, {}, {}, [class_name])
+        mock_import.assert_called_with(mock_module_name)
 
 
 class Test__get_operation_data(unittest.TestCase):
