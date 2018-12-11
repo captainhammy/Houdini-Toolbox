@@ -216,9 +216,9 @@ class Test_get_property(unittest.TestCase):
 
     @patch("ht.pyfilter.property._transform_values")
     def test(self, mock_transform):
-        name = "property_name"
+        mock_name = MagicMock(spec=str)
 
-        result = prop.get_property(name)
+        result = prop.get_property(mock_name)
 
         self.assertEqual(
             result,
@@ -248,13 +248,13 @@ class Test_set_property(unittest.TestCase):
 
     @patch("ht.pyfilter.property._prep_value_to_set")
     def test(self, mock_prep):
-        name = "property_name"
-        value = 5
+        mock_name = MagicMock(spec=str)
+        mock_value = MagicMock(spec=int)
 
-        prop.set_property(name, value)
+        prop.set_property(mock_name, mock_value)
 
-        mock_prep.assert_called_with(value)
-        self.mock_mantra.setproperty.assert_called_with(name, mock_prep.return_value)
+        mock_prep.assert_called_with(mock_value)
+        self.mock_mantra.setproperty.assert_called_with(mock_name, mock_prep.return_value)
 
 # =============================================================================
 
