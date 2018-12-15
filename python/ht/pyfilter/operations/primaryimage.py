@@ -16,6 +16,9 @@ from ht.pyfilter.property import set_property
 class SetPrimaryImage(PyFilterOperation):
     """Operation to modify the primary image path.
 
+    :param manager: The manager this operation is registered with.
+    :type manager: ht.pyfilter.manager.PyFilterManager
+
     """
 
     def __init__(self, manager):
@@ -37,6 +40,8 @@ class SetPrimaryImage(PyFilterOperation):
     def disable_primary_image(self, disable_primary_image):
         self._disable_primary_image = disable_primary_image
 
+    # =========================================================================
+
     @property
     def primary_image_path(self):
         """str: The primary image path to set."""
@@ -52,7 +57,16 @@ class SetPrimaryImage(PyFilterOperation):
 
     @staticmethod
     def build_arg_string(primary_image_path=None, disable_primary_image=False):
-        """Build an argument string for this operation."""
+        """Build an argument string for this operation.
+
+        :param primary_image_path: The primary image path to set.
+        :type primary_image_path: str
+        :param disable_primary_image: Whether or not to disable the primary image.
+        :type disable_primary_image: bool
+        :return: The constructed argument string.
+        :rtype: str
+
+        """
         args = []
 
         if primary_image_path is not None:
@@ -65,7 +79,13 @@ class SetPrimaryImage(PyFilterOperation):
 
     @staticmethod
     def register_parser_args(parser):
-        """Register interested parser args for this operation."""
+        """Register interested parser args for this operation.
+
+        :param parser: The argument parser to attach arguements to.
+        :type parser: argparse.ArgumentParser.
+        :return:
+
+        """
         parser.add_argument("--primary-image-path", dest="primary_image_path")
 
         parser.add_argument(
@@ -80,7 +100,11 @@ class SetPrimaryImage(PyFilterOperation):
 
     @log_filter
     def filterCamera(self):
-        """Apply camera properties."""
+        """Apply camera properties.
+
+        :return:
+
+        """
         if self.disable_primary_image:
             logger.info("Disabling primary image")
             set_property("image:filename", "null:")
@@ -89,7 +113,13 @@ class SetPrimaryImage(PyFilterOperation):
             set_property("image:filename", self.primary_image_path)
 
     def process_parsed_args(self, filter_args):
-        """Process any of our interested arguments if they were passed."""
+        """Process any parsed args that the operation may be interested in.
+
+        :param filter_args: The argparse namespace containing processed args.
+        :type filter_args: argparse.Namespace
+        :return:
+
+        """
         if filter_args.disable_primary_image:
             self.disable_primary_image = True
 
@@ -97,8 +127,13 @@ class SetPrimaryImage(PyFilterOperation):
             self.primary_image_path = filter_args.primary_image_path
 
     def should_run(self):
-        """Run if the operation is disabling the primary image or needs to set
-        the image path.
+        """Determine whether or not this filter should be run.
+
+        This operation will run if it is disabling the primary image or needs
+        to set the image path.
+
+        :return: Whether or not this operation should run.
+        :rtype: bool
 
         """
         return self.disable_primary_image or self.primary_image_path is not None

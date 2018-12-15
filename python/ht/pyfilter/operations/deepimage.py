@@ -13,9 +13,11 @@ from ht.pyfilter.property import get_property, set_property
 # CLASSES
 # =============================================================================
 
-
 class SetDeepImage(PyFilterOperation):
-    """Operation to modify deep image generation,
+    """Operation to modify deep image generation.
+
+    :param manager: The manager this operation is registered with.
+    :type manager: ht.pyfilter.manager.PyFilterManager
 
     """
 
@@ -41,7 +43,13 @@ class SetDeepImage(PyFilterOperation):
     # =========================================================================
 
     def _modify_deep_args(self, deep_args):
-        """Modify the args either in place or by adding to them."""
+        """Modify the args either in place or by adding to them.
+
+        :param deep_args: The list of deep resolver args.
+        :type deep_args: list(str)
+        :return:
+
+        """
         arg_names = (
             "filename",
             "compositing",
@@ -54,14 +62,22 @@ class SetDeepImage(PyFilterOperation):
             "zbias",
         )
 
+        # Look for each of our known args.
         for arg_name in arg_names:
+            # Try to get the equivalent property on this object.
             value = getattr(self, arg_name)
 
+            # Found a value we might be able to set.
             if value is not None:
+                # The arg is already in the list so we need to modify the
+                # existing value with our value.
                 if arg_name in deep_args:
+                    # The value is the next item in the list so get the index
+                    # and modify the next one.
                     idx = deep_args.index(arg_name)
                     deep_args[idx + 1] = value
 
+                # The arg is not currently in the args so add the name and value.
                 else:
                     deep_args.extend((arg_name, value))
 
@@ -71,45 +87,58 @@ class SetDeepImage(PyFilterOperation):
 
     @property
     def all_passes(self):
-        """Modify deep resolver during all render types."""
+        """bool: Modify deep resolver during all render types."""
         return self._all_passes
 
     @all_passes.setter
     def all_passes(self, all_passes):
         self._all_passes = all_passes
 
+    # =========================================================================
+
     @property
     def compositing(self):
+        """int: Precomposite the samples."""
         return self._compositing
 
     @compositing.setter
     def compositing(self, compositing):
         self._compositing = compositing
 
+    # =========================================================================
+
     @property
     def deepcompression(self):
+        """int: Compression value."""
         return self._deepcompression
 
     @deepcompression.setter
     def deepcompression(self, deepcompression):
         self._deepcompression = deepcompression
 
+    # =========================================================================
+
     @property
     def depth_planes(self):
+        """str: Special planes."""
         return self._depth_planes
 
     @depth_planes.setter
     def depth_planes(self, depth_planes):
         self._depth_planes = depth_planes
 
+    # =========================================================================
+
     @property
     def disable_deep_image(self):
-        """Disable deep image generation."""
+        """bool: Disable deep image generation."""
         return self._disable_deep_image
 
     @disable_deep_image.setter
     def disable_deep_image(self, disable_deep_image):
         self._disable_deep_image = disable_deep_image
+
+    # =========================================================================
 
     @property
     def filename(self):
@@ -120,48 +149,66 @@ class SetDeepImage(PyFilterOperation):
     def filename(self, filename):
         self._filename = filename
 
+    # =========================================================================
+
     @property
     def mipmaps(self):
+        """int: Create MIP mapped images."""
         return self._mipmaps
 
     @mipmaps.setter
     def mipmaps(self, mipmaps):
         self._mipmaps = mipmaps
 
+    # =========================================================================
+
     @property
     def ofsize(self):
+        """int: The opacity storage size."""
         return self._ofsize
 
     @ofsize.setter
     def ofsize(self, ofsize):
         self._ofsize = ofsize
 
+    # =========================================================================
+
     @property
     def ofstorage(self):
+        """str: The opacity bit depth."""
         return self._ofstorage
 
     @ofstorage.setter
     def ofstorage(self, ofstorage):
         self._ofstorage = ofstorage
 
+    # =========================================================================
+
     @property
     def pzstorage(self):
+        """str: The depth bit depth."""
         return self._pzstorage
 
     @pzstorage.setter
     def pzstorage(self, pzstorage):
         self._pzstorage = pzstorage
 
+    # =========================================================================
+
     @property
     def resolver(self):
+        """str: The type of deep to generate."""
         return self._resolver
 
     @resolver.setter
     def resolver(self, resolver):
         self._resolver = resolver
 
+    # =========================================================================
+
     @property
     def zbias(self):
+        """float: Compression bias."""
         return self._zbias
 
     @zbias.setter
@@ -174,11 +221,41 @@ class SetDeepImage(PyFilterOperation):
 
     @staticmethod
     def build_arg_string(disable_deep_image=None, deep_all_passes=None,
-                       deep_image_path=None, resolver=None, compositing=None,
-                       compression=None, depth_planes=None, mipmaps=None,
-                       ofsize=None, ofstorage=None, pzstorage=None, zbias=None
-                      ):
-        """Build an argument string for this operation."""
+                         deep_image_path=None, resolver=None, compositing=None,
+                         compression=None, depth_planes=None, mipmaps=None,
+                         ofsize=None, ofstorage=None, pzstorage=None, zbias=None
+                         ):
+        """Build an argument string for this operation.
+
+        :param disable_deep_image: Whether or not to disable the deep image.
+        :type disable_deep_image: bool
+        :param deep_all_passes: Whether or not to modify the deep resolver
+                                during all render types.
+        :type deep_all_passes: bool
+        :param deep_image_path: The path to the output deep image.
+        :type deep_image_path: str
+        :param resolver: The deep resolver to run.
+        :type resolver: str
+        :param compositing: Whether or not to pre-composite the values.
+        :type compositing: bool
+        :param compression: The compression value.
+        :type compression: int
+        :param depth_planes: A list of special planes.
+        :type depth_planes: str|list(str)
+        :param mipmaps: Whether or not to create MIP mapped images.
+        :type mipmaps: bool
+        :param ofsize: The opacity size (float vs vector).
+        :type ofsize: int
+        :param ofstorage: The opacity bit depth:
+        :type ofstorage: str
+        :param pzstorage: The Z depth bit depth:
+        :type pzstorage: str
+        :param zbias: The compression bias.
+        :type zbias: float
+        :return: The constructed argument string.
+        :rtype: str
+
+        """
         args = []
 
         if disable_deep_image:
@@ -224,7 +301,13 @@ class SetDeepImage(PyFilterOperation):
 
     @staticmethod
     def register_parser_args(parser):
-        """Register interested parser args for this operation."""
+        """Register interested parser args for this operation.
+
+        :param parser: The argument parser to attach arguements to.
+        :type parser: argparse.ArgumentParser.
+        :return:
+
+        """
         parser.add_argument("--deep-image-path", dest="deep_image_path")
 
         parser.add_argument("--deep-all-passes", action="store_true", dest="deep_all_passes")
@@ -263,7 +346,11 @@ class SetDeepImage(PyFilterOperation):
 
     @log_filter
     def filterCamera(self):
-        """Apply camera properties."""
+        """Apply camera properties.
+
+        :return:
+
+        """
         render_type = get_property("renderer:rendertype")
 
         if not self.all_passes and render_type != "beauty":
@@ -301,7 +388,13 @@ class SetDeepImage(PyFilterOperation):
             set_property("image:deepresolver", deep_args)
 
     def process_parsed_args(self, filter_args):
-        """Process any of our interested arguments if they were passed."""
+        """Process any parsed args that the operation may be interested in.
+
+        :param filter_args: The argparse namespace containing processed args.
+        :type filter_args: argparse.Namespace
+        :return:
+
+        """
         if filter_args.disable_deep_image:
             self.disable_deep_image = True
 
@@ -339,7 +432,15 @@ class SetDeepImage(PyFilterOperation):
             self.zbias = filter_args.deep_zbias
 
     def should_run(self):
-        """Only run if a target path was passed."""
+        """Determine whether or not this operation should be run.
+
+        This operation will run if the disable option is set or any of the
+        other options which would modify the args are set.
+
+        :return: Whether or not this operation should run.
+        :rtype: bool
+
+        """
         if self.disable_deep_image:
             return True
 

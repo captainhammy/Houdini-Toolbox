@@ -15,7 +15,12 @@ from ht.pyfilter.operations.operation import PyFilterOperation
 # =============================================================================
 
 class LogOutput(PyFilterOperation):
-    """Operation to log Mantra output."""
+    """Operation to log Mantra output.
+
+    :param manager: The manager this operation is registered with.
+    :type manager: ht.pyfilter.manager.PyFilterManager
+
+    """
 
     def __init__(self, manager):
         super(LogOutput, self).__init__(manager)

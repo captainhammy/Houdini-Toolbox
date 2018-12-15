@@ -15,7 +15,12 @@ from ht.logger import logger
 # =============================================================================
 
 class PyFilterOperation(object):
-    """Base class of operations for PyFilter."""
+    """Base class of operations for PyFilter.
+
+    :param manager: The manager this operation is registered with.
+    :type manager: ht.pyfilter.manager.PyFilterManager
+
+    """
 
     def __init__(self, manager):
         self._data = {}
@@ -26,9 +31,7 @@ class PyFilterOperation(object):
     # =========================================================================
 
     def __repr__(self):
-        return "<PyFilterOperation: {}>".format(
-            self.__class__.__name__
-        )
+        return "<PyFilterOperation: {}>".format(self.__class__.__name__)
 
     # =========================================================================
     # PROPERTIES
@@ -41,7 +44,8 @@ class PyFilterOperation(object):
 
     @property
     def manager(self):
-        """Reference to the PyFilterManager this operation is registered with.
+        """ht.pyfilter.manager.PyFilterManager: Reference to the PyFilterManager
+        this operation is registered with.
 
         """
         return self._manager
@@ -52,12 +56,23 @@ class PyFilterOperation(object):
 
     @staticmethod
     def build_arg_string(*args, **kwargs):
-        """Build an argument string for this operation."""
+        """Build an argument string for this operation.
+
+        :return: The constructed argument string.
+        :rtype: str
+
+        """
         pass
 
     @staticmethod
     def register_parser_args(parser):
-        """Register any argument parser args this filter cares about."""
+        """Register interested parser args for this operation.
+
+        :param parser: The argument parser to attach arguements to.
+        :type parser: argparse.ArgumentParser.
+        :return:
+
+        """
         pass
 
     # =========================================================================
@@ -65,11 +80,22 @@ class PyFilterOperation(object):
     # =========================================================================
 
     def process_parsed_args(self, filter_args):
-        """Process any parsed args that the operation may be interested in."""
+        """Process any parsed args that the operation may be interested in.
+
+        :param filter_args: The argparse namespace containing processed args.
+        :type filter_args: argparse.Namespace
+        :return:
+
+        """
         pass
 
     def should_run(self):
-        """Determine whether or not this filter should be run."""
+        """Determine whether or not this filter should be run.
+
+        :return: Whether or not this operation should run.
+        :rtype: bool
+
+        """
         return True
 
 # =============================================================================
@@ -81,6 +107,14 @@ def log_filter(method_or_name):
 
     You can decorate each filter* method of a PyFilterOperation class to
     provide basic logging on call.
+
+    If you pass in a string then the evaluated mantra property will be added to
+    the output.
+
+    :param method_or_name: A method or  property name.
+    :type method_or_name: function|str
+    :return: A wrapped function.
+    :rtype: function
 
     """
     def decorator(func):
@@ -110,4 +144,3 @@ def log_filter(method_or_name):
         return decorator(method_or_name)
 
     return decorator
-

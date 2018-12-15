@@ -33,7 +33,13 @@ class PropertySetterManager(object):
     # =========================================================================
 
     def _load_from_data(self, data):
-        """Build PropertySetter objects from data."""
+        """Build PropertySetter objects from data.
+
+        :param data: A data dictionary.
+        :type data: dict
+        :return:
+
+        """
         # Process each filter stage name and it's data.
         for stage_name, stage_data in data.iteritems():
             # A list of properties for this stage.
@@ -96,24 +102,41 @@ class PropertySetterManager(object):
     # METHODS
     # =========================================================================
 
-    def load_from_file(self, filepath):
-        """Load properties from a file."""
-        logger.debug("Reading properties from {}".format(filepath))
+    def load_from_file(self, file_path):
+        """Load properties from a file.
+
+        :param file_path: A file containing json property data.
+        :type file_path: str
+        :return:
+
+        """
+        logger.debug("Reading properties from {}".format(file_path))
 
         # Load json data from the file.
-        with open(filepath) as f:
+        with open(file_path) as f:
             data = json.load(f)
 
         self._load_from_data(data)
 
     def parse_from_string(self, property_string):
-        """Load properties from a string."""
+        """Load properties from a string.
+
+        :param property_string: A json string containing property data.
+        :type property_string: str
+
+        """
         data = json.loads(property_string)
 
         self._load_from_data(data)
 
     def set_properties(self, stage):
-        """Apply properties."""
+        """Apply properties.
+
+        :param stage: The stage name.
+        :type stage: str
+        :return:
+
+        """
         if stage in self.properties:
             for prop in self.properties[stage]:
                 prop.setProperty()
@@ -121,6 +144,11 @@ class PropertySetterManager(object):
 
 class PropertySetter(object):
     """An object representing a Mantra property being set by PyFilter.
+
+    :param name: The property name.
+    :type name: str
+    :param property_block: Property data to set.
+    :type property_block: dict
 
     """
 
@@ -168,7 +196,11 @@ class PropertySetter(object):
     # =========================================================================
 
     def _process_value(self):
-        """Perform operations and cleanup of the value data."""
+        """Perform operations and cleanup of the value data.
+
+        :return:
+
+        """
         import hou
 
         # Skip normal types.
@@ -228,6 +260,8 @@ class PropertySetter(object):
     def find_file(self, find_file):
         self._find_file = find_file
 
+    # =========================================================================
+
     @property
     def name(self):
         """str: The name of the property to set."""
@@ -244,6 +278,8 @@ class PropertySetter(object):
     def rendertype(self, rendertype):
         self._rendertype = rendertype
 
+    # =========================================================================
+
     @property
     def value(self):
         """object: The value to set the property."""
@@ -258,7 +294,11 @@ class PropertySetter(object):
     # =========================================================================
 
     def set_property(self):
-        """Set the property to the value."""
+        """Set the property to the value.
+
+        :return:
+
+        """
         import hou
 
         # Don't do anything if the property isn't enabled.
@@ -283,7 +323,14 @@ class PropertySetter(object):
 
 
 class MaskedPropertySetter(PropertySetter):
-    """A PropertySetter that supports masking againt other properties.
+    """A PropertySetter that supports masking against other properties.
+
+    :param name: The name of the property to set.
+    :type name: str
+    :param property_block: Property data to set.
+    :type property_block: dict
+    :param mask_property_name: The name of the mask property.
+    :type mask_property_name: str
 
     """
 
@@ -323,12 +370,12 @@ class MaskedPropertySetter(PropertySetter):
 
     @property
     def mask(self):
-        """A mask value."""
+        """str: A mask value."""
         return self._mask
 
     @property
     def mask_property_name(self):
-        """The property name to compare the mask against."""
+        """str: The property name to compare the mask against."""
         return self._mask_property_name
 
     # =========================================================================
@@ -336,7 +383,11 @@ class MaskedPropertySetter(PropertySetter):
     # =========================================================================
 
     def set_property(self):
-        """Set the property under mantra."""
+        """Set the property under mantra.
+
+        :return:
+
+        """
         import hou
 
         # Is this property being applied using a name mask.
@@ -355,7 +406,8 @@ class MaskedPropertySetter(PropertySetter):
 class SetProperties(PyFilterOperation):
     """Operation to set misc properties passed along as a string or file path.
 
-    This operation creates and uses the --properties and --properties-file args.
+    :param manager: The manager this operation is registered with.
+    :type manager: ht.pyfilter.manager.PyFilterManager
 
     """
 
@@ -370,7 +422,7 @@ class SetProperties(PyFilterOperation):
 
     @property
     def property_manager(self):
-        """Get the property manager."""
+        """PropertySetterManager:Get the property manager."""
         return self._property_manager
 
     # =========================================================================
@@ -379,6 +431,18 @@ class SetProperties(PyFilterOperation):
 
     @staticmethod
     def build_arg_string(properties=None, properties_file=None):
+        """Build an argument string for this operation.
+
+        'properties' should be a json compatible dictionary.
+
+        :param properties: The property data to set.
+        :type properties: dict
+        :param properties_file: A file to set property values from.
+        :type properties_file: str
+        :return: The constructed argument string.
+        :rtype: str
+
+        """
         args = []
 
         if properties is not None:
@@ -395,7 +459,13 @@ class SetProperties(PyFilterOperation):
 
     @staticmethod
     def register_parser_args(parser):
-        """Register interested parser args for this operation."""
+        """Register interested parser args for this operation.
+
+        :param parser: The argument parser to attach arguements to.
+        :type parser: argparse.ArgumentParser.
+        :return:
+
+        """
         parser.add_argument(
             "--properties",
             nargs=1,
@@ -417,40 +487,75 @@ class SetProperties(PyFilterOperation):
 
     @log_filter
     def filterCamera(self):
-        """Apply camera properties."""
+        """Apply camera properties.
+
+        :return:
+
+        """
         self.property_manager.set_properties("camera")
 
     @log_filter("object:name")
     def filterInstance(self):
-        """Apply object properties."""
+        """Apply object properties.
+
+        :return:
+
+        """
         self.property_manager.set_properties("instance")
 
     @log_filter("object:name")
     def filterLight(self):
-        """Apply light properties."""
+        """Apply light properties.
+
+        :return:
+
+        """
         self.property_manager.set_properties("light")
 
     def process_parsed_args(self, filter_args):
-        """Process any of our interested arguments if they were passed."""
+        """Process any parsed args that the operation may be interested in.
+
+        :param filter_args: The argparse namespace containing processed args.
+        :type filter_args: argparse.Namespace
+        :return:
+
+        """
         if filter_args.properties is not None:
             for prop in filter_args.properties:
                 self.property_manager.parse_from_string(prop)
 
         if filter_args.properties_file is not None:
-            for filepath in filter_args.properties_file:
-                self.property_manager.load_from_file(filepath)
+            for file_path in filter_args.properties_file:
+                self.property_manager.load_from_file(file_path)
 
     def should_run(self):
-        """Only run if there are properties to set."""
-        return any(self._property_manager.properties)
+        """Determine whether or not this filter should be run.
+
+        This operations runs if there are properties to set.
+
+        :return: Whether or not this operation should run.
+        :rtype: bool
+
+        """
+        return any(self.property_manager.properties)
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-
 def _create_property_setter(stage_name, property_name, property_block):
-    """Create a PropertySetter based on data."""
+    """Create a PropertySetter based on data.
+
+    :param stage_name: The filter stage to run for.
+    :type stage_name: str
+    :param property_name: The name of the property to set.
+    :type property_name: str
+    :param property_block: The property data to set.
+    :type property_block: dict
+    :return: A property setter object.
+    :rtype: PropertySetter
+
+    """
     # Handle masked properties.
     if "mask" in property_block:
         # Filter a plane.
@@ -485,7 +590,18 @@ def _create_property_setter(stage_name, property_name, property_block):
 
 
 def _process_block(properties, stage_name, name, block):
-    """Process a data block to add properties."""
+    """Process a data block to add properties.
+
+    :param properties: A list of property settings.
+    :type properties: list
+    :param stage_name: The filter stage to run for.
+    :type stage_name: str
+    :param name: The name of the property to set.
+    :type name: str
+    :param block: The property data to set.
+    :type block: dict|list(dict)
+
+    """
     # If we want to set the same property with different settings multiple
     # times (eg. different masks) we can have a list of objects instead.
     # In the case where we just have a single one (really a dictionary)

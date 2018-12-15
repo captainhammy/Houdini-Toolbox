@@ -12,11 +12,11 @@ from ht.pyfilter.property import set_property
 # CLASSES
 # =============================================================================
 
-
 class SetTileCallback(PyFilterOperation):
     """Operation to set a mantra tile callback.
 
-    This operation creates and uses the --tilecallback arg.
+    :param manager: The manager this operation is registered with.
+    :type manager: ht.pyfilter.manager.PyFilterManager
 
     """
 
@@ -46,6 +46,14 @@ class SetTileCallback(PyFilterOperation):
 
     @staticmethod
     def build_arg_string(path=None):
+        """Build an argument string for this operation.
+
+        :param path: The path to the tile callback.
+        :type path: str
+        :return: The constructed argument string.
+        :rtype: str
+
+        """
         args = []
 
         if path is not None:
@@ -55,7 +63,13 @@ class SetTileCallback(PyFilterOperation):
 
     @staticmethod
     def register_parser_args(parser):
-        """Register interested parser args for this operation."""
+        """Register interested parser args for this operation.
+
+        :param parser: The argument parser to attach arguements to.
+        :type parser: argparse.ArgumentParser.
+        :return:
+
+        """
         parser.add_argument("--tilecallback")
 
     # =========================================================================
@@ -64,14 +78,31 @@ class SetTileCallback(PyFilterOperation):
 
     @log_filter
     def filterCamera(self):
-        """Apply camera properties."""
+        """Apply camera properties.
+
+        :return:
+
+        """
         set_property("render:tilecallback", self.tilecallback)
 
-    def processParsedArgs(self, filter_args):
-        """Process any of our interested arguments if they were passed."""
+    def process_parsed_args(self, filter_args):
+        """Process any parsed args that the operation may be interested in.
+
+        :param filter_args: The argparse namespace containing processed args.
+        :type filter_args: argparse.Namespace
+        :return:
+
+        """
         if filter_args.tilecallback is not None:
             self.tilecallback = filter_args.tilecallback
 
     def should_run(self):
-        """Only run if a callback file path is set."""
+        """Determine whether or not this filter should be run.
+
+        This operation runs if the callback file path is set.
+
+        :return: Whether or not this operation should run.
+        :rtype: bool
+
+        """
         return self.tilecallback is not None

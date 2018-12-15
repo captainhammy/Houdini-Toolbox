@@ -15,7 +15,16 @@ from ht.logger import logger
 # =============================================================================
 
 def build_pyfilter_command(pyfilter_args=None, pyfilter_path=None):
-    """Build a PyFilter -P command."""
+    """Build a PyFilter -P command.
+
+    :param pyfilter_args: Optional list of args to pass to the command.
+    :type pyfilter_args: list(str)
+    :param pyfilter_path: Optional path to the filter script.
+    :type pyfilter_path: str
+    :return: The constructed PyFilter command.
+    :rtype: str
+
+    """
     import hou
 
     if pyfilter_args is None:
@@ -39,4 +48,3 @@ def build_pyfilter_command(pyfilter_args=None, pyfilter_path=None):
     cmd = '-P "{} {}"'.format(pyfilter_path, " ".join(pyfilter_args))
 
     return cmd
-

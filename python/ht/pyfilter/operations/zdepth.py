@@ -18,7 +18,8 @@ class ZDepthPass(PyFilterOperation):
     As long as there is an extra image plane that is not C or Of this operation
     will remap an extra image plane to be Pz and disable the rest.
 
-    This operation creates and uses the --zdepth arg.
+    :param manager: The manager this operation is registered with.
+    :type manager: ht.pyfilter.manager.PyFilterManager
 
     """
 
@@ -39,7 +40,7 @@ class ZDepthPass(PyFilterOperation):
 
     @property
     def active(self):
-        """bool:  Is the operation active."""
+        """bool: Whether or not the operation is active."""
         return self._active
 
     @active.setter
@@ -52,6 +53,14 @@ class ZDepthPass(PyFilterOperation):
 
     @staticmethod
     def build_arg_string(active=False):
+        """Build an argument string for this operation.
+
+        :param active: Whether or not to run the operation.
+        :type active: bool
+        :return: The constructed argument string.
+        :rtype: str
+
+        """
         args = []
 
         if active:
@@ -61,7 +70,13 @@ class ZDepthPass(PyFilterOperation):
 
     @staticmethod
     def register_parser_args(parser):
-        """Register interested parser args for this operation."""
+        """Register interested parser args for this operation.
+
+        :param parser: The argument parser to attach arguements to.
+        :type parser: argparse.ArgumentParser.
+        :return:
+
+        """
         parser.add_argument(
             "--zdepth",
             action="store_true"
@@ -73,7 +88,11 @@ class ZDepthPass(PyFilterOperation):
 
     @log_filter("object:name")
     def filterInstance(self):
-        """Apply constant black shader to objects."""
+        """Apply constant black shader to objects.
+
+        :return:
+
+        """
         matte = get_property("object:matte")
         phantom = get_property("object:phantom")
         surface = get_property("object:surface")
@@ -92,6 +111,8 @@ class ZDepthPass(PyFilterOperation):
         """Modify image planes to ensure one will output Pz.
 
         This will disable all planes that are not C and Pz.
+
+        :return:
 
         """
         channel = get_property("plane:channel")
@@ -126,10 +147,23 @@ class ZDepthPass(PyFilterOperation):
             set_property("plane:disable", True)
 
     def process_parsed_args(self, filter_args):
-        """Process any of our interested arguments if they were passed."""
+        """Process any parsed args that the operation may be interested in.
+
+        :param filter_args: The argparse namespace containing processed args.
+        :type filter_args: argparse.Namespace
+        :return:
+
+        """
         if filter_args.zdepth is not None:
             self._active = filter_args.zdepth
 
     def should_run(self):
-        """Only run if the flag was passed."""
+        """Determine whether or not this filter should be run.
+
+        This operation will run if the 'active' flag was passed.
+
+        :return: Whether or not this operation should run.
+        :rtype: bool
+
+        """
         return self._active

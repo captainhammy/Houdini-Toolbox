@@ -17,7 +17,12 @@ from ht.pyfilter.utils import build_pyfilter_command
 # =============================================================================
 
 class IpOverrides(PyFilterOperation):
-    """Operation to set overrides when rendering to ip."""
+    """Operation to set overrides when rendering to ip.
+
+    :param manager: The manager this operation is registered with.
+    :type manager: ht.pyfilter.manager.PyFilterManager
+
+    """
 
     def __init__(self, manager):
         super(IpOverrides, self).__init__(manager)
@@ -167,7 +172,34 @@ class IpOverrides(PyFilterOperation):
                        disable_displacement=False, disable_subd=False,
                        disable_tilecallback=False, bucket_size=None,
                        transparent_samples=None, disable_matte=False):
-        """Construct an argument string based on values for this filter."""
+        """Build an argument string for this operation.
+
+        :param res_scale: The resolution scale.
+        :type res_scale: float
+        :param sample_scale: The pixel sample scale.
+        :type sample_scale: float
+        :param disable_blur: Whether or not to disable blur.
+        :type disable_blur: bool
+        :param disable_aovs: Whether or not to disable any AOVs.
+        :type disable_aovs: bool
+        :param disable_deep: Whether or not to disable deep images.
+        :type disable_deep: bool
+        :param disable_displacement: Whether or not to disable displacement.
+        :type disable_displacement: bool
+        :param disable_subd: Whether or not to disable subdivision surfaces.
+        :type disable_subd: bool
+        :param disable_tilecallback: Whether or not to disable any tile callback.
+        :type disable_tilecallback: bool
+        :param bucket_size: Override the render bucket size.
+        :type bucket_size: int
+        :parameter transparent_samples: Override the number of transparent samples.
+        :type transparent_samples: int
+        :param disable_matte: Whether or not to disable matte and phantom objects.
+        :type disable_matte: bool
+        :return: The constructed argument string.
+        :rtype: str
+
+        """
         args = []
 
         if res_scale is not None:
@@ -207,7 +239,13 @@ class IpOverrides(PyFilterOperation):
 
     @staticmethod
     def register_parser_args(parser):
-        """Register interested parser args for this operation."""
+        """Register interested parser args for this operation.
+
+        :param parser: The argument parser to attach arguements to.
+        :type parser: argparse.ArgumentParser.
+        :return:
+
+        """
         parser.add_argument("--ip-res-scale", default=None, type=float, dest="ip_res_scale")
 
         parser.add_argument("--ip-sample-scale", default=None, type=float, dest="ip_sample_scale")
@@ -236,7 +274,11 @@ class IpOverrides(PyFilterOperation):
 
     @log_filter
     def filterCamera(self):
-        """Apply camera properties."""
+        """Apply camera properties.
+
+        :return:
+
+        """
         if self.res_scale is not None:
             resolution = get_property("image:resolution")
 
@@ -271,7 +313,11 @@ class IpOverrides(PyFilterOperation):
 
     @log_filter
     def filterInstance(self):
-        """Modify object properties."""
+        """Modify object properties.
+
+        :return:
+
+        """
         if self.disable_displacement:
             set_property("object:displace", [])
 
@@ -287,19 +333,33 @@ class IpOverrides(PyFilterOperation):
 
     @log_filter
     def filterMaterial(self):
-        """Modify material properties."""
+        """Modify material properties.
+
+        :return:
+
+        """
         if self.disable_displacement:
             set_property("object:displace", [])
 
     @log_filter
     def filterPlane(self):
-        """Modify aov properties."""
+        """Modify aov properties.
+
+        :return:
+
+        """
         # We can't disable the main image plane or Mantra won't render.
         if self.disable_aovs and get_property("plane:variable") != "Cf+Af":
             set_property("plane:disable", 1)
 
     def process_parsed_args(self, filter_args):
-        """Process any of our interested arguments if they were passed."""
+        """Process any parsed args that the operation may be interested in.
+
+        :param filter_args: The argparse namespace containing processed args.
+        :type filter_args: argparse.Namespace
+        :return:
+
+        """
         if filter_args.ip_res_scale is not None:
             self.res_scale = filter_args.ip_res_scale
 
@@ -321,11 +381,11 @@ class IpOverrides(PyFilterOperation):
             self.transparent_samples = filter_args.ip_transparent_samples
 
     def should_run(self):
-        """Check if the operation should run.
+        """Determine whether or not this filter should be run.
 
-        This opertwion will run if we are rendering to ip and have something to set.
+        This operation will run if we are rendering to ip and have something to set.
 
-        :return: Whether or not the operation should run.
+        :return: Whether or not this operation should run.
         :rtype: bool
 
         """
@@ -354,12 +414,26 @@ class IpOverrides(PyFilterOperation):
 # =============================================================================
 
 def _scale_resolution(resolution, scale):
-    """Scale a resolution value."""
+    """Scale a resolution value.
+
+    :param resolution: The resolution values to scale.
+    :type resolution: list(int)
+    :return: The scaled resolution.
+    :rtype: list(int)
+
+    """
     return [int(round(value * scale)) for value in resolution]
 
 
 def _scale_samples(samples, scale):
-    """Scale a sample value, ensuring it remains >= 1."""
+    """Scale a sample value, ensuring it remains >= 1.
+
+    :param samples: The sample values to scale.
+    :type samples: list(int)
+    :return: The scale samples.
+    :rtype: list(int)
+
+    """
     return [max(1, int(math.ceil(value * scale))) for value in samples]
 
 # =============================================================================
@@ -367,7 +441,14 @@ def _scale_samples(samples, scale):
 # =============================================================================
 
 def build_arg_string_from_node(node):
-    """Build an argument string from a Mantra node."""
+    """Build an argument string from a Mantra node.
+
+    :param node: The node to build an arg string from.
+    :type node: hou.RopNode
+    :return: An argument string.
+    :rtype: str
+
+    """
     if not node.evalParm("enable_ip_override"):
         return ""
 
@@ -397,7 +478,14 @@ def build_arg_string_from_node(node):
 
 
 def build_pixel_sample_scale_display(node):
-    """Build a label to display the adjusted pixel samples."""
+    """Build a label to display the adjusted pixel samples.
+
+    :param node: The node to build the display for.
+    :type node: hou.RopNode
+    :return: The display scale.
+    :rtype: str
+
+    """
     samples = node.evalParmTuple("vm_samples")
 
     sample_scale = node.evalParm("ip_sample_scale")
@@ -408,7 +496,14 @@ def build_pixel_sample_scale_display(node):
 
 
 def build_resolution_scale_display(node):
-    """Build a label to display the adjusted image resolution."""
+    """Build a label to display the adjusted image resolution.
+
+    :param node: The node to build the display for.
+    :type node: hou.RopNode
+    :return: The display scale.
+    :rtype: str
+
+    """
     # Need to find a valid camera to get the resolution from it.
     camera = node.parm("camera").evalAsNode()
 
@@ -440,7 +535,14 @@ def build_resolution_scale_display(node):
 
 
 def build_pyfilter_command_from_node(node):
-    """Construct the mantra command with PyFilter."""
+    """Construct the mantra command with PyFilter.
+
+    :param node: The node to build a command from.
+    :type node: hou.RopNode
+    :return: The filter command.
+    :rtype: str
+
+    """
     args = build_arg_string_from_node(node)
 
     cmd = build_pyfilter_command(args.split())
@@ -452,8 +554,11 @@ def set_mantra_command(node):
     """Set the soho_pipecmd parameter to something that will render with our
     custom script and settings.
 
+    :param node: The node to set the command on.
+    :type node: hou.RopNode
+    :return:
+
     """
     cmd = "mantra `pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.build_pyfilter_command_from_node(hou.pwd())\")`"
 
     node.parm("soho_pipecmd").set(cmd)
-
