@@ -11,6 +11,8 @@ source =
     ht.events.events.rop_render
     ht.events.events.scene_load
     ht.inline.api
+    ht.logger
+    ht.loggers.shellio
     ht.nodes.styles.event
     ht.nodes.styles.styles
     ht.nodes.styles.manager
@@ -19,6 +21,7 @@ source =
     ht.pyfilter.utils
     ht.pyfilter.operations.deepimage
     ht.pyfilter.operations.ipoverrides
+    ht.pyfilter.operations.logoutput
     ht.pyfilter.operations.operation
     ht.pyfilter.operations.primaryimage
     ht.pyfilter.operations.zdepth

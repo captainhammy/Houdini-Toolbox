@@ -1,0 +1,28 @@
+
+version: 1
+formatters:
+  default:
+    format: '%(asctime)s %(levelname)-8s %(name)s | %(message)s'
+    datefmt: '%H:%M:%S'
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: default
+    stream: ext://sys.stdout
+  python_shell:
+    class: ht.loggers.shellio.PythonShellHandler
+    level: WARNING
+    formatter: default
+loggers:
+  Houdini-Toolbox:
+    level: DEBUG
+    handlers: [console, python_shell]
+    propagate: no
+  mantra:
+    level: DEBUG
+    handlers: [console]
+    propagate: no
+root:
+  level: INFO
+  handlers: [console]

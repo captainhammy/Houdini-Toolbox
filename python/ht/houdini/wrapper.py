@@ -424,6 +424,7 @@ def _buildParser():
         help="The Python logging level.",
         default="INFO",
         choices=["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"],
+        dest="log_level"
     )
 
     parser.add_argument(

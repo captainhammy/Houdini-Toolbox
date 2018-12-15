@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
-from ht.pyfilter.logger import logger
+from ht.logger import logger
 from ht.pyfilter.operations.operation import PyFilterOperation, log_filter
 from ht.pyfilter.property import get_property, set_property
 

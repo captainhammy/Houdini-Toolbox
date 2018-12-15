@@ -12,7 +12,7 @@ import importlib
 import json
 
 # Houdini Toolbox Imports
-from ht.pyfilter.logger import logger
+from ht.logger import logger
 
 # =============================================================================
 # CLASSES

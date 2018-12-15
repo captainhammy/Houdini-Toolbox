@@ -11,7 +11,7 @@ For more information, please see:
 # =============================================================================
 
 # Houdini Toolbox Imports
-from ht.pyfilter.logger import logger
+from ht.logger import logger
 from ht.pyfilter.manager import PyFilterManager
 
 # Houdini Imports

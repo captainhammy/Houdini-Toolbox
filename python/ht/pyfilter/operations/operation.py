@@ -8,7 +8,7 @@
 from functools import wraps
 
 # Houdini Toolbox Imports
-from ht.pyfilter.logger import logger
+from ht.logger import logger
 
 # =============================================================================
 # CLASSES
