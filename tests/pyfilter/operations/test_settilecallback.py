@@ -52,9 +52,9 @@ class Test_SetTileCallback(unittest.TestCase):
         """Test 'tilecallback' property."""
         op = settilecallback.SetTileCallback(None)
 
-        value = MagicMock(spec=str)
-        op._tilecallback = value
-        self.assertEqual(op.tilecallback, value)
+        mock_value = MagicMock(spec=str)
+        op._tilecallback = mock_value
+        self.assertEqual(op.tilecallback, mock_value)
 
     # Static Methods
 
@@ -82,9 +82,7 @@ class Test_SetTileCallback(unittest.TestCase):
 
         settilecallback.SetTileCallback.register_parser_args(mock_parser)
 
-        calls = [
-            call("--tile-callback", dest="tilecallback"),
-        ]
+        calls = [call("--tile-callback", dest="tilecallback")]
         mock_parser.add_argument.assert_has_calls(calls)
 
     # Methods
@@ -106,7 +104,7 @@ class Test_SetTileCallback(unittest.TestCase):
 
     @patch.object(settilecallback.SetTileCallback, "__init__", lambda x, y: None)
     def test_process_parsed_args_noop(self):
-        """Test processing the args when the tilecallback arg is None. """
+        """Test processing the args when the tilecallback arg is None."""
         mock_namespace = MagicMock(spec=argparse.Namespace)
         mock_namespace.tilecallback = None
 
@@ -119,7 +117,7 @@ class Test_SetTileCallback(unittest.TestCase):
 
     @patch.object(settilecallback.SetTileCallback, "__init__", lambda x, y: None)
     def test_process_parsed_args(self):
-        """Test processing the args when the tilecallback arg is set to a value.. """
+        """Test processing the args when the tilecallback arg is set to a value."""
         mock_path = MagicMock(spec=str)
 
         mock_namespace = MagicMock(spec=argparse.Namespace)
