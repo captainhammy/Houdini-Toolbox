@@ -30,25 +30,8 @@ OBJ = hou.node("/obj")
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # =============================================================================
-# FUNCTIONS
+# CLASSES
 # =============================================================================
-
-def get_obj_geo(nodePath):
-    """Get the geometry from the display node of a Geometry object."""
-    return OBJ.node(nodePath).displayNode().geometry()
-
-def get_obj_geo_copy(nodePath):
-    """Get a copy of the geometry from the display node of a Geometry object."""
-    # Create a new hou.Geometry object.
-    geo = hou.Geometry()
-
-    # Get the geometry object's geo.
-    sourceGeo = get_obj_geo(nodePath)
-
-    # Merge the geo to copy it.
-    geo.merge(sourceGeo)
-
-    return geo
 
 class TestInlineCpp(unittest.TestCase):
     """This class implements test cases for the fuctions added through the
@@ -1973,6 +1956,29 @@ class TestInlineCpp(unittest.TestCase):
 
         # Destroy the dummy definition.
         node_type.definition().destroy()
+
+
+
+# =============================================================================
+# FUNCTIONS
+# =============================================================================
+
+def get_obj_geo(nodePath):
+    """Get the geometry from the display node of a Geometry object."""
+    return OBJ.node(nodePath).displayNode().geometry()
+
+def get_obj_geo_copy(nodePath):
+    """Get a copy of the geometry from the display node of a Geometry object."""
+    # Create a new hou.Geometry object.
+    geo = hou.Geometry()
+
+    # Get the geometry object's geo.
+    sourceGeo = get_obj_geo(nodePath)
+
+    # Merge the geo to copy it.
+    geo.merge(sourceGeo)
+
+    return geo
 
 # =============================================================================
 
