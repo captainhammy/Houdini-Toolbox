@@ -21,9 +21,7 @@ from ht.pyfilter.property import get_property, set_property
 # =============================================================================
 
 class PropertySetterManager(object):
-    """Class for creating and managing PropertySetters.
-
-    """
+    """Class for creating and managing PropertySetters."""
 
     def __init__(self):
         self._properties = {}
@@ -45,18 +43,6 @@ class PropertySetterManager(object):
             # A list of properties for this stage.
             properties = self.properties.setdefault(stage_name, [])
 
-            # Check if the stage should be disabled.
-            if "disabled" in stage_data:
-                if stage_data["disabled"]:
-                    logger.debug(
-                        "Stage entry disabled: {}".format(stage_name)
-                    )
-
-                    continue
-
-                # If not, remove the disabled entry.
-                del(stage_data["disabled"])
-
             # The data is stored by property name.
             for property_name, property_block in stage_data.iteritems():
                 # Wrapping properties in a 'rendertype:type' block is supported
@@ -65,23 +51,7 @@ class PropertySetterManager(object):
                     # Get the rendertype name.
                     rendertype = property_name.split(":")[1]
 
-                    # Process each child property block.
-                    for name, block in property_block.iteritems():
-                        # If the child data is the standard dictionary of data
-                        # we can just insert the rendertype value into it.
-                        if isinstance(block, dict):
-                            block["rendertype"] = rendertype
-
-                        # If the child data is a list of dictionaries then
-                        # iterate over each one and insert the value.
-                        elif isinstance(block, list):
-                            for item in block:
-                                item["rendertype"] = rendertype
-
-                        # Process the child data block.
-                        _process_block(
-                            properties, stage_name, name, block
-                        )
+                    _process_rendertype_block(properties, stage_name, rendertype, property_block)
 
                 # Normal data.
                 else:
@@ -139,7 +109,7 @@ class PropertySetterManager(object):
         """
         if stage in self.properties:
             for prop in self.properties[stage]:
-                prop.setProperty()
+                prop.set_property()
 
 
 class PropertySetter(object):
@@ -162,21 +132,12 @@ class PropertySetter(object):
         # Store the raw value object.
         self._value = property_block["value"]
 
-        self._enabled = True
-        self._find_file = False
-        self._rendertype = None
+        self._find_file = property_block.get("findfile", False)
+        self._rendertype = property_block.get("rendertype")
 
-        if "findfile" in property_block:
-            self.find_file = property_block["findfile"]
-
-        if "enabled" in property_block:
-            self.enabled = property_block["enabled"]
-
-        if "rendertype" in property_block:
-            self.rendertype = property_block["rendertype"]
-
-        # Perform any value cleanup.
-        self._process_value()
+        if self.find_file:
+            import hou
+            self._value = hou.findFile(self.value)
 
     # =========================================================================
     # SPECIAL METHODS
@@ -192,63 +153,7 @@ class PropertySetter(object):
         return "<PropertySetter {}={}>".format(self.name, value)
 
     # =========================================================================
-    # NON-PUBLIC METHODS
-    # =========================================================================
-
-    def _process_value(self):
-        """Perform operations and cleanup of the value data.
-
-        :return:
-
-        """
-        import hou
-
-        # Skip normal types.
-        if isinstance(self.value, (bool, float, int)):
-            return
-
-        # Don't do anything if the property isn't enabled.
-        if not self.enabled:
-            return
-
-        # If the object is a list of only one entry, extract it.
-        if len(self.value) == 1:
-            self.value = self.value[0]
-
-        # If the value is actually a relative file, search for it in the
-        # Houdini path.
-        if self.find_file:
-            self.value = hou.findFile(self.value)
-
-        # Object is a list (possibly numbers or strings or both).
-        if isinstance(self.value, list):
-            # Does the list contain any strings.
-            contains_string = False
-
-            for val in self.value:
-                # If the value is a string, flag it.
-                if isinstance(val, str):
-                    contains_string = True
-                    break
-
-            # If at least one value is a string then we need to convert them
-            # all to strings.
-            if contains_string:
-                self.value = [str(val) for val in self.value]
-
-    # =========================================================================
     # PROPERTIES
-    # =========================================================================
-
-    @property
-    def enabled(self):
-        """bool: Is the property setting enabled."""
-        return self._enabled
-
-    @enabled.setter
-    def enabled(self, enabled):
-        self._enabled = enabled
-
     # =========================================================================
 
     @property
@@ -256,38 +161,20 @@ class PropertySetter(object):
         """bool: Is the value the name of a file to find."""
         return self._find_file
 
-    @find_file.setter
-    def find_file(self, find_file):
-        self._find_file = find_file
-
-    # =========================================================================
-
     @property
     def name(self):
         """str: The name of the property to set."""
         return self._name
-
-    # =========================================================================
 
     @property
     def rendertype(self):
         """str: Apply to specific render types."""
         return self._rendertype
 
-    @rendertype.setter
-    def rendertype(self, rendertype):
-        self._rendertype = rendertype
-
-    # =========================================================================
-
     @property
     def value(self):
         """object: The value to set the property."""
         return self._value
-
-    @value.setter
-    def value(self, value):
-        self._value = value
 
     # =========================================================================
     # METHODS
@@ -301,10 +188,6 @@ class PropertySetter(object):
         """
         import hou
 
-        # Don't do anything if the property isn't enabled.
-        if not self.enabled:
-            return
-
         # Is this property being applied to a specific render type.
         if self.rendertype is not None:
             # Get the rendertype for the current pass.
@@ -314,9 +197,7 @@ class PropertySetter(object):
             if not hou.patternMatch(self.rendertype, rendertype):
                 return
 
-        logger.debug(
-            "Setting property '{}' to {}".format(self.name, self.value)
-        )
+        logger.debug("Setting property '{}' to {}".format(self.name, self.value))
 
         # Update the property value.
         set_property(self.name, self.value)
@@ -342,7 +223,7 @@ class MaskedPropertySetter(PropertySetter):
         super(MaskedPropertySetter, self).__init__(name, property_block)
 
         # Look for a mask property.
-        self._mask = str(property_block["mask"])
+        self._mask = property_block["mask"]
 
         self._mask_property_name = mask_property_name
 
@@ -393,10 +274,10 @@ class MaskedPropertySetter(PropertySetter):
         # Is this property being applied using a name mask.
         if self.mask is not None:
             # Get the name of the item that is currently being filtered.
-            filtered_item = get_property(self.mask_property_name)
+            property_value = get_property(self.mask_property_name)
 
             # If the mask pattern doesn't match, abort.
-            if not hou.patternMatch(self.mask, filtered_item):
+            if not hou.patternMatch(self.mask, property_value):
                 return
 
         # Call the super class function to set the property.
@@ -422,7 +303,7 @@ class SetProperties(PyFilterOperation):
 
     @property
     def property_manager(self):
-        """PropertySetterManager:Get the property manager."""
+        """PropertySetterManager: The property manager to use."""
         return self._property_manager
 
     # =========================================================================
@@ -470,14 +351,12 @@ class SetProperties(PyFilterOperation):
             "--properties",
             nargs=1,
             action="store",
-            help="Specify a property dictionary on the command line."
         )
 
         parser.add_argument(
             "--properties-file",
-            nargs=1,
+            nargs="*",
             action="store",
-            help="Use a file to define render properties to override.",
             dest="properties_file"
         )
 
@@ -543,15 +422,15 @@ class SetProperties(PyFilterOperation):
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-def _create_property_setter(stage_name, property_name, property_block):
+def _create_property_setter(property_name, property_block, stage_name):
     """Create a PropertySetter based on data.
 
-    :param stage_name: The filter stage to run for.
-    :type stage_name: str
     :param property_name: The name of the property to set.
     :type property_name: str
     :param property_block: The property data to set.
     :type property_block: dict
+    :param stage_name: The filter stage to run for.
+    :type stage_name: str
     :return: A property setter object.
     :rtype: PropertySetter
 
@@ -600,6 +479,7 @@ def _process_block(properties, stage_name, name, block):
     :type name: str
     :param block: The property data to set.
     :type block: dict|list(dict)
+    :return:
 
     """
     # If we want to set the same property with different settings multiple
@@ -614,9 +494,45 @@ def _process_block(properties, stage_name, name, block):
         # Process any properties in the block.
         for property_elem in block:
             prop = _create_property_setter(
-                stage_name,
                 name,
-                property_elem
+                property_elem,
+                stage_name
             )
 
             properties.append(prop)
+
+
+def _process_rendertype_block(properties, stage_name, rendertype, property_block):
+    """Process a data block representing properties for a specific rendertype.
+
+    :param properties: A list of property settings.
+    :type properties: list
+    :param stage_name: The filter stage to run for.
+    :type stage_name: str
+    :param rendertype: The rendertype.
+    :type rendertype: str
+    :param property_block: The property data to set.
+    :type property_block: dict
+    :return:
+
+    """
+    # Process each child property block.
+    for name, block in property_block.iteritems():
+        # If the child data is the standard dictionary of data
+        # we can just insert the rendertype value into it.
+        if isinstance(block, dict):
+            block["rendertype"] = rendertype
+
+        # If the child data is a list of dictionaries then
+        # iterate over each one and insert the value.
+        elif isinstance(block, list):
+            for item in block:
+                item["rendertype"] = rendertype
+
+        else:
+            raise TypeError("Must be dict or list, got {}".format(type(block)))
+
+        # Process the child data block.
+        _process_block(
+            properties, stage_name, name, block
+        )

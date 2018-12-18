@@ -69,6 +69,8 @@ class Test_SetPrimaryImage(unittest.TestCase):
 
     # Static Methods
 
+    # build_arg_string
+
     def test_build_arg_string__empty(self):
         result = primaryimage.SetPrimaryImage.build_arg_string()
 
@@ -85,6 +87,8 @@ class Test_SetPrimaryImage(unittest.TestCase):
         result = primaryimage.SetPrimaryImage.build_arg_string(disable_primary_image=True)
 
         self.assertEqual(result, "--disable-primary-image")
+
+    # register_parser_args
 
     def test_register_parser_args(self):
         mock_parser = MagicMock(spec=argparse.ArgumentParser)
@@ -137,6 +141,8 @@ class Test_SetPrimaryImage(unittest.TestCase):
         op.filterCamera()
 
         mock_set.assert_not_called()
+
+    # process_parsed_args
 
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
     def test_process_parsed_args_noop(self):

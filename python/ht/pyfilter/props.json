@@ -1,12 +1,6 @@
 
 {
     "camera": {
-        "renderer:tilecallback": {
-            "value": "mantraTileCallback.py",
-            "findfile": true,
-            "enabled": false
-        },
-
         "rendertype:beauty": {
             "image:resolution":
             {
@@ -19,7 +13,7 @@
         },
 
         "rendertype:shadow": {
-            "image:resolution": 
+            "image:resolution":
             {
                 "value": [2048, 2048]
             },
@@ -36,7 +30,6 @@
     },
 
     "instance": {
-        "disabled": false,
 
         "rendertype:beauty": {
             "object:surface":

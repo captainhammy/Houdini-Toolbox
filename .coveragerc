@@ -24,6 +24,7 @@ source =
     ht.pyfilter.operations.logoutput
     ht.pyfilter.operations.operation
     ht.pyfilter.operations.primaryimage
+    ht.pyfilter.operations.setproperties
     ht.pyfilter.operations.zdepth
     ht.sohohooks.aovs.aov
     ht.sohohooks.aovs.manager
