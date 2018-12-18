@@ -36,10 +36,6 @@ class SetTileCallback(PyFilterOperation):
         """str: The path to the tile callback."""
         return self._tilecallback
 
-    @tilecallback.setter
-    def tilecallback(self, tilecallback):
-        self._tilecallback = tilecallback
-
     # =========================================================================
     # STATIC METHODS
     # =========================================================================
@@ -57,7 +53,7 @@ class SetTileCallback(PyFilterOperation):
         args = []
 
         if path is not None:
-            args.append("--tile-callback {}".format(path))
+            args.append("--tile-callback={}".format(path))
 
         return " ".join(args)
 
@@ -70,7 +66,7 @@ class SetTileCallback(PyFilterOperation):
         :return:
 
         """
-        parser.add_argument("--tilecallback")
+        parser.add_argument("--tile-callback", dest="tilecallback")
 
     # =========================================================================
     # METHODS
@@ -94,7 +90,7 @@ class SetTileCallback(PyFilterOperation):
 
         """
         if filter_args.tilecallback is not None:
-            self.tilecallback = filter_args.tilecallback
+            self._tilecallback = filter_args.tilecallback
 
     def should_run(self):
         """Determine whether or not this filter should be run.
