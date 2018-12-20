@@ -311,95 +311,100 @@ sortByAttribute(GU_Detail *gdp,
 
 """
 void
-sortAlongAxis(GU_Detail *gdp, int element_type, int axis)
+sortAlongAxis(GU_Detail *gdp, int attribute_type, int axis)
 {
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
+
     // Convert the int value to the axis type.
     GU_AxisType axis_type = static_cast<GU_AxisType>(axis);
 
-    // Sort primitives.
-    if (element_type)
+    switch(owner)
     {
-        gdp->sortPrimitiveList(axis_type);
-    }
+        case GA_ATTRIB_POINT:
+            gdp->sortPointList(axis_type);
+            break;
 
-    // Sort points.
-    else
-    {
-        gdp->sortPointList(axis_type);
+        case GA_ATTRIB_PRIMITIVE:
+            gdp->sortPrimitiveList(axis_type);
+            break;
     }
 }
 """,
 
 """
 void
-sortListRandomly(GU_Detail *gdp, int element_type, float seed)
+sortListRandomly(GU_Detail *gdp, int attribute_type, float seed)
 {
-    // Sort primitives.
-    if (element_type)
-    {
-        gdp->sortPrimitiveList(seed);
-    }
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
 
-    // Sort points.
-    else
+    switch(owner)
     {
-        gdp->sortPointList(seed);
+        case GA_ATTRIB_POINT:
+            gdp->sortPointList(seed);
+            break;
+
+        case GA_ATTRIB_PRIMITIVE:
+            gdp->sortPrimitiveList(seed);
+            break;
     }
 }
 """,
 
 """
 void
-shiftList(GU_Detail *gdp, int element_type, int offset)
+shiftList(GU_Detail *gdp, int attribute_type, int offset)
 {
-    // Sort primitives.
-    if (element_type)
-    {
-        gdp->shiftPrimitiveList(offset);
-    }
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
 
-    // Sort points.
-    else
+    switch(owner)
     {
-        gdp->shiftPointList(offset);
+        case GA_ATTRIB_POINT:
+            gdp->shiftPointList(offset);
+            break;
+
+        case GA_ATTRIB_PRIMITIVE:
+            gdp->shiftPrimitiveList(offset);
+            break;
     }
 }
 """,
 
 """
 void
-reverseList(GU_Detail *gdp, int element_type)
+reverseList(GU_Detail *gdp, int attribute_type)
 {
-    // Sort primitives.
-    if (element_type)
-    {
-        gdp->reversePrimitiveList();
-    }
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
 
-    // Sort points.
-    else
+    switch(owner)
     {
-        gdp->reversePointList();
+        case GA_ATTRIB_POINT:
+            gdp->reversePointList();
+            break;
+
+        case GA_ATTRIB_PRIMITIVE:
+            gdp->reversePrimitiveList();
+            break;
     }
 }
 """,
 
 """
 void
-proximityToList(GU_Detail *gdp, int element_type, const UT_Vector3D *point)
+proximityToList(GU_Detail *gdp, int attribute_type, const UT_Vector3D *point)
 {
     UT_Vector3                  pos(*point);
 
-    // Sort primitives.
-    if (element_type)
-    {
-        gdp->proximityToPrimitiveList(pos);
-    }
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
 
-    // Sort points.
-    else
+    switch(owner)
     {
-        gdp->proximityToPointList(pos);
+        case GA_ATTRIB_POINT:
+            gdp->proximityToPointList(pos);
+            break;
+
+        case GA_ATTRIB_PRIMITIVE:
+            gdp->proximityToPrimitiveList(pos);
+            break;
     }
 }
 """,
@@ -414,18 +419,19 @@ sortByVertexOrder(GU_Detail *gdp)
 
 """
 void
-sortByValues(GU_Detail *gdp, int element_type, fpreal *values)
+sortByValues(GU_Detail *gdp, int attribute_type, fpreal *values)
 {
-    // Sort primitives.
-    if (element_type)
-    {
-        gdp->sortPrimitiveList(values);
-    }
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
 
-    // Sort points.
-    else
+    switch(owner)
     {
-        gdp->sortPointList(values);
+        case GA_ATTRIB_POINT:
+            gdp->sortPointList(values);
+            break;
+
+        case GA_ATTRIB_PRIMITIVE:
+            gdp->sortPrimitiveList(values);
+            break;
     }
 }
 """,
@@ -464,7 +470,7 @@ isPython(OP_Operator *op)
 
 """
 int
-createPoint(GU_Detail *gdp, UT_Vector3D *position)
+createPointAtPosition(GU_Detail *gdp, UT_Vector3D *position)
 {
     GA_Offset                   ptOff;
 
@@ -1196,7 +1202,7 @@ reversePrimitive(const GU_Detail *gdp, unsigned prim_num)
 
     prim = (GEO_Primitive *)gdp->getPrimitiveByIndex(prim_num);
 
-    return prim->reverse();
+    prim->reverse();
 }
 """,
 

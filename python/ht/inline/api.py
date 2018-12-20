@@ -57,6 +57,21 @@ _ATTRIB_TYPE_MAP = {
     hou.attribType.Global: 3,
 }
 
+# Mapping between geometry types and corresponding GA_AttributeOwner values.
+_GEOMETRY_ATTRIB_MAP = {
+    hou.Vertex: 0,
+    hou.Point: 1,
+    hou.Prim: 2,
+    hou.Geometry: 3
+}
+
+# Mapping between hou.geometryTypes and corresponding GA_AttributeOwner values.
+_GEOMETRY_TYPE_MAP = {
+    hou.geometryType.Vertices: 0,
+    hou.geometryType.Points: 1,
+    hou.geometryType.Primitives: 2
+}
+
 # Mapping between group types and corresponding GA_AttributeOwner values.
 _GROUP_ATTRIB_MAP = {
     hou.PointGroup: 1,
@@ -70,20 +85,20 @@ _GROUP_TYPE_MAP = {
     hou.EdgeGroup: 2,
 }
 
-# Mapping between geometry types and corresponding GA_AttributeOwner values.
-_GEOMETRY_ATTRIB_MAP = {
-    hou.Vertex: 0,
-    hou.Point: 1,
-    hou.Prim: 2,
-    hou.Geometry: 3
-}
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
 def _build_c_double_array(values):
-    """Convert a list of numbers to a ctypes double array."""
+    """Convert a list of numbers to a ctypes double array.
+
+    :param values: A list of floats.
+    :type values: list(float)
+    :return: The values as ctypes compatible values.
+    :rtype: list(ctypes.c_double)
+
+    """
     arr = (ctypes.c_double * len(values))()
     arr[:] = values
 
@@ -91,14 +106,29 @@ def _build_c_double_array(values):
 
 
 def _build_c_int_array(values):
-    """Convert a list of numbers to a ctypes int array."""
+    """Convert a list of numbers to a ctypes int array.
+
+    :param values: A list of ints.
+    :type values: list(int)
+    :return: The values as ctypes compatible values.
+    :rtype: list(ctypes.c_int)
+
+    """
     arr = (ctypes.c_int * len(values))()
     arr[:] = values
 
     return arr
 
+
 def _build_c_string_array(values):
-    """Convert a list of numbers to a ctypes char * array."""
+    """Convert a list of strings to a ctypes char * array.
+
+    :param values: A list of strings.
+    :type values: list(str)
+    :return: The values as ctypes compatible values.
+    :rtype: list(ctypes.c_char_p)
+
+    """
     arr = (ctypes.c_char_p * len(values))()
     arr[:] = values
 
@@ -106,12 +136,30 @@ def _build_c_string_array(values):
 
 
 def _clean_string_values(values):
-    """Process a string list, removing empty strings."""
+    """Process a string list, removing empty strings.
+
+    :param values: A list of strings to clean.
+    :type values: list(str)
+    :return: A clean tuple.
+    :rtype: tuple(str)
+
+    """
     return tuple([val for val in values if val])
 
 
 def _find_attrib(geometry, attrib_type, name):
-    """Find an attribute with a given name and type on the geometry."""
+    """Find an attribute with a given name and type on the geometry.
+
+    :param geometry: The geometry to find an attribute on.
+    :type geometry: hou.Geometry
+    :param attrib_type: The attribute type.
+    :type attrib_type: hou.attribType.
+    :param name: The attribute name.
+    :type name: str
+    :return: A found attribute, otherwise None.
+    :rtype: hou.Attrib|None
+
+    """
     if attrib_type == hou.attribType.Vertex:
         return geometry.findVertexAttrib(name)
 
@@ -130,6 +178,15 @@ def _find_group(geometry, group_type, name):
 
     group_type corresponds to the integer returned by _get_group_type()
 
+    :param geometry: The geometry to find the group in.
+    :type geometry: hou.Geometry
+    :param group_type: The group type.
+    :type group_type: int
+    :param name: The attribute name.
+    :type name: str
+    :return: A found group.
+    :rtype: hou.EdgeGroup|hou.PointGroup|hou.PrimGroup
+
     """
     if group_type == 0:
         return geometry.findPointGroup(name)
@@ -147,19 +204,38 @@ def _find_group(geometry, group_type, name):
 
 
 def _get_attrib_storage(data_type):
-    """Get an HDK compatible attribute storage class value."""
+    """Get an HDK compatible attribute storage class value.
+
+    :param data_type: The type of data to store.
+    :type data_type: hou.attribData
+    :return: An HDK attribute storage type.
+    :rtype: int
+
+    """
     return _ATTRIB_STORAGE_MAP[data_type]
 
 
 def _get_attrib_owner(attribute_type):
-    """Get an HDK compatible attribute owner value."""
+    """Get an HDK compatible attribute owner value.
+
+    :param attribute_type: The type of attribute.
+    :type attribute_type: hou.attribType
+    :return: An HDK attribute owner value.
+    :rtype: int
+
+    """
     return _ATTRIB_TYPE_MAP[attribute_type]
 
 
-def _get_attrib_owner_from_geometry_type(entity_type):
+def _get_attrib_owner_from_geometry_entity_type(entity_type):
     """Get an HDK compatible attribute owner value from a geometry class.
 
     The type can be of hou.Geometry, hou.Point, hou.Prim (or subclasses) or hou.Vertex.
+
+    :param entity_type: The entity to get a attribute owner for.
+    :type entity_type: hou.Vertex|hou.Point|hou.Prim|hou.Geometry
+    :return: An HDK attribute owner value.
+    :rtype: int
 
     """
     # If the class is a base class in the map then just return it.
@@ -178,8 +254,32 @@ def _get_attrib_owner_from_geometry_type(entity_type):
     raise TypeError("Invalid entity type: {}".format(entity_type))
 
 
+def _get_attrib_owner_from_geometry_type(geometry_type):
+    """Get an HDK compatible attribute owner value from a hou.geometryType.
+
+    :param geometry_type: The entity to get a attribute owner for.
+    :type geometry_type: hou.geometryType
+    :return: An HDK attribute owner value.
+    :rtype: int
+
+    """
+    # If the class is a base class in the map then just return it.
+    if geometry_type in _GEOMETRY_TYPE_MAP:
+        return _GEOMETRY_TYPE_MAP[geometry_type]
+
+    # Something went wrong so raise an exception.
+    raise TypeError("Invalid geometry type: {}".format(geometry_type))
+
+
 def _get_group_attrib_owner(group):
-    """Get an HDK compatible group attribute type value."""
+    """Get an HDK compatible group attribute type value.
+
+    :param group: The group to get the attribute owner for.
+    :type group: hou.PointGroup|hou.PrimGroup
+    :return: An HDK attribute owner value.
+    :rtype: int
+
+    """
     try:
         return _GROUP_ATTRIB_MAP[type(group)]
 
@@ -188,7 +288,14 @@ def _get_group_attrib_owner(group):
 
 
 def _get_group_type(group):
-    """Get an HDK compatible group type value."""
+    """Get an HDK compatible group type value.
+
+    :param group: The group to get the group type for.
+    :type group: hou.EdgeGroup|hou.PointGroup|hou.PrimGroup
+    :return: An HDK group type value.
+    :rtype: int
+
+    """
     try:
         return _GROUP_TYPE_MAP[type(group)]
 
@@ -197,12 +304,28 @@ def _get_group_type(group):
 
 
 def _get_nodes_from_paths(paths):
-    """Convert a list of string paths to hou.Node objects."""
+    """Convert a list of string paths to hou.Node objects.
+
+    :param paths: A list of paths.
+    :type paths: list(str)
+    :return: A tuple of hou.Node objects.
+    :rtype: tuple(hou.Node)
+
+    """
     return tuple([hou.node(path) for path in paths if path])
 
 
 def _get_points_from_list(geometry, point_list):
-    """Convert a list of point numbers to hou.Point objects."""
+    """Convert a list of point numbers to hou.Point objects.
+
+    :param geometry: The geometry to get points for.
+    :type geometry: hou.Geometry
+    :param point_list: A list of point numbers.
+    :type point_list: list(int)
+    :return: Matching points on the geometry.
+    :rtype: tuple(hou.Point)
+
+    """
     # Return a empty tuple if the point list is empty.
     if not point_list:
         return ()
@@ -215,7 +338,16 @@ def _get_points_from_list(geometry, point_list):
 
 
 def _get_prims_from_list(geometry, prim_list):
-    """Convert a list of primitive numbers to hou.Prim objects."""
+    """Convert a list of primitive numbers to hou.Prim objects.
+
+    :param geometry: The geometry to get prims for.
+    :type geometry: hou.Geometry
+    :param prim_list: A list of prim numbers.
+    :type prim_list: list(int)
+    :return: Matching prims on the geometry.
+    :rtype: tuple(hou.Prim)
+
+    """
     # Return a empty tuple if the prim list is empty.
     if not prim_list:
         return ()
@@ -225,6 +357,27 @@ def _get_prims_from_list(geometry, prim_list):
 
     # Glob for the specified prims.
     return geometry.globPrims(prim_str)
+
+
+def _validate_prim_vertex_index(prim, index):
+    """Validate that a vertex index is valid for a primitive.
+
+    If an index is not valid a IndexError will be raised.
+
+    :param prim: The primitive to validate the index for.
+    :type prim: hou.Prim
+    :param index: The vertex index.
+    :type index: int
+    :return:
+
+    """
+    # If the index is less than 0, throw an exception since it's not valid.
+    if index < 0:
+        raise IndexError("Index must be 0 or greater.")
+
+    # If the index is too high it is also invalid.
+    if index >= prim.numVertices():
+        raise IndexError("Invalid index: {}".format(index))
 
 # =============================================================================
 # FUNCTIONS
@@ -291,6 +444,11 @@ def getGlobalVariableNames(dirty=False):
     variable that has been created or modified but not updated throughout the
     session by something like the 'varchange' hscript command.
 
+    :param dirty: Whether or not to return only dirty variables.
+    :type dirty: bool
+    :return: A tuple of global variable names.
+    :rtype: tuple(str)
+
     """
     # Get all the valid variable names.
     var_names = _cpp_methods.getGlobalVariables(dirty)
@@ -303,7 +461,10 @@ def getGlobalVariableNames(dirty=False):
 def getVariable(name):
     """Returns the value of the named variable.
 
-    Returns None if no such variable exists.
+    :param name: The variable name.
+    :type name: str
+    :return: The value of the variable if it exists, otherwise None
+    :rtype: str|None
 
     """
     # If the variable name isn't in list of variables, return None.
@@ -336,6 +497,11 @@ def getVariableNames(dirty=False):
     variable that has been created or modified but not updated throughout the
     session by something like the 'varchange' hscript command.
 
+    :param dirty: Whether or not to return only dirty variables.
+    :type dirty: bool
+    :return: A tuple of variable names.
+    :rtype: tuple(str)
+
     """
     # Get all the valid variable names.
     var_names = _cpp_methods.getVariableNames(dirty)
@@ -346,7 +512,17 @@ def getVariableNames(dirty=False):
 
 @add_to_module(hou)
 def setVariable(name, value, local=False):
-    """Set a variable."""
+    """Set a variable.
+
+    :param name: The variable name.
+    :type name: str
+    :param value: The variable value.
+    :type value: type
+    :param local: Whether or not to set the variable as local.
+    :type local: bool
+    :return:
+
+    """
     _cpp_methods.setVariable(name, str(value), local)
 
 
@@ -355,6 +531,10 @@ def unsetVariable(name):
     """Unset a variable.
 
     This function will do nothing if no such variable exists.
+
+    :param name: The variable name.
+    :type name: str
+    :return:
 
     """
     _cpp_methods.unsetVariable(name)
@@ -368,6 +548,8 @@ def varChange():
     not automatically cooked. Use this function to cook all OPs when a variable
     they use changes.
 
+    :return:
+
     """
     _cpp_methods.varChange()
 
@@ -380,17 +562,29 @@ def expandRange(pattern):
     '0 4 10-100', '1-100:2', etc.  See Houdini's documentation about geometry
     groups for more information. Wildcards are not supported.
 
+    :param pattern: The pattern to expand:
+    :type pattern: str
+    :return: A tuple of expanded values.
+    :rtype: tuple(int)
+
     """
     return tuple(_cpp_methods.expandRange(pattern))
 
 
 @add_to_class(hou.Geometry)
 def isReadOnly(self):
-    """Check if the geometry is read only."""
+    """Check if the geometry is read only.
+
+    :return: Whether or not this geometry is read only.
+    :rtype: bool
+
+    """
     # Get a GU Detail Handle for the geometry.
     handle = self._guDetailHandle()
+
     # Check if the handle is read only.
     result = handle.isReadOnly()
+
     # Destroy the handle.
     handle.destroy()
 
@@ -404,6 +598,9 @@ def numPoints(self):
     This should be quicker than len(hou.Geometry.iterPoints()) since it uses
     the 'pointcount' intrinsic value from the detail.
 
+    :return: The point count:
+    :rtype: int
+
     """
     return self.intrinsicValue("pointcount")
 
@@ -415,13 +612,21 @@ def numPrims(self):
     This should be quicker than len(hou.Geometry.iterPrims()) since it uses
     the 'primitivecount' intrinsic value from the detail.
 
+    :return: The primitive count:
+    :rtype: int
+
     """
     return self.intrinsicValue("primitivecount")
 
 
 @add_to_class(hou.Geometry)
 def numVertices(self):
-    """Get the number of vertices in the geometry."""
+    """Get the number of vertices in the geometry.
+
+    :return: The vertex count:
+    :rtype: int
+
+    """
     return self.intrinsicValue("vertexcount")
 
 
@@ -433,6 +638,11 @@ def packGeometry(self, source):
     detail, returning the new PackedGeometry primitive.
 
     Both hou.Geometry objects must not be read only.
+
+    :param source: The source geometry.
+    :type source: hou.Geomety
+    :return: The packed geometry primitive.
+    :rtype: hou.PackedGeometry
 
     """
     # Make sure the geometry is not read only.
@@ -452,8 +662,13 @@ def packGeometry(self, source):
 def sortByAttribute(self, attribute, tuple_index=0, reverse=False):
     """Sort points, primitives or vertices based on attribute values.
 
-    tuple_index is used to determine which index to sort by when using an
-    attribute that has a size > 1. eg. to sort by P.y use tuple_index=1
+    :param attribute: The attribute to sort by.
+    :type attribute: hou.Attrib
+    :param tuple_index: The tuple index to sort by when using attributes of size > 1.
+    :type tuple_index: int
+    :param reverse: Whether or not to reverse the sort.
+    :type reverse: bool
+    :return:
 
     """
     # Make sure the geometry is not read only.
@@ -490,6 +705,12 @@ def sortAlongAxis(self, geometry_type, axis):
 
     The axis to sort along: (X=0, Y=1, Z=2)
 
+    :param geometry_type: The type of geometry to sort.
+    :type geometry_type: hou.geometryType
+    :param axis: The axis to sort along.
+    :type axis: int
+    :return:
+
     """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
@@ -499,13 +720,10 @@ def sortAlongAxis(self, geometry_type, axis):
     if axis not in range(3):
         raise ValueError("Invalid axis: {}".format(axis))
 
-    # Sort the points along an axis.
-    if geometry_type == hou.geometryType.Points:
-        _cpp_methods.sortAlongAxis(self, 0, axis)
+    if geometry_type in (hou.geometryType.Points, hou.geometryType.Primitives):
+        attrib_owner = _get_attrib_owner_from_geometry_type(geometry_type)
 
-    # Sort the primitives along an axis.
-    elif geometry_type == hou.geometryType.Primitives:
-        _cpp_methods.sortAlongAxis(self, 1, axis)
+        _cpp_methods.sortAlongAxis(self, attrib_owner, axis)
 
     else:
         raise hou.OperationFailed(
@@ -520,6 +738,12 @@ def sortByValues(self, geometry_type, values):
     The list of values must be the same length as the number of geometry
     elements to be sourced.
 
+    :param geometry_type: The type of geometry to sort.
+    :type geometry_type: hou.geometryType
+    :param values: The values to sort by.
+    :type values: list(float)
+    :return:
+
     """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
@@ -527,7 +751,7 @@ def sortByValues(self, geometry_type, values):
 
     if geometry_type == hou.geometryType.Points:
         # Check we have enough points.
-        if len(values) != len(self.iterPoints()):
+        if len(values) != self.numPoints:
             raise hou.OperationFailed(
                 "Length of values must equal the number of points."
             )
@@ -539,25 +763,35 @@ def sortByValues(self, geometry_type, values):
 
     elif geometry_type == hou.geometryType.Primitives:
         # Check we have enough primitives.
-        if len(values) != len(self.iterPrims()):
+        if len(values) != self.numPrims:
             raise hou.OperationFailed(
                 "Length of values must equal the number of prims."
             )
-
-        # Construct a ctypes double array to pass the values.
-        arr = _build_c_double_array(values)
-
-        _cpp_methods.sortByValues(self, 1, arr)
 
     else:
         raise hou.OperationFailed(
             "Geometry type must be points or primitives."
         )
 
+    attrib_owner = _get_attrib_owner_from_geometry_type(geometry_type)
+
+    # Construct a ctypes double array to pass the values.
+    arr = _build_c_double_array(values)
+
+    _cpp_methods.sortByValues(self, attrib_owner, arr)
+
 
 @add_to_class(hou.Geometry)
 def sortRandomly(self, geometry_type, seed=0.0):
-    """Sort points or primitives randomly."""
+    """Sort points or primitives randomly.
+
+    :param geometry_type: The type of geometry to sort.
+    :type geometry_type: hou.geometryType
+    :param seed: The random seed.
+    :type seed: float
+    :return:
+
+    """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
@@ -567,13 +801,9 @@ def sortRandomly(self, geometry_type, seed=0.0):
             "Got '{}', expected 'float'.".format(type(seed).__name__)
         )
 
-    # Randomize the point order.
-    if geometry_type == hou.geometryType.Points:
-        _cpp_methods.sortListRandomly(self, 0, seed)
-
-    # Randomize the primitive order.
-    elif geometry_type == hou.geometryType.Primitives:
-        _cpp_methods.sortListRandomly(self, 1, seed)
+    if geometry_type in (hou.geometryType.Points, hou.geometryType.Primitives):
+        attrib_owner = _get_attrib_owner_from_geometry_type(geometry_type)
+        _cpp_methods.sortListRandomly(self, attrib_owner, seed)
 
     else:
         raise hou.OperationFailed(
@@ -589,6 +819,12 @@ def shiftElements(self, geometry_type, offset):
     number.  If this exceeds the number of points or primitives, it wraps
     around.
 
+    :param geometry_type: The type of geometry to sort.
+    :type geometry_type: hou.geometryType
+    :param offset: The shift offset.
+    :type offset: int
+    :return:
+
     """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
@@ -599,13 +835,9 @@ def shiftElements(self, geometry_type, offset):
             "Got '{}', expected 'int'.".format(type(offset).__name__)
         )
 
-    # Shift the point order.
-    if geometry_type == hou.geometryType.Points:
-        _cpp_methods.shiftList(self, 0, offset)
-
-    # Shift the primitive order.
-    elif geometry_type == hou.geometryType.Primitives:
-        _cpp_methods.shiftList(self, 1, offset)
+    if geometry_type in (hou.geometryType.Points, hou.geometryType.Primitives):
+        attrib_owner = _get_attrib_owner_from_geometry_type(geometry_type)
+        _cpp_methods.shiftList(self, attrib_owner, offset)
 
     else:
         raise hou.OperationFailed(
@@ -619,18 +851,18 @@ def reverseSort(self, geometry_type):
 
     The highest numbered becomes the lowest numbered, and vice versa.
 
+    :param geometry_type: The type of geometry to sort.
+    :type geometry_type: hou.geometryType
+    :return:
+
     """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    # Reverse the point order.
-    if geometry_type == hou.geometryType.Points:
-        _cpp_methods.reverseList(self, 0)
-
-    # Reverse the primitive order.
-    elif geometry_type == hou.geometryType.Primitives:
-        _cpp_methods.reverseList(self, 1)
+    if geometry_type in (hou.geometryType.Points, hou.geometryType.Primitives):
+        attrib_owner = _get_attrib_owner_from_geometry_type(geometry_type)
+        _cpp_methods.reverseList(self, attrib_owner)
 
     else:
         raise hou.OperationFailed(
@@ -646,18 +878,20 @@ def sortByProximityToPosition(self, geometry_type, pos):
     primitives are then sorted so that the 0th entity is the one closest to
     that point.
 
+    :param geometry_type: The type of geometry to sort.
+    :type geometry_type: hou.geometryType
+    :param pos: The position to sort relatives to.
+    :type pos: hou.Vector3
+    :return:
+
     """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    # Sort the points.
-    if geometry_type == hou.geometryType.Points:
-        _cpp_methods.proximityToList(self, 0, pos)
-
-    # Sort the primitives.
-    elif geometry_type == hou.geometryType.Primitives:
-        _cpp_methods.proximityToList(self, 1, pos)
+    if geometry_type in (hou.geometryType.Points, hou.geometryType.Primitives):
+        attrib_owner = _get_attrib_owner_from_geometry_type(geometry_type)
+        _cpp_methods.proximityToList(self, attrib_owner, pos)
 
     else:
         raise hou.OperationFailed(
@@ -671,6 +905,8 @@ def sortByVertexOrder(self):
 
     If you have a curve whose point numbers do not increase along the curve,
     this will reorder the point numbers so they match the curve direction.
+
+    :return:
 
     """
     # Make sure the geometry is not read only.
@@ -688,6 +924,12 @@ def sortByExpression(self, geometry_type, expression):
     determines the priority of that primitive, and the entities are reordered
     according to that priority. The point or primitive with the least evaluated
     expression value will be numbered 0 after the sort.
+
+    :param geometry_type: The type of geometry to sort.
+    :type geometry_type: hou.geometryType
+    :param expression: The expression to sort by.
+    :type expression: str
+    :return:
 
     """
     # Make sure the geometry is not read only.
@@ -729,24 +971,34 @@ def sortByExpression(self, geometry_type, expression):
 
 
 @add_to_class(hou.Geometry)
-def createPoint(self, position=None):
-    """Create a new point, optionally located at a position."""
+def createPointAtPosition(self, position):
+    """Create a new point located at a position.
+
+    :param position: The point position.
+    :type position: hou.Vector3
+    :return: The new point.
+    :rtype: hou.Point
+
+    """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    # If no position is specified, use the origin.
-    if position is None:
-        position = hou.Vector3()
-
-    result = _cpp_methods.createPoint(self, position)
+    result = _cpp_methods.createPointAtPosition(self, position)
 
     return self.iterPoints()[result]
 
 
 @add_to_class(hou.Geometry)
 def createNPoints(self, npoints):
-    """Create a specific number of new points."""
+    """Create a specific number of new points.
+
+    :param npoints: The number of points to create.
+    :type npoints: int
+    :return: The newly created points.
+    :rtype: tuple(hou.Point)
+
+    """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
@@ -765,17 +1017,32 @@ def createNPoints(self, npoints):
 
 @add_to_class(hou.Geometry)
 def mergePointGroup(self, group):
-    """Merges points from a group into this detail. """
+    """Merges points from a group into this detail.
+
+    :param group: The group to merge.
+    :type group: hou.PointGroup
+    :return:
+
+    """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
+
+    if not isinstance(group, hou.PointGroup):
+        raise hou.TypeError("Group is not a point group.")
 
     _cpp_methods.mergePointGroup(self, group.geometry(), group.name())
 
 
 @add_to_class(hou.Geometry)
 def mergePoints(self, points):
-    """Merge a list of points from a detail into this detail."""
+    """Merge a list of points from a detail into this detail.
+
+    :param points: A list of points to merge.
+    :type points: list(hou.Point)
+    :return:
+
+    """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
@@ -787,17 +1054,32 @@ def mergePoints(self, points):
 
 @add_to_class(hou.Geometry)
 def mergePrimGroup(self, group):
-    """Merges prims from a group into this detail."""
+    """Merges prims from a group into this detail.
+
+    :param group: The group to merge.
+    :type group: hou.PrimGroup
+    :return:
+
+    """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
+
+    if not isinstance(group, hou.PrimGroup):
+        raise hou.TypeError("Group is not a primitive group.")
 
     _cpp_methods.mergePrimGroup(self, group.geometry(), group.name())
 
 
 @add_to_class(hou.Geometry)
 def mergePrims(self, prims):
-    """Merges a list of prims from a detail into this detail."""
+    """Merges a list of prims from a detail into this detail.
+
+    :param prims: A list of points to merge.
+    :type prims: list(hou.Prim)
+    :return:
+
+    """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
@@ -808,7 +1090,17 @@ def mergePrims(self, prims):
 
 
 def copyAttributeValues(source_element, source_attribs, target_element):
-    """Copy a list of attributes from the source element to the target element."""
+    """Copy a list of attributes from the source element to the target element.
+
+    :param source_element: The element to copy from.
+    :type source_element: hou.Point|hou.Prim|hou.Vertex|hou.Geometry
+    :param source_attribs: A list of attributes to copy.
+    :type source_attribs: list(hou.Attrib)
+    :param target_element: The element to copy to.
+    :type target_element: hou.Point|hou.Prim|hou.Vertex|hou.Geometry
+    :return:
+
+    """
     # Copying to a geometry entity.
     if not isinstance(target_element, hou.Geometry):
         # Get the source element's geometry.
@@ -845,8 +1137,8 @@ def copyAttributeValues(source_element, source_attribs, target_element):
         source_entity_num = 0
 
     # Get the attribute owners from the elements.
-    target_owner = _get_attrib_owner_from_geometry_type(type(target_element))
-    source_owner = _get_attrib_owner_from_geometry_type(type(source_element))
+    target_owner = _get_attrib_owner_from_geometry_entity_type(type(target_element))
+    source_owner = _get_attrib_owner_from_geometry_entity_type(type(source_element))
 
     # Get the attribute names, ensuring we only use attributes on the
     # source's geometry.
@@ -880,6 +1172,12 @@ def copyPointAttributeValues(self, source_point, attributes):
 
     This function is deprecated.  Use copyAttributeValues instead.
 
+    :param source_point: The point to copy from.
+    :type source_point: hou.Point
+    :param attributes: A list of attributes to copy.
+    :type attributes: list(hou.Attrib)
+    :return:
+
     """
     copyAttributeValues(source_point, attributes, self)
 
@@ -893,13 +1191,24 @@ def copyPrimAttributeValues(self, source_prim, attributes):
 
     This function is deprecated.  Use copyAttributeValues instead.
 
+    :param source_prim: The primitive to copy from.
+    :type source_prim: hou.Prim
+    :param attributes: A list of attributes to copy.
+    :type attributes: list(hou.Attrib)
+    :return:
+
     """
     copyAttributeValues(source_prim, attributes, self)
 
 
 @add_to_class(hou.Prim)
 def pointAdjacentPolygons(self):
-    """Get all prims that are adjacent to this prim through a point."""
+    """Get all prims that are adjacent to this prim through a point.
+
+    :return: Adjacent primitives.
+    :rtype: tuple(hou.Prim)
+
+    """
     # Get the geometry this primitive belongs to.
     geometry = self.geometry()
 
@@ -911,7 +1220,12 @@ def pointAdjacentPolygons(self):
 
 @add_to_class(hou.Prim)
 def edgeAdjacentPolygons(self):
-    """Get all prims that are adjacent to this prim through an edge."""
+    """Get all prims that are adjacent to this prim through an edge.
+
+    :return: Adjacent primitives.
+    :rtype: tuple(hou.Prim)
+
+    """
     # Get the geometry this primitive belongs to.
     geometry = self.geometry()
 
@@ -923,7 +1237,12 @@ def edgeAdjacentPolygons(self):
 
 @add_to_class(hou.Point)
 def connectedPrims(self):
-    """Get all primitives that reference this point."""
+    """Get all primitives that reference this point.
+
+    :return: Connected primitives.
+    :rtype: tuple(hou.Prim)
+
+    """
     # Get the geometry the point belongs to.
     geometry = self.geometry()
 
@@ -935,7 +1254,12 @@ def connectedPrims(self):
 
 @add_to_class(hou.Point)
 def connectedPoints(self):
-    """Get all points that share an edge with this point."""
+    """Get all points that share an edge with this point.
+
+    :return: Connected points
+    :rtype: tuple(hou.Point)
+
+    """
     # Get the geometry the point belongs to.
     geometry = self.geometry()
 
@@ -948,7 +1272,12 @@ def connectedPoints(self):
 
 @add_to_class(hou.Point)
 def referencingVertices(self):
-    """Get all the vertices referencing this point."""
+    """Get all the vertices referencing this point.
+
+    :return: Referencing vertices
+    :rtype: tuple(hou.Vertex)
+
+    """
     # Get the geometry the point belongs to.
     geometry = self.geometry()
 
@@ -972,6 +1301,9 @@ def stringTableIndices(self):
     strings.  This function will return a list of table indices for each
     element.
 
+    :return: String table indices
+    :rtype: tuple(int)
+
     """
     if self.dataType() != hou.attribData.String:
         raise hou.OperationFailed("Attribute must be a string.")
@@ -987,6 +1319,11 @@ def vertexStringAttribValues(self, name):
     """Return a tuple of strings containing one attribute's values for all the
     vertices.
 
+    :param name: The attribute name.
+    :type name: str
+    :return: A list containing all vertex attribute values.
+    :rtype: tuple(str)
+
     """
     attrib = self.findVertexAttrib(name)
 
@@ -996,15 +1333,20 @@ def vertexStringAttribValues(self, name):
     if attrib.dataType() != hou.attribData.String:
         raise hou.OperationFailed("Attribute must be a string.")
 
-    return _cpp_methods.vertexStringAttribValues(
-        self,
-        name
-    )
+    return _cpp_methods.vertexStringAttribValues(self, name)
 
 
 @add_to_class(hou.Geometry)
 def setVertexStringAttribValues(self, name, values):
-    """Set the string attribute values for all vertices."""
+    """Set the string attribute values for all vertices.
+
+    :param name: The attribute name.
+    :type name: str
+    :param values: The values to set.
+    :type values: tuple(str)
+    :return:
+
+    """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
@@ -1037,6 +1379,14 @@ def setSharedPointStringAttrib(self, name, value, group=None):
 
     If group is None, all points will have receive the value.  If a group is
     passed, only the points in the group will be set.
+
+    :param name: The attribute name.
+    :type name: str
+    :param value: The value to set.
+    :type value: str
+    :param group: An optional point group.
+    :type group: hou.PointGroup
+    :return:
 
     """
     # Make sure the geometry is not read only.
@@ -1075,6 +1425,14 @@ def setSharedPrimStringAttrib(self, name, value, group=None):
     If group is None, all primitives will have receive the value.  If a group
     is passed, only the primitives in the group will be set.
 
+    :param name: The attribute name.
+    :type name: str
+    :param value: The value to set.
+    :type value: str
+    :param group: An optional primitive group.
+    :type group: hou.PrimGroup
+    :return:
+
     """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
@@ -1107,7 +1465,16 @@ def setSharedPrimStringAttrib(self, name, value, group=None):
 
 @add_to_class(hou.Face)
 def hasEdge(self, point1, point2):
-    """Test if this face has an edge between two points."""
+    """Test if this face has an edge between two points.
+
+    :param point1: A point to test for an edge with.
+    :type point1: hou.Point
+    :param point2: A point to test for an edge with.
+    :type point2: hou.Point
+    :return: Whether or not the points share an edge.
+    :rtype: bool
+
+    """
     # Test for the edge.
     return _cpp_methods.hasEdge(
         self.geometry(),
@@ -1119,10 +1486,14 @@ def hasEdge(self, point1, point2):
 
 @add_to_class(hou.Face)
 def sharedEdges(self, prim):
-    """Get a tuple of any shared edges between two prims."""
-    # A comparison function key function to sort points by their numbers.
-    test_key = lambda pt: pt.number()
+    """Get a tuple of any shared edges between two primitives.
 
+    :param prim: The primitive to check for shared edges.
+    :type prim: hou.Face
+    :return: A tuple of shared edges.
+    :rtype: tuple(hou.Edge)
+
+    """
     geometry = self.geometry()
 
     # A list of unique edges.
@@ -1136,7 +1507,7 @@ def sharedEdges(self, prim):
         # Iterate over all the connected points.
         for connected in vertex_point.connectedPoints():
             # Sort the points.
-            pt1, pt2 = sorted((vertex_point, connected), key=test_key)
+            pt1, pt2 = sorted((vertex_point, connected), key=lambda pt: pt.number())
 
             # Ensure the edge exists for both primitives.
             if self.hasEdge(pt1, pt2) and prim.hasEdge(pt1, pt2):
@@ -1148,41 +1519,46 @@ def sharedEdges(self, prim):
 
 @add_to_class(hou.Face)
 def insertVertex(self, point, index):
-    """Insert a vertex on the point into this face at a specific index."""
+    """Insert a vertex on the point into this face at a specific index.
+
+    :param point: The vertex point.
+    :type point: hou.Point
+    :param index: The vertex index.
+    :type index: int
+    :return: The new vertex.
+    :rtype: hou.Vertex
+
+    """
     geometry = self.geometry()
 
     # Make sure the geometry is not read only.
     if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    # If the index is less than 0, throw an exception since it's not valid.
-    if index < 0:
-        raise IndexError("Index must be 0 or greater.")
-
-    # If the index is too high it is also invalid.
-    if index >= self.numVertices():
-        raise IndexError("Invalid index: {}".format(index))
+    _validate_prim_vertex_index(self, index)
 
     # Insert the vertex.
     _cpp_methods.insertVertex(geometry, self.number(), point.number(), index)
 
+    return self.vertex(index)
+
 
 @add_to_class(hou.Face)
 def deleteVertex(self, index):
-    """Delete the vertex at the specified index."""
+    """Delete the vertex at the specified index.
+
+    :param index: The vertex index to delete.
+    :type index: int
+    :return:
+
+    """
     geometry = self.geometry()
 
     # Make sure the geometry is not read only.
     if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    # If the index is less than 0, throw an exception since it's not valid.
-    if index < 0:
-        raise IndexError("Index must be 0 or greater.")
-
-    # If the index is too high it is also invalid.
-    if index >= self.numVertices():
-        raise IndexError("Invalid index: {}".format(index))
+    _validate_prim_vertex_index(self, index)
 
     # Delete the vertex.
     _cpp_methods.deleteVertex(geometry, self.number(), index)
@@ -1190,20 +1566,22 @@ def deleteVertex(self, index):
 
 @add_to_class(hou.Face)
 def setPoint(self, index, point):
-    """Set the vertex, at the specified index, to be attached to the point."""
+    """Set the vertex, at the specified index, to be attached to the point.
+
+    :param index: The vertex index to set.
+    :type index: int
+    :param point: The point to set the vertex to.
+    :type point: hou.Point
+    :return:
+
+    """
     geometry = self.geometry()
 
     # Make sure the geometry is not read only.
     if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    # If the index is less than 0, throw an exception since it's not valid.
-    if index < 0:
-        raise IndexError("Index must be 0 or greater.")
-
-    # If the index is too high it is also invalid.
-    if index >= self.numVertices():
-        raise IndexError("Invalid index: {}".format(index))
+    _validate_prim_vertex_index(self, index)
 
     # Modify the vertex.
     _cpp_methods.setPoint(geometry, self.number(), index, point.number())
@@ -1211,7 +1589,12 @@ def setPoint(self, index, point):
 
 @add_to_class(hou.Prim)
 def baryCenter(self):
-    """Get the barycenter of this primitive."""
+    """Get the barycenter of this primitive.
+
+    :return: The barycenter.
+    :rtype: hou.Vector3
+
+    """
     # Get the Position3D object representing the barycenter.
     pos = _cpp_methods.baryCenter(self.geometry(), self.number())
 
@@ -1221,32 +1604,57 @@ def baryCenter(self):
 
 @add_to_class(hou.Prim, name="area")
 def primitiveArea(self):
-    """Get the area of this primitive."""
+    """Get the area of this primitive.
+
+    This method just wraps the "measuredarea" intrinsic value.
+
+    :return: The primitive area.
+    :rtype: float
+
+    """
     return self.intrinsicValue("measuredarea")
 
 
 @add_to_class(hou.Prim)
 def perimeter(self):
-    """Get the perimeter of this primitive."""
+    """Get the perimeter of this primitive.
+
+    This method just wraps the "measuredperimeter" intrinsic value.
+
+    :return: The primitive perimeter.
+    :rtype: float
+
+    """
     return self.intrinsicValue("measuredperimeter")
 
 
 @add_to_class(hou.Prim)
 def volume(self):
-    """Get the volume of this primitive."""
+    """Get the volume of this primitive.
+
+    This method just wraps the "measuredvolume" intrinsic value.
+
+    :return: The primitive volume.
+    :rtype: float
+
+    """
     return self.intrinsicValue("measuredvolume")
 
 
 @add_to_class(hou.Prim, name="reverse")
 def reversePrim(self):
-    """Reverse the vertex order of this primitive."""
+    """Reverse the vertex order of this primitive.
+
+    :return:
+
+    """
     geometry = self.geometry()
 
     # Make sure the geometry is not read only.
     if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    return _cpp_methods.reversePrimitive(geometry, self.number())
+    _cpp_methods.reversePrimitive(geometry, self.number())
 
 
 @add_to_class(hou.Prim)
@@ -1255,6 +1663,8 @@ def makeUnique(self):
 
     This function will unique all the points even if they are referenced by
     other primitives.
+
+    :return:
 
     """
     geometry = self.geometry()
@@ -1268,7 +1678,14 @@ def makeUnique(self):
 
 @add_to_class(hou.Prim, name="boundingBox")
 def primBoundingBox(self):
-    """Get the bounding box of this primitive."""
+    """Get the bounding box of this primitive.
+
+    This method just wraps the "bounds" intrinsic value.
+
+    :return: The primitive boudning box.
+    :rtype: hou.BoundingBox
+
+    """
     bounds = self.intrinsicValue("bounds")
 
     # Intrinsic values are out of order for hou.BoundingBox so they need to
@@ -1291,6 +1708,8 @@ def computePointNormals(self):
     leaving the default values.  It will add the 'N' attribute if it does not
     exist.
 
+    :return:
+
     """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
@@ -1305,6 +1724,9 @@ def addPointNormalAttribute(self):
 
     This function will only create the Normal attribute and will not
     initialize the values.  See hou.Geometry.computePointNormals().
+
+    :return: The new 'N' point attribute.
+    :rtype: hou.Attrib
 
     """
     # Make sure the geometry is not read only.
@@ -1321,7 +1743,12 @@ def addPointNormalAttribute(self):
 
 @add_to_class(hou.Geometry, name="addPointVelocity")
 def addPointVelocityAttribute(self):
-    """Add point velocity to the geometry."""
+    """Add point velocity to the geometry.
+
+    :return: The new 'v' point attribute.
+    :rtype: hou.Attrib
+
+    """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
@@ -1339,6 +1766,11 @@ def addColorAttribute(self, attrib_type):
     """Add a color (Cd) attribute to the geometry.
 
     Point, primitive and vertex colors are supported.
+
+    :param attrib_type: The type of attribute to add.
+    :type attrib_type: hou.attribType
+    :return: The new 'Cd' attribute.
+    :rtype: hou.Attrib
 
     """
     # Make sure the geometry is not read only.
@@ -1367,6 +1799,10 @@ def convex(self, max_points=3):
     This operation is similar to using the Divide SOP and setting the 'Maximum
     Edges'.
 
+    :param max_points: The maximum points per face.
+    :type max_points: int
+    :return:
+
     """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
@@ -1377,7 +1813,21 @@ def convex(self, max_points=3):
 
 @add_to_class(hou.Geometry)
 def clip(self, origin, normal, dist=0, below=False, group=None):
-    """Clip this geometry along a plane."""
+    """Clip this geometry along a plane.
+
+    :param origin: The origin point of the operation.
+    :type origin: hou.Vector3
+    :param normal: The up vector of the clip plane.
+    :type normal: hou.Vector3
+    :param dist: The distance from the origin point to clip.
+    :type dist: float
+    :param below: Whether or not to clip below the plane instead of above.
+    :type below: bool
+    :param group: Optional primitive group to clip.
+    :type group: hou.PrimGroup
+    :return:
+
+    """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
@@ -1390,7 +1840,7 @@ def clip(self, origin, normal, dist=0, below=False, group=None):
     else:
         group_name = ""
 
-    # If we want to keep the prims below the plane we need to offset
+    # If we want to keep the primitives below the plane we need to offset
     # the origin along the normal by the distance and then reverse
     # the normal and set the distance to 0.
     if below:
@@ -1407,7 +1857,13 @@ def clip(self, origin, normal, dist=0, below=False, group=None):
 
 @add_to_class(hou.Geometry)
 def destroyEmptyGroups(self, attrib_type):
-    """Remove any empty groups of the specified type. """
+    """Remove any empty groups of the specified type.
+
+    :param attrib_type: The type of groups to destroy.
+    :type attrib_type: hou.attribType
+    :return:
+
+    """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
@@ -1429,6 +1885,10 @@ def destroyUnusedPoints(self, group=None):
 
     If group is not None, only unused points within the group are removed.
 
+    :param group: Optional point group to restrict to.
+    :type group: hou.PointGroup
+    :return:
+
     """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
@@ -1436,6 +1896,7 @@ def destroyUnusedPoints(self, group=None):
 
     if group is not None:
         _cpp_methods.destroyUnusedPoints(self, group.name())
+
     else:
         _cpp_methods.destroyUnusedPoints(self, 0)
 
@@ -1446,6 +1907,12 @@ def consolidatePoints(self, distance=0.001, group=None):
 
     If group is not None, only points in that group are consolidated.
 
+    :param distance: The consolidation distance.
+    :type distance: float
+    :param group: Optional point group to restrict to.
+    :type group: hou.PointGroup
+    :return:
+
     """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
@@ -1453,6 +1920,7 @@ def consolidatePoints(self, distance=0.001, group=None):
 
     if group is not None:
         _cpp_methods.consolidatePoints(self, distance, group.name())
+
     else:
         _cpp_methods.consolidatePoints(self, distance, 0)
 
@@ -1463,6 +1931,10 @@ def uniquePoints(self, group=None):
 
     If a point group is specified, only points in that group are uniqued.
 
+    :param group: Optional point group to restrict to.
+    :type group: hou.PointGroup
+    :return:
+
     """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
@@ -1472,12 +1944,22 @@ def uniquePoints(self, group=None):
         _cpp_methods.uniquePoints(self, group.name())
 
     else:
-        _cpp_methods.uniquePoints(self, 0, 0)
+        _cpp_methods.uniquePoints(self, 0)
 
 
 @add_to_class(hou.Geometry)
 def renameGroup(self, group, new_name):
-    """Rename this group."""
+    """Rename this group.
+
+    :param group: The group to rename.
+    :type group: hou.PointGroup|hou.PrimGroup|hou.EdgeGroup
+    :param new_name: The new group name.
+    :type new_name: str
+    :return: The new group, if it was renamed, otherwise None.
+    :rtype: hou.PointGroup|hou.PrimGroup|hou.EdgeGroup|None
+
+
+    """
     # Make sure the geometry is not read only.
     if isReadOnly(self):
         raise hou.GeometryPermissionError()
@@ -1504,7 +1986,12 @@ def renameGroup(self, group, new_name):
 
 @add_to_class(hou.PointGroup, hou.PrimGroup, hou.EdgeGroup, name="boundingBox")
 def groupBoundingBox(self):
-    """Get the bounding box of this group."""
+    """Get the bounding box of this group.
+
+    :return: The bounding box for the group.
+    :rtype: hou.BoundingBox
+
+    """
     group_type = _get_group_type(self)
 
     # Calculate the bounds for the group.
@@ -1520,7 +2007,14 @@ def groupBoundingBox(self):
 @add_to_class(hou.EdgeGroup, hou.PointGroup, hou.PrimGroup, name="__len__")
 @add_to_class(hou.EdgeGroup, hou.PointGroup, hou.PrimGroup, name="size")
 def groupSize(self):
-    """Get the number of elements in this group."""
+    """Get the number of elements in this group.
+
+    You can also use len(group)
+
+    :return: The group size.
+    :rtype: int
+
+    """
     geometry = self.geometry()
 
     group_type = _get_group_type(self)
@@ -1534,6 +2028,10 @@ def togglePoint(self, point):
 
     If the point is a part of the group, it will be removed.  If it isn't, it
     will be added.
+
+    :param point: The point to toggle membership.
+    :type point: hou.Point
+    :return
 
     """
     geometry = self.geometry()
@@ -1559,6 +2057,10 @@ def togglePrim(self, prim):
     If the primitive is a part of the group, it will be removed.  If it isnt,
     it will be added.
 
+    :param prim: The primitive to toggle membership.
+    :type prim: hou.Prim
+    :return
+
     """
     geometry = self.geometry()
 
@@ -1583,6 +2085,8 @@ def toggleEntries(self):
     All elements not in the group will be added to it and all that were in it
     will be removed.
 
+    :return:
+
     """
     geometry = self.geometry()
 
@@ -1597,7 +2101,14 @@ def toggleEntries(self):
 
 @add_to_class(hou.PointGroup, name="copy")
 def copyPointGroup(self, new_group_name):
-    """Create a new point group under the new name with the same membership."""
+    """Create a new point group under the new name with the same membership.
+
+    :param new_group_name: The new group name.
+    :type new_group_name: str
+    :return: The new group.
+    :rtype: hou.PointGroup
+
+    """
     geometry = self.geometry()
 
     # Make sure the geometry is not read only.
@@ -1626,7 +2137,14 @@ def copyPointGroup(self, new_group_name):
 
 @add_to_class(hou.PrimGroup, name="copy")
 def copyPrimGroup(self, new_group_name):
-    """Create a group under the new name with the same membership."""
+    """Create a group under the new name with the same membership.
+
+    :param new_group_name: The new group name.
+    :type new_group_name: str
+    :return: The new group.
+    :rtype: hou.PrimGroup
+
+    """
     geometry = self.geometry()
 
     # Make sure the geometry is not read only.
@@ -1655,7 +2173,14 @@ def copyPrimGroup(self, new_group_name):
 
 @add_to_class(hou.PointGroup, name="containsAny")
 def pointGroupContainsAny(self, group):
-    """Returns whether or not any points in the group are in this group."""
+    """Returns whether or not any points in the group are in this group.
+
+    :param group: Group to compare with.
+    :type group: hou.PointGroup
+    :return: Whether any points in the group are in this group.
+    :rtype: bool
+
+    """
     geometry = self.geometry()
 
     group_type = _get_group_type(self)
@@ -1665,7 +2190,14 @@ def pointGroupContainsAny(self, group):
 
 @add_to_class(hou.PrimGroup, name="containsAny")
 def primGroupContainsAny(self, group):
-    """Returns whether or not any prims in the group are in this group."""
+    """Returns whether or not any primitives in the group are in this group.
+
+    :param group: Group to compare with.
+    :type group: hou.PrimGroup
+    :return: Whether any primitives in the group are in this group.
+    :rtype: bool
+
+    """
     geometry = self.geometry()
 
     group_type = _get_group_type(self)
@@ -1679,6 +2211,13 @@ def convertToPointGroup(self, new_group_name=None, destroy=True):
 
     The group will contain all the points referenced by all the vertices of the
     primitives in the group.
+
+    :param new_group_name: The name of the new group.
+    :type new_group_name: str
+    :param destroy: Whether or not to destroy this group.
+    :type destroy: bool
+    :return: The new point group.
+    :rtype: hou.PointGroup
 
     """
     geometry = self.geometry()
@@ -1714,6 +2253,13 @@ def convertToPrimGroup(self, new_group_name=None, destroy=True):
     The group will contain all the primitives which have vertices referencing
     any of the points in the group.
 
+    :param new_group_name: The name of the new group.
+    :type new_group_name: str
+    :param destroy: Whether or not to destroy this group.
+    :type destroy: bool
+    :return: The new primitive group.
+    :rtype: hou.PrimGroup
+
     """
     geometry = self.geometry()
 
@@ -1743,13 +2289,25 @@ def convertToPrimGroup(self, new_group_name=None, destroy=True):
 
 @add_to_class(hou.Geometry)
 def hasUngroupedPoints(self):
-    """Check if the geometry has ungrouped points."""
+    """Check if the geometry has ungrouped points.
+
+    :return: Whether or not the geometry has any ungrouped points.
+    :rtype: bool
+
+    """
     return _cpp_methods.hasUngroupedPoints(self)
 
 
 @add_to_class(hou.Geometry)
 def groupUngroupedPoints(self, group_name):
-    """Create a new point group of any points not already in a group."""
+    """Create a new point group of any points not already in a group.
+
+    :param group_name: The new group name.
+    :type group_name: str
+    :return: A new point group containing ungrouped points.
+    :rtype: hou.PointGroup
+
+    """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
@@ -1767,13 +2325,24 @@ def groupUngroupedPoints(self, group_name):
 
 @add_to_class(hou.Geometry)
 def hasUngroupedPrims(self):
-    """Check if the geometry has ungrouped primitives."""
+    """Check if the geometry has ungrouped primitives.
+
+    :return: Whether or not the geometry has any ungrouped primitives.
+    :rtype: bool
+"""
     return _cpp_methods.hasUngroupedPrims(self)
 
 
 @add_to_class(hou.Geometry)
 def groupUngroupedPrims(self, group_name):
-    """Create a new primitive group of any primitives not already in a group."""
+    """Create a new primitive group of any primitives not already in a group.
+
+    :param group_name: The new group name.
+    :type group_name: str
+    :return: A new primitive group containing ungrouped primitives.
+    :rtype: hou.PrimGroup
+
+    """
     # Make sure the geometry is not read only.
     if self.isReadOnly():
         raise hou.GeometryPermissionError()
@@ -1791,13 +2360,27 @@ def groupUngroupedPrims(self, group_name):
 
 @add_to_class(hou.BoundingBox)
 def isInside(self, bbox):
-    """Determine if this bounding box is totally enclosed by another box."""
+    """Determine if this bounding box is totally enclosed by another box.
+
+    :param bbox: The bounding box to check for enclosure.
+    :type bbox: hou.BoundingBox
+    :return: Whether or not this object is totally enclosed by the other box.
+    :rtype: bool
+
+    """
     return _cpp_methods.isInside(self, bbox)
 
 
 @add_to_class(hou.BoundingBox)
 def intersects(self, bbox):
-    """Determine if the bounding boxes intersect."""
+    """Determine if the bounding boxes intersect.
+
+    :param bbox: The bounding box to check for intersection with.
+    :type bbox: hou.BoundingBox
+    :return: Whether or not this object intersects the other box.
+    :rtype: bool
+
+    """
     return _cpp_methods.intersects(self, bbox)
 
 
@@ -1808,42 +2391,84 @@ def computeIntersection(self, bbox):
     This function changes the bounds of this box to be those of the
     intersection of this box and the supplied box.
 
+    :param bbox: The box to compute intersection with.
+    :type bbox: hou.BoundingBox
+    :return: Whether the boxes intersect or not.
+    :rtype: bool
+
     """
     return _cpp_methods.computeIntersection(self, bbox)
 
 
 @add_to_class(hou.BoundingBox)
 def expandBounds(self, dltx, dlty, dltz):
-    """Expand the min and max bounds in each direction by the axis delta."""
+    """Expand the min and max bounds in each direction by the axis delta.
+
+    :param dltx: The X value to expand by.
+    :type dltx: float
+    :param dlty: The Y value to expand by.
+    :type dlty: float
+    :param dltz: The Z value to expand by.
+    :type dltz: float
+    :return:
+
+    """
     _cpp_methods.expandBounds(self, dltx, dlty, dltz)
 
 
 @add_to_class(hou.BoundingBox)
 def addToMin(self, vec):
-    """Add values to the minimum bounds of this bounding box."""
+    """Add values to the minimum bounds of this bounding box.
+
+    :param vec: The values to add.
+    :type vec: hou.Vector3
+    :return:
+
+    """
     _cpp_methods.addToMin(self, vec)
 
 @add_to_class(hou.BoundingBox)
 def addToMax(self, vec):
-    """Add values to the maximum bounds of this bounding box."""
+    """Add values to the maximum bounds of this bounding box.
+
+    :param vec: The values to add.
+    :type vec: hou.Vector3
+    :return:
+
+    """
     _cpp_methods.addToMax(self, vec)
 
 
 @add_to_class(hou.BoundingBox, name="area")
 def boundingBoxArea(self):
-    """Calculate the area of this bounding box."""
+    """Calculate the area of this bounding box.
+
+    :return: The area of the box.
+    :rtype: float
+
+    """
     return _cpp_methods.boundingBoxArea(self)
 
 
 @add_to_class(hou.BoundingBox, name="volume")
 def boundingBoxVolume(self):
-    """Calculate the volume of this bounding box."""
+    """Calculate the volume of this bounding box.
+
+    :return: The volume of the box.
+    :rtype: float
+
+    """
     return _cpp_methods.boundingBoxVolume(self)
 
 
 @add_to_class(hou.ParmTuple)
 def isVector(self):
-    """Check if the tuple is a vector parameter."""
+    """Check if the tuple is a vector parameter.
+
+    :return: Whether or not the parameter tuple is a vector.
+    :rtype: bool
+
+    """
     parm_template = self.parmTemplate()
 
     return parm_template.namingScheme() == hou.parmNamingScheme.XYZW
@@ -1851,7 +2476,12 @@ def isVector(self):
 
 @add_to_class(hou.ParmTuple)
 def evalAsVector(self):
-    """Return the parameter value as a hou.Vector of the appropriate size."""
+    """Return the parameter value as a hou.Vector of the appropriate size.
+
+    :return: The evaluated parameter as a hou.Vector*
+    :rtype: hou.Vector2|hou.Vector3|hou.Vector4
+
+    """
     if not self.isVector():
         raise hou.Error("Parameter is not a vector")
 
@@ -1869,7 +2499,12 @@ def evalAsVector(self):
 
 @add_to_class(hou.ParmTuple)
 def isColor(self):
-    """Check if the parameter is a color parameter."""
+    """Check if the parameter is a color parameter.
+
+    :return: Whether or not the parameter tuple is a color.
+    :rtype: bool
+
+    """
     parm_template = self.parmTemplate()
 
     return parm_template.look() == hou.parmLook.ColorSquare
@@ -1877,28 +2512,16 @@ def isColor(self):
 
 @add_to_class(hou.ParmTuple)
 def evalAsColor(self):
-    """Evaluate a color parameter and return a hou.Color object."""
+    """Evaluate a color parameter and return a hou.Color object.
+
+    :return: The evaluated parameter as a hou.Vector*
+    :rtype: hou.Color
+
+    """
     if not self.isColor():
         raise hou.Error("Parameter is not a color chooser")
 
     return hou.Color(self.eval())
-
-
-@add_to_class(hou.Parm)
-def getReferencedNode(self):
-    """Get the referenced node, if any, for this parameter."""
-    parm_template = self.parmTemplate()
-
-    # Parameter must be a string parameter.
-    if not isinstance(parm_template, hou.StringParmTemplate):
-        raise hou.Error("Parameter is not a string type")
-
-    # String parameter must be a node reference.
-    if parm_template.stringType() != hou.stringParmType.NodeReference:
-        raise hou.Error("Parameter is not a node reference")
-
-    # Look for the pointed to node, relative to the parameter's node.
-    return self.node().node(self.eval())
 
 
 @add_to_class(hou.Parm)
@@ -1907,6 +2530,9 @@ def evalAsStrip(self):
 
     Returns a tuple of True/False values indicated which buttons
     are pressed.
+
+    :return: True/False values for the strip.
+    :rtype: tuple(bool)
 
     """
     parm_template = self.parmTemplate()
@@ -1949,6 +2575,9 @@ def evalStripAsString(self):
 
     Returns a tuple of the string tokens which are enabled.
 
+    :return: String token values.
+    :rtype: tuple(str)
+
     """
     strip_results = self.evalAsStrip()
 
@@ -1965,7 +2594,12 @@ def evalStripAsString(self):
 
 @add_to_class(hou.Parm, hou.ParmTuple)
 def isMultiParm(self):
-    """Check if this parameter is a multiparm."""
+    """Check if this parameter is a multiparm.
+
+    :return: Whether or not the parameter is a multiparm.
+    :rtype: bool
+
+    """
     # Get the parameter template for the parm/tuple.
     parm_template = self.parmTemplate()
 
@@ -1990,13 +2624,23 @@ def isMultiParm(self):
 
 @add_to_class(hou.Parm)
 def getMultiParmInstancesPerItem(self):
-    """Get the number of items in a multiparm instance."""
+    """Get the number of items in a multiparm instance.
+
+    :return: The number of items in a multiparm instance.
+    :rtype: int
+
+    """
     return self.tuple().getMultiParmInstancesPerItem()
 
 
 @add_to_class(hou.ParmTuple, name="getMultiParmInstancesPerItem")
 def getTupleMultiParmInstancesPerItem(self):
-    """Get the number of items in a multiparm instance."""
+    """Get the number of items in a multiparm instance.
+
+    :return: The number of items in a multiparm instance.
+    :rtype: int
+
+    """
     if not self.isMultiParm():
         raise hou.OperationFailed("Parameter tuple is not a multiparm.")
 
@@ -2008,20 +2652,27 @@ def getTupleMultiParmInstancesPerItem(self):
 
 @add_to_class(hou.Parm)
 def getMultiParmStartOffset(self):
-    """Get the start offset of items in the multiparm."""
+    """Get the start offset of items in the multiparm.
+
+    :return: The start offset of the multiparm.
+    :rtype: int
+
+    """
     return self.tuple().getMultiParmStartOffset()
 
 
 @add_to_class(hou.ParmTuple, name="getMultiParmStartOffset")
 def getTupleMultiParmStartOffset(self):
-    """Get the start offset of items in the multiparm."""
+    """Get the start offset of items in the multiparm.
+
+    :return: The start offset of the multiparm.
+    :rtype: int
+
+    """
     if not self.isMultiParm():
         raise hou.OperationFailed("Parameter tuple is not a multiparm.")
 
-    return _cpp_methods.getMultiParmStartOffset(
-        self.node(),
-        self.name()
-    )
+    return _cpp_methods.getMultiParmStartOffset(self.node(), self.name())
 
 
 @add_to_class(hou.Parm)
@@ -2033,6 +2684,9 @@ def getMultiParmInstanceIndex(self):
     multiparms, then the resulting tuple will have multiple entries (with
     the outer multiparm listed first, and the inner-most multiparm last in
     the tuple.
+
+    :return The instance indices for the parameter.
+    :rtype: tuple(int)
 
     """
     return self.tuple().getMultiParmInstanceIndex()
@@ -2047,6 +2701,9 @@ def getTupleMultiParmInstanceIndex(self):
     in other multiparms, then the resulting tuple will have multiple entries
     (with the outer multiparm listed first, and the inner-most multiparm last
     in the tuple.
+
+    :return The instance indices for the parameter.
+    :rtype: tuple(int)
 
     """
     if not self.isMultiParmInstance():
@@ -2066,6 +2723,9 @@ def getMultiParmInstances(self):
 
     The parameters are returned as a tuple of parameters based on each
     instance.
+
+    :return: All parameters in the multiparm block.
+    :rtype: tuple
 
     """
     node = self.node()
@@ -2108,6 +2768,9 @@ def getMultiParmInstanceValues(self):
 
     The values are returned as a tuple of values based on each instance.
 
+    :return: All parameter values in the multiparm block.
+    :rtype: tuple
+
     """
     if not self.isMultiParm():
         raise hou.OperationFailed("Not a multiparm.")
@@ -2127,7 +2790,11 @@ def getMultiParmInstanceValues(self):
 
 @add_to_class(hou.Node)
 def disconnectAllInputs(self):
-    """Disconnect all of this node's inputs."""
+    """Disconnect all of this node's inputs.
+
+    :return:
+
+    """
     connections = self.inputConnections()
 
     for connection in reversed(connections):
@@ -2136,7 +2803,11 @@ def disconnectAllInputs(self):
 
 @add_to_class(hou.Node)
 def disconnectAllOutputs(self):
-    """Disconnect all of this node's outputs. """
+    """Disconnect all of this node's outputs.
+
+    :return:
+
+    """
     connections = self.outputConnections()
 
     for connection in connections:
@@ -2145,7 +2816,12 @@ def disconnectAllOutputs(self):
 
 @add_to_class(hou.Node)
 def messageNodes(self):
-    """Get a list of this node's message nodes."""
+    """Get a list of this node's message nodes.
+
+    :return: A tuple of message nodes.
+    :rtype: tuple(hou.Node)
+
+    """
     # Get the otl definition for this node's type, if any.
     definition = self.type().definition()
 
@@ -2163,7 +2839,12 @@ def messageNodes(self):
 
 @add_to_class(hou.Node)
 def editableNodes(self):
-    """Get a list of this node's editable nodes."""
+    """Get a list of this node's editable nodes.
+
+    :return: A tuple of editable nodes.
+    :rtype: tuple(hou.Node)
+
+    """
     # Get the otl definition for this node's type, if any.
     definition = self.type().definition()
 
@@ -2181,7 +2862,12 @@ def editableNodes(self):
 
 @add_to_class(hou.Node)
 def diveTarget(self):
-    """Get this node's dive target node."""
+    """Get this node's dive target node.
+
+    :return: The node's dive target.
+    :rtype: hou.Node|None
+
+    """
     # Get the otl definition for this node's type, if any.
     definition = self.type().definition()
 
@@ -2199,7 +2885,12 @@ def diveTarget(self):
 
 @add_to_class(hou.Node)
 def representativeNode(self):
-    """Get the representative node of this node, if any."""
+    """Get the representative node of this node, if any.
+
+    :return: The node's representative node.
+    :rtype: hou.Node|None
+
+    """
     # Get the otl definition for this node's type, if any.
     definition = self.type().definition()
 
@@ -2216,7 +2907,14 @@ def representativeNode(self):
 
 @add_to_class(hou.Node)
 def isContainedBy(self, node):
-    """Test if this node is a contained within the node."""
+    """Test if this node is a contained within the node.
+
+    :param node: A node which may contain this node
+    :type node: hou.Node
+    :return: Whether or not this node is a child of the passed node.
+    :rtype: bool
+
+    """
     # Get this node's parent.
     parent = self.parent()
 
@@ -2240,13 +2938,21 @@ def isCompiled(self):
     This check can be used to determine if a node is compiled for Orbolt,
     or has somehow become compiled on its own.
 
+    :return: Whether or not the node is compiled.
+    :rtype: bool
+
     """
     return _cpp_methods.isCompiled(self)
 
 
 @add_to_class(hou.Node)
 def authorName(self):
-    """Get the name of the node creator."""
+    """Get the name of the node creator.
+
+    :return: The author name.
+    :rtype: str
+
+    """
     author = _cpp_methods.getAuthor(self)
 
     # Remove any machine name from the user name.
@@ -2255,19 +2961,34 @@ def authorName(self):
 
 @add_to_class(hou.NodeType)
 def setIcon(self, icon_name):
-    """Set the node type's icon name."""
+    """Set the node type's icon name.
+
+    :param icon_name: The icon to set.
+    :type icon_name: str
+    :return:
+
+    """
     return _cpp_methods.setIcon(self, icon_name)
 
 
 @add_to_class(hou.NodeType)
 def setDefaultIcon(self):
-    """Set this node type's icon name to its default value."""
+    """Set this node type's icon name to its default value.
+
+    :return:
+
+    """
     return _cpp_methods.setDefaultIcon(self)
 
 
 @add_to_class(hou.NodeType)
 def isPython(self):
-    """Check if this node type represents a Python operator."""
+    """Check if this node type represents a Python operator.
+
+    :return: Whether or not the operator is a Python operator.
+    :rtype: bool
+
+    """
     return _cpp_methods.isPython(self)
 
 
@@ -2277,13 +2998,23 @@ def isSubnetType(self):
 
     This is the operator type which is used as a default container for nodes.
 
+    :return: Whether or not the operator is a Subnet operator.
+    :rtype: bool
+
     """
     return _cpp_methods.isSubnetType(self)
 
 
 @add_to_class(hou.Vector3)
 def componentAlong(self, vector):
-    """Calculate the component of this vector along another vector."""
+    """Calculate the component of this vector along another vector.
+
+    :param vector: The vector to calculate against.
+    :type vector: hou.Vector3
+    :return: The component of this vector along the other vector.
+    :rtype: float
+
+    """
     # The component of vector A along B is: A dot (unit vector // to B).
     return self.dot(vector.normalized())
 
@@ -2295,6 +3026,11 @@ def project(self, vector):
     This is an orthogonal projection of this vector onto a straight line
     parallel to the supplied vector.
 
+    :param vector: The vector to project onto.
+    :type vector: hou.Vector3
+    :return: The vector projected along the other vector.
+    :rtype: hou.Vector3
+
     """
     # The vector cannot be the zero vector.
     if vector == hou.Vector3():
@@ -2305,7 +3041,12 @@ def project(self, vector):
 
 @add_to_class(hou.Vector2, hou.Vector3, hou.Vector4)
 def isNan(self):
-    """Check if this vector contains NaNs."""
+    """Check if this vector contains NaNs.
+
+    :return: Whether or not there are any NaNs in the vector.
+    :rtype: bool
+
+    """
     # Iterate over each component.
     for i in range(len(self)):
         # If this component is a NaN, return True.
@@ -2323,6 +3064,9 @@ def getDual(self):
     The dual is a matrix which acts like the cross product when multiplied by
     other vectors.
 
+    :return: The dual of the vector.
+    :rtype: hou.Matrix3
+
     """
     # The matrix that will be the dual.
     mat = hou.Matrix3()
@@ -2335,7 +3079,12 @@ def getDual(self):
 
 @add_to_class(hou.Matrix3, hou.Matrix4)
 def isIdentity(self):
-    """Check if this matrix is the identity matrix."""
+    """Check if this matrix is the identity matrix.
+
+    :return: Whether or not the matrix is the identity matrix.
+    :rtype: bool
+
+    """
     # We are a 3x3 matrix.
     if isinstance(self, hou.Matrix3):
         # Construct a new 3x3 matrix.
@@ -2353,7 +3102,13 @@ def isIdentity(self):
 
 @add_to_class(hou.Matrix4)
 def setTranslates(self, translates):
-    """Set the translation values of this matrix."""
+    """Set the translation values of this matrix.
+
+    :param translates: The translation values to set.
+    :type translates: tuple(float)
+    :return:
+
+    """
     # The translations are stored in the first 3 columns of the last row of the
     # matrix.  To set the values we just need to set the corresponding columns
     # to the matching components in the vector.
@@ -2371,6 +3126,15 @@ def buildLookat(from_vec, to_vec, up):
     The lookat matrix will have the -Z axis point at the "to_vec" point.  The Y
     axis will be pointing "up".
 
+    :param from_vec: The base vector.
+    :type from_vec: hou.Vector3
+    :param to_vec: The target vector.
+    :type to_vec: hou.Vector3
+    :param up: The up vector.
+    :type up: hou.Vector3
+    :return: The lookat matrix.
+    :rtype: hou.Matrix3
+
     """
     # Create the new matrix to return.
     mat = hou.Matrix3()
@@ -2381,7 +3145,7 @@ def buildLookat(from_vec, to_vec, up):
     return mat
 
 
-# TODO: create instance from point
+# TODO: create instance from point?
 @add_to_module(hou.hmath)
 def buildInstance(position, direction=hou.Vector3(0, 0, 1), pscale=1,
                   scale=hou.Vector3(1, 1, 1), up=hou.Vector3(0, 1, 0),
@@ -2454,6 +3218,9 @@ def isDigitalAsset(self):
 
     A node is a digital asset if its node type has a hou.HDADefinition.
 
+    :return: Whether or not this node is a digital asset.
+    :rtype: bool
+
     """
     return self.type().definition() is not None
 
@@ -2465,6 +3232,11 @@ def metaSource(file_path):
     This function determines where the specified .otl file is installed to in
     the current session.  Examples include "Scanned OTL Directories", "Current
     Hip File", "Fallback Libraries" or specific OPlibraries files.
+
+    :param file_path: The path to get the install location for.
+    :type file_path: str
+    :return: The meta install location, if any.
+    :rtype: str|None
 
     """
     if file_path not in hou.hda.loadedFiles():
@@ -2481,6 +3253,9 @@ def getMetaSource(self):
     the current session.  Examples include "Scanned OTL Directories", "Current
     Hip File", "Fallback Libraries" or specific OPlibraries files.
 
+    :return: The meta install location, if any.
+    :rtype: str|None
+
     """
     return hou.hda.metaSource(self.libraryFilePath())
 
@@ -2491,13 +3266,25 @@ def removeMetaSource(meta_source):
 
     Removing a meta source will uninstall the libraries it was responsible for.
 
+    :param meta_source: The meta source name.
+    :type meta_source: str
+    :return: Whether or not the source was removed.
+    :rtype: bool
+
     """
     return _cpp_methods.removeMetaSource(meta_source)
 
 
 @add_to_module(hou.hda)
 def librariesInMetaSource(meta_source):
-    """Get a list of library paths in a meta source."""
+    """Get a list of library paths in a meta source.
+
+    :param meta_source: The meta source name.
+    :type meta_source: str
+    :return: A list of paths in the source.
+    :rtype: tuple(str)
+
+    """
     # Get the any libraries in the meta source.
     result = _cpp_methods.getLibrariesInMetaSource(meta_source)
 
@@ -2511,6 +3298,10 @@ def isDummy(self):
 
     A dummy, or empty definition is created by Houdini when it cannot find
     an operator definition that it needs in the current session.
+
+    :return: Whether or not the asset definition is a dummy definition.
+    :rtype: bool
+
     """
     return _cpp_methods.isDummyDefinition(
         self.libraryFilePath(),

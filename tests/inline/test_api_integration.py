@@ -47,17 +47,19 @@ class TestInlineCpp(unittest.TestCase):
     def tearDownClass(cls):
         hou.hipFile.clear()
 
-    def test_get_attrib_owner_from_geometry_type(self):
-        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_type(hou.Vertex), 0)
-        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_type(hou.Point), 1)
-        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_type(hou.Prim), 2)
-        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_type(hou.Face), 2)
-        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_type(hou.Volume), 2)
-        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_type(hou.Polygon), 2)
-        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_type(hou.Geometry), 3)
+    # =========================================================================
+
+    def test_get_attrib_owner_from_geometry_entity_type(self):
+        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_entity_type(hou.Vertex), 0)
+        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_entity_type(hou.Point), 1)
+        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_entity_type(hou.Prim), 2)
+        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_entity_type(hou.Face), 2)
+        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_entity_type(hou.Volume), 2)
+        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_entity_type(hou.Polygon), 2)
+        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_entity_type(hou.Geometry), 3)
 
         with self.assertRaises(TypeError):
-            ht.inline.api._get_attrib_owner_from_geometry_type(None)
+            ht.inline.api._get_attrib_owner_from_geometry_entity_type(None)
 
     def test_getVariable(self):
         hip_name = hou.getVariable("HIPNAME")
@@ -309,10 +311,10 @@ class TestInlineCpp(unittest.TestCase):
         # TODO: Figure out how to test this.  Maybe include inline Python SOP?
         pass
 
-    def test_createPoint(self):
+    def test_createPointAtPosition(self):
         geo = hou.Geometry()
 
-        point = geo.createPoint(hou.Vector3(1, 2, 3))
+        point = geo.createPointAtPosition(hou.Vector3(1, 2, 3))
 
         self.assertEqual(point.position(), hou.Vector3(1, 2, 3))
 
@@ -619,7 +621,7 @@ class TestInlineCpp(unittest.TestCase):
 
         face = geo.iterPrims()[0]
 
-        pt = geo.createPoint(hou.Vector3(0.5, 0, 0.5))
+        pt = geo.createPointAtPosition(hou.Vector3(0.5, 0, 0.5))
 
         face.insertVertex(pt, 2)
 
@@ -630,7 +632,7 @@ class TestInlineCpp(unittest.TestCase):
 
         face = geo.iterPrims()[0]
 
-        pt = geo.createPoint(hou.Vector3(0.5, 0, 0.5))
+        pt = geo.createPointAtPosition(hou.Vector3(0.5, 0, 0.5))
 
         with self.assertRaises(IndexError):
             face.insertVertex(pt, -1)
@@ -640,7 +642,7 @@ class TestInlineCpp(unittest.TestCase):
 
         face = geo.iterPrims()[0]
 
-        pt = geo.createPoint(hou.Vector3(0.5, 0, 0.5))
+        pt = geo.createPointAtPosition(hou.Vector3(0.5, 0, 0.5))
 
         with self.assertRaises(IndexError):
             face.insertVertex(pt, 10)
@@ -1441,36 +1443,6 @@ class TestInlineCpp(unittest.TestCase):
 
         with self.assertRaises(hou.Error):
             parm.evalAsColor()
-
-    def test_getReferencedNodeAbsoluate(self):
-        node = OBJ.node("test_getReferencedNode/node")
-        parm = node.parm("abs_path")
-
-        TARGET = OBJ.node("test_getReferencedNode/TARGET")
-
-        self.assertEqual(parm.getReferencedNode(), TARGET)
-
-    def test_getReferencedNodeRelative(self):
-        node = OBJ.node("test_getReferencedNode/node")
-        parm = node.parm("rel_path")
-
-        TARGET = OBJ.node("test_getReferencedNode/TARGET")
-
-        self.assertEqual(parm.getReferencedNode(), TARGET)
-
-    def test_getReferencedNodeNonString(self):
-        node = OBJ.node("test_getReferencedNode/node")
-        parm = node.parm("non_string")
-
-        with self.assertRaises(hou.Error):
-            parm.getReferencedNode()
-
-    def test_getReferencedNodeNonRef(self):
-        node = OBJ.node("test_getReferencedNode/node")
-        parm = node.parm("non_reference")
-
-        with self.assertRaises(hou.Error):
-            parm.getReferencedNode()
 
     def test_evalAsStripSingle(self):
         node = OBJ.node("test_evalAsStrip/node")
