@@ -34,12 +34,15 @@ class Test_DeepImage(unittest.TestCase):
         super(Test_DeepImage, self).tearDown()
         self.patcher.stop()
 
-    def test___init__(self):
+    # =========================================================================
+
+    @patch.object(deepimage.PyFilterOperation, "__init__")
+    def test___init__(self, mock_super_init):
+        """Test constructor."""
         mock_manager = MagicMock(spec=PyFilterManager)
         op = deepimage.SetDeepImage(mock_manager)
 
-        self.assertEqual(op._data, {})
-        self.assertEqual(op._manager, mock_manager)
+        mock_super_init.assert_called_with(mock_manager)
 
         self.assertFalse(op._all_passes, False)
         self.assertFalse(op._disable_deep_image, False)
@@ -59,273 +62,259 @@ class Test_DeepImage(unittest.TestCase):
 
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_all_passes(self):
+        """Test 'all_passes' property."""
         op = deepimage.SetDeepImage(None)
-        op._all_passes = True
-        self.assertTrue(op.all_passes)
 
-        op = deepimage.SetDeepImage(None)
-        op._all_passes = False
-        op.all_passes = True
-        self.assertTrue(op._all_passes)
+        mock_value1 = MagicMock(spec=bool)
+        op._all_passes = mock_value1
+        self.assertEqual(op.all_passes, mock_value1)
+
+        mock_value2 = MagicMock(spec=bool)
+        op.all_passes = mock_value2
+        self.assertEqual(op._all_passes, mock_value2)
 
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_compositing(self):
+        """Test 'compositing' property."""
         op = deepimage.SetDeepImage(None)
-        op._compositing = True
-        self.assertTrue(op.compositing)
 
-        op = deepimage.SetDeepImage(None)
-        op._compositing = False
-        op.compositing = True
-        self.assertTrue(op._compositing)
+        mock_value1 = MagicMock(spec=int)
+        op._compositing = mock_value1
+        self.assertEqual(op.compositing, mock_value1)
+
+        mock_value2 = MagicMock(spec=int)
+        op.compositing = mock_value2
+        self.assertEqual(op._compositing, mock_value2)
 
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_deepcompression(self):
+        """Test 'deepcompression' property."""
         op = deepimage.SetDeepImage(None)
-        op._deepcompression = 4
-        self.assertEqual(op.deepcompression, 4)
 
-        op = deepimage.SetDeepImage(None)
-        op._deepcompression = 3
-        op.deepcompression = 4
-        self.assertEqual(op._deepcompression, 4)
+        mock_value1 = MagicMock(spec=int)
+        op._deepcompression = mock_value1
+        self.assertEqual(op.deepcompression, mock_value1)
+
+        mock_value2 = MagicMock(spec=int)
+        op.deepcompression = mock_value2
+        self.assertEqual(op._deepcompression, mock_value2)
 
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_depth_planes(self):
+        """Test 'depth_planes' property."""
         op = deepimage.SetDeepImage(None)
-        op._depth_planes = "zfront,zback"
-        self.assertEqual(op.depth_planes, "zfront,zback")
 
-        op = deepimage.SetDeepImage(None)
-        op._depth_planes = "foo"
-        op.depth_planes = "zfront,zback"
-        self.assertEqual(op._depth_planes, "zfront,zback")
+        mock_value1 = MagicMock(spec=str)
+        op._depth_planes = mock_value1
+        self.assertEqual(op.depth_planes, mock_value1)
+
+        mock_value2 = MagicMock(spec=str)
+        op.depth_planes = mock_value2
+        self.assertEqual(op._depth_planes, mock_value2)
 
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_disable_deep_image(self):
+        """Test 'disable_deep_image' property."""
         op = deepimage.SetDeepImage(None)
-        op._disable_deep_image = True
-        self.assertTrue(op.disable_deep_image)
 
-        op = deepimage.SetDeepImage(None)
-        op._disable_deep_image = False
-        op.disable_deep_image = True
-        self.assertTrue(op._disable_deep_image)
+        mock_value1 = MagicMock(spec=bool)
+        op._disable_deep_image = mock_value1
+        self.assertEqual(op.disable_deep_image, mock_value1)
+
+        mock_value2 = MagicMock(spec=bool)
+        op.disable_deep_image = mock_value2
+        self.assertEqual(op._disable_deep_image, mock_value2)
 
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_filename(self):
+        """Test 'filename' property."""
         op = deepimage.SetDeepImage(None)
-        op._filename = "/path/to/file.exr"
-        self.assertEqual(op.filename, "/path/to/file.exr")
 
-        op = deepimage.SetDeepImage(None)
-        op._filename = "foo"
-        op.filename = "/path/to/file.exr"
-        self.assertEqual(op._filename, "/path/to/file.exr")
+        mock_value1 = MagicMock(spec=str)
+        op._filename = mock_value1
+        self.assertEqual(op.filename, mock_value1)
+
+        mock_value2 = MagicMock(spec=str)
+        op.filename = mock_value2
+        self.assertEqual(op._filename, mock_value2)
 
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_mipmaps(self):
+        """Test 'mipmaps' property."""
         op = deepimage.SetDeepImage(None)
-        op._mipmaps = True
-        self.assertTrue(op.mipmaps)
 
-        op = deepimage.SetDeepImage(None)
-        op._mipmaps = False
-        op.mipmaps = True
-        self.assertTrue(op._mipmaps)
+        mock_value1 = MagicMock(spec=int)
+        op._mipmaps = mock_value1
+        self.assertEqual(op.mipmaps, mock_value1)
+
+        mock_value2 = MagicMock(spec=int)
+        op.mipmaps = mock_value2
+        self.assertEqual(op._mipmaps, mock_value2)
 
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_ofsize(self):
+        """Test 'ofsize' property."""
         op = deepimage.SetDeepImage(None)
-        op._ofsize = 3
-        self.assertEqual(op.ofsize, 3)
 
-        op = deepimage.SetDeepImage(None)
-        op._ofsize = 1
-        op.ofsize = 3
-        self.assertEqual(op._ofsize, 3)
+        mock_value1 = MagicMock(spec=int)
+        op._ofsize = mock_value1
+        self.assertEqual(op.ofsize, mock_value1)
+
+        mock_value2 = MagicMock(spec=int)
+        op.ofsize = mock_value2
+        self.assertEqual(op._ofsize, mock_value2)
 
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_ofstorage(self):
+        """Test 'ofstorage' property."""
         op = deepimage.SetDeepImage(None)
-        op._ofstorage = "real32"
-        self.assertEqual(op.ofstorage, "real32")
 
-        op = deepimage.SetDeepImage(None)
-        op._ofstorage = "real16"
-        op.ofstorage = "real32"
-        self.assertEqual(op._ofstorage, "real32")
+        mock_value1 = MagicMock(spec=str)
+        op._ofstorage = mock_value1
+        self.assertEqual(op.ofstorage, mock_value1)
+
+        mock_value2 = MagicMock(spec=str)
+        op.ofstorage = mock_value2
+        self.assertEqual(op._ofstorage, mock_value2)
 
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_pzstorage(self):
+        """Test 'pzstorage' property."""
         op = deepimage.SetDeepImage(None)
-        op._pzstorage = "real32"
-        self.assertEqual(op.pzstorage, "real32")
 
-        op = deepimage.SetDeepImage(None)
-        op._pzstorage = "real16"
-        op.pzstorage = "real32"
-        self.assertEqual(op._pzstorage, "real32")
+        mock_value1 = MagicMock(spec=str)
+        op._pzstorage = mock_value1
+        self.assertEqual(op.pzstorage, mock_value1)
+
+        mock_value2 = MagicMock(spec=str)
+        op.pzstorage = mock_value2
+        self.assertEqual(op._pzstorage, mock_value2)
 
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_resolver(self):
+        """Test 'resolver' property."""
         op = deepimage.SetDeepImage(None)
-        op._resolver = "shadow"
-        self.assertEqual(op.resolver, "shadow")
 
-        op = deepimage.SetDeepImage(None)
-        op._resolver = "camera"
-        op.resolver = "shadow"
-        self.assertEqual(op._resolver, "shadow")
+        mock_value1 = MagicMock(spec=str)
+        op._resolver = mock_value1
+        self.assertEqual(op.resolver, mock_value1)
+
+        mock_value2 = MagicMock(spec=str)
+        op.resolver = mock_value2
+        self.assertEqual(op._resolver, mock_value2)
 
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_zbias(self):
+        """Test 'zbias' property."""
         op = deepimage.SetDeepImage(None)
-        op._zbias = 3
-        self.assertEqual(op.zbias, 3)
 
-        op = deepimage.SetDeepImage(None)
-        op._zbias = 1
-        op.zbias = 3
-        self.assertEqual(op._zbias, 3)
+        mock_value1 = MagicMock(spec=int)
+        op._zbias = mock_value1
+        self.assertEqual(op.zbias, mock_value1)
+
+        mock_value2 = MagicMock(spec=int)
+        op.zbias = mock_value2
+        self.assertEqual(op._zbias, mock_value2)
 
     # Static Methods
 
+    # build_arg_string
+
     def test_build_arg_string(self):
+        """Test building arg strings."""
         result = deepimage.SetDeepImage.build_arg_string()
 
         self.assertEquals(result, "")
 
         # Disable deep image path
-        result = deepimage.SetDeepImage.build_arg_string(
-            disable_deep_image=True
-        )
+        result = deepimage.SetDeepImage.build_arg_string(disable_deep_image=True)
 
-        self.assertEquals(
-            result,
-            "--disable-deep-image"
-        )
+        self.assertEquals(result, "--disable-deep-image")
 
         # deep all passes
-        result = deepimage.SetDeepImage.build_arg_string(
-            deep_all_passes=True
-        )
+        result = deepimage.SetDeepImage.build_arg_string(deep_all_passes=True)
 
-        self.assertEquals(
-            result,
-            "--deep-all-passes"
-        )
+        self.assertEquals(result, "--deep-all-passes")
 
         # Set deep image path
-        result = deepimage.SetDeepImage.build_arg_string(
-            deep_image_path="/path/to/deep.exr"
-        )
+        mock_path = MagicMock(spec=str)
 
-        self.assertEquals(
-            result,
-            "--deep-image-path={}".format("/path/to/deep.exr")
-        )
+        result = deepimage.SetDeepImage.build_arg_string(deep_image_path=mock_path)
+
+        self.assertEquals(result, "--deep-image-path={}".format(mock_path))
 
         # Set deep resolver
-        result = deepimage.SetDeepImage.build_arg_string(
-            resolver="shadow"
-        )
+        mock_resolver = MagicMock(spec=str)
 
-        self.assertEquals(
-            result,
-            "--deep-resolver=shadow"
-        )
+        result = deepimage.SetDeepImage.build_arg_string(resolver=mock_resolver)
+
+        self.assertEquals(result, "--deep-resolver={}".format(mock_resolver))
 
         # Set compositing
-        result = deepimage.SetDeepImage.build_arg_string(
-            compositing=1
-        )
+        mock_compositing = MagicMock(spec=int)
 
-        self.assertEquals(
-            result,
-            "--deep-compositing=1"
-        )
+        result = deepimage.SetDeepImage.build_arg_string(compositing=mock_compositing)
+
+        self.assertEquals(result,"--deep-compositing={}".format(mock_compositing))
 
         # Set compression
-        result = deepimage.SetDeepImage.build_arg_string(
-            compression=1
-        )
+        mock_compression = MagicMock(spec=int)
 
-        self.assertEquals(
-            result,
-            "--deep-compression=1"
-        )
+        result = deepimage.SetDeepImage.build_arg_string(compression=mock_compression)
+
+        self.assertEquals(result, "--deep-compression={}".format(mock_compression))
 
         # Set depth planes
-        result = deepimage.SetDeepImage.build_arg_string(
-            depth_planes="zfront,zback"
-        )
+        mock_planes = MagicMock(spec=str)
 
-        self.assertEquals(
-            result,
-            "--deep-depth-planes={}".format("zfront,zback")
-        )
+        result = deepimage.SetDeepImage.build_arg_string(depth_planes=mock_planes)
 
-        result = deepimage.SetDeepImage.build_arg_string(
-            depth_planes="zfront,zback".split(',')
-        )
+        self.assertEquals(result, "--deep-depth-planes={}".format(mock_planes))
 
-        self.assertEquals(
-            result,
-            "--deep-depth-planes={}".format("zfront,zback")
-        )
+        # Test depth planes with string list.
+        result = deepimage.SetDeepImage.build_arg_string(depth_planes="zfront,zback".split(','))
+
+        self.assertEquals(result, "--deep-depth-planes={}".format("zfront,zback"))
 
         # Set mipmaps
-        result = deepimage.SetDeepImage.build_arg_string(
-            mipmaps=0
-        )
+        mock_mips = MagicMock(spec=int)
 
-        self.assertEquals(
-            result,
-            "--deep-mipmaps=0"
-        )
+        result = deepimage.SetDeepImage.build_arg_string(mipmaps=mock_mips)
+
+        self.assertEquals(result, "--deep-mipmaps={}".format(mock_mips))
 
         # Set ofsize
-        result = deepimage.SetDeepImage.build_arg_string(
-            ofsize=1
-        )
+        mock_ofsize = MagicMock(spec=int)
 
-        self.assertEquals(
-            result,
-            "--deep-ofsize=1"
-        )
+        result = deepimage.SetDeepImage.build_arg_string(ofsize=mock_ofsize)
+
+        self.assertEquals(result, "--deep-ofsize={}".format(mock_ofsize))
 
         # Set ofstorage
-        result = deepimage.SetDeepImage.build_arg_string(
-            ofstorage="real32"
-        )
+        mock_ofstorage = MagicMock(spec=str)
 
-        self.assertEquals(
-            result,
-            "--deep-ofstorage=real32"
-        )
+        result = deepimage.SetDeepImage.build_arg_string(ofstorage=mock_ofstorage)
+
+        self.assertEquals(result, "--deep-ofstorage={}".format(mock_ofstorage))
 
         # Set pzstorage
-        result = deepimage.SetDeepImage.build_arg_string(
-            pzstorage="real16"
-        )
+        mock_pzstorage = MagicMock(spec=str)
 
-        self.assertEquals(
-            result,
-            "--deep-pzstorage=real16"
-        )
+        result = deepimage.SetDeepImage.build_arg_string(pzstorage=mock_pzstorage)
+
+        self.assertEquals(result, "--deep-pzstorage={}".format(mock_pzstorage))
 
         # Set zbias
-        result = deepimage.SetDeepImage.build_arg_string(
-            zbias=1.2
-        )
+        mock_zbias = MagicMock(spec=str)
 
-        self.assertEquals(
-            result,
-            "--deep-zbias=1.2"
-        )
+        result = deepimage.SetDeepImage.build_arg_string(zbias=mock_zbias)
+
+        self.assertEquals(result, "--deep-zbias={}".format(mock_zbias))
+
+    # register_parser_args
 
     def test_register_parser_args(self):
+        """Test registering parser args."""
         parser = argparse.ArgumentParser()
 
         deepimage.SetDeepImage.register_parser_args(parser)
@@ -364,8 +353,11 @@ class Test_DeepImage(unittest.TestCase):
 
     # Methods
 
+    # _modify_deep_args
+
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test__modify_deep_args(self):
+        """Test modifying deep args."""
         # Test value propagation.
         deep_args = ["shadow"]
         op = deepimage.SetDeepImage(None)
@@ -401,11 +393,14 @@ class Test_DeepImage(unittest.TestCase):
 
         self.assertEquals(deep_args, ["filename", "/path/to/deep.exr"])
 
+    # filterCamera
+
     @patch("ht.pyfilter.operations.deepimage.get_property")
     @patch("ht.pyfilter.operations.deepimage.logger")
     @patch.object(deepimage.SetDeepImage, "_modify_deep_args")
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_filterCamera__not_beatuy(self, mock_modify, mock_logger, mock_get):
+        """Test for non-beauty renders."""
         mock_get.return_value = "shadow"
 
         op = deepimage.SetDeepImage(None)
@@ -553,8 +548,11 @@ class Test_DeepImage(unittest.TestCase):
 
         mock_set.assert_called_with("image:deepresolver", ["shadow", "filename", "/path/to/deep.exr"])
 
+    # process_parsed_args
+
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_process_parsed_args(self):
+        """Test processing the args."""
         namespace = argparse.Namespace()
         namespace.disable_deep_image = True
         namespace.deep_all_passes = True
@@ -601,6 +599,7 @@ class Test_DeepImage(unittest.TestCase):
 
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_process_parsed_args__none(self):
+        """Test processing the args when they are all default."""
         namespace = argparse.Namespace()
         namespace.disable_deep_image = False
         namespace.deep_all_passes = False
@@ -645,8 +644,11 @@ class Test_DeepImage(unittest.TestCase):
         self.assertEquals(op.pzstorage, "real32")
         self.assertEquals(op.zbias, 0.5)
 
+    # should_run
+
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_should_run(self):
+        """Test if the operation should run."""
         op = deepimage.SetDeepImage(None)
 
         op._disable_deep_image = False
