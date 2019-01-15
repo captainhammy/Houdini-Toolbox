@@ -9,6 +9,9 @@ from collections import OrderedDict
 from contextlib import contextmanager
 import time
 
+# Houdini Toolbox Imports
+from ht.logger import logger
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -165,9 +168,9 @@ class HoudiniEventStats(object):
         :return:
 
         """
-        print "Event name: {}".format(self.name)
-        print "\tRun Count: {}".format(self.run_count)
-        print "\tRun Time: {}".format(self.last_run_time)
+        logger.info("Event name: {}".format(self.name))
+        logger.info("\tRun Count: {}".format(self.run_count))
+        logger.info("\tRun Time: {}".format(self.last_run_time))
 
     def reset(self):
         """Reset all counts.
@@ -217,14 +220,14 @@ class HoudiniEventItemStats(HoudiniEventStats):
         :return:
 
         """
-        print "Item: {}".format(self.name)
-        print"\tRun Count: {}".format(self.run_count)
-        print"\tCallables:"
+        logger.info("Item: {}".format(self.name))
+        logger.info("\tRun Count: {}".format(self.run_count))
+        logger.info("\tCallables:")
 
         for item_name, item_time in self.item_stats.iteritems():
-            print"\t\t{}: {:0.4f}".format(item_name, item_time)
+            logger.info("\t\t{}: {:0.4f}".format(item_name, item_time))
 
-        print"\tRun Time: {:0.4f}".format(self.last_run_time)
+        logger.info("\tRun Time: {:0.4f}".format(self.last_run_time))
 
     def reset(self):
         """Reset all counts.

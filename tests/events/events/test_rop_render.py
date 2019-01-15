@@ -46,8 +46,9 @@ class Test_RopRenderEvent(unittest.TestCase):
 
     # pre_frame
 
+    @patch("ht.events.events.rop_render.logger")
     @patch.object(ht.events.events.rop_render.RopRenderEvent, "__init__", lambda x: None)
-    def test_pre_frame(self):
+    def test_pre_frame(self, mock_logger):
         event = ht.events.events.rop_render.RopRenderEvent()
         event._frame_start = None
 
@@ -57,10 +58,13 @@ class Test_RopRenderEvent(unittest.TestCase):
 
         self.assertEqual(event._frame_start, 123)
 
+        mock_logger.info.assert_called()
+
     # pre_render
 
+    @patch("ht.events.events.rop_render.logger")
     @patch.object(ht.events.events.rop_render.RopRenderEvent, "__init__", lambda x: None)
-    def test_pre_render__with_frame_range(self):
+    def test_pre_render__with_frame_range(self, mock_logger):
         event = ht.events.events.rop_render.RopRenderEvent()
         event._render_start = None
 
@@ -70,8 +74,11 @@ class Test_RopRenderEvent(unittest.TestCase):
 
         self.assertEqual(event._render_start, 123)
 
+        mock_logger.info.assert_called()
+
+    @patch("ht.events.events.rop_render.logger")
     @patch.object(ht.events.events.rop_render.RopRenderEvent, "__init__", lambda x: None)
-    def test_pre_render__no_frame_range(self):
+    def test_pre_render__no_frame_range(self, mock_logger):
         event = ht.events.events.rop_render.RopRenderEvent()
         event._render_start = None
 
@@ -81,11 +88,14 @@ class Test_RopRenderEvent(unittest.TestCase):
 
         self.assertEqual(event._render_start, 123)
 
+        mock_logger.info.assert_called()
+
     # post_frame
 
+    @patch("ht.events.events.rop_render.logger")
     @patch("ht.events.events.rop_render._print_frame_write")
     @patch.object(ht.events.events.rop_render.RopRenderEvent, "__init__", lambda x: None)
-    def test_post_frame__valid_start_frame(self, mock_print):
+    def test_post_frame__valid_start_frame(self, mock_print, mock_logger):
         event = ht.events.events.rop_render.RopRenderEvent()
         event._frame_start = 123
 
@@ -95,9 +105,12 @@ class Test_RopRenderEvent(unittest.TestCase):
 
         mock_print.assert_called_with(scriptargs)
 
+        mock_logger.info.assert_called()
+
+    @patch("ht.events.events.rop_render.logger")
     @patch("ht.events.events.rop_render._print_frame_write")
     @patch.object(ht.events.events.rop_render.RopRenderEvent, "__init__", lambda x: None)
-    def test_post_frame__no_start_frame(self, mock_print):
+    def test_post_frame__no_start_frame(self, mock_print, mock_logger):
         event = ht.events.events.rop_render.RopRenderEvent()
         event._frame_start = None
 
@@ -107,10 +120,13 @@ class Test_RopRenderEvent(unittest.TestCase):
 
         mock_print.assert_called_with(scriptargs)
 
+        mock_logger.info.assert_called()
+
     # post_render
 
+    @patch("ht.events.events.rop_render.logger")
     @patch.object(ht.events.events.rop_render.RopRenderEvent, "__init__", lambda x: None)
-    def test_post_render__valid_start_frame(self):
+    def test_post_render__valid_start_frame(self, mock_logger):
         event = ht.events.events.rop_render.RopRenderEvent()
         event._render_start = 123
 
@@ -118,30 +134,41 @@ class Test_RopRenderEvent(unittest.TestCase):
 
         event.post_render(scriptargs)
 
+        mock_logger.info.assert_called()
+
+    @patch("ht.events.events.rop_render.logger")
     @patch.object(ht.events.events.rop_render.RopRenderEvent, "__init__", lambda x: None)
-    def test_post_render__no_start_frame(self):
+    def test_post_render__no_start_frame(self, mock_logger):
         event = ht.events.events.rop_render.RopRenderEvent()
         event._render_start = None
 
         event.post_render({})
 
+        mock_logger.info.assert_called()
+
     # post_write
 
+    @patch("ht.events.events.rop_render.logger")
     @patch.object(ht.events.events.rop_render.RopRenderEvent, "__init__", lambda x: None)
-    def test_post_write__valid_path(self):
+    def test_post_write__valid_path(self, mock_logger):
         event = ht.events.events.rop_render.RopRenderEvent()
 
         scriptargs = {"frame": 1001, "path": MagicMock(spec=str)}
 
         event.post_write(scriptargs)
 
+        mock_logger.info.assert_called()
+
+    @patch("ht.events.events.rop_render.logger")
     @patch.object(ht.events.events.rop_render.RopRenderEvent, "__init__", lambda x: None)
-    def test_post_write__no_path(self):
+    def test_post_write__no_path(self, mock_logger):
         event = ht.events.events.rop_render.RopRenderEvent()
 
         scriptargs = {"frame": 1001}
 
         event.post_write(scriptargs)
+
+        mock_logger.info.assert_called()
 
 
 class Test__get_target_file(unittest.TestCase):
@@ -241,7 +268,8 @@ class Test__print_frame_write(unittest.TestCase):
 
         mock_node.parm.assert_not_called()
 
-    def test_post_script(self):
+    @patch("ht.events.events.rop_render.logger")
+    def test_post_script(self, mock_logger):
         mock_parm = MagicMock(spec=hou.Parm)
         mock_parm.eval.return_value = "a dummy script"
 
@@ -252,7 +280,10 @@ class Test__print_frame_write(unittest.TestCase):
 
         ht.events.events.rop_render._print_frame_write(scriptargs)
 
-    def test_path_no_post_script(self):
+        mock_logger.info.assert_not_called()
+
+    @patch("ht.events.events.rop_render.logger")
+    def test_path_no_post_script(self, mock_logger):
         mock_parm = MagicMock(spec=hou.Parm)
         mock_parm.eval.return_value = ""
 
@@ -262,6 +293,8 @@ class Test__print_frame_write(unittest.TestCase):
         scriptargs = {"node": mock_node, "frame": 1001, "path": "/var/tmp/test.bgeo"}
 
         ht.events.events.rop_render._print_frame_write(scriptargs)
+
+        mock_logger.info.assert_called()
 
 
 class Test_build_scriptargs(unittest.TestCase):
