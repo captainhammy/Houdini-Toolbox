@@ -39,6 +39,8 @@ class SohoHookManager(object):
 
         hooks = self.hooks.get(name, ())
 
+        return_value = False
+
         for hook in hooks:
             try:
                 result = hook(*args, **kwargs)
@@ -56,9 +58,9 @@ class SohoHookManager(object):
 
             else:
                 if result:
-                    return True
+                    return_value = True
 
-        return False
+        return return_value
 
     def register_hook(self, name, hook):
         """Register a hook function for a given soho hook name."""
@@ -69,4 +71,3 @@ class SohoHookManager(object):
 # =============================================================================
 
 MANAGER = SohoHookManager()
-

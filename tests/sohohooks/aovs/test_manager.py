@@ -23,7 +23,7 @@ reload(manager)
 # =============================================================================
 
 class Test_AOVManager(unittest.TestCase):
-    """Test ht.sohohooks.manager.AOVManager object."""
+    """Test ht.sohohooks.aovs.manager.AOVManager object."""
 
     def setUp(self):
         super(Test_AOVManager, self).setUp()
@@ -789,7 +789,7 @@ class Test_AOVManager(unittest.TestCase):
 
 
 class Test_AOVFile(unittest.TestCase):
-    """Test ht.sohohooks.manager.AOVFile object."""
+    """Test ht.sohohooks.aovs.manager.AOVFile object."""
 
     @patch.object(manager.AOVFile, "_init_from_file")
     @patch.object(manager.AOVFile, "exists", new_callable=PropertyMock(return_value=True))
@@ -1185,7 +1185,7 @@ class Test_AOVFile(unittest.TestCase):
 
 
 class Test__find_aov_files(unittest.TestCase):
-    """Test ht.sohohooks.manager._find_aov_files."""
+    """Test ht.sohohooks.aovs.manager._find_aov_files."""
 
     @patch("ht.sohohooks.aovs.manager.glob.glob")
     @patch("ht.sohohooks.aovs.manager._get_aov_path_folders")
@@ -1229,7 +1229,7 @@ class Test__find_aov_files(unittest.TestCase):
 
 
 class Test__find_houdinipath_aov_folders(unittest.TestCase):
-    """Test ht.sohohooks.manager._find_houdinipath_aov_folders."""
+    """Test ht.sohohooks.aovs.manager._find_houdinipath_aov_folders."""
 
     @patch("ht.sohohooks.aovs.manager.hou.findDirectories")
     def test_no_dirs(self, mock_find):
@@ -1250,7 +1250,7 @@ class Test__find_houdinipath_aov_folders(unittest.TestCase):
 
 
 class Test__get_aov_path_folders(unittest.TestCase):
-    """Test ht.sohohooks.manager._get_aov_path_folders."""
+    """Test ht.sohohooks.aovs.manager._get_aov_path_folders."""
 
     def test_no_hpath(self):
 
@@ -1291,7 +1291,7 @@ class Test__get_aov_path_folders(unittest.TestCase):
 
 
 class Test_build_menu_script(unittest.TestCase):
-    """Test ht.sohohooks.manager.build_menu_script."""
+    """Test ht.sohohooks.aovs.manager.build_menu_script."""
 
     @patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
     def test_no_groups(self, mock_manager):
@@ -1333,7 +1333,7 @@ class Test_build_menu_script(unittest.TestCase):
 
 
 class Test_flatten_aov_items(unittest.TestCase):
-    """Test ht.sohohooks.manager.flatten_aov_items."""
+    """Test ht.sohohooks.aovs.manager.flatten_aov_items."""
 
     def test(self):
         mock_aov = MagicMock(spec=manager.AOV)
@@ -1349,7 +1349,7 @@ class Test_flatten_aov_items(unittest.TestCase):
 
 
 class Test_load_json_files(unittest.TestCase):
-    """Test ht.sohohooks.manager.load_json_files."""
+    """Test ht.sohohooks.aovs.manager.load_json_files."""
 
     @patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
     @patch("ht.sohohooks.aovs.manager.os.path.exists")

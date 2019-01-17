@@ -29,6 +29,7 @@ source =
     ht.pyfilter.operations.zdepth
     ht.sohohooks.aovs.aov
     ht.sohohooks.aovs.manager
+    ht.sohohooks.manager
 
 omit =
         *tests*
