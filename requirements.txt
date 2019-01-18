@@ -2,4 +2,5 @@ coverage
 enum34
 mechanize
 mock
+numpy
 scipy
