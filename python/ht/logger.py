@@ -5,10 +5,10 @@
 # =============================================================================
 
 # Python Imports
+import json
 import logging
 import logging.config
 import os
-import yaml
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
@@ -35,11 +35,11 @@ def _init_logger_config():
     :return:
 
     """
-    config_path = os.path.join(os.path.dirname(__file__), "loggers", "config.yaml")
+    config_path = os.path.join(os.path.dirname(__file__), "loggers", "config.json")
 
     if os.path.exists(config_path):
-        with open(config_path, 'r') as f:
-            config = yaml.safe_load(f.read())
+        with open(config_path, 'r') as handle:
+            config = json.load(handle)
             logging.config.dictConfig(config)
 
 
