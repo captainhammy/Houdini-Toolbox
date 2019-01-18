@@ -1,0 +1,5 @@
+coverage
+enum34
+mechanize
+mock
+scipy
