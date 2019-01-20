@@ -1848,14 +1848,6 @@ disconnectAllOutputs(OP_Node *node)
 """,
 
 """
-bool
-isCompiled(const OP_Node *node)
-{
-    return node->isCompiled();
-}
-""",
-
-"""
 int
 getMultiParmInstancesPerItem(OP_Node *node, const char *parm_name)
 {
