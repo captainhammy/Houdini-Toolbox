@@ -44,6 +44,7 @@ class PointCloud(object):
             # Build our data array. Since it was created from a list of
             # hou.Vector3's (tuples) we don't need to reshape.
             data = numpy.array(positions)
+
             self._num_elements = len(group_points)
 
         else:
@@ -54,6 +55,7 @@ class PointCloud(object):
             # represent 3 component entries.
             num_points = len(geometry.iterPoints())
             data = numpy.array(positions).reshape((num_points, 3))
+
             self._num_elements = num_points
 
         # Build the tree from the data.
@@ -64,16 +66,25 @@ class PointCloud(object):
     # =========================================================================
 
     def __repr__(self):
-        return "<PointCloud from {}>".format(self._geometry.sopNode().path())
+        if self._geometry.sopNode() is not None:
+            return "<PointCloud for {}>".format(self._geometry.sopNode().path())
+
+        else:
+            return "<PointCloud>"
 
     # =========================================================================
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    def _getResultPoints(self, indexes):
+    def _get_result_points(self, indexes):
         """This method converts a list of integers into corresponding hou.Point
         objects belonging to the geometry depending on whether a point map is
         being used.
+
+        :param indexes: A list of point numbers.
+        :type indexes: list(int)
+        :return: A tuple of points matching the indexes.
+        :rtype: tuple(hou.Point)
 
         """
         # If we have a point map set up we need to index into that and then
@@ -100,8 +111,17 @@ class PointCloud(object):
     # METHODS
     # =========================================================================
 
-    def findAllClosePoints(self, position, maxdist):
-        """Find all points within the maxdist from the position."""
+    def find_all_close_points(self, position, maxdist):
+        """Find all points within the maxdist from the position.
+
+        :param position: A search position.
+        :type position: hou.Vector3
+        :param maxdist: The maximum distance to search.
+        :type maxdist: float
+        :return: A tuple of found points.
+        :rtype: tuple(hou.Point)
+
+        """
         # Convert the position to a compatible ndarray.
         positions = numpy.array([position])
 
@@ -109,10 +129,21 @@ class PointCloud(object):
         result = self._tree.query_ball_point(positions, maxdist)
 
         # Return any points that are found.
-        return self._getResultPoints(result[0])
+        return self._get_result_points(result[0])
 
-    def findNearestPoints(self, position, num_points=1, maxdist=None):
-        """Find the closest N points to the position"""
+    def find_nearest_points(self, position, num_points=1, maxdist=None):
+        """Find the closest N points to the position.
+
+        :param position: A search position.
+        :type position: hou.Vector3
+        :param num_points: The maximum number of points to search for.
+        :type num_points: int
+        :param maxdist: The maximum distance to search.
+        :type maxdist: float
+        :return: A tuple of found points.
+        :rtype: tuple(hou.Point)
+
+        """
         # Make sure we aren't querying for more points than we have.
         if num_points > self._num_elements:
             num_points = self._num_elements
@@ -145,7 +176,7 @@ class PointCloud(object):
 
                 # There are some points within the max distance so get them.
                 if len(indexes) > 0:
-                    near_points = self._getResultPoints(indexes)
+                    near_points = self._get_result_points(indexes)
 
                 else:
                     near_points = ()
@@ -154,7 +185,7 @@ class PointCloud(object):
             else:
                 # If the point is within the distances, glob and return it.
                 if distances < maxdist:
-                    near_points = self._getResultPoints((indexes, ))
+                    near_points = self._get_result_points((indexes, ))
 
                 else:
                     near_points = ()
@@ -163,12 +194,11 @@ class PointCloud(object):
         else:
             # If the point list is an array then more than one point was found.
             if isinstance(indexes, numpy.ndarray):
-                near_points = self._getResultPoints(indexes.tolist())
+                near_points = self._get_result_points(indexes.tolist())
 
             else:
                 # We found a single point, so pass it along in a tuple..
-                near_points = self._getResultPoints((indexes, ))
+                near_points = self._get_result_points((indexes, ))
 
         # Return the tuple of points.
         return near_points
-
