@@ -7,6 +7,8 @@
         <file>icons/aovs/edit_aov.png</file>
         <file>icons/aovs/edit_group.png</file>
         <file>icons/aovs/group.png</file>
+        <file>icons/aovs/hip_group.png</file>
         <file>icons/aovs/intrinsic_group.png</file>
+        <file>icons/aovs/otl_group.png</file>
     </qresource>
 </RCC>
