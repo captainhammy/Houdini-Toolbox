@@ -185,7 +185,6 @@ class AOVManager(object):
         """AOVViewerInterface: A viewer interface assigned to the manager."""
         return self._interface
 
-    # -------------------------------------------------------------------------
     @property
     def source_manager(self):
         return self._source_manager

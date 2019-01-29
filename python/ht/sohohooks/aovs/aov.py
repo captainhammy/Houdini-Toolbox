@@ -46,7 +46,6 @@ _DEFAULT_AOV_DATA = {
     consts.SFILTER_KEY: None,
 }
 
-
 _DEFAULT_GROUP_DATA = {
     consts.GROUP_AOVS_KEY: [],
     consts.COMMENT_KEY: "",
@@ -382,6 +381,17 @@ class AOV(object):
     @sfilter.setter
     def sfilter(self, sfilter):
         self._data[consts.SFILTER_KEY] = sfilter
+
+    # -------------------------------------------------------------------------
+
+    @property
+    def source(self):
+        """ht.sohohooks.aovs.sources.BaseAOVSource: The path containing the AOV definition."""
+        return self._source
+
+    @source.setter
+    def source(self, source):
+        self._source = source
 
     # -------------------------------------------------------------------------
 
