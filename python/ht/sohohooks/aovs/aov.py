@@ -55,6 +55,16 @@ _DEFAULT_GROUP_DATA = {
     consts.PRIORITY_KEY: -1,
 }
 
+_DEFAULT_GROUP_DATA = {
+    consts.GROUP_AOVS_KEY: [],
+    consts.COMMENT_KEY: "",
+    consts.GROUP_ICON_KEY: None,
+    consts.GROUP_INCLUDE_KEY: [],
+    consts.GROUP_NAME_KEY: None,
+    consts.PRIORITY_KEY: -1,
+}
+
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -414,7 +424,7 @@ class AOV(object):
     def source(self, source):
         self._source = source
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def variable(self):
@@ -650,7 +660,7 @@ class AOVGroup(object):
             if name in self._data:
                 self._data[name] = value
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
     # -------------------------------------------------------------------------
 
@@ -799,14 +809,8 @@ class IntrinsicAOVGroup(AOVGroup):
         data = {consts.GROUP_NAME_KEY: name}
 
         super(IntrinsicAOVGroup, self).__init__(data)
-<<<<<<< HEAD
 
         self._comment = consts.INTRINSIC_COMMENT_KEY
-
-=======
-
-        self._comment = consts.INTRINSIC_COMMENT_KEY
->>>>>>> Branch for aov source work.
 
 # =============================================================================
 # EXCEPTIONS

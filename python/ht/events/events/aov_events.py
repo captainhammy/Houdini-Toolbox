@@ -78,3 +78,4 @@ def _get_aov_section_from_node_type(node_type):
             section = sections[AOVAssetSectionSource.SECTION_NAME]
 
     return section
+
