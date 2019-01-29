@@ -55,15 +55,6 @@ _DEFAULT_GROUP_DATA = {
     consts.PRIORITY_KEY: -1,
 }
 
-_DEFAULT_GROUP_DATA = {
-    consts.GROUP_AOVS_KEY: [],
-    consts.COMMENT_KEY: "",
-    consts.GROUP_ICON_KEY: None,
-    consts.GROUP_INCLUDE_KEY: [],
-    consts.GROUP_NAME_KEY: None,
-    consts.PRIORITY_KEY: -1,
-}
-
 
 # =============================================================================
 # CLASSES
