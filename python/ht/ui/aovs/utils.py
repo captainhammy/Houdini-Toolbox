@@ -11,6 +11,7 @@ from PySide2 import QtCore, QtGui
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs.aov import ALLOWABLE_VALUES
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
+from ht.sohohooks.aovs import sources
 from ht.ui.aovs import uidata
 
 # Houdini Imports
@@ -233,6 +234,14 @@ def getIconFromGroup(group):
 
     if isinstance(group, IntrinsicAOVGroup):
         return QtGui.QIcon(":ht/rsc/icons/aovs/intrinsic_group.png")
+
+    source = group.source
+
+    if isinstance(source, sources.AOVAssetSectionSource):
+        return QtGui.QIcon(":ht/rsc/icons/aovs/otl_group.png")
+
+    elif isinstance(source, sources.AOVHipSource):
+        return QtGui.QIcon(":ht/rsc/icons/aovs/hip_group.png")
 
     return QtGui.QIcon(":ht/rsc/icons/aovs/group.png")
 

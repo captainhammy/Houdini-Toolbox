@@ -15,6 +15,7 @@ import os
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.sohohooks.aovs import constants as consts
+from ht.sohohooks.aovs import sources
 
 # Houdini Imports
 import hou
@@ -30,6 +31,8 @@ class AOVManager(object):
         self._aovs = {}
         self._groups = {}
         self._interface = None
+
+        self._source_manager = sources.AOVSourceManager()
 
         self._init_from_files()
 
@@ -79,9 +82,9 @@ class AOVManager(object):
         """
         file_paths = _find_aov_files()
 
-        readers = [AOVFile(file_path) for file_path in file_paths]
+        file_sources = [self._source_manager.get_file_source(file_path) for file_path in file_paths]
 
-        self._merge_readers(readers)
+        self._merge_sources(file_sources)
 
         self._build_intrinsic_groups()
 
@@ -99,15 +102,15 @@ class AOVManager(object):
             if include in self.aovs:
                 group.aovs.append(self.aovs[include])
 
-    def _init_reader_aovs(self, reader):
+    def _init_source_aovs(self, source):
         """Initialize aovs from a reader.
 
-        :param reader: A source reader.
-        :type reader: AOVFile
+        :param source: A source reader.
+        :type source: AOVFile
         :return:
 
         """
-        for aov in reader.aovs:
+        for aov in source.aovs:
             variable_name = aov.variable
 
             # Check if this AOV has already been seen.
@@ -121,15 +124,15 @@ class AOVManager(object):
             else:
                 self.add_aov(aov)
 
-    def _init_reader_groups(self, reader):
+    def _init_source_groups(self, source):
         """Initialize groups from a reader.
 
-        :param reader: A source reader.
-        :type reader: AOVFile
+        :param source: A source reader.
+        :type source: AOVFile
         :return:
 
         """
-        for group in reader.groups:
+        for group in source.groups:
             self._init_group_members(group)
 
             group_name = group.name
@@ -145,22 +148,22 @@ class AOVManager(object):
             else:
                 self.add_group(group)
 
-    def _merge_readers(self, readers):
+    def _merge_sources(self, sources):
         """Merge the data of multiple AOVFile objects.
 
-        :param readers: A list of file readers.
-        :type readers: list(AOVFile)
+        :param sources: A list of file readers.
+        :type sources: list(AOVFile)
         :return:
 
         """
         # We need to handle AOVs first since AOVs in other files may overwrite
         # AOVs in group definition files.
-        for reader in readers:
-            self._init_reader_aovs(reader)
+        for source in sources:
+            self._init_source_aovs(source)
 
         # Now that AOVs have been made available, add them to groups.
-        for reader in readers:
-            self._init_reader_groups(reader)
+        for source in sources:
+            self._init_source_groups(source)
 
     # =========================================================================
     # PROPERTIES
@@ -180,6 +183,10 @@ class AOVManager(object):
     def interface(self):
         """AOVViewerInterface: A viewer interface assigned to the manager."""
         return self._interface
+
+    @property
+    def source_manager(self):
+        return self._source_manager
 
     # =========================================================================
     # METHODS
@@ -324,9 +331,14 @@ class AOVManager(object):
         :return:
 
         """
-        readers = [AOVFile(path)]
+        sources = [self.source_manager.get_file_source(path)]
 
-        self._merge_readers(readers)
+        self._merge_sources(sources)
+
+    def load_source(self, source):
+        self._merge_sources([source])
+
+        self._build_intrinsic_groups()
 
     def reload(self):
         """Reload all definitions.
@@ -365,239 +377,6 @@ class AOVManager(object):
             if self.interface is not None:
                 self.interface.groupRemovedSignal.emit(group)
 
-
-class AOVFile(object):
-    """Class to handle reading and writing AOV .json files.
-
-    :param path: The path to the file.
-    :type path: str
-    :return:
-
-    """
-
-    def __init__(self, path):
-        self._path = path
-
-        self._aovs = []
-        self._data = {}
-        self._groups = []
-
-        if self.exists:
-            self._init_from_file()
-
-    # =========================================================================
-    # NON-PUBLIC METHODS
-    # =========================================================================
-
-    def _create_aovs(self, definitions):
-        """Create AOVs based on definitions.
-
-        :param definitions: AOV definition data.
-        :type definitions: dict
-        :return:
-
-        """
-        for definition in definitions:
-            # Insert this file path into the data.
-            definition["path"] = self.path
-
-            # Construct a new AOV and add it to our list.
-            aov = AOV(definition)
-            self.aovs.append(aov)
-
-    def _create_groups(self, definitions):
-        """Create AOVGroups based on definitions.
-
-        :param definitions: AOVGroup definition data.
-        :type definitions: dict
-        :return:
-
-        """
-        for name, group_data in definitions.iteritems():
-            # Create a new AOVGroup.
-            group = AOVGroup(name)
-
-            # Process its list of AOVs to include.
-            if consts.GROUP_INCLUDE_KEY in group_data:
-                group.includes.extend(group_data[consts.GROUP_INCLUDE_KEY])
-
-            # Set any comment.
-            if consts.COMMENT_KEY in group_data:
-                group.comment = group_data[consts.COMMENT_KEY]
-
-            if consts.PRIORITY_KEY in group_data:
-                group.priority = group_data[consts.PRIORITY_KEY]
-
-            # Set any icon.
-            if consts.GROUP_ICON_KEY in group_data:
-                group.icon = os.path.expandvars(group_data[consts.GROUP_ICON_KEY])
-
-            # Set the path to this file.
-            group.path = self.path
-
-            # Add the group to the list.
-            self.groups.append(group)
-
-    def _init_from_file(self):
-        """Read data from the file and create the appropriate entities.
-
-        :return:
-
-        """
-        with open(self.path) as handle:
-            data = json.load(handle)
-
-        if consts.FILE_DEFINITIONS_KEY in data:
-            self._create_aovs(data[consts.FILE_DEFINITIONS_KEY])
-
-        if consts.FILE_GROUPS_KEY in data:
-            self._create_groups(data[consts.FILE_GROUPS_KEY])
-
-    # =========================================================================
-    # PROPERTIES
-    # =========================================================================
-
-    @property
-    def aovs(self):
-        """list(ht.sohohooks.aovs.aov.AOV): List containing AOVs defined in this file."""
-        return self._aovs
-
-    @property
-    def groups(self):
-        """list(ht.sohohooks.aovs.aov.AOVGroup): List containing AOVGroups defined in this file."""
-        return self._groups
-
-    @property
-    def path(self):
-        """str: File path on disk."""
-        return self._path
-
-    @property
-    def exists(self):
-        """bool: Check if the file actually exists."""
-        return os.path.isfile(self.path)
-
-    # =========================================================================
-    # METHODS
-    # =========================================================================
-
-    def add_aov(self, aov):
-        """Add an AOV for writing.
-
-        :param aov: The aov to add.
-        :type aov: ht.sohohooks.aovs.aov.AOV
-        :return:
-
-        """
-        self.aovs.append(aov)
-
-    def add_group(self, group):
-        """Add An AOVGroup for writing.
-
-        :param group: The group to add.
-        :type group: ht.sohohooks.aovs.aov.AOVGroup
-        :return:
-
-        """
-        self.groups.append(group)
-
-    def contains_aov(self, aov):
-        """Check if this file contains an AOV with the same variable name.
-
-        :param aov: The aov to check.
-        :type aov: ht.sohohooks.aovs.aov.AOV
-        :return: Whether or not the aov is in this file.
-        :rtype: bool
-
-        """
-        return aov in self.aovs
-
-    def contains_group(self, group):
-        """Check if this file contains a group with the same name.
-
-        :param group: The group to check.
-        :type group: ht.sohohooks.aovs.aov.AOVGroup
-        :return: Whether or not the group is in this file.
-        :rtype: bool
-
-        """
-        return group in self.groups
-
-    def remove_aov(self, aov):
-        """Remove an AOV from the file.
-
-        :param aov: The aov to remove.
-        :type aov: ht.sohohooks.aovs.aov.AOV
-        :return:
-
-        """
-        idx = self.aovs.index(aov)
-
-        del self.aovs[idx]
-
-    def remove_group(self, group):
-        """Remove a group from the file.
-
-        :param group: The group to remove
-        :type group: ht.sohohooks.aovs.aov.AOVGroup
-        :return:
-
-        """
-        idx = self.groups.index(group)
-
-        del self.groups[idx]
-
-    def replace_aov(self, aov):
-        """Replace an AOV in the file.
-
-        :param aov: An aov to replace.
-        :type aov: ht.sohohooks.aovs.aov.AOV
-        :return:
-
-        """
-        idx = self.aovs.index(aov)
-
-        self.aovs[idx] = aov
-
-    def replace_group(self, group):
-        """Replace a group in the file.
-
-        :param group: A group to replace.
-        :type group: ht.sohohooks.aovs.aov.AOVGroup
-        :return:
-        
-        """
-        idx = self.groups.index(group)
-
-        self.groups[idx] = group
-
-    def write_to_file(self, path=None):
-        """Write data to file.
-
-        If `path` is not set, use the AOVFile's path.
-
-        :param path: Optional target path
-        :type path: str
-        :return:
-
-        """
-        data = {}
-
-        for group in self.groups:
-            group_data = data.setdefault(consts.FILE_GROUPS_KEY, {})
-
-            group_data.update(group.as_data())
-
-        for aov in self.aovs:
-            aov_data = data.setdefault(consts.FILE_DEFINITIONS_KEY, [])
-
-            aov_data.append(aov.as_data())
-
-        if path is None:
-            path = self.path
-
-        with open(path, 'w') as handle:
-            json.dump(data, handle, indent=4)
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
@@ -733,4 +512,3 @@ def load_json_files():
 # =============================================================================
 
 MANAGER = AOVManager()
-
