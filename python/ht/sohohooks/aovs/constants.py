@@ -29,3 +29,12 @@ GROUP_INCLUDE_KEY = "include"
 
 FILE_DEFINITIONS_KEY = "definitions"
 FILE_GROUPS_KEY = "groups"
+
+GROUP_AOVS_KEY = "aovs"
+GROUP_DEFINITIONS_KEY = "definitions"
+GROUP_NAME_KEY = "name"
+
+SOURCE_KEY = "source"
+
+INTRINSIC_COMMENT_KEY = "Automatically generated"
+
