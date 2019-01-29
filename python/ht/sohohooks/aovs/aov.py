@@ -406,6 +406,17 @@ class AOV(object):
     # =========================================================================
 
     @property
+    def source(self):
+        """ht.sohohooks.aovs.sources.BaseAOVSource: The path containing the AOV definition."""
+        return self._source
+
+    @source.setter
+    def source(self, source):
+        self._source = source
+
+    # =========================================================================
+
+    @property
     def variable(self):
         """str: The name of the vex variable."""
         return self._data[consts.VARIABLE_KEY]
@@ -565,6 +576,11 @@ class AOVGroup(object):
     def __init__(self, data):
         self._source = None
         self._data = copy.deepcopy(_DEFAULT_GROUP_DATA)
+
+        if consts.SOURCE_KEY in data:
+            self._source = data.pop(consts.SOURCE_KEY)
+
+        self._update_data(data)
 
         if consts.SOURCE_KEY in data:
             self._source = data.pop(consts.SOURCE_KEY)
@@ -783,9 +799,14 @@ class IntrinsicAOVGroup(AOVGroup):
         data = {consts.GROUP_NAME_KEY: name}
 
         super(IntrinsicAOVGroup, self).__init__(data)
+<<<<<<< HEAD
 
         self._comment = consts.INTRINSIC_COMMENT_KEY
 
+=======
+
+        self._comment = consts.INTRINSIC_COMMENT_KEY
+>>>>>>> Branch for aov source work.
 
 # =============================================================================
 # EXCEPTIONS
