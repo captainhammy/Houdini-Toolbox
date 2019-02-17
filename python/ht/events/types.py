@@ -47,3 +47,4 @@ class SceneEvents(Enum):
     PreSave = "beforesenesave"
     # When the UI first appears and Houdini begins running the UI loop
     WhenUIAvailable = "uiavailable"
+    ExternalDragDrop = "externaldragdrop"
