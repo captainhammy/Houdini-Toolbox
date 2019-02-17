@@ -56,7 +56,7 @@ class Test__init_logger_config(unittest.TestCase):
     """Test ht.logger._init_logger_config."""
 
     @patch("ht.logger.logging.config.dictConfig")
-    @patch("ht.logger.yaml.safe_load")
+    @patch("ht.logger.json.load")
     @patch("ht.logger.os.path")
     def test_exists(self, mock_os_path, mock_load, mock_config):
         """Test when the target config file exists."""
@@ -64,19 +64,17 @@ class Test__init_logger_config(unittest.TestCase):
 
         mock_os_path.exists.return_value = True
 
-        mock_return = MagicMock(spec=str)
         with patch("ht.logger.__file__", new_callable=PropertyMock) as mock_file:
             with patch("__builtin__.open", m):
-                m.return_value.read.return_value = mock_return
                 ht.logger._init_logger_config()
 
         mock_os_path.exists.assert_called_with(mock_os_path.join.return_value)
         m.assert_called_with(mock_os_path.join.return_value, 'r')
 
-        mock_load.assert_called_with(m.return_value.read.return_value)
+        mock_load.assert_called_with(m.return_value)
         mock_config.assert_called_with(mock_load.return_value)
 
-    @patch("ht.logger.yaml.safe_load")
+    @patch("ht.logger.json.load")
     @patch("ht.logger.os.path")
     def test_path_does_not_exist(self, mock_os_path, mock_load):
         """Test when the target config file does not exist."""

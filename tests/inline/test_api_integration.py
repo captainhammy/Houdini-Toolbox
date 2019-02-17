@@ -62,7 +62,7 @@ class TestInlineCpp(unittest.TestCase):
             ht.inline.api._get_attrib_owner_from_geometry_entity_type(None)
 
     def test_ge_variable(self):
-        hip_name = ht.inline.api.get_variable("HIPNAME")
+        hip_name = ht.inline.api.get_variable_value("HIPNAME")
 
         self.assertEqual(hip_name, os.path.splitext(os.path.basename(hou.hipFile.path()))[0])
 
@@ -70,7 +70,7 @@ class TestInlineCpp(unittest.TestCase):
         value = 22
         ht.inline.api.set_variable("awesome", value)
 
-        self.assertEqual(ht.inline.api.get_variable("awesome"), 22)
+        self.assertEqual(ht.inline.api.get_variable_value("awesome"), 22)
 
     def test_get_variable_names(self):
         variable_names = ht.inline.api.get_variable_names()
@@ -88,7 +88,7 @@ class TestInlineCpp(unittest.TestCase):
         ht.inline.api.set_variable("tester", 10)
         ht.inline.api.unset_variable("tester")
 
-        self.assertTrue(ht.inline.api.get_variable("tester") is None)
+        self.assertTrue(ht.inline.api.get_variable_value("tester") is None)
 
     def test_emit_var_change(self):
         parm = hou.parm("/obj/test_emit_var_change/file1/file")
@@ -145,176 +145,176 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertTrue(isinstance(prim, hou.PackedGeometry))
 
-    def test_sort_by_attribute(self):
-        geo = get_obj_geo_copy("test_sort_by_attribute")
+    def test_sort_geometry_by_attribute(self):
+        geo = get_obj_geo_copy("test_sort_geometry_by_attribute")
 
         attrib = geo.findPrimAttrib("id")
 
-        ht.inline.api.sort_by_attribute(geo, attrib)
+        ht.inline.api.sort_geometry_by_attribute(geo, attrib)
 
         values = [int(val) for val in geo.primFloatAttribValues("id")]
 
         self.assertEqual(values, range(10))
 
-    def test_sort_by_attribute_reversed(self):
-        geo = get_obj_geo_copy("test_sort_by_attribute")
+    def test_sort_geometry_by_attribute_reversed(self):
+        geo = get_obj_geo_copy("test_sort_geometry_by_attribute")
 
         attrib = geo.findPrimAttrib("id")
 
-        ht.inline.api.sort_by_attribute(geo, attrib, reverse=True)
+        ht.inline.api.sort_geometry_by_attribute(geo, attrib, reverse=True)
 
         values = [int(val) for val in geo.primFloatAttribValues("id")]
 
         self.assertEqual(values, list(reversed(range(10))))
 
-    def test_sort_by_attribute_invalid_index(self):
-        geo = get_obj_geo_copy("test_sort_by_attribute")
+    def test_sort_geometry_by_attribute_invalid_index(self):
+        geo = get_obj_geo_copy("test_sort_geometry_by_attribute")
 
         attrib = geo.findPrimAttrib("id")
 
         with self.assertRaises(IndexError):
-            ht.inline.api.sort_by_attribute(geo, attrib, 1)
+            ht.inline.api.sort_geometry_by_attribute(geo, attrib, 1)
 
-    def test_sort_by_attribute_detail(self):
-        geo = get_obj_geo_copy("test_sort_by_attribute")
+    def test_sort_geometry_by_attribute_detail(self):
+        geo = get_obj_geo_copy("test_sort_geometry_by_attribute")
 
         attrib = geo.findGlobalAttrib("varmap")
 
-        with self.assertRaises(hou.OperationFailed):
-            ht.inline.api.sort_by_attribute(geo, attrib)
+        with self.assertRaises(ValueError):
+            ht.inline.api.sort_geometry_by_attribute(geo, attrib)
 
-    def test_sort_along_axis_points(self):
-        geo = get_obj_geo_copy("test_sort_along_axis_points")
+    def test_sort_geometry_along_axis_points(self):
+        geo = get_obj_geo_copy("test_sort_geometry_along_axis_points")
 
-        ht.inline.api.sort_along_axis(geo, hou.geometryType.Points, 0)
+        ht.inline.api.sort_geometry_along_axis(geo, hou.geometryType.Points, 0)
 
         values = [int(val) for val in geo.pointFloatAttribValues("id")]
 
         self.assertEqual(values, range(10))
 
-    def test_sort_along_axis_prims(self):
-        geo = get_obj_geo_copy("test_sort_along_axis_prims")
+    def test_sort_geometry_along_axis_prims(self):
+        geo = get_obj_geo_copy("test_sort_geometry_along_axis_prims")
 
-        ht.inline.api.sort_along_axis(geo, hou.geometryType.Primitives, 2)
+        ht.inline.api.sort_geometry_along_axis(geo, hou.geometryType.Primitives, 2)
 
         values = [int(val) for val in geo.primFloatAttribValues("id")]
 
         self.assertEqual(values, range(10))
 
-    def test_sort_by_values(self):
+    def test_sort_geometry_by_values(self):
         # TODO: Test this.
         pass
 
-    def test_sort_randomlyPoints(self):
+    def test_sort_geometry_randomly__points(self):
         SEED = 11
         target = [5, 9, 3, 8, 0, 2, 6, 1, 4, 7]
 
-        geo = get_obj_geo_copy("test_sort_randomly_points")
-        ht.inline.api.sort_randomly(geo, hou.geometryType.Points, SEED)
+        geo = get_obj_geo_copy("test_sort_geometry_randomly_points")
+        ht.inline.api.sort_geometry_randomly(geo, hou.geometryType.Points, SEED)
 
         values = [int(val) for val in geo.pointFloatAttribValues("id")]
 
         self.assertEqual(values, target)
 
-    def test_sort_randomlyPrims(self):
+    def test_sort_geometry_randomly__prims(self):
         SEED = 345
         target = [4, 0, 9, 2, 1, 8, 3, 6, 7, 5]
 
-        geo = get_obj_geo_copy("test_sort_randomly_prims")
-        ht.inline.api.sort_randomly(geo, hou.geometryType.Primitives, SEED)
+        geo = get_obj_geo_copy("test_sort_geometry_randomly_prims")
+        ht.inline.api.sort_geometry_randomly(geo, hou.geometryType.Primitives, SEED)
 
         values = [int(val) for val in geo.primFloatAttribValues("id")]
 
         self.assertEqual(values, target)
 
-    def test_shift_elementsPoints(self):
+    def test_shift_geometry_elementsPoints(self):
         OFFSET = -18
         target = [8, 9, 0, 1, 2, 3, 4, 5, 6, 7]
 
-        geo = get_obj_geo_copy("test_shift_elements_points")
-        ht.inline.api.shift_elements(geo, hou.geometryType.Points, OFFSET)
+        geo = get_obj_geo_copy("test_shift_geometry_elements_points")
+        ht.inline.api.shift_geometry_elements(geo, hou.geometryType.Points, OFFSET)
 
         values = [int(val) for val in geo.pointFloatAttribValues("id")]
 
         self.assertEqual(values, target)
 
-    def test_shift_elementsPrims(self):
+    def test_shift_geometry_elementsPrims(self):
         OFFSET = 6
         target = [4, 5, 6, 7, 8, 9, 0, 1, 2, 3]
 
-        geo = get_obj_geo_copy("test_shift_elements_prims")
-        ht.inline.api.shift_elements(geo, hou.geometryType.Primitives, OFFSET)
+        geo = get_obj_geo_copy("test_shift_geometry_elements_prims")
+        ht.inline.api.shift_geometry_elements(geo, hou.geometryType.Primitives, OFFSET)
 
         values = [int(val) for val in geo.primFloatAttribValues("id")]
 
         self.assertEqual(values, target)
 
-    def test_reverse_sortPoints(self):
+    def test_reverse_sort_geometryPoints(self):
         target = range(10)
         target.reverse()
 
-        geo = get_obj_geo_copy("test_reverse_sort_points")
-        ht.inline.api.reverse_sort(geo, hou.geometryType.Points)
+        geo = get_obj_geo_copy("test_reverse_sort_geometry_points")
+        ht.inline.api.reverse_sort_geometry(geo, hou.geometryType.Points)
 
         values = [int(val) for val in geo.pointFloatAttribValues("id")]
 
         self.assertEqual(values, target)
 
-    def test_reverse_sortPrims(self):
+    def test_reverse_sort_geometryPrims(self):
         target = range(10)
         target.reverse()
 
-        geo = get_obj_geo_copy("test_reverse_sort_prims")
-        ht.inline.api.reverse_sort(geo, hou.geometryType.Primitives)
+        geo = get_obj_geo_copy("test_reverse_sort_geometry_prims")
+        ht.inline.api.reverse_sort_geometry(geo, hou.geometryType.Primitives)
 
         values = [int(val) for val in geo.primFloatAttribValues("id")]
 
         self.assertEqual(values, target)
 
-    def test_sort_by_proximity_points(self):
+    def test_sort_geometry_by_proximity_to_position_points(self):
         target = [4, 3, 5, 2, 6, 1, 7, 0, 8, 9]
         POSITION = hou.Vector3(4, 1, 2)
 
-        geo = get_obj_geo_copy("test_sort_by_proximity_points")
-        ht.inline.api.sort_by_proximity_to_position(geo, hou.geometryType.Points, POSITION)
+        geo = get_obj_geo_copy("test_sort_geometry_by_proximity_to_position_points")
+        ht.inline.api.sort_geometry_by_proximity_to_position(geo, hou.geometryType.Points, POSITION)
 
         values = [int(val) for val in geo.pointFloatAttribValues("id")]
 
         self.assertEqual(values, target)
 
-    def test_sort_by_proximity_prims(self):
+    def test_sort_geometry_by_proximity_to_position_prims(self):
         target = [6, 7, 5, 8, 4, 9, 3, 2, 1, 0]
         POSITION = hou.Vector3(3, -1, 2)
 
-        geo = get_obj_geo_copy("test_sort_by_proximity_prims")
-        ht.inline.api.sort_by_proximity_to_position(geo, hou.geometryType.Primitives, POSITION)
+        geo = get_obj_geo_copy("test_sort_geometry_by_proximity_to_position_prims")
+        ht.inline.api.sort_geometry_by_proximity_to_position(geo, hou.geometryType.Primitives, POSITION)
 
         values = [int(val) for val in geo.primFloatAttribValues("id")]
 
         self.assertEqual(values, target)
 
-    def test_sort_by_vertex_order(self):
+    def test_sort_geometry_by_vertex_order(self):
         target = range(10)
 
-        geo = get_obj_geo_copy("test_sort_by_vertex_order")
-        ht.inline.api.sort_by_vertex_order(geo, )
+        geo = get_obj_geo_copy("test_sort_geometry_by_vertex_order")
+        ht.inline.api.sort_geometry_by_vertex_order(geo, )
 
         values = [int(val) for val in geo.pointFloatAttribValues("id")]
 
         self.assertEqual(values, target)
 
-    def test_sort_by_expression_points(self):
-        target_geo = OBJ.node("test_sort_by_expression_points/RESULT").geometry()
-        test_geo = OBJ.node("test_sort_by_expression_points/TEST").geometry()
+    def test_sort_geometry_by_expression_points(self):
+        target_geo = OBJ.node("test_sort_geometry_by_expression_points/RESULT").geometry()
+        test_geo = OBJ.node("test_sort_geometry_by_expression_points/TEST").geometry()
 
         self.assertEqual(
             test_geo.pointFloatAttribValues("id"),
             target_geo.pointFloatAttribValues("id"),
         )
 
-    def test_sort_by_expression_prims(self):
-        target_geo = OBJ.node("test_sort_by_expression_prims/RESULT").geometry()
-        test_geo = OBJ.node("test_sort_by_expression_prims/TEST").geometry()
+    def test_sort_geometry_by_expression_prims(self):
+        target_geo = OBJ.node("test_sort_geometry_by_expression_prims/RESULT").geometry()
+        test_geo = OBJ.node("test_sort_geometry_by_expression_prims/TEST").geometry()
 
         self.assertEqual(
             test_geo.primFloatAttribValues("id"),
@@ -337,7 +337,7 @@ class TestInlineCpp(unittest.TestCase):
     def test_create_n_pointsInvalidNumber(self):
         geo = hou.Geometry()
 
-        with self.assertRaises(hou.OperationFailed):
+        with self.assertRaises(ValueError):
             ht.inline.api.create_n_points(geo, -4)
 
     def test_merge_point_group(self):
@@ -518,7 +518,7 @@ class TestInlineCpp(unittest.TestCase):
 
         geo = get_obj_geo_copy("test_set_vertex_string_attrib_values")
 
-        with self.assertRaises(hou.OperationFailed):
+        with self.assertRaises(ValueError):
            ht.inline.api.set_vertex_string_attrib_values(geo, "notstring", target)
 
     def test_setPrimStringAttribValuesInvalidAttributeSize(self):
@@ -526,7 +526,7 @@ class TestInlineCpp(unittest.TestCase):
 
         geo = get_obj_geo_copy("test_set_vertex_string_attrib_values")
 
-        with self.assertRaises(hou.OperationFailed):
+        with self.assertRaises(ValueError):
            ht.inline.api.set_vertex_string_attrib_values(geo, "test", target)
 
     def test_set_shared_point_string_attrib(self):
@@ -807,7 +807,7 @@ class TestInlineCpp(unittest.TestCase):
     def test_add_color_attribute_point(self):
         geo = get_obj_geo_copy("test_add_color_attribute")
 
-        with self.assertRaises(hou.TypeError):
+        with self.assertRaises(ValueError):
             ht.inline.api.add_color_attribute(geo, hou.attribType.Global)
 
     def test_convex(self):
@@ -1094,7 +1094,7 @@ class TestInlineCpp(unittest.TestCase):
 
         group = geo.pointGroups()[0]
 
-        new_group = ht.inline.api.copy_point_group(group, "new_group")
+        new_group = ht.inline.api.copy_group(group, "new_group")
 
         self.assertEquals(group.points(), new_group.points())
 
@@ -1104,7 +1104,7 @@ class TestInlineCpp(unittest.TestCase):
         group = geo.pointGroups()[0]
 
         with self.assertRaises(hou.OperationFailed):
-            ht.inline.api.copy_point_group(group, group.name())
+            ht.inline.api.copy_group(group, group.name())
 
     def test_copy_point_group_existing(self):
         geo = get_obj_geo_copy("test_copy_point_group_existing")
@@ -1114,14 +1114,14 @@ class TestInlineCpp(unittest.TestCase):
         other_group = geo.pointGroups()[0]
 
         with self.assertRaises(hou.OperationFailed):
-            ht.inline.api.copy_point_group(group, other_group.name())
+            ht.inline.api.copy_group(group, other_group.name())
 
     def test_copy_prim_group(self):
         geo = get_obj_geo_copy("test_copy_prim_group")
 
         group = geo.primGroups()[0]
 
-        new_group = ht.inline.api.copy_prim_group(group, "new_group")
+        new_group = ht.inline.api.copy_group(group, "new_group")
 
         self.assertEquals(group.prims(), new_group.prims())
 
@@ -1131,7 +1131,7 @@ class TestInlineCpp(unittest.TestCase):
         group = geo.primGroups()[0]
 
         with self.assertRaises(hou.OperationFailed):
-            ht.inline.api.copy_prim_group(group, group.name())
+            ht.inline.api.copy_group(group, group.name())
 
     def test_copy_prim_group_existing(self):
         geo = get_obj_geo_copy("test_copy_prim_group_existing")
@@ -1141,39 +1141,37 @@ class TestInlineCpp(unittest.TestCase):
         other_group = geo.primGroups()[0]
 
         with self.assertRaises(hou.OperationFailed):
-            ht.inline.api.copy_prim_group(group, other_group.name())
+            ht.inline.api.copy_group(group, other_group.name())
 
-    def test_point_group_contains_any(self):
+    def test_point_groups_share_elements(self):
         geo = get_obj_geo_copy("test_point_group_contains_any")
 
         group1 = geo.pointGroups()[0]
         group2 = geo.pointGroups()[1]
 
-        self.assertTrue(ht.inline.api.point_groups_share_points(group1, group2))
+        self.assertTrue(ht.inline.api.groups_share_elements(group1, group2))
 
-    def test_point_group_contains_any_False(self):
-        geo = get_obj_geo_copy("test_point_group_contains_any_False")
+    def test_point_groups_share_elements_False(self):
+        group1 = OBJ.node("test_point_group_contains_any_False/group1").geometry().pointGroups()[0]
+        group2 = OBJ.node("test_point_group_contains_any_False/group2").geometry().pointGroups()[0]
 
-        group1 = geo.pointGroups()[0]
-        group2 = geo.pointGroups()[1]
+        with self.assertRaises(ValueError):
+            ht.inline.api.groups_share_elements(group1, group2)
 
-        self.assertFalse(ht.inline.api.point_groups_share_points(group1, group2))
-
-    def test_prim_group_contains_any(self):
+    def test_prim_groups_share_elements(self):
         geo = get_obj_geo_copy("test_prim_group_contains_any")
 
         group1 = geo.primGroups()[0]
         group2 = geo.primGroups()[1]
 
-        self.assertTrue(ht.inline.api.prim_groups_share_primitives(group1, group2))
+        self.assertTrue(ht.inline.api.groups_share_elements(group1, group2))
 
-    def test_prim_group_contains_any_False(self):
-        geo = get_obj_geo_copy("test_prim_group_contains_any_False")
+    def test_prim_groups_share_elements_False(self):
+        group1 = OBJ.node("test_prim_group_contains_any_False/group1").geometry().primGroups()[0]
+        group2 = OBJ.node("test_prim_group_contains_any_False/group2").geometry().primGroups()[0]
 
-        group1 = geo.primGroups()[0]
-        group2 = geo.primGroups()[1]
-
-        self.assertFalse(ht.inline.api.prim_groups_share_primitives(group1, group2))
+        with self.assertRaises(ValueError):
+            ht.inline.api.groups_share_elements(group1, group2)
 
     def test_convert_prim_to_point_group(self):
         geo = get_obj_geo_copy("test_convert_prim_to_point_group")
@@ -1267,7 +1265,7 @@ class TestInlineCpp(unittest.TestCase):
     def test_group_ungrouped_pointsNoName(self):
         geo = get_obj_geo_copy("test_group_ungrouped_points")
 
-        with self.assertRaises(hou.OperationFailed):
+        with self.assertRaises(ValueError):
             ht.inline.api.group_ungrouped_points(geo, "")
 
     def test_group_ungrouped_points_False(self):
@@ -1298,19 +1296,19 @@ class TestInlineCpp(unittest.TestCase):
 
         self.assertEquals(len(group.prims()), 3)
 
-    def test_group_ungrouped_primsExistingName(self):
+    def test_group_ungrouped_prims_ExistingName(self):
         geo = get_obj_geo_copy("test_group_ungrouped_prims")
 
         with self.assertRaises(hou.OperationFailed):
             ht.inline.api.group_ungrouped_prims(geo, "group1")
 
-    def test_group_ungrouped_primsNoName(self):
+    def test_group_ungrouped_prims_NoName(self):
         geo = get_obj_geo_copy("test_group_ungrouped_prims")
 
-        with self.assertRaises(hou.OperationFailed):
+        with self.assertRaises(ValueError):
             ht.inline.api.group_ungrouped_prims(geo, "")
 
-    def test_group_ungrouped_primsFalse(self):
+    def test_group_ungrouped_prims_False(self):
         geo = get_obj_geo_copy("test_group_ungrouped_prims_False")
 
         group = ht.inline.api.group_ungrouped_prims(geo, "ungrouped")
@@ -1427,7 +1425,7 @@ class TestInlineCpp(unittest.TestCase):
         node = OBJ.node("test_eval_as_vector/node")
         parm = node.parmTuple("not_vec")
 
-        with self.assertRaises(hou.Error):
+        with self.assertRaises(ValueError):
             ht.inline.api.eval_parm_tuple_as_vector(parm)
 
     def test_is_color(self):
@@ -1452,7 +1450,7 @@ class TestInlineCpp(unittest.TestCase):
         node = OBJ.node("test_eval_as_color/node")
         parm = node.parmTuple("not_color")
 
-        with self.assertRaises(hou.Error):
+        with self.assertRaises(ValueError):
             ht.inline.api.eval_parm_tuple_as_color(parm)
 
     def test_eval_as_strip_single(self):
@@ -1564,12 +1562,12 @@ class TestInlineCpp(unittest.TestCase):
         node = OBJ.node("test_get_multiparm_instance_index/object_merge")
         parm = node.parm("numobj")
 
-        with self.assertRaises(hou.OperationFailed):
+        with self.assertRaises(ValueError):
             ht.inline.api.get_multiparm_instance_index(parm)
 
         parm_tuple = node.parmTuple("numobj")
 
-        with self.assertRaises(hou.OperationFailed):
+        with self.assertRaises(ValueError):
             ht.inline.api.get_multiparm_instance_index(parm_tuple)
 
     def test_get_multiparm_instances(self):

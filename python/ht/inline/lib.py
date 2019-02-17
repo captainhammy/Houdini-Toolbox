@@ -29,7 +29,7 @@ isRendering()
 
 """
 StringArray
-getGlobalVariables(int dirty=0)
+getGlobalVariableNames(int dirty=0)
 {
     std::vector<std::string>    result;
 
@@ -61,7 +61,7 @@ getGlobalVariables(int dirty=0)
 
 """
 char *
-getVariable(const char *name)
+getVariableValue(const char *name)
 {
     OP_CommandManager           *cmd;
     OP_Director                 *director;
@@ -144,7 +144,7 @@ unsetVariable(const char *name)
 
 """
 void
-varChange()
+emitVarChange()
 {
     int                         num_names;
 
@@ -259,7 +259,7 @@ expandRange(const char *pattern)
 
 """
 const char *
-getAuthor(OP_Node *node)
+getNodeAuthor(OP_Node *node)
 {
     const OP_Stat &stat = node->getStat();
     return stat.getAuthor();
@@ -284,7 +284,7 @@ packGeometry(GU_Detail *source, GU_Detail *target)
 
 """
 void
-sortByAttribute(GU_Detail *gdp,
+sortGeometryByAttribute(GU_Detail *gdp,
                 int attribute_type,
                 const char *attrib_name,
                 int index,
@@ -311,7 +311,7 @@ sortByAttribute(GU_Detail *gdp,
 
 """
 void
-sortAlongAxis(GU_Detail *gdp, int attribute_type, int axis)
+sortGeometryAlongAxis(GU_Detail *gdp, int attribute_type, int axis)
 {
     GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
 
@@ -333,7 +333,7 @@ sortAlongAxis(GU_Detail *gdp, int attribute_type, int axis)
 
 """
 void
-sortListRandomly(GU_Detail *gdp, int attribute_type, float seed)
+sortGeometryRandomly(GU_Detail *gdp, int attribute_type, float seed)
 {
     GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
 
@@ -352,7 +352,7 @@ sortListRandomly(GU_Detail *gdp, int attribute_type, float seed)
 
 """
 void
-shiftList(GU_Detail *gdp, int attribute_type, int offset)
+shiftGeometry(GU_Detail *gdp, int attribute_type, int offset)
 {
     GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
 
@@ -371,7 +371,7 @@ shiftList(GU_Detail *gdp, int attribute_type, int offset)
 
 """
 void
-reverseList(GU_Detail *gdp, int attribute_type)
+reverseSortGeometry(GU_Detail *gdp, int attribute_type)
 {
     GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
 
@@ -390,7 +390,7 @@ reverseList(GU_Detail *gdp, int attribute_type)
 
 """
 void
-proximityToList(GU_Detail *gdp, int attribute_type, const UT_Vector3D *point)
+sortGeometryByProximity(GU_Detail *gdp, int attribute_type, const UT_Vector3D *point)
 {
     UT_Vector3                  pos(*point);
 
@@ -411,7 +411,7 @@ proximityToList(GU_Detail *gdp, int attribute_type, const UT_Vector3D *point)
 
 """
 void
-sortByVertexOrder(GU_Detail *gdp)
+sortGeometryByVertexOrder(GU_Detail *gdp)
 {
     gdp->sortByVertexOrder();
 }
@@ -419,7 +419,7 @@ sortByVertexOrder(GU_Detail *gdp)
 
 """
 void
-sortByValues(GU_Detail *gdp, int attribute_type, fpreal *values)
+sortGeometryByValues(GU_Detail *gdp, int attribute_type, fpreal *values)
 {
     GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
 
@@ -438,7 +438,7 @@ sortByValues(GU_Detail *gdp, int attribute_type, fpreal *values)
 
 """
 void
-setIcon(OP_Operator *op, const char *icon_name)
+setNodeTypeIcon(OP_Operator *op, const char *icon_name)
 {
     op->setIconName(icon_name);
 }
@@ -446,7 +446,7 @@ setIcon(OP_Operator *op, const char *icon_name)
 
 """
 void
-setDefaultIcon(OP_Operator *op)
+setNodeTypeDefaultIcon(OP_Operator *op)
 {
     op->setDefaultIconName();
 }
@@ -454,7 +454,7 @@ setDefaultIcon(OP_Operator *op)
 
 """
 bool
-isSubnetType(OP_Operator *op)
+isNodeTypeSubnetType(OP_Operator *op)
 {
     return op->getIsPrimarySubnetType();
 }
@@ -462,14 +462,14 @@ isSubnetType(OP_Operator *op)
 
 """
 bool
-isPython(OP_Operator *op)
+isNodeTypePythonType(OP_Operator *op)
 {
     return op->getScriptIsPython();
 }
 """,
 
 """
-int
+void
 createPointAtPosition(GU_Detail *gdp, UT_Vector3D *position)
 {
     GA_Offset                   ptOff;
@@ -480,22 +480,17 @@ createPointAtPosition(GU_Detail *gdp, UT_Vector3D *position)
     // Set the position for the point.
     gdp->setPos3(ptOff, *position);
 
-    // Return the point number.
-    return gdp->pointIndex(ptOff);
 }
 """,
 
 """
-int
+void
 createNPoints(GU_Detail *gdp, int npoints)
 {
     GA_Offset                   ptOff;
 
     // Build a block of points.
     ptOff = gdp->appendPointBlock(npoints);
-
-    // Return the starting point number.
-    return gdp->pointIndex(ptOff);
 }
 """,
 
@@ -1105,7 +1100,7 @@ setSharedStringAttrib(GU_Detail *gdp,
 
 """
 bool
-hasEdge(const GU_Detail *gdp,
+faceHasEdge(const GU_Detail *gdp,
         unsigned prim_num,
         unsigned pt_num1,
         unsigned pt_num2)
@@ -1147,7 +1142,7 @@ insertVertex(GU_Detail *gdp,
 
 """
 void
-deleteVertex(GU_Detail *gdp, unsigned prim_num, unsigned idx)
+deleteVertexFromFace(GU_Detail *gdp, unsigned prim_num, unsigned idx)
 {
     GEO_Face                    *face;
 
@@ -1159,7 +1154,7 @@ deleteVertex(GU_Detail *gdp, unsigned prim_num, unsigned idx)
 
 """
 void
-setPoint(GU_Detail *gdp, unsigned prim_num, unsigned idx, unsigned pt_num)
+setFaceVertexPoint(GU_Detail *gdp, unsigned prim_num, unsigned idx, unsigned pt_num)
 {
     GA_Offset                   ptOff;
     GA_Primitive                *prim;
@@ -1174,7 +1169,7 @@ setPoint(GU_Detail *gdp, unsigned prim_num, unsigned idx, unsigned pt_num)
 
 """
 Position3D
-baryCenter(const GU_Detail *gdp, unsigned prim_num)
+primitiveBaryCenter(const GU_Detail *gdp, unsigned prim_num)
 {
     const GEO_Primitive         *prim;
 
@@ -1208,7 +1203,7 @@ reversePrimitive(const GU_Detail *gdp, unsigned prim_num)
 
 """
 void
-makeUnique(GU_Detail *gdp, unsigned prim_num)
+makePrimitiveUnique(GU_Detail *gdp, unsigned prim_num)
 {
     GEO_Primitive               *prim;
 
@@ -1430,7 +1425,7 @@ groupSize(const GU_Detail *gdp, const char *group_name, int group_type)
 
 """
 void
-toggleMembership(GU_Detail *gdp,
+toggleGroupMembership(GU_Detail *gdp,
                  const char *group_name,
                  int group_type,
                  int elem_num)
@@ -1459,30 +1454,7 @@ toggleMembership(GU_Detail *gdp,
 
 """
 void
-setEntries(GU_Detail *gdp, const char *group_name, int group_type)
-{
-    GA_ElementGroup             *group;
-
-    GA_GroupType type = static_cast<GA_GroupType>(group_type);
-
-    switch (type)
-    {
-        case GA_GROUP_POINT:
-            group = gdp->findPointGroup(group_name);
-            break;
-
-        case GA_GROUP_PRIMITIVE:
-            group = gdp->findPrimitiveGroup(group_name);
-            break;
-    }
-
-    group->setEntries();
-}
-""",
-
-"""
-void
-toggleEntries(GU_Detail *gdp, const char *group_name, int group_type)
+toggleGroupEntries(GU_Detail *gdp, const char *group_name, int group_type)
 {
     GA_EdgeGroup                *egroup;
     GA_ElementGroup             *group;
@@ -1535,7 +1507,7 @@ copyGroup(GU_Detail *gdp,
 
 """
 bool
-containsAny(const GU_Detail *gdp,
+groupsShareElements(const GU_Detail *gdp,
             const char *group_name,
             const char *other_group_name,
             int group_type)
@@ -1737,7 +1709,7 @@ groupUngroupedPrims(GU_Detail *gdp, const char *ungrouped_name)
 
 """
 void
-clip(GU_Detail *gdp,
+clipGeometry(GU_Detail *gdp,
      UT_DMatrix4 *xform,
      UT_Vector3D *normal,
      float dist,
@@ -1777,7 +1749,7 @@ clip(GU_Detail *gdp,
 
 """
 bool
-isInside(const UT_BoundingBoxD *bbox1, const UT_BoundingBoxD *bbox2)
+boundingBoxisInside(const UT_BoundingBoxD *bbox1, const UT_BoundingBoxD *bbox2)
 {
     return bbox1->isInside(*bbox2);
 }
@@ -1785,7 +1757,7 @@ isInside(const UT_BoundingBoxD *bbox1, const UT_BoundingBoxD *bbox2)
 
 """
 bool
-intersects(UT_BoundingBoxD *bbox1, const UT_BoundingBoxD *bbox2)
+boundingBoxesIntersect(UT_BoundingBoxD *bbox1, const UT_BoundingBoxD *bbox2)
 {
     return bbox1->intersects(*bbox2);
 }
@@ -1793,7 +1765,7 @@ intersects(UT_BoundingBoxD *bbox1, const UT_BoundingBoxD *bbox2)
 
 """
 bool
-computeIntersection(UT_BoundingBoxD *bbox1, const UT_BoundingBoxD *bbox2)
+computeBoundingBoxIntersection(UT_BoundingBoxD *bbox1, const UT_BoundingBoxD *bbox2)
 {
     return bbox1->computeIntersection(*bbox2);
 }
@@ -1801,7 +1773,7 @@ computeIntersection(UT_BoundingBoxD *bbox1, const UT_BoundingBoxD *bbox2)
 
 """
 void
-expandBounds(UT_BoundingBoxD *bbox, float dltx, float dlty, float dltz)
+expandBoundingBoxBounds(UT_BoundingBoxD *bbox, float dltx, float dlty, float dltz)
 {
     bbox->expandBounds(dltx, dlty, dltz);
 }
@@ -1809,7 +1781,7 @@ expandBounds(UT_BoundingBoxD *bbox, float dltx, float dlty, float dltz)
 
 """
 void
-addToMin(UT_BoundingBoxD *bbox, const UT_Vector3D *vec)
+addToBoundingBoxMin(UT_BoundingBoxD *bbox, const UT_Vector3D *vec)
 {
     bbox->addToMin(*vec);
 }
@@ -1817,7 +1789,7 @@ addToMin(UT_BoundingBoxD *bbox, const UT_Vector3D *vec)
 
 """
 void
-addToMax(UT_BoundingBoxD *bbox, const UT_Vector3D *vec)
+addToBoundingBoxMax(UT_BoundingBoxD *bbox, const UT_Vector3D *vec)
 {
     bbox->addToMax(*vec);
 }
@@ -1944,7 +1916,7 @@ getMultiParmInstances(OP_Node *node, const char *parm_name)
 
 """
 void
-buildLookat(UT_DMatrix3 *mat,
+buildLookatMatrix(UT_DMatrix3 *mat,
             const UT_Vector3D *from,
             const UT_Vector3D *to,
             const UT_Vector3D *up)
@@ -1955,7 +1927,7 @@ buildLookat(UT_DMatrix3 *mat,
 
 """
 void
-getDual(const UT_Vector3D *vec, UT_DMatrix3 *mat)
+vector3GetDual(const UT_Vector3D *vec, UT_DMatrix3 *mat)
 {
     vec->getDual(*mat);
 }
@@ -1963,7 +1935,7 @@ getDual(const UT_Vector3D *vec, UT_DMatrix3 *mat)
 
 """
 const char *
-getMetaSource(const char *filename)
+getMetaSourceForPath(const char *filename)
 {
     int                         idx;
 
