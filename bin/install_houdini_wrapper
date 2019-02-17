@@ -6,18 +6,17 @@
 # =============================================================================
 
 # Python Imports
+import argparse
 import os
 import stat
-
-# Houdini Toolbox Imports
-import ht.argument
 
 # =============================================================================
 # GLOBALS
 # =============================================================================
 
-# Default applications to install.
-_DEFAULT_APPS = [
+# Default application wrappers to install.
+_DEFAULT_WRAPPERS = [
+    "ginfo",
     "gplay",
     "hbatch",
     "hcollapse",
@@ -32,6 +31,8 @@ _DEFAULT_APPS = [
     "houdini",
     "hscript",
     "hython",
+    "iconvert",
+    "iinfo",
     "mantra",
     "mplay",
     "vcc",
@@ -41,25 +42,25 @@ _DEFAULT_APPS = [
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-def _buildParser():
+def _build_parser():
     """Build an argument parser to handle input."""
-    parser = ht.argument.ArgumentParser()
+    parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "-apps",
+        "--apps",
         nargs="+",
-        default=_DEFAULT_APPS,
+        default=_DEFAULT_WRAPPERS,
         help="An optional list of applications to install/uninstall."
     )
 
     parser.add_argument(
-        "-directory",
+        "--directory",
         required=True,
         help="Directory to install symlinks to."
     )
 
     parser.add_argument(
-        "-wrapper",
+        "--wrapper",
         required=True,
         help="Wrapper file to link to."
     )
@@ -69,14 +70,14 @@ def _buildParser():
     install_group = parser.add_mutually_exclusive_group()
 
     install_group.add_argument(
-        "-install",
+        "--install",
         action="store_true",
         default=False,
         help="Install symlinks."
     )
 
     install_group.add_argument(
-        "-uninstall",
+        "--uninstall",
         action="store_true",
         default=False,
         help="Remove symlinks."
@@ -91,15 +92,15 @@ def _buildParser():
 def main():
     """Main function."""
     # Build the parser and parse the args.
-    parser = _buildParser()
+    parser = _build_parser()
     arguments = parser.parse_args()
 
     wrapper = arguments.wrapper
     directory = arguments.directory
 
     # If neither install or uninstall was specified we can't do anything.
-    if not (arguments.install or arguments.uninstall):
-        print "Nothing to do: Please specify -install or -uninstall."
+    if not any([arguments.install, arguments.uninstall]):
+        print "Nothing to do: Please specify --install or --uninstall."
         return
 
     # Verify the target directory exists.
@@ -127,10 +128,10 @@ def main():
 
             os.symlink(wrapper, link_path)
 
-	    # Set links to be executable.
-	    st = os.stat(link_path)
-	    os.chmod(link_path, st.st_mode | stat.S_IEXEC)
-        
+            # Set links to be executable.
+            stats = os.stat(link_path)
+            os.chmod(link_path, stats.st_mode | stat.S_IEXEC)
+
         # Try to remove the link.
         elif arguments.uninstall:
             # If the link isn't pointing to the specified wrapper we can't

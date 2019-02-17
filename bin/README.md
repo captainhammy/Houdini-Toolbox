@@ -12,5 +12,5 @@ create and remove them.
 
 Example:
 
-./install_houdini_wrapper -directory /usr/bin/ -wrapper /home/gthompson/Houdini-Toolbox/bin/houdini_wrapper -install
+./install_houdini_wrapper --directory /usr/bin/ --wrapper /home/gthompson/Houdini-Toolbox/bin/houdini_wrapper --install
 
