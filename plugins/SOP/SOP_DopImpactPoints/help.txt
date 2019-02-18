@@ -12,7 +12,7 @@ useful data about the collision as well as be filtered based on object ids and c
 
 == Using Dop Impact Points ==
 
-    # Envoke the [Icon:POP/hitinfo][Dop Impact Points|Node:sop/dopimpactpoints] tool from the __tab__ menu.
+    # Invoke the [Icon:POP/hitinfo][Dop Impact Points|Node:sop/dopimpactpoints] tool from the __tab__ menu.
 
     # Select the Dop object(s) to create impact data for and press ((Enter)) to complete.
 
