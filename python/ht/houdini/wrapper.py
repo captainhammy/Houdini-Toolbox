@@ -41,24 +41,26 @@ class HoudiniWrapper(object):
         # Get the name of the executable we are trying to run.
         self.program_name = os.path.basename(sys.argv[0])
 
-        self._nojemalloc = self.arguments.nojemalloc
-        self._testpath = self.arguments.testpath
+        self._no_jemalloc = self.arguments.no_jemalloc
+        self._test_path = self.arguments.test_path
         self._log_level = self.arguments.log_level
 
         os.environ["HT_LOG_LEVEL"] = self._log_level
 
-        self._print("Houdini Wrapper:\n", colored="darkyellow")
+        _print("Houdini Wrapper:\n", colored="darkyellow")
 
         # If version is False (no argument), display any available versions and
         # exit.
         if not self.arguments.version:
             self._display_versions()
+
             return
 
         # We are going to download and install a build so do this before
         # anything else.
-        if self.arguments.dlinstall:
+        if self.arguments.dl_install:
             self._download_and_install(self.arguments.create_symlink)
+
             return
 
         # Try to find a build.
@@ -71,15 +73,17 @@ class HoudiniWrapper(object):
         # Install the selected build.
         if self.arguments.install:
             self.build.install(self.arguments.create_symlink)
+
             return
 
         # Uninstall the selected build.
         elif self.arguments.uninstall:
             self.build.uninstall()
+
             return
 
         # Set the base environment for the build.
-        self.build.setupEnvironment(testpath=self.testpath)
+        self.build.setup_environment(test_path=self.test_path)
 
         # Handle setting options when the 'hcmake' compile command is used.
         if self.program_name == "hcmake":
@@ -91,13 +95,13 @@ class HoudiniWrapper(object):
                 os.environ["PLUGIN_BUILD_DIR"] = self.build.plugin_path
 
         # Dumping all the environment and Houdini settings.
-        if self.arguments.dumpenv:
+        if self.arguments.dump_env:
             # To display the Houdini configuration, change the program to run
             # hconfig -a.
             self.program_name = "hconfig"
             self.program_args = ["-a"]
 
-            self._print("Dumping env settings\n", colored="darkyellow")
+            _print("Dumping env settings\n", colored="darkyellow")
 
             # Dump the environment with 'printenv'.
             proc = subprocess.Popen(
@@ -105,23 +109,23 @@ class HoudiniWrapper(object):
                 stdout=subprocess.PIPE
             )
 
-            self._print(proc.communicate()[0])
-            self._print()
+            _print(proc.communicate()[0])
+            _print()
 
         # Start with the name of the program to run.
         run_args = [self.program_name]
 
         # If we don't want to have Houdini use jemalloc we need to replace the
         # run args. For more information, see
-        # http://www.sidefx.com/docs/houdini15.0/ref/panes/perfmon
-        if self.nojemalloc:
+        # http://www.sidefx.com/docs/houdini/ref/panes/perfmon
+        if self.no_jemalloc:
             run_args = self._set_no_jemalloc()
 
         # Print the Houdini version information.
-        self._print("\tHoudini {}: {}\n".format(self.build, self.build.path))
+        _print("\tHoudini {}: {}\n".format(self.build, self.build.path))
 
         # Print the command being run.
-        self._print(
+        _print(
             "Launching {} {} ... ".format(
                 " ".join(run_args),
                 " ".join(self.program_args)
@@ -133,7 +137,7 @@ class HoudiniWrapper(object):
         proc = subprocess.Popen(run_args + self.program_args)
 
         # Display the process id.
-        self._print(
+        _print(
             "{} process id: {}".format(self.program_name, proc.pid+2),
             colored="blue"
         )
@@ -142,20 +146,20 @@ class HoudiniWrapper(object):
         proc.wait()
 
         # Get the return code.
-        returncode = proc.returncode
+        return_code = proc.returncode
 
         # If the program didn't end clean, print a message.
-        if returncode != 0:
-            self._print(
+        if return_code != 0:
+            _print(
                 "{} exited with signal {}.".format(
                     self.program_name,
-                    abs(returncode)
+                    abs(return_code)
                 ),
                 colored="darkred"
             )
 
         # Exit with the program's return code.
-        sys.exit(returncode)
+        sys.exit(return_code)
 
     # =========================================================================
     # SPECIAL METHODS
@@ -182,30 +186,30 @@ class HoudiniWrapper(object):
 
         # List builds that can be installed.
         if self.arguments.install:
-            self._print("Houdini builds to install:")
+            _print("Houdini builds to install:")
 
-            self._print(
+            _print(
                 '\t' + " ".join(
                     [str(build) for build in manager.installable]
                 )
             )
 
-            self._print()
+            _print()
 
         # Builds that can be ran can also be uninstalled.
         else:
             if self.arguments.uninstall:
-                self._print("Houdini builds to uninstall:")
+                _print("Houdini builds to uninstall:")
 
             else:
-                self._print("Installed Houdini builds:")
+                _print("Installed Houdini builds:")
 
-            default_build = manager.getDefaultBuild()
+            default_build = manager.get_default_build()
 
             output = []
 
             for build in manager.installed:
-                if build ==  default_build:
+                if build == default_build:
                     # Run the message through the styler.
                     msg = ht.output.ShellOutput.blue(str(build))
 
@@ -214,13 +218,13 @@ class HoudiniWrapper(object):
                 else:
                     output.append(str(build))
 
-            self._print('\t' + ' '.join(output))
+            _print('\t' + ' '.join(output))
 
-            self._print()
+            _print()
 
     def _download_and_install(self, create_symlink=False):
         """Download and automatically install a build."""
-        ht.houdini.package.HoudiniBuildManager.downloadAndInstall(
+        ht.houdini.package.HoudiniBuildManager.download_and_install(
             self.arguments.dlinstall,
             create_symlink
         )
@@ -251,13 +255,13 @@ class HoudiniWrapper(object):
         # Couldn't find any builds, so print the appropriate message.
         if not search_builds:
             if self.arguments.install:
-                self._print("No builds found to install.")
+                _print("No builds found to install.")
 
             elif self.arguments.uninstall:
-                self._print("No builds found to uninstall.")
+                _print("No builds found to uninstall.")
 
             else:
-                self._print("No builds found.")
+                _print("No builds found.")
 
             return
 
@@ -267,29 +271,17 @@ class HoudiniWrapper(object):
 
         # Support a 'default' build as defined in the config file.
         elif version == "default":
-            self.build = manager.getDefaultBuild()
+            self.build = manager.get_default_build()
 
         # Look for a build matching the string.
         else:
-            result = manager.findMatchingBuilds(version, search_builds)
+            result = manager.find_matching_builds(version, search_builds)
 
             if result is None:
-                self._print("Could not find version: {ver}".format(ver=version))
+                _print("Could not find version: {ver}".format(ver=version))
 
             else:
                 self.build = result
-
-    def _print(self, msg="", colored=None):
-        """Print a message, optionally with color.
-
-        """
-        # Doing colored output.
-        if colored is not None:
-            # Run the message through the styler.
-            msg = getattr(ht.output.ShellOutput, colored)(msg)
-
-        # Print the message.
-        print msg
 
     def _set_no_jemalloc(self):
         """Set the environment in order to run without jemalloc."""
@@ -339,9 +331,9 @@ class HoudiniWrapper(object):
     # =========================================================================
 
     @property
-    def nojemalloc(self):
+    def no_jemalloc(self):
         """Launch with out jemalloc."""
-        return self._nojemalloc
+        return self._no_jemalloc
 
     # =========================================================================
 
@@ -379,9 +371,9 @@ class HoudiniWrapper(object):
     # =========================================================================
 
     @property
-    def testpath(self):
+    def test_path(self):
         """Run the application outside of the custom environment."""
-        return self._testpath
+        return self._test_path
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
@@ -397,9 +389,10 @@ def _build_parser():
     )
 
     parser.add_argument(
-        "--dumpenv",
+        "--dump-env",
         action="store_true",
-        help="Display environment variables and values."
+        help="Display environment variables and values.",
+        dest="dump_env"
     )
 
     parser.add_argument(
@@ -411,16 +404,18 @@ def _build_parser():
     )
 
     parser.add_argument(
-        "--nojemalloc",
+        "--no-jemalloc",
         action="store_true",
-        help="Launch Houdini in debugging mode without jemalloc."
+        help="Launch Houdini in debugging mode without jemalloc.",
+        dest="no_jemalloc"
     )
 
     parser.add_argument(
-        "--testpath",
+        "--test-path",
         action="store_true",
         default=False,
-        help="Don't include any non-standard environment settings."
+        help="Don't include any non-standard environment settings.",
+        dest="test_path"
     )
 
     parser.add_argument(
@@ -448,17 +443,31 @@ def _build_parser():
     )
 
     install_group.add_argument(
-        "--dlinstall",
+        "--dl-install",
         nargs=1,
-        help="Download and install today's Houdini build."
+        help="Download and install today's Houdini build.",
+        dest="dl_install"
     )
 
     parser.add_argument(
-        "--create_symlink",
+        "--create-symlink",
         action="store_true",
         default=True,
-        help="Create a major.minor symlink"
+        help="Create a major.minor symlink",
+        dest="create_symlink"
     )
 
     return parser
 
+
+def _print(msg="", colored=None):
+    """Print a message, optionally with color.
+
+    """
+    # Doing colored output.
+    if colored is not None:
+        # Run the message through the styler.
+        msg = getattr(ht.output.ShellOutput, colored)(msg)
+
+    # Print the message.
+    print msg
