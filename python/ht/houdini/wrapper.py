@@ -33,7 +33,7 @@ class HoudiniWrapper(object):
         self._program_args = None
 
         # Build a parser.
-        self._parser = _buildParser()
+        self._parser = _build_parser()
 
         # Parse the arguments.
         self._arguments, self.program_args = self.parser.parse_known_args()
@@ -42,7 +42,6 @@ class HoudiniWrapper(object):
         self.program_name = os.path.basename(sys.argv[0])
 
         self._nojemalloc = self.arguments.nojemalloc
-        self._silent = self.arguments.silent
         self._testpath = self.arguments.testpath
         self._log_level = self.arguments.log_level
 
@@ -50,20 +49,20 @@ class HoudiniWrapper(object):
 
         self._print("Houdini Wrapper:\n", colored="darkyellow")
 
-        # If version is False (no argument), display any availble versions and
+        # If version is False (no argument), display any available versions and
         # exit.
         if not self.arguments.version:
-            self._displayVersions()
+            self._display_versions()
             return
 
         # We are going to download and install a build so do this before
         # anything else.
         if self.arguments.dlinstall:
-            self._downloadAndInstall(self.arguments.create_symlink)
+            self._download_and_install(self.arguments.create_symlink)
             return
 
         # Try to find a build.
-        self._findBuild()
+        self._find_build()
 
         # No build found, so abort.
         if self.build is None:
@@ -82,20 +81,14 @@ class HoudiniWrapper(object):
         # Set the base environment for the build.
         self.build.setupEnvironment(testpath=self.testpath)
 
-        # Handle setting options when the 'hmake' compile command is used.
-        if self.program_name == "hmake":
-            self.program_name = "make"
+        # Handle setting options when the 'hcmake' compile command is used.
+        if self.program_name == "hcmake":
+            self.program_name = "cmake"
 
             # Set the plugin installation directory to the plugin path if
             # the build has one.
             if self.build.plugin_path is not None:
-                os.environ["INSTDIR"] = self.build.plugin_path
-
-        # Process any specified argument variables.
-        if self.arguments.var is not None:
-            for var in self.arguments.var:
-                name, value = var.split('=')
-                os.environ[name] = value
+                os.environ["PLUGIN_BUILD_DIR"] = self.build.plugin_path
 
         # Dumping all the environment and Houdini settings.
         if self.arguments.dumpenv:
@@ -122,7 +115,7 @@ class HoudiniWrapper(object):
         # run args. For more information, see
         # http://www.sidefx.com/docs/houdini15.0/ref/panes/perfmon
         if self.nojemalloc:
-            run_args = self._setNoJemalloc()
+            run_args = self._set_no_jemalloc()
 
         # Print the Houdini version information.
         self._print("\tHoudini {}: {}\n".format(self.build, self.build.path))
@@ -178,7 +171,7 @@ class HoudiniWrapper(object):
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    def _displayVersions(self):
+    def _display_versions(self):
         """Display a list of Houdini versions that are available to install,
         run or uninstall.
 
@@ -221,19 +214,18 @@ class HoudiniWrapper(object):
                 else:
                     output.append(str(build))
 
-
             self._print('\t' + ' '.join(output))
 
             self._print()
 
-    def _downloadAndInstall(self, create_symlink=False):
+    def _download_and_install(self, create_symlink=False):
         """Download and automatically install a build."""
         ht.houdini.package.HoudiniBuildManager.downloadAndInstall(
             self.arguments.dlinstall,
             create_symlink
         )
 
-    def _findBuild(self):
+    def _find_build(self):
         """Search for the selected build.  If no valid build was selected
         print a message.
 
@@ -288,7 +280,7 @@ class HoudiniWrapper(object):
                 self.build = result
 
     def _print(self, msg="", colored=None):
-        """Print a message, optionally with color, respecting the -silent flag.
+        """Print a message, optionally with color.
 
         """
         # Doing colored output.
@@ -297,10 +289,9 @@ class HoudiniWrapper(object):
             msg = getattr(ht.output.ShellOutput, colored)(msg)
 
         # Print the message.
-        if not self.silent:
-            print msg
+        print msg
 
-    def _setNoJemalloc(self):
+    def _set_no_jemalloc(self):
         """Set the environment in order to run without jemalloc."""
         ld_path = os.path.join(os.environ["HDSO"], "empty_jemalloc")
 
@@ -388,13 +379,6 @@ class HoudiniWrapper(object):
     # =========================================================================
 
     @property
-    def silent(self):
-        """Don't output verbose messages."""
-        return self._silent
-
-    # =========================================================================
-
-    @property
     def testpath(self):
         """Run the application outside of the custom environment."""
         return self._testpath
@@ -403,8 +387,7 @@ class HoudiniWrapper(object):
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-
-def _buildParser():
+def _build_parser():
     """Build an ArgumentParser for the wrapper."""
     # Don't allow abbreviations since we don't want them to interfere with any
     # flags that might need to be passed through.
@@ -434,13 +417,6 @@ def _buildParser():
     )
 
     parser.add_argument(
-        "--silent",
-        action="store_true",
-        default=False,
-        help="Don't output verbose information."
-    )
-
-    parser.add_argument(
         "--testpath",
         action="store_true",
         default=False,
@@ -452,13 +428,6 @@ def _buildParser():
         nargs="?",
         default="default",
         help="Set the package version."
-    )
-
-    parser.add_argument(
-        "--var",
-        action="append",
-        nargs="?",
-        help="Specify env vars to be set. e.g. -var FOO=5"
     )
 
     # Exclusive group to handle installs and uninstalls.
