@@ -1,9 +1,9 @@
 #type: node
 #context: sop
-#internal: primcentroid
-#largeicon: /nodes/sop/SOP_primcentroid.svg
+#internal: com.houdinitoolbox::primcentroid::1
+#largeicon: /nodes/sop/{ICON_INSTALL_PATH}
 
-= PrimitiveCentroid =
+= HT Primitive Centroid =
 
 """Create points at the centers of primitives."""
 

@@ -24,8 +24,8 @@ void
 newSopOperator(OP_OperatorTable *table)
 {
     table->addOperator(
-        new OP_Operator("pointsfromvoxels",
-                        "PointsFromVoxels",
+        new OP_Operator("com.houdinitoolbox::pointsfromvoxels::1",
+                        "HT Points From Voxels",
                         SOP_PointsFromVoxels::myConstructor,
                         SOP_PointsFromVoxels::myTemplateList,
                         1,

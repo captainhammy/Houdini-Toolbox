@@ -25,8 +25,8 @@ void
 newSopOperator(OP_OperatorTable *table)
 {
     table->addOperator(
-        new OP_Operator("primcentroid",
-                        "PrimitiveCentroid",
+        new OP_Operator("com.houdinitoolbox::primcentroid::1",
+                        "HT Primitive Centroid",
                         SOP_PrimCentroid::myConstructor,
                         SOP_PrimCentroid::myTemplateList,
                         1,

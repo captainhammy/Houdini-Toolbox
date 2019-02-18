@@ -25,8 +25,8 @@ void
 newDriverOperator(OP_OperatorTable *table)
 {
     table->addOperator(
-        new OP_Operator("script",
-			"Script",
+        new OP_Operator("com.houdinitoolbox::script::1",
+			"HT Script",
 			ROP_Script::myConstructor,
 			ROP_Script::getTemplatePair(),
 			0,

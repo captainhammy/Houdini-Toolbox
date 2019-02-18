@@ -1,9 +1,9 @@
 #type: node
 #context: sop
-#internal: pointsfromvoxels
-#largeicon: /nodes/sop/SOP_pointsfromvoxels.svg
+#internal: com.houdinitoolbox::pointsfromvoxels::1
+#largeicon: /nodes/sop/{ICON_INSTALL_PATH}
 
-= PointsFromVoxels = 
+= HT Points From Voxels = 
 
 """Create points at the center of each voxel of a fog volume."""
 

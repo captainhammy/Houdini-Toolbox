@@ -32,8 +32,8 @@ void newSopOperator(OP_OperatorTable *table)
 
     // Create the new operator.
     new_op = new OP_Operator(
-        "dopimpactpoints",
-        "Dop Impact Points",
+        "com.houdinitoolbox::dopimpactpoints::1",
+        "HT DOP Impact Points",
         SOP_DopImpactPoints::myConstructor,
         SOP_DopImpactPoints::myTemplateList,
         0,

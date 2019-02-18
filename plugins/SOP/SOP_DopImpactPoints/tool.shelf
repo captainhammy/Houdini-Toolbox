@@ -5,13 +5,13 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
-  <tool name="sop_dopimpactpoints" label="DopImpactPoints" icon="POP_hitinfo">
-    <helpURL>operator:Sop/dopimpactpoints</helpURL>
+  <tool name="com.houdinitoolbox::dopimpactpoints::1" label="HT DOP Impact Points" icon="POP_hitinfo">
+    <helpURL>operator:com.houdinitoolbox::Sop/dopimpactpoints::1</helpURL>
     <toolMenuContext name="viewer">
       <contextNetType>SOP</contextNetType>
     </toolMenuContext>
     <toolMenuContext name="network">
-      <contextOpType>Sop/dopimpactpoints</contextOpType>
+      <contextOpType>com.houdinitoolbox::Sop/dopimpactpoints::1</contextOpType>
     </toolMenuContext>
     <toolSubmenu>Sourcing</toolSubmenu>
     <toolSubmenu>Houdini Toolbox</toolSubmenu>
@@ -71,6 +71,6 @@ if isinstance(activepane, hou.SceneViewer):
         sopnode.setCurrent(True, True)
 
 else:
-    soptoolutils.genericTool(kwargs, 'dopimpactpoints')]]></script>
+    soptoolutils.genericTool(kwargs, 'com.houdinitoolbox::dopimpactpoints::1')]]></script>
   </tool>
 </shelfDocument>

@@ -28,8 +28,8 @@ void
 newSopOperator(OP_OperatorTable *table)
 {
     table->addOperator(
-        new OP_Operator("primgroupcentroid",
-                        "PrimitiveGroupCentroid",
+        new OP_Operator("com.houdinitoolbox::primgroupcentroid::1",
+                        "HT Primitive Group Centroid",
                         SOP_PrimGroupCentroid::myConstructor,
                         SOP_PrimGroupCentroid::myTemplateList,
                         1,

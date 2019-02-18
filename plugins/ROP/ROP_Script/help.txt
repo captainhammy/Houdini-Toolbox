@@ -1,9 +1,9 @@
 #type: node
 #context: out
-#internal: script
-#largeicon: /nodes/out/ROP_script.svg
+#internal: com.houdinitoolbox::script::1
+#icon: /nodes/out/{ICON_INSTALL_PATH}
 
-= Script =
+= HT Script =
 
 """Run Hscript or Python code as a render operation."""
 

@@ -1,9 +1,9 @@
 #type: node
 #context: sop
-#internal: primgroupcentroid
-#largeicon: /nodes/sop/SOP_primgroupcentroid.svg
+#internal: com.houdinitoolbox::primgroupcentroid::1
+#icon: /nodes/sop/{ICON_INSTALL_PATH}
 
-= PrimitiveGroupCentroid =
+= HT Primitive Group Centroid =
 
 """Create points at the centers of primitive groups."""
 
@@ -52,11 +52,11 @@ Store Source Identifier:
     Create an attribute on the points that indicates the source of each
     centroid.
 
-Attribute to Copy:
+Attributes to Copy:
     Attributes to copy from the primitives to the centroid points.  The
     attribute values are averages.
 
-Copy Local Variable:
+Copy Local Variables:
     All local variables referring to the copied attributes are also
     copied.
 
@@ -69,7 +69,7 @@ Unmatched Behavior:
     Destroy:
 	Destroy the geometry.
 
-Bind Attribute to Copy:
+Bind Attributes to Copy:
     Attributes to copy from the binding points to the matching geometry.
     The attributes are copied as Primitive attributes.
 

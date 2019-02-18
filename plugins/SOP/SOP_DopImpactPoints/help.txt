@@ -1,6 +1,6 @@
 #type: node
 #context: sop
-#internal: sop_dopimpactpoints
+#internal: com.houdinitoolbox::dopimpactpoints::1
 #icon: POP/hitinfo
 
 = DOP Impact Points =

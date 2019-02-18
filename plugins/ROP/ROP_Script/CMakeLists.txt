@@ -1,20 +1,13 @@
-#cmake_minimum_required( VERSION 3.6 )
 
 project( ROP_Script )
 
-# CMAKE_PREFIX_PATH must contain the path to the toolkit/cmake subdirectory of
-# the Houdini installation. See the "Compiling with CMake" section of the HDK
-# documentation for more details, which describes several options for
-# specifying this path.
-#list( APPEND CMAKE_PREFIX_PATH "$ENV{HFS}/toolkit/cmake" )
+set( help_context out )
+set( op_context rop )
+set( op_name script )
+set( op_namespace com.houdinitoolbox )
+set( op_version 1 )
 
-# Locate Houdini's libraries and header files.
-# Registers an imported library target named 'Houdini'.
-#find_package( Houdini REQUIRED )
-
-set (op_context ROP )
-
-set( library_name ROP_script )
+set( library_name ROP_Script )
 
 # Code generation for the embedded DS file in SOP_Star.C.
 #houdini_generate_proto_headers( FILES SOP_Star.C )
@@ -37,6 +30,6 @@ target_include_directories( ${library_name} PRIVATE
 # Sets several common target properties, such as the library's output directory.
 houdini_configure_target( ${library_name} INSTDIR "$ENV{PLUGIN_BUILD_DIR}/dso" )
 
-add_secondary_files( SHELF rop_script.shelf ICON ROP_script.svg HELP script.txt )
+add_secondary_files( SHELF 1 ICON svg HELP 1 )
 
 
