@@ -50,8 +50,11 @@ getGlobalVariableNames(int dirty=0)
 
     table->getVariableNames(names, dirty);
 
+#if (UT_MAJOR_VERSION_INT >= 17 )
+    UTarrayToStdVectorOfStrings(names, result);
+#else
     names.toStdVectorOfStrings(result);
-
+#endif
     // Check for an empty vector.
     validateStringVector(result);
 
@@ -99,7 +102,11 @@ getVariableNames(int dirty=0)
 
     cmd->getVariableNames(names, dirty);
 
+#if (UT_MAJOR_VERSION_INT >= 17 )
+    UTarrayToStdVectorOfStrings(names, result);
+#else
     names.toStdVectorOfStrings(result);
+#endif
 
     // Check for an empty vector.
     validateStringVector(result);
@@ -1863,8 +1870,11 @@ getMultiParmInstanceIndex(OP_Node *node, const char *parm_name)
 
     parm.getMultiInstanceIndex(indices);
 
+#if (UT_MAJOR_VERSION_INT >= 17 )
+    UTarrayToStdVector(indices, result);
+#else
     indices.toStdVector(result);
-
+#endif
     return result;
 }
 """,
@@ -2063,7 +2073,12 @@ cpp_methods = inlinecpp.createLibrary(
 #include <OP/OP_OTLManager.h>
 #include <PRM/PRM_Parm.h>
 #include <ROP/ROP_RenderManager.h>
+#include <UT/UT_Version.h>
 #include <UT/UT_WorkArgs.h>
+
+#if (UT_MAJOR_VERSION_INT >= 17)
+    #include <UT/UT_StdUtil.h>
+#endif
 
 using namespace std;
 
