@@ -39,16 +39,36 @@ class Test__emit_ui_available(unittest.TestCase):
         mock_run.assert_called_with(SceneEvents.WhenUIAvailable)
 
 
-class Test__register_atexit(unittest.TestCase):
-    """Test ht.events.callbacks._register_atexit."""
+class Test__hip_event_callback(unittest.TestCase):
+    """Test ht.events.callbacks._hip_event_callback."""
 
-    @patch("atexit.register")
-    def test(self, mock_register):
-        """Register the _at_exit_callback function."""
-        callbacks._register_atexit()
+    @patch("ht.events.callbacks.run_event")
+    def test(self, mock_run):
+        mock_event_type = MagicMock()
+        mock_event_type.name.return_value = "event_name"
 
-        # Ensure we passed the _atexit_callback method to the register function.
-        mock_register.assert_called_with(callbacks._atexit_callback)
+        mock_name_value = MagicMock(spec=str)
+
+        mock_event = MagicMock()
+        mock_event.event_name = mock_name_value
+
+        with patch("ht.events.callbacks.HipFileEvents", mock_event):
+            callbacks._hip_event_callback(mock_event_type)
+
+            mock_run.assert_called_with(mock_name_value, {"hip_file_event_type": mock_event_type})
+
+    @patch("ht.events.callbacks.run_event")
+    def test_no_event_name(self, mock_run):
+        mock_event_type = MagicMock()
+        mock_event_type.name.return_value = "event_name"
+
+        mock_event = MagicMock()
+        del mock_event.event_name
+
+        with patch("ht.events.callbacks.HipFileEvents", mock_event):
+            callbacks._hip_event_callback(mock_event_type)
+
+            mock_run.assert_not_called()
 
 
 class Test__register_when_ui_available(unittest.TestCase):
@@ -72,31 +92,38 @@ class Test__register_when_ui_available(unittest.TestCase):
 class Test_register_callbacks(unittest.TestCase):
     """Test ht.events.callbacks.register_callbacks."""
 
+    @patch("ht.events.callbacks.hou.hipFile.addEventCallback")
     @patch("ht.events.callbacks._register_when_ui_available")
-    @patch("ht.events.callbacks._register_atexit")
+    @patch("ht.events.callbacks.atexit.register")
     @patch("hou.isUIAvailable")
-    def test_no_ui(self, mock_available, mock_atexit, mock_emit):
+    def test_no_ui(self, mock_available, mock_register, mock_emit, mock_add):
         """Register callbacks when the UI is not available."""
         mock_available.return_value = False
 
         callbacks.register_callbacks()
 
-        mock_atexit.assert_called_once()
+        mock_register.assert_called_with(callbacks._atexit_callback)
 
         # _register_when_ui_available() will NOT be called when the UI is not available.
         mock_emit.assert_not_called()
 
+        mock_add.assert_called_with(callbacks._hip_event_callback)
+
+    @patch("ht.events.callbacks.hou.hipFile.addEventCallback")
     @patch("ht.events.callbacks._register_when_ui_available")
-    @patch("ht.events.callbacks._register_atexit")
+    @patch("ht.events.callbacks.atexit.register")
     @patch("hou.isUIAvailable")
-    def test_ui_available(self, mock_available, mock_atexit, mock_emit):
+    def test_ui_available(self, mock_available, mock_register, mock_emit, mock_add):
         """Register callbacks when the UI is available."""
         mock_available.return_value = True
 
         callbacks.register_callbacks()
 
-        mock_atexit.assert_called_once()
+        mock_register.assert_called_with(callbacks._atexit_callback)
+
         mock_emit.assert_called_once()
+
+        mock_add.assert_called_with(callbacks._hip_event_callback)
 
 # =============================================================================
 
