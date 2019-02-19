@@ -11,6 +11,19 @@ from enum import Enum
 # CLASSES
 # =============================================================================
 
+class HipFileEvents(Enum):
+    """Events mapping to hou.hipFileEventType values."""
+
+    BeforeClear = "beforeclear"
+    AfterClear = "afterclear"
+    BeforeLoad = "beforeload"
+    AfterLoad = "afterload"
+    BeforeMerge = "beforemerge"
+    AfterMerge = "aftermerge"
+    BeforeSave = "beforesave"
+    AfterSave = "aftersave"
+
+
 class NodeEvents(Enum):
     """Events related to node changes.  These correspond to node based event handler scripts.
 
@@ -18,8 +31,10 @@ class NodeEvents(Enum):
     OnCreated = "OnCreated"
     OnDeleted = "OnDeleted"
     OnInputChanged = "OnInputChanged"
+    OnInstall = "OnInstall"
     OnLoaded = "OnLoaded"
     OnNameChanged = "OnNameChanged"
+    OnUninstall = "OnUninstall"
     OnUpdated = "OnUpdated"
     PostLastDelete = "PostLastDelete"
     PreFirstCreate = "PreFirstCreate"
@@ -48,3 +63,4 @@ class SceneEvents(Enum):
     # When the UI first appears and Houdini begins running the UI loop
     WhenUIAvailable = "uiavailable"
     ExternalDragDrop = "externaldragdrop"
+

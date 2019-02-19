@@ -9,7 +9,7 @@ import atexit
 
 # Houdini Toolbox Imports
 from ht.events.manager import run_event
-from ht.events.types import SceneEvents
+from ht.events.types import HipFileEvents, SceneEvents
 
 # Houdini Imports
 import hou
@@ -36,14 +36,20 @@ def _emit_ui_available(*args, **kwargs):
     run_event(SceneEvents.WhenUIAvailable)
 
 
-def _register_atexit():
-    """Register a dummy function with Python's atexit system that will run
-    an event using the event system.
+def _hip_event_callback(event_type):
+    """Run HipFileEvents events
 
+    :param event_type: The hip file event type which is running.
+    :type event_type: hou.hipFileEventType
     :return:
 
     """
-    atexit.register(_atexit_callback)
+    event_name = getattr(HipFileEvents, event_type.name(), None)
+
+    if event_name is not None:
+        scriptargs = {"hip_file_event_type": event_type}
+
+        run_event(event_name, scriptargs)
 
 
 def _register_when_ui_available():
@@ -72,7 +78,9 @@ def register_callbacks():
     :return:
 
     """
-    _register_atexit()
+    atexit.register(_atexit_callback)
 
     if hou.isUIAvailable():
         _register_when_ui_available()
+
+    hou.hipFile.addEventCallback(_hip_event_callback)
