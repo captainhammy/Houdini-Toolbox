@@ -291,6 +291,10 @@ class RepositoryWidget(QtWidgets.QWidget):
         layout.addWidget(self.menu, 1)
 
         for source in ht.ui.paste.MANAGER.sources:
+            # Force a refresh of the source so that it is up to date with any
+            # changes which have have occurred since it was initialized.
+            source.refresh()
+
             self.menu.addItem(source.icon, source.display_name, source)
 
     def get_current_source(self):
