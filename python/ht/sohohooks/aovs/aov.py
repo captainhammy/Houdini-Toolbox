@@ -647,7 +647,7 @@ class AOVGroup(object):
 
     @property
     def aovs(self):
-        """list(ht.sohohooks.aovs.aov.AOV)A list of AOVs in the group."""
+        """list(ht.sohohooks.aovs.aov.AOV): A list of AOVs in the group."""
         return self._data[consts.GROUP_AOVS_KEY]
 
     # -------------------------------------------------------------------------

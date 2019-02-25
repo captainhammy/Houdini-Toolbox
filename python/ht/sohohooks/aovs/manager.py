@@ -72,8 +72,13 @@ class AOVManager(object):
                     group = IntrinsicAOVGroup(name)
                     self.add_group(group)
 
-                # Add this AOV to the group.
-                group.aovs.append(aov)
+                # TODO: Add signal and emit that the intrinsic group changed
+                if aov not in group.aovs:
+                    # Add this AOV to the group.
+                    group.aovs.append(aov)
+
+#                    if self.interface is not None:
+ #                       self.interface.aovAddedSignal.emit(aov)
 
     def _init_from_files(self):
         """Initialize the manager from files on disk.
@@ -341,6 +346,11 @@ class AOVManager(object):
 
         self._build_intrinsic_groups()
 
+    def load_section_source(self, section):
+        source = self.source_manager.get_asset_section_source(section)
+
+        self.load_source(source)
+
     def reload(self):
         """Reload all definitions.
 
@@ -364,6 +374,13 @@ class AOVManager(object):
             if self.interface is not None:
                 self.interface.aov_removed_signal.emit(aov)
 
+            for group in self.groups.values():
+                if aov in group.aovs:
+                    group.aovs.remove(aov)
+
+                if not group.aovs:
+                    self.remove_group(group)
+
     def remove_group(self, group):
         """Remove the specified group from the manager.
 
@@ -377,6 +394,34 @@ class AOVManager(object):
 
             if self.interface is not None:
                 self.interface.group_removed_signal.emit(group)
+
+    def remove_source(self, source):
+        for aov in source.aovs:
+            self.remove_aov(aov)
+
+        for group in source.groups:
+            self.remove_group(group)
+
+        self.source_manager.remove_source(source)
+
+    def remove_section_source(self, section):
+        source = self.source_manager.get_asset_section_source(section)
+
+        self.remove_source(source)
+
+    def clear_hip_source(self):
+        self.remove_source(self.source_manager.hip_source)
+        self.remove_source(self.source_manager.unsaved_source)
+
+    def init_hip_source(self):
+        self.clear_hip_source()
+
+        self.source_manager.hip_source.reload()
+        self.load_source(self.source_manager.hip_source)
+
+        self.source_manager.unsaved_source.clear()
+        self.load_source(self.source_manager.unsaved_source)
+
 
 
 # =============================================================================
