@@ -259,8 +259,8 @@ class AOVNode(AOVBaseNode):
         if aov.priority > -1:
             lines.append("\nPriority: {}".format(aov.priority))
 
-        if aov.path is not None:
-            lines.append("\n{}".format(aov.path))
+        if aov.source.path is not None:
+            lines.append("\n{}".format(aov.source.path))
 
         return '\n'.join(lines)
 
@@ -318,8 +318,8 @@ class AOVGroupNode(AOVBaseNode):
         if group.icon is not None:
             lines.append("\nIcon: {}".format(group.icon))
 
-        if group.path is not None:
-            lines.append("\n{}".format(group.path))
+        if group.source.path is not None:
+            lines.append("\n{}".format(group.source.path))
 
         return '\n'.join(lines)
 
@@ -335,6 +335,16 @@ class IntrinsicAOVGroupNode(AOVGroupNode):
     @property
     def name(self):
         return self.group.name.lstrip("i:")
+
+
+    def tooltip(self):
+        """Return a tooltip for the AOV group."""
+        group = self.group
+
+        lines = ["Name: {}".format(group.name)]
+        lines.append("\nAutomatically generated")
+
+        return '\n'.join(lines)
 
 # =============================================================================
 # PROXY MODELS

@@ -1717,6 +1717,11 @@ class ComboBox(QtWidgets.QComboBox):
         super(ComboBox, self).__init__(parent)
 
         self.setView(QtWidgets.QListView())
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
+
+
+    def wheelEvent(self, event):
+        event.ignore()
 
 
 class FileChooser(QtWidgets.QWidget):
@@ -1745,8 +1750,9 @@ class FileChooser(QtWidgets.QWidget):
         layout.addWidget(self.button)
 
         self.button.setFlat(True)
-        self.button.setIconSize(QtCore.QSize(16, 16))
-        self.button.setMaximumSize(QtCore.QSize(24, 24))
+        icon_size = hou.ui.scaledSize(16)
+        self.button.setIcon(hou.qt.createIcon("BUTTONS_chooser_file", icon_size, icon_size))
+        self.button.setIconSize(QtCore.QSize(icon_size, icon_size))
 
         self.button.clicked.connect(self.chooseFile)
 
@@ -1794,6 +1800,130 @@ class FileChooser(QtWidgets.QWidget):
     def setPath(self, path):
         """Set the path."""
         self.field.setText(path)
+
+
+class AssetSectionChooser(QtWidgets.QWidget):
+
+    def __init__(self, parent=None):
+        super(AssetSectionChooser, self).__init__(parent)
+
+        layout = QtWidgets.QHBoxLayout()
+        self.setLayout(layout)
+
+        layout.setSpacing(0)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        # =====================================================================
+
+        self.field = QtWidgets.QLineEdit()
+        layout.addWidget(self.field)
+
+        # =====================================================================
+
+        self.button = hou.qt.NodeChooserButton()
+        layout.addWidget(self.button)
+
+        self.button.nodeSelected.connect(self.handle_selection)
+
+    def handle_selection(self, node):
+        if node is not None:
+            if node == hou.node("/"):
+                self.field.setText("")
+
+            else:
+                self.field.setText(node.path())
+
+
+class GroupSourceMenu(ComboBox)
+
+    def __init__(self, parent=None):
+        super(GroupSourceMenu, self).__init__(parent)
+
+        source_manager = manager.MANAGER.source_manager
+
+        for
+
+
+
+class SourceSelectComboBox(ComboBox):
+
+    def __init__(self, parent=None):
+        super(SourceSelectComboBox, self).__init__(parent)
+
+        source_manager = manager.MANAGER.source_manager
+
+        self._add_disabled_item("Existing Sources")
+
+        for file_path, file_source in source_manager.file_sources.items():
+            self.addItem(hou.qt.createIcon("DATATYPES_file"), file_path, file_source)
+
+        for section, asset_source in source_manager.asset_section_sources.items():
+            icon = hou.qt.createIcon(section.definition().icon())
+            self.addItem(icon, section.definition().nodeType().nameWithCategory(), asset_source)
+
+        self.addItem(hou.qt.createIcon("DESKTOP_hip"), "Current .hip File")
+        self._current_hip_index = self.count() - 1
+
+        self.setCurrentIndex(self._current_hip_index)
+
+        self.addItem(hou.qt.createIcon("MISC_ui"), "Unsaved in session")
+        self._unsaved_index = self.count() - 1
+
+        self._add_disabled_item("New Sources")
+
+        self.addItem(hou.qt.createIcon("DATATYPES_file"), "File")
+
+        self.addItem(hou.qt.createIcon("MISC_digital_asset"), "Digital Asset Section")
+        self.addItem(QtGui.QIcon(":ht/rsc/icons/aovs/group.png"), "Group Source")
+
+    def _add_disabled_item(self, label):
+        self.addItem(label)
+        idx = self.count()
+        self.model().item(idx - 1).setEnabled(False)
+
+
+class SourceStackedWidget(QtWidgets.QStackedWidget):
+
+    def __init__(self, parent=None):
+        super(SourceStackedWidget, self).__init__(parent)
+
+        self.addWidget(QtWidgets.QWidget())
+        self.addWidget(FileChooser())
+        self.addWidget(AssetSectionChooser())
+
+
+class SourceChooserWidget(QtWidgets.QWidget):
+
+    def __init__(self, parent=None):
+        super(SourceChooserWidget, self).__init__(parent)
+
+        layout = QtWidgets.QVBoxLayout()
+        self.setLayout(layout)
+
+        self.chooser = SourceSelectComboBox()
+        layout.addWidget(self.chooser)
+
+        self.new_source_stack = SourceStackedWidget()
+        layout.addWidget(self.new_source_stack)
+
+        self.chooser.currentIndexChanged.connect(self.chooser_index_changed)
+
+    def chooser_index_changed(self, index):
+        if self.chooser.currentText() == "File":
+            self.new_source_stack.setCurrentIndex(1)
+        elif self.chooser.currentText() == "Digital Asset Section":
+            self.new_source_stack.setCurrentIndex(2)
+        else:
+            self.new_source_stack.setCurrentIndex(0)
+
+
+
+
+
+
+
+
+
 
 
 class FilterWidget(QtWidgets.QWidget):
