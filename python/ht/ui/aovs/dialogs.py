@@ -812,8 +812,8 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(QtWidgets.QLabel("Source"), 2, 0)
 
-#        self.file_widget = widgets.FileChooser()
-#        grid_layout.addWidget(self.file_widget, 2, 1)
+        self.file_widget = widgets.SourceChooserWidget()
+        grid_layout.addWidget(self.file_widget, 2, 1)
 
 
         self.file_widget.field.textChanged.connect(self.validate_filepath)
