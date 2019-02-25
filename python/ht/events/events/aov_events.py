@@ -7,15 +7,12 @@
 # Houdini Toolbox Imports
 from ht.events.group import HoudiniEventGroup
 from ht.events.item import HoudiniEventItem
-from ht.events.types import NodeEvents, SceneEvents
+from ht.events.types import HipFileEvents, NodeEvents
 
 from ht.logger import logger
 
 from ht.sohohooks.aovs.manager import MANAGER
-from ht.sohohooks.aovs.sources import AOVAssetSectionSource, AOVHipSource
-
-# Houdini Imports
-import hou
+from ht.sohohooks.aovs.sources import AOVAssetSectionSource
 
 # =============================================================================
 # CLASSES
@@ -29,8 +26,10 @@ class AOVEvents(HoudiniEventGroup):
 
         self.event_map.update(
             {
-                NodeEvents.OnLoaded: HoudiniEventItem((self.load_embedded_aovs,)),
-                SceneEvents.Load: HoudiniEventItem((self.load_hip_aovs,))
+                NodeEvents.OnInstall: HoudiniEventItem((self.load_embedded_aovs,)),
+                NodeEvents.OnUninstall: HoudiniEventItem((self.unload_embedded_aovs,)),
+                HipFileEvents.AfterLoad: HoudiniEventItem((self.load_hip_aovs,)),
+                HipFileEvents.BeforeClear: HoudiniEventItem((self.unload_hip_aovs,))
             }
         )
 
@@ -42,35 +41,40 @@ class AOVEvents(HoudiniEventGroup):
         """Load any AOVs that are contained in the hip file being opened."""
         node_type = scriptargs["type"]
 
-        definition = node_type.definition()
+        section = _get_aov_section_from_node_type(node_type)
 
-        if definition is not None:
-            sections = definition.sections()
-
-            if AOVAssetSectionSource.SECTION_NAME in sections:
-                logger.info("load asset section aovs")
-
-                section = sections[AOVAssetSectionSource.SECTION_NAME]
-
-                aov_asset = AOVAssetSectionSource(section)
-
-                MANAGER.load_source(aov_asset)
+        if section is not None:
+            logger.info("load asset section aovs: {}/{}".format(node_type.name(), section.name()))
+            MANAGER.load_section_source(section)
 
     def load_hip_aovs(self, scriptargs):
         """Load any AOVs that are contained in the hip file being opened."""
-        root = hou.node("/")
+        MANAGER.init_hip_source()
 
-        hip_source = MANAGER.source_manager.get_hip_source()
+    def unload_embedded_aovs(self, scriptargs):
+        """Unload any AOVs that are contained in the hip file being opened."""
+        node_type = scriptargs["type"]
 
-        if hip_source is None:
-            hip_source = MANAGER.source_manager.init_hip_source()
+        section = _get_aov_section_from_node_type(node_type)
 
-        else:
-            hip_source.clear()
+        if section is not None:
+            logger.info("unload asset section aovs: {}/{}".format(node_type.name(), section.name()))
+            MANAGER.remove_section_source(section)
 
-        if AOVHipSource.USER_DATA_NAME in root.userDataDict():
-            logger.info("load hip aovs")
-            MANAGER.load_source(hip_source)
+    def unload_hip_aovs(self, scriptargs):
+        """Unload any AOVs that are contained in the hip file being opened."""
+        MANAGER.clear_hip_source()
 
-        unsaved_source = MANAGER.source_manager.get_unsaved_source()
-        unsaved_source.clear()
+
+def _get_aov_section_from_node_type(node_type):
+    definition = node_type.definition()
+
+    section = None
+
+    if definition is not None:
+        sections = definition.sections()
+
+        if AOVAssetSectionSource.SECTION_NAME in sections:
+            section = sections[AOVAssetSectionSource.SECTION_NAME]
+
+    return section

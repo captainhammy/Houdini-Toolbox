@@ -29,9 +29,14 @@ class AOVSourceManager(object):
     def __init__(self):
         self._file_sources = {}
         self._group_sources = {}
-        self._otl_sources = {}
-        self._hip_source = None
+        self._asset_section_sources = {}
+        self._hip_source = AOVHipSource()
         self._unsaved_source = AOVUnsavedSource()
+
+
+    @property
+    def asset_section_sources(self):
+        return self._asset_section_sources
 
     def get_file_source(self, file_path):
         """Get the source representing a file on disk."""
@@ -60,27 +65,50 @@ class AOVSourceManager(object):
     def get_asset_section_source(self, section):
         """Get the source representing a digital asset section."""
         # Check to see if we already have it.
-        if section in self._otl_sources:
-            return self._otl_sources[section]
+        if section in self.asset_section_sources:
+            return self.asset_section_sources[section]
 
         # Create and store a reference to the source
         source = AOVAssetSectionSource(section)
-        self._otl_sources[section] = source
+        self.asset_section_sources[section] = source
 
         return source
 
-    def get_hip_source(self):
+    @property
+    def file_sources(self):
+        return self._file_sources
+
+    @property
+    def group_sources(self):
+        return self._group_sources
+
+    @property
+    def hip_source(self):
         """Get the source representing the hip file."""
         return self._hip_source
 
-    def get_unsaved_source(self):
+    @property
+    def unsaved_source(self):
         """Get the source representing unsaved items."""
         return self._unsaved_source
 
-    def init_hip_source(self):
-        self._hip_source = AOVHipSource()
 
-        return self._hip_source
+
+    def remove_source(self, source):
+        if isinstance(source, AOVHipSource):
+            pass
+
+        elif isinstance(source, AOVUnsavedSource):
+            pass
+
+        elif isinstance(source, AOVAssetSectionSource):
+            del(self.asset_section_sources[source.section])
+
+        elif isinstance(source, AOVGroupSource):
+            del(self._group_sources[source.group])
+
+        elif isinstance(source, AOVFileSource):
+            del(self._file_sources[source.path])
 
 
 class BaseAOVSource(object):
@@ -498,6 +526,9 @@ class AOVHipSource(BaseAOVSource):
         """The root Houdini node ('/') where hip file definitions are stored."""
         return hou.node("/")
 
+    def reload(self):
+        self._init_from_source()
+
     def write(self, save_hip=True):
         """Write data to the hip file."""
         data = self._get_data()
@@ -544,6 +575,9 @@ class AOVUnsavedSource(BaseAOVSource):
     def _load_data(self):
         """This is a noop as there is never any data to load."""
         return {}
+
+    def clear(self):
+        self._init_from_source()
 
     def write(self):
         """This is a noop as there is never any place to write to."""
