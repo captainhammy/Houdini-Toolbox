@@ -41,6 +41,7 @@ class _BasePasteHelperWidget(QtWidgets.QWidget):
 
 
 class HomeToolDirItemsCopyHelperWidget(_BaseCopyHelperWidget):
+    """Widget for copying items to the ~/tooldev folder."""
 
     valid_source_signal = QtCore.Signal(bool)
 
@@ -69,6 +70,7 @@ class HomeToolDirItemsCopyHelperWidget(_BaseCopyHelperWidget):
         self.table.valid_sources_signal.connect(self.valid_source_signal.emit)
 
     def _mode_changed(self, index):
+        """Handle the NewOrExisting widget being changed."""
         if index == 0:
             self.table.setEnabled(False)
             self.table.clearSelection()
@@ -82,6 +84,7 @@ class HomeToolDirItemsCopyHelperWidget(_BaseCopyHelperWidget):
             self.valid_source_signal.emit(False)
 
     def get_source(self):
+        """Get the selected source."""
         mode = self.new_or_existing.currentIndex()
 
         if mode == 0:
@@ -100,6 +103,7 @@ class HomeToolDirItemsCopyHelperWidget(_BaseCopyHelperWidget):
 
 
 class HomeToolDirItemsPasteHelperWidget(_BasePasteHelperWidget):
+    """Widget for pasting items from the ~/tooldev folder."""
 
     perform_operation_signal = QtCore.Signal()
     valid_sources_signal = QtCore.Signal(bool)
@@ -124,5 +128,6 @@ class HomeToolDirItemsPasteHelperWidget(_BasePasteHelperWidget):
         self.table.valid_sources_signal.connect(self.valid_sources_signal.emit)
 
     def get_sources(self):
+        """Get a list of selected sources to operate on."""
         return self.table.get_selected_sources()
 

@@ -252,6 +252,7 @@ class CopyItemNameWidget(QtWidgets.QWidget):
 
 
 class NewOrExistingWidget(QtWidgets.QComboBox):
+    """Widget to choose a new or existing source."""
 
     def __init__(self, parent=None):
         super(NewOrExistingWidget, self).__init__(parent)
