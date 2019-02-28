@@ -225,7 +225,7 @@ class HoudiniWrapper(object):
     def _download_and_install(self, create_symlink=False):
         """Download and automatically install a build."""
         ht.houdini.package.HoudiniBuildManager.download_and_install(
-            self.arguments.dlinstall,
+            self.arguments.dl_install,
             create_symlink
         )
 
