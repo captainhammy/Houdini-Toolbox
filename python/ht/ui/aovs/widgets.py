@@ -1818,14 +1818,15 @@ class AssetSectionChooser(QtWidgets.QWidget):
                 self.field.setText(node.path())
 
 
-class GroupSourceMenu(ComboBox)
+class GroupSourceMenu(ComboBox):
 
     def __init__(self, parent=None):
         super(GroupSourceMenu, self).__init__(parent)
 
         source_manager = manager.MANAGER.source_manager
 
-        for
+        for group_source in source_manager.group_sources.values():
+            pass
 
 
 
