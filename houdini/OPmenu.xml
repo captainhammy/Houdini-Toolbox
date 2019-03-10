@@ -6,18 +6,20 @@
 	    <scriptItem id="ht.absolute_reference_copy">
 		<label>Create Reference Copy (absolute)</label>
 		<insertAfter>opmenu.refcopy</insertAfter>
-		<scriptCode><![CDATA[node = kwargs['node']
+		<scriptCode><![CDATA[import ht.ui.menus.opmenu
 
-node.parent().copyItems([node], channel_reference_originals=True, relative_references=False)
+ht.ui.menus.opmenu.create_absolute_reference_copy(kwargs)
+
 ]]></scriptCode>
 	    </scriptItem>
 	</subMenu>
 	<subMenu id="opmenu.save_menu">
 	    <scriptItem id="ht.save_item_to_file">
 		<label>To File...</label>
-		<scriptCode><![CDATA[from ht.ui.paste import copy_item
+		<scriptCode><![CDATA[import ht.ui.menus.opmenu
 
-copy_item(kwargs['node'])
+ht.ui.menus.opmenu.save_item_to_file(kwargs)
+
 ]]></scriptCode>
 	    </scriptItem>
 	</subMenu>

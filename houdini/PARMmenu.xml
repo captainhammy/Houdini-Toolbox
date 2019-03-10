@@ -5,83 +5,10 @@
 	<scriptItem id="promote_parm_to_node">
             <label>Promote Parameter to Node</label>
             <insertAfter>export_parm_type_props</insertAfter>
-            <scriptCode><![CDATA[# Get the parms to act on.
-parms = kwargs["parms"]
+            <scriptCode><![CDATA[import ht.ui.menus.parmmenu
 
-# The number of parms that were selected. 
-num_parms = len(parms)
+ht.ui.menus.parmmenu.promote_parameter_to_node(kwargs)
 
-parm_tuple = parms[0].tuple()
-
-# Find the node to start from.
-node = parm_tuple.node()
-
-# Prompt for a target node.  Start at the parent (the most logical choice?)
-result = hou.ui.selectNode(initial_node=node.parent())
-
-# Try to find ths selected node.
-target_node = hou.node(result)
-
-if target_node is not None:
-    if target_node == node:
-	raise hou.OperationFailed("Cannot promote to the source node.")
-
-    # Should the target parm will be set to the source value?
-    set_value = True
-
-    # The target node already has a parm tuple with the desired name so we
-    # should prompt to use it.
-    if target_node.parmTuple(parm_tuple.name()) is not None:
-	choice = hou.ui.displayMessage(
-	    "Parameter already exists on {}.  Link to existing parameter?".format(
-		target_node.path(),
-	    ),
-	    buttons=("Yes and keep current value", "Yes and update value", "Cancel"),
-	    severity=hou.severityType.ImportantMessage,
-	)
-
-	# Use parm but keep value, so don't set.
-	if choice == 0:
-	    set_value = False
-
-	# Use parm and update value.
-	elif choice == 1:
-	    set_value = True
-
-	# Cancelling so clear out the parm list so we don't try to set anything.
-	else:
-	   parms = ()
-
-    else:
-	# Get the target node's parm interface.
-	target_ptg = target_node.parmTemplateGroup()
-
-	# The parameter definition for the parm we are trying to link.
-	parm_template = parm_tuple.parmTemplate()
-
-	# If we are trying to link a single parm inside a tuple then modify
-	# the parm definition to represent that single parm.
-	if num_parms != len(parm_tuple):
-	    parm_template.setNumComponents(1)
-	    parm_template.setName(parms[0].name())
-
-	# Add the parameter definition to the parm list.
-	target_ptg.addParmTemplate(parm_template)
-
-	# Update the interface with the new definition.
-	target_node.setParmTemplateGroup(target_ptg)
-
-    # Process each parm to set.
-    for parm in parms:
-	# Get the target parm.
-	target_parm = target_node.parm(parm.name())
-
-	# Set the target parm to the current value if required.
-	if set_value:
-	   target_parm.set(parm.eval())
-
-	# Create the channel reference.
-	parm.set(target_parm)
 ]]>
             </scriptCode>
         </scriptItem>
@@ -90,63 +17,15 @@ if target_node is not None:
             <insertAfter>motion_effects_menu</insertAfter>
             <label>Convert to Absolute Path</label>
             <context>
-                <expression><![CDATA[parms = kwargs["parms"]
+                <expression><![CDATA[import ht.ui.menus.parmmenu
 
-for parm in parms:
-    parm_template = parm.parmTemplate()
-
-    # Check if the parameter is a string parameter.
-    if isinstance(parm_template, hou.StringParmTemplate):
-        # Check if the string parameter is a node reference.
-        if parm_template.stringType() == hou.stringParmType.NodeReference:
-            # Need to test values to decide whether to show up or not.
-            path = parm.eval()
-
-            # Ignore empty strings.
-            if not path:
-                continue
-
-            # Ignore paths which already seem to be relative.
-            if not path.startswith(".."):
-                continue
-
-            # If the path is the same as the raw path then we can say that we
-            # can show the menu item.  If the path is not the same as the
-            # unexpanded we won't say yes because it would be some sort of an
-            # expression which we don't want to mess with.
-            if path == parm.unexpandedString():
-                return True
-
-return False
+return ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context(kwargs)
 
 ]]></expression>
             </context>
-            <scriptCode><![CDATA[parms = kwargs["parms"]
+            <scriptCode><![CDATA[import ht.ui.menus.parmmenu
 
-for parm in parms:
-    parm_template = parm.parmTemplate()
-
-    # Check if the parameter is a string parameter.
-    if isinstance(parm_template, hou.StringParmTemplate):
-        # Check if the string parameter is a node reference.
-        if parm_template.stringType() == hou.stringParmType.NodeReference:
-            path = parm.eval()
-
-            # Ignore empty strings.
-            if not path:
-                continue
-
-            # Ignore paths which already seem to be relative.
-            if not path.startswith(".."):
-                continue
-
-            # If the path is the same as the raw path then try to convert the
-            # path from relative to absolute.
-            if path == parm.unexpandedString():
-                target_node = parm.node().node(path)
-
-                if target_node is not None:
-                    parm.set(target_node.path())
+ht.ui.menus.parmmenu.convert_relative_to_absolute_path(kwargs)
 
 ]]>
             </scriptCode>
@@ -156,134 +35,16 @@ for parm in parms:
             <insertAfter>motion_effects_menu</insertAfter>
             <label>Convert to Relative Path</label>
             <context>
-                <expression><![CDATA[parms = kwargs["parms"]
+                <expression><![CDATA[import ht.ui.menus.parmmenu
 
-for parm in parms:
-    parm_template = parm.parmTemplate()
-
-    # Check if the parameter is a string parameter.
-    if isinstance(parm_template, hou.StringParmTemplate):
-        # Check if the string parameter is a node reference.
-        if parm_template.stringType() == hou.stringParmType.NodeReference:
-            # Need to test values to decide whether to show up or not.
-            path = parm.eval()
-
-            # Ignore empty strings.
-            if not path:
-                continue
-
-            # Ignore paths which already seem to be absolute.
-            if not path.startswith("/"):
-                continue
-
-            # If the path is the same as the raw path then we can say that we
-            # can show the menu item.  If the path is not the same as the
-            # unexpanded we won't say yes because it would be some sort of an
-            # expression which we don't want to mess with.
-            if path == parm.unexpandedString():
-                return True
-
-return False
+return ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context(kwargs)
 
 ]]></expression>
             </context>
-            <scriptCode><![CDATA[parms = kwargs["parms"]
+            <scriptCode><![CDATA[import ht.ui.menus.parmmenu
 
-for parm in parms:
-    parm_template = parm.parmTemplate()
+ht.ui.menus.parmmenu.convert_absolute_to_relative_path(kwargs)
 
-    # Check if the parameter is a string parameter.
-    if isinstance(parm_template, hou.StringParmTemplate):
-        # Check if the string parameter is a node reference.
-        if parm_template.stringType() == hou.stringParmType.NodeReference:
-            path = parm.eval()
-
-            # Ignore empty strings.
-            if not path:
-                continue
-
-            # Ignore paths which already seem to be absolute.
-            if not path.startswith("/"):
-                continue
-
-            # If the path is the same as the raw path then try to convert the
-            # path from absolute to relative.
-            if path == parm.unexpandedString():
-                target_node = parm.node().node(path)
-
-                if target_node is not None:
-                    parm.set(parm.node().relativePathTo(target_node))
-
-]]>
-            </scriptCode>
-        </scriptItem>
-
-        <scriptItem id="revert_ramp">
-            <insertBefore>revert_defs</insertBefore>
-            <label>Revert Ramp to Defaults</label>
-            <context>
-                <expression><![CDATA[parms = kwargs["parms"]
-
-# If there is a ramp parameter in the selected parms then we want to display
-# the menu item.
-for parm in parms:
-    if isinstance(parm.parmTemplate(), hou.RampParmTemplate):
-        return True
-
-return False
-]]></expression>
-            </context>
-            <scriptCode><![CDATA[parms = kwargs["parms"]
-
-for parm in parms:
-    parm_template = parm.parmTemplate()
-
-    # Skip any non-ramps that might have been selected.
-    if not isinstance(parm_template, hou.RampParmTemplate):
-        continue
-
-    node = parm.node()
-    name = parm.name()
-
-    # Set the multiparm to the default number of points.
-    parm.set(parm_template.defaultValue())
-
-    # Default point data is stored as a parameter tag.
-    tags = parm_template.tags()
-
-    # Process float ramps.
-    if "rampfloatdefault" in tags:
-        default_string = tags["rampfloatdefault"]
-
-        data = default_string.replace("(", "").replace(")", "").split()
-
-        # For each ramp control point there exist 6 data points for a float ramp:
-        # pos parm name + value, color parm name + value, interp parm name + value
-        for i in range(0, len(data), 6):
-            point_data = data[i:i+6]
-            
-            for y in range(0, len(point_data), 2):
-                node.parm("{}{}".format(name, point_data[y])).set(point_data[y+1])
-
-    # Process color ramps.
-    elif "rampcolordefault" in tags:
-        default_string = tags["rampcolordefault"]
-
-        data = default_string.replace("(", "").replace(")", "").split()
-        
-        # For each ramp control point there exist 8 data points for a color ramp:
-        # pos parm name + value, color parm name + RGB values, interp parm name + value
-        for i in range(0, len(data), 8):
-            point_data = data[i:i+8]
-            
-            # Set the point position.
-            node.parm("{}{}".format(name, point_data[0])).set(point_data[1])
-
-            # Set the point color.
-            node.parmTuple("{}{}".format(name, point_data[2])).set(point_data[3:6])
-
-            # Set the point interpolation.
-            node.parm("{}{}".format(name, point_data[6])).set(point_data[7])
 ]]>
             </scriptCode>
         </scriptItem>

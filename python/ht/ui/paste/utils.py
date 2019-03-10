@@ -9,7 +9,6 @@ import datetime
 
 # Houdini Imports
 import hou
-import nodegraphutils
 
 # ==============================================================================
 # FUNCTIONS
@@ -91,6 +90,9 @@ def paste_items_from_sources(sources, editor, pos=None, mousepos=None):
     :return:
 
     """
+    # Tuck away to avoid possible UI related import errors.
+    import nodegraphutils
+
     parent = editor.pwd()
 
     # Look for any existing selected items.

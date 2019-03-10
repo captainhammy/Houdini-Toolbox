@@ -30,6 +30,8 @@ source =
     ht.sohohooks.aovs.aov
     ht.sohohooks.aovs.manager
     ht.sohohooks.manager
+    ht.ui.menus.opmenu
+    ht.ui.menus.parmmenu
 
 omit =
         *tests*
