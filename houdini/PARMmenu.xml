@@ -2,15 +2,14 @@
 
 <menuDocument>
     <menu>
-	<scriptItem id="promote_parm_to_node">
+	    <scriptItem id="promote_parm_to_node">
             <label>Promote Parameter to Node</label>
             <insertAfter>export_parm_type_props</insertAfter>
             <scriptCode><![CDATA[import ht.ui.menus.parmmenu
 
 ht.ui.menus.parmmenu.promote_parameter_to_node(kwargs)
 
-]]>
-            </scriptCode>
+]]></scriptCode>
         </scriptItem>
 
         <scriptItem id="relative_to_absolute_path">
@@ -27,8 +26,7 @@ return ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context(kwargs)
 
 ht.ui.menus.parmmenu.convert_relative_to_absolute_path(kwargs)
 
-]]>
-            </scriptCode>
+]]></scriptCode>
         </scriptItem>
 
         <scriptItem id="absolute_to_relative_path">
@@ -45,9 +43,7 @@ return ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context(kwargs)
 
 ht.ui.menus.parmmenu.convert_absolute_to_relative_path(kwargs)
 
-]]>
-            </scriptCode>
+]]></scriptCode>
         </scriptItem>
-
     </menu>
 </menuDocument>
