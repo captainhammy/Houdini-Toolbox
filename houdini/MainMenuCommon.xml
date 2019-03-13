@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Please see ExampleMenu.xml for examples that customise the main menu -->
+<!-- Please see menu.xsd for the menu validation schema. -->
+<mainMenu>
+    <menuBar>
+
+        <subMenu id="ht.menu">
+            <label>Houdini Toolbox</label>
+
+            <scriptItem id="ht.menurefresh">
+                <label>Reload Menus</label>
+                <scriptCode><![CDATA[hou.hscript("menurefresh")]]></scriptCode>
+            </scriptItem>
+        </subMenu>
+
+    </menuBar>
+</mainMenu>
