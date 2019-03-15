@@ -9,22 +9,9 @@
 
 paste_items(kwargs)
 ]]></script>
-    <toolMenuContext name="viewer">
-      <contextNetType>OBJ</contextNetType>
-      <contextNetType>SOP</contextNetType>
-      <contextNetType>POP</contextNetType>
-      <contextNetType>DOP</contextNetType>
-    </toolMenuContext>
-    <toolMenuContext name="pop_viewer">
-      <contextNetType>POP</contextNetType>
-    </toolMenuContext>
-    <toolMenuContext name="cop_viewer">
-      <contextNetType>COP2</contextNetType>
-    </toolMenuContext>
     <toolMenuContext name="network">
       <contextNetType>OBJ</contextNetType>
       <contextNetType>SOP</contextNetType>
-      <contextNetType>POP</contextNetType>
       <contextNetType>CHOP</contextNetType>
       <contextNetType>ROP</contextNetType>
       <contextNetType>SHOP</contextNetType>
