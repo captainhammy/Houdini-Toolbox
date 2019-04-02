@@ -41,7 +41,7 @@ class TestInlineCpp(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        hou.hipFile.load(os.path.join(THIS_DIR, "test_inline.hipnc"))
+        hou.hipFile.load(os.path.join(THIS_DIR, "test_inline.hipnc"), ignore_load_warnings=True)
 
     @classmethod
     def tearDownClass(cls):
@@ -1613,6 +1613,30 @@ class TestInlineCpp(unittest.TestCase):
         values = ht.inline.api.get_multiparm_instance_values(parm_tuple)
 
         self.assertEqual(values, target)
+
+    def test_eval_multiparm_instance(self):
+        node = OBJ.node("test_get_multiparm_instance_values/null1")
+
+        # Ints
+        self.assertEqual(ht.inline.api.eval_multiparm_instance(node, "foo#", 0), 1)
+        self.assertEqual(ht.inline.api.eval_multiparm_instance(node, "foo#", 1), 5)
+
+        with self.assertRaises(IndexError):
+            ht.inline.api.eval_multiparm_instance(node, "foo#", 2)
+
+        # Floats
+        self.assertEqual(ht.inline.api.eval_multiparm_instance(node, "bar#", 0), (2.0, 3.0, 4.0))
+        self.assertEqual(ht.inline.api.eval_multiparm_instance(node, "bar#", 1), (6.0, 7.0, 8.0))
+
+        with self.assertRaises(IndexError):
+            ht.inline.api.eval_multiparm_instance(node, "bar#", 2)
+
+        # Strings
+        self.assertEqual(ht.inline.api.eval_multiparm_instance(node, "hello#", 0), "foo")
+        self.assertEqual(ht.inline.api.eval_multiparm_instance(node, "hello#", 1), "bar")
+
+        with self.assertRaises(IndexError):
+            ht.inline.api.eval_multiparm_instance(node, "hello#", 2)
 
     # =========================================================================
     # NODES AND NODE TYPES

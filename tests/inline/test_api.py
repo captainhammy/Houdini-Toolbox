@@ -14,8 +14,7 @@ have the Houdini environments sourced.
 
 # Python Imports
 import ctypes
-from mock import MagicMock, PropertyMock, call, patch
-import os
+from mock import MagicMock, call, patch
 import unittest
 
 # Houdini Toolbox Imports
@@ -4015,28 +4014,27 @@ class Test_get_multiparm_start_offset(unittest.TestCase):
         with self.assertRaises(ValueError):
             api.get_multiparm_start_offset(mock_parm)
 
-    @patch("ht.inline.api._cpp_methods.getMultiParmStartOffset")
     @patch("ht.inline.api.is_parm_multiparm", return_value=True)
-    def test_parm(self, mock_is_multiparm, mock_get):
-        mock_parm_tuple = MagicMock(spec=hou.ParmTuple)
+    def test_default(self, mock_is_multiparm):
+        mock_template = MagicMock(spec=hou.ParmTemplate)
+        mock_template.tags.return_value = {}
 
         mock_parm = MagicMock(spec=hou.Parm)
-        mock_parm.tuple.return_value = mock_parm_tuple
+        mock_parm.parmTemplate.return_value = mock_template
 
         result = api.get_multiparm_start_offset(mock_parm)
-        self.assertEqual(result, mock_get.return_value)
+        self.assertEqual(result, 1)
 
-        mock_get.assert_called_with(mock_parm_tuple.node.return_value, mock_parm_tuple.name.return_value)
-
-    @patch("ht.inline.api._cpp_methods.getMultiParmStartOffset")
     @patch("ht.inline.api.is_parm_multiparm", return_value=True)
-    def test_parm_tuple(self, mock_is_multiparm, mock_get):
-        mock_parm_tuple = MagicMock(spec=hou.ParmTuple)
+    def test_specific(self, mock_is_multiparm):
+        mock_template = MagicMock(spec=hou.ParmTemplate)
+        mock_template.tags.return_value = {"multistartoffset": "3"}
 
-        result = api.get_multiparm_start_offset(mock_parm_tuple)
-        self.assertEqual(result, mock_get.return_value)
+        mock_parm = MagicMock(spec=hou.Parm)
+        mock_parm.parmTemplate.return_value = mock_template
 
-        mock_get.assert_called_with(mock_parm_tuple.node.return_value, mock_parm_tuple.name.return_value)
+        result = api.get_multiparm_start_offset(mock_parm)
+        self.assertEqual(result, 3)
 
 
 class Test_get_multiparm_instance_index(unittest.TestCase):
@@ -4241,6 +4239,287 @@ class Test_get_multiparm_instance_values(unittest.TestCase):
         self.assertEqual(result, expected)
 
         mock_get.assert_called_with(mock_parm_tuple)
+
+
+class Test_eval_multiparm_instance(unittest.TestCase):
+    """Test ht.inline.api.eval_multiparm_instance."""
+
+    def test_invalid_number_signs(self):
+        mock_node = MagicMock(spec=hou.Node)
+
+        mock_name = MagicMock(spec=str)
+        mock_name.count.return_value = 2
+
+        mock_index = MagicMock(spec=int)
+
+        with self.assertRaises(ValueError):
+            api.eval_multiparm_instance(mock_node, mock_name, mock_index)
+
+        mock_name.count.assert_called_with('#')
+
+    def test_invalid_parm_name(self):
+        mock_ptg = MagicMock(spec=hou.ParmTemplateGroup)
+        mock_ptg.find.return_value = None
+
+        mock_node = MagicMock(spec=hou.Node)
+        mock_node.parmTemplateGroup.return_value = mock_ptg
+
+        mock_name = MagicMock(spec=str)
+        mock_name.count.return_value = 1
+
+        mock_index = MagicMock(spec=int)
+
+        with self.assertRaises(ValueError):
+            api.eval_multiparm_instance(mock_node, mock_name, mock_index)
+
+        mock_name.count.assert_called_with('#')
+
+    @patch("ht.inline.api.is_parm_multiparm", return_value=False)
+    def test_not_multiparm(self, mock_is_multiparm):
+        mock_parm = MagicMock(spec=hou.Parm)
+
+        mock_template = MagicMock(spec=hou.ParmTemplate)
+
+        mock_folder_template = MagicMock(spec=hou.FolderParmTemplate)
+
+        mock_ptg = MagicMock(spec=hou.ParmTemplateGroup)
+        mock_ptg.containingFolder.return_value = mock_folder_template
+        mock_ptg.find.return_value = mock_template
+
+        mock_node = MagicMock(spec=hou.Node)
+        mock_node.parmTemplateGroup.return_value = mock_ptg
+        mock_node.parm.return_value = mock_parm
+
+        mock_name = MagicMock(spec=str)
+        mock_name.count.return_value = 1
+
+        mock_index = MagicMock(spec=int)
+
+        with self.assertRaises(ValueError):
+            api.eval_multiparm_instance(mock_node, mock_name, mock_index)
+
+        mock_name.count.assert_called_with('#')
+
+        mock_ptg.containingFolder.assert_called_with(mock_name)
+        mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
+
+        mock_is_multiparm.assert_called_with(mock_parm)
+
+    @patch("ht.inline.api.is_parm_multiparm", return_value=True)
+    def test_invalid_index(self, mock_is_multiparm):
+        mock_parm = MagicMock(spec=hou.Parm)
+        mock_parm.eval.return_value = MagicMock(spec=int)
+
+        mock_template = MagicMock(spec=hou.ParmTemplate)
+
+        mock_folder_template = MagicMock(spec=hou.FolderParmTemplate)
+
+        mock_ptg = MagicMock(spec=hou.ParmTemplateGroup)
+        mock_ptg.containingFolder.return_value = mock_folder_template
+        mock_ptg.find.return_value = mock_template
+
+        mock_node = MagicMock(spec=hou.Node)
+        mock_node.parmTemplateGroup.return_value = mock_ptg
+        mock_node.parm.return_value = mock_parm
+
+        mock_name = MagicMock(spec=str)
+        mock_name.count.return_value = 1
+
+        mock_index = MagicMock()
+        mock_index.__ge__.return_value = True
+
+        with self.assertRaises(IndexError):
+            api.eval_multiparm_instance(mock_node, mock_name, mock_index)
+
+        mock_name.count.assert_called_with('#')
+
+        mock_ptg.containingFolder.assert_called_with(mock_name)
+        mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
+
+        mock_is_multiparm.assert_called_with(mock_parm)
+
+        mock_index.__ge__.assert_called_with(mock_parm.eval.return_value)
+
+    @patch("ht.inline.api._cpp_methods.eval_multiparm_instance_float")
+    @patch("ht.inline.api.get_multiparm_start_offset")
+    @patch("ht.inline.api.is_parm_multiparm", return_value=True)
+    def test_float_single_component(self, mock_is_multiparm, mock_get, mock_eval):
+        mock_parm = MagicMock(spec=hou.Parm)
+        mock_parm.eval.return_value = MagicMock(spec=int)
+
+        mock_template = MagicMock(spec=hou.ParmTemplate)
+        mock_template.dataType.return_value = hou.parmData.Float
+        mock_template.numComponents.return_value = 1
+
+        mock_folder_template = MagicMock(spec=hou.FolderParmTemplate)
+
+        mock_ptg = MagicMock(spec=hou.ParmTemplateGroup)
+        mock_ptg.containingFolder.return_value = mock_folder_template
+        mock_ptg.find.return_value = mock_template
+
+        mock_node = MagicMock(spec=hou.Node)
+        mock_node.parmTemplateGroup.return_value = mock_ptg
+        mock_node.parm.return_value = mock_parm
+
+        mock_name = MagicMock(spec=str)
+        mock_name.count.return_value = 1
+
+        mock_index = MagicMock()
+        mock_index.__ge__.return_value = False
+
+        result = api.eval_multiparm_instance(mock_node, mock_name, mock_index)
+        self.assertEqual(result, mock_eval.return_value)
+
+        mock_name.count.assert_called_with('#')
+
+        mock_ptg.containingFolder.assert_called_with(mock_name)
+        mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
+
+        mock_is_multiparm.assert_called_with(mock_parm)
+
+        mock_index.__ge__.assert_called_with(mock_parm.eval.return_value)
+
+        mock_get.assert_called_with(mock_parm)
+
+        mock_eval.assert_called_with(mock_node, mock_name, 0, mock_index, mock_get.return_value)
+
+    @patch("ht.inline.api._cpp_methods.eval_multiparm_instance_int")
+    @patch("ht.inline.api.get_multiparm_start_offset")
+    @patch("ht.inline.api.is_parm_multiparm", return_value=True)
+    def test_int_multiple_components(self, mock_is_multiparm, mock_get, mock_eval):
+        mock_parm = MagicMock(spec=hou.Parm)
+        mock_parm.eval.return_value = MagicMock(spec=int)
+
+        mock_template = MagicMock(spec=hou.ParmTemplate)
+        mock_template.dataType.return_value = hou.parmData.Int
+        mock_template.numComponents.return_value = 2
+
+        mock_folder_template = MagicMock(spec=hou.FolderParmTemplate)
+
+        mock_ptg = MagicMock(spec=hou.ParmTemplateGroup)
+        mock_ptg.containingFolder.return_value = mock_folder_template
+        mock_ptg.find.return_value = mock_template
+
+        mock_node = MagicMock(spec=hou.Node)
+        mock_node.parmTemplateGroup.return_value = mock_ptg
+        mock_node.parm.return_value = mock_parm
+
+        mock_name = MagicMock(spec=str)
+        mock_name.count.return_value = 1
+
+        mock_index = MagicMock()
+        mock_index.__ge__.return_value = False
+
+        result = api.eval_multiparm_instance(mock_node, mock_name, mock_index)
+        self.assertEqual(result, (mock_eval.return_value, mock_eval.return_value))
+
+        mock_name.count.assert_called_with('#')
+
+        mock_ptg.containingFolder.assert_called_with(mock_name)
+        mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
+
+        mock_is_multiparm.assert_called_with(mock_parm)
+
+        mock_index.__ge__.assert_called_with(mock_parm.eval.return_value)
+
+        mock_get.assert_called_with(mock_parm)
+
+        mock_eval.assert_has_calls(
+            [
+                call(mock_node, mock_name, 0, mock_index, mock_get.return_value),
+                call(mock_node, mock_name, 1, mock_index, mock_get.return_value),
+            ]
+        )
+
+    @patch("ht.inline.api._cpp_methods.eval_multiparm_instance_string")
+    @patch("ht.inline.api.get_multiparm_start_offset")
+    @patch("ht.inline.api.is_parm_multiparm", return_value=True)
+    def test_string_multiple_components(self, mock_is_multiparm, mock_get, mock_eval):
+        mock_parm = MagicMock(spec=hou.Parm)
+        mock_parm.eval.return_value = MagicMock(spec=int)
+
+        mock_template = MagicMock(spec=hou.ParmTemplate)
+        mock_template.dataType.return_value = hou.parmData.String
+        mock_template.numComponents.return_value = 3
+
+        mock_folder_template = MagicMock(spec=hou.FolderParmTemplate)
+
+        mock_ptg = MagicMock(spec=hou.ParmTemplateGroup)
+        mock_ptg.containingFolder.return_value = mock_folder_template
+        mock_ptg.find.return_value = mock_template
+
+        mock_node = MagicMock(spec=hou.Node)
+        mock_node.parmTemplateGroup.return_value = mock_ptg
+        mock_node.parm.return_value = mock_parm
+
+        mock_name = MagicMock(spec=str)
+        mock_name.count.return_value = 1
+
+        mock_index = MagicMock()
+        mock_index.__ge__.return_value = False
+
+        result = api.eval_multiparm_instance(mock_node, mock_name, mock_index)
+        self.assertEqual(result, (mock_eval.return_value, mock_eval.return_value, mock_eval.return_value))
+
+        mock_name.count.assert_called_with('#')
+
+        mock_ptg.containingFolder.assert_called_with(mock_name)
+        mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
+
+        mock_is_multiparm.assert_called_with(mock_parm)
+
+        mock_index.__ge__.assert_called_with(mock_parm.eval.return_value)
+
+        mock_get.assert_called_with(mock_parm)
+
+        mock_eval.assert_has_calls(
+            [
+                call(mock_node, mock_name, 0, mock_index, mock_get.return_value),
+                call(mock_node, mock_name, 1, mock_index, mock_get.return_value),
+                call(mock_node, mock_name, 2, mock_index, mock_get.return_value)
+            ]
+        )
+
+    @patch("ht.inline.api._cpp_methods.eval_multiparm_instance_string")
+    @patch("ht.inline.api.get_multiparm_start_offset")
+    @patch("ht.inline.api.is_parm_multiparm", return_value=True)
+    def test_invalid_type(self, mock_is_multiparm, mock_get, mock_eval):
+        mock_parm = MagicMock(spec=hou.Parm)
+        mock_parm.eval.return_value = MagicMock(spec=int)
+
+        mock_template = MagicMock(spec=hou.ParmTemplate)
+        mock_template.dataType.return_value = hou.parmData.Data
+        mock_template.numComponents.return_value = 3
+
+        mock_folder_template = MagicMock(spec=hou.FolderParmTemplate)
+
+        mock_ptg = MagicMock(spec=hou.ParmTemplateGroup)
+        mock_ptg.containingFolder.return_value = mock_folder_template
+        mock_ptg.find.return_value = mock_template
+
+        mock_node = MagicMock(spec=hou.Node)
+        mock_node.parmTemplateGroup.return_value = mock_ptg
+        mock_node.parm.return_value = mock_parm
+
+        mock_name = MagicMock(spec=str)
+        mock_name.count.return_value = 1
+
+        mock_index = MagicMock()
+        mock_index.__ge__.return_value = False
+
+        with self.assertRaises(TypeError):
+            api.eval_multiparm_instance(mock_node, mock_name, mock_index)
+
+        mock_name.count.assert_called_with('#')
+
+        mock_ptg.containingFolder.assert_called_with(mock_name)
+        mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
+
+        mock_is_multiparm.assert_called_with(mock_parm)
+
+        mock_index.__ge__.assert_called_with(mock_parm.eval.return_value)
+
+        mock_get.assert_called_with(mock_parm)
 
 
 class Test_disconnect_all_inputs(unittest.TestCase):
@@ -4893,4 +5172,3 @@ class Test_is_dummy_definition(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

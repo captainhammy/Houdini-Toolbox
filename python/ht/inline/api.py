@@ -2663,10 +2663,9 @@ def get_multiparm_start_offset(parm):
     if not is_parm_multiparm(parm):
         raise ValueError("Parameter is not a multiparm.")
 
-    if isinstance(parm, hou.Parm):
-        parm = parm.tuple()
+    parm_template = parm.parmTemplate()
 
-    return _cpp_methods.getMultiParmStartOffset(parm.node(), parm.name())
+    return int(parm_template.tags().get("multistartoffset", 1))
 
 
 def get_multiparm_instance_index(parm):
@@ -2776,6 +2775,88 @@ def get_multiparm_instance_values(parm):
         all_values.append(tuple(values))
 
     return tuple(all_values)
+
+
+def eval_multiparm_instance(node, name, index):
+    """Evaluate a multiparm parameter by index.
+
+    The name should include the # value which will be replaced by the index.
+
+    The index should be the multiparm index, not including any start offset.
+
+    This function raises an IndexError if the index exceeds the number of active
+    multiparm instances.
+
+    Supports float, integer and string parameters which can also be tuples.
+
+    You cannot try to evaluate a single component of a tuple parameter, evaluate
+    the entire tuple instead and get which values you need.
+
+    # Float
+    >>> eval_multiparm_instance(node, "float#", 1)
+    0.53
+    # Float 3
+    >>> eval_multiparm_instance(node, "vec#", 1)
+    (0.53, 1.0, 2.5)
+
+    :param node: The node to evaluate the parameter on.
+    :type node: hou.Node
+    :param name: The base parameter name.
+    :type name: str
+    :param index: The multiparm index.
+    :type index: int
+    :return: The evaluated parameter value.
+    :rtype: type
+
+    """
+    if name.count('#') != 1:
+        raise ValueError("Name {} must contain a single '#' value".format(name))
+
+    ptg = node.parmTemplateGroup()
+
+    parm_template = ptg.find(name)
+
+    if parm_template is None:
+        raise ValueError("Name {} does not map to a parameter on {}".format(name, node.path()))
+
+    containing_folder = ptg.containingFolder(name)
+
+    folder_parm = node.parm(containing_folder.name())
+
+    if not is_parm_multiparm(folder_parm):
+        raise ValueError("Parameter is not inside a multiparm.")
+
+    num_values = folder_parm.eval()
+
+    # Check against the current number of available parms.
+    if index >= num_values:
+        raise IndexError("Invalid index {}".format(index))
+
+    # Need the start offset.
+    start_offset = get_multiparm_start_offset(folder_parm)
+
+    data_type = parm_template.dataType()
+
+    values = []
+
+    for component_index in range(parm_template.numComponents()):
+        if data_type == hou.parmData.Float:
+            values.append(_cpp_methods.eval_multiparm_instance_float(node, name, component_index, index, start_offset))
+
+        elif data_type == hou.parmData.Int:
+            values.append(_cpp_methods.eval_multiparm_instance_int(node, name, component_index, index, start_offset))
+
+        elif data_type == hou.parmData.String:
+            values.append(_cpp_methods.eval_multiparm_instance_string(node, name, component_index, index, start_offset))
+
+        else:
+            raise TypeError("Invalid parm data type {}".format(data_type))
+
+    # Return single value for non-tuple parms.
+    if len(values) == 1:
+        return values[0]
+
+    return tuple(values)
 
 
 def disconnect_all_inputs(node):

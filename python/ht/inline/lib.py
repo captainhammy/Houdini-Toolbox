@@ -1843,22 +1843,6 @@ getMultiParmInstancesPerItem(OP_Node *node, const char *parm_name)
 """,
 
 """
-int
-getMultiParmStartOffset(OP_Node *node, const char *parm_name)
-{
-    int                         offset;
-
-    PRM_Parm                    *parm;
-
-    PRM_Parm &multiparm = node->getParm(parm_name);
-
-    offset = multiparm.getMultiStartOffset();
-
-    return offset;
-}
-""",
-
-"""
 IntArray
 getMultiParmInstanceIndex(OP_Node *node, const char *parm_name)
 {
@@ -1921,6 +1905,51 @@ getMultiParmInstances(OP_Node *node, const char *parm_name)
     }
 
     return blocks;
+}
+""",
+
+"""
+float
+eval_multiparm_instance_float(OP_Node *node, const char *parm_name, int component_index, int index, int start_offset)
+{
+    fpreal                      t = CHgetEvalTime();
+    int                         instance_idx;
+    
+    UT_StringRef                name(parm_name);
+    
+    instance_idx = index + start_offset;
+    return node->evalFloatInst(name, &instance_idx, component_index, t);
+}
+""",
+
+"""
+int
+eval_multiparm_instance_int(OP_Node *node, const char *parm_name, int component_index, int index, int start_offset)
+{
+    fpreal                      t = CHgetEvalTime();
+    int                         instance_idx;
+    
+    UT_StringRef                name(parm_name);
+
+    instance_idx = index + start_offset;
+    return node->evalIntInst(name, &instance_idx, component_index, t);
+}
+""",
+
+"""
+const char *
+eval_multiparm_instance_string(OP_Node *node, const char *parm_name, int component_index, int index, int start_offset)
+{
+    fpreal                      t = CHgetEvalTime();
+    int                         instance_idx;
+
+    UT_StringRef                name(parm_name);
+    UT_String                   value;
+
+    instance_idx = index + start_offset;
+    node->evalStringInst(name, &instance_idx, value, component_index, t);
+    
+    return value;
 }
 """,
 
