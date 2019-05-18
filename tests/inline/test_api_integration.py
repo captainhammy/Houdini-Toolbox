@@ -34,7 +34,7 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 # =============================================================================
 
 class TestInlineCpp(unittest.TestCase):
-    """This class implements test cases for the fuctions added through the
+    """This class implements test cases for the functions added through the
     inline.py module.
 
     """
@@ -46,20 +46,6 @@ class TestInlineCpp(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         hou.hipFile.clear()
-
-    # =========================================================================
-
-    def test_get_attrib_owner_from_geometry_entity_type(self):
-        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_entity_type(hou.Vertex), 0)
-        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_entity_type(hou.Point), 1)
-        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_entity_type(hou.Prim), 2)
-        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_entity_type(hou.Face), 2)
-        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_entity_type(hou.Volume), 2)
-        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_entity_type(hou.Polygon), 2)
-        self.assertEquals(ht.inline.api._get_attrib_owner_from_geometry_entity_type(hou.Geometry), 3)
-
-        with self.assertRaises(TypeError):
-            ht.inline.api._get_attrib_owner_from_geometry_entity_type(None)
 
     def test_ge_variable(self):
         hip_name = ht.inline.api.get_variable_value("HIPNAME")
@@ -757,6 +743,15 @@ class TestInlineCpp(unittest.TestCase):
         ht.inline.api.make_primitive_points_unique(prim)
 
         self.assertEqual(len(geo.iterPoints()), target)
+
+    def test_check_minimum_polygon_vertex_count__pass(self):
+        geo = get_obj_geo_copy("test_check_minimum_polygon_vertex_count")
+
+        self.assertTrue(ht.inline.api.check_minimum_polygon_vertex_count(geo, 3))
+
+        self.assertFalse(ht.inline.api.check_minimum_polygon_vertex_count(geo, 3, ignore_open=False))
+
+        self.assertFalse(ht.inline.api.check_minimum_polygon_vertex_count(geo, 5))
 
     def test_prim_bounding_box(self):
         target = hou.BoundingBox(-0.75, 0, -0.875, 0.75, 1.5, 0.875)

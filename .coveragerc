@@ -11,6 +11,7 @@ source =
     ht.events.events.rop_render
     ht.events.events.scene_load
     ht.inline.api
+    ht.inline.utils
     ht.logger
     ht.loggers.shellio
     ht.nodes.styles.event

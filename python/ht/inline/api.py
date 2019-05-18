@@ -13,76 +13,19 @@ and modules they are meant to extend.
 
 # Python Imports
 import ast
-import ctypes
 import math
 
 # Houdini Toolbox Imports
 from ht.inline.lib import cpp_methods as _cpp_methods
+from ht.inline import utils
 
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # GLOBALS
 # =============================================================================
-
-# Tuple of all valid attribute data types.
-_ALL_ATTRIB_DATA_TYPES = (
-    hou.attribData.Float,
-    hou.attribData.Int,
-    hou.attribData.String
-)
-
-# Tuple of all valid attribute types.
-_ALL_ATTRIB_TYPES = (
-    hou.attribType.Global,
-    hou.attribType.Point,
-    hou.attribType.Prim,
-    hou.attribType.Vertex,
-)
-
-# Mapping between hou.attribData and corresponding GA_StorageClass values.
-_ATTRIB_STORAGE_MAP = {
-    hou.attribData.Int: 0,
-    hou.attribData.Float: 1,
-    hou.attribData.String: 2,
-}
-
-# Mapping between hou.attribTypes and corresponding GA_AttributeOwner values.
-_ATTRIB_TYPE_MAP = {
-    hou.attribType.Vertex: 0,
-    hou.attribType.Point: 1,
-    hou.attribType.Prim: 2,
-    hou.attribType.Global: 3,
-}
-
-# Mapping between geometry types and corresponding GA_AttributeOwner values.
-_GEOMETRY_ATTRIB_MAP = {
-    hou.Vertex: 0,
-    hou.Point: 1,
-    hou.Prim: 2,
-    hou.Geometry: 3
-}
-
-# Mapping between hou.geometryTypes and corresponding GA_AttributeOwner values.
-_GEOMETRY_TYPE_MAP = {
-    hou.geometryType.Vertices: 0,
-    hou.geometryType.Points: 1,
-    hou.geometryType.Primitives: 2
-}
-
-# Mapping between group types and corresponding GA_AttributeOwner values.
-_GROUP_ATTRIB_MAP = {
-    hou.PointGroup: 1,
-    hou.PrimGroup: 2,
-}
-
-# Mapping between group types and corresponding GA_GroupType values.
-_GROUP_TYPE_MAP = {
-    hou.PointGroup: 0,
-    hou.PrimGroup: 1,
-    hou.EdgeGroup: 2,
-}
 
 # A tuple of folder types that are multiparms.
 _MULTIPARM_FOLDER_TYPES = (
@@ -90,6 +33,7 @@ _MULTIPARM_FOLDER_TYPES = (
     hou.folderType.ScrollingMultiparmBlock,
     hou.folderType.TabbedMultiparmBlock
 )
+
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
@@ -115,305 +59,6 @@ def _assert_prim_vertex_index(prim, index):
     if index >= num_prim_vertices(prim):
         raise IndexError("Invalid index: {}".format(index))
 
-def _build_c_double_array(values):
-    """Convert a list of numbers to a ctypes double array.
-
-    :param values: A list of floats.
-    :type values: list(float)
-    :return: The values as ctypes compatible values.
-    :rtype: list(ctypes.c_double)
-
-    """
-    arr = (ctypes.c_double * len(values))(*values)
-
-    return arr
-
-
-def _build_c_int_array(values):
-    """Convert a list of numbers to a ctypes int array.
-
-    :param values: A list of ints.
-    :type values: list(int)
-    :return: The values as ctypes compatible values.
-    :rtype: list(ctypes.c_int)
-
-    """
-    arr = (ctypes.c_int * len(values))(*values)
-
-    return arr
-
-
-def _build_c_string_array(values):
-    """Convert a list of strings to a ctypes char * array.
-
-    :param values: A list of strings.
-    :type values: list(str)
-    :return: The values as ctypes compatible values.
-    :rtype: list(ctypes.c_char_p)
-
-    """
-    arr = (ctypes.c_char_p * len(values))(*values)
-
-    return arr
-
-
-def _clean_string_values(values):
-    """Process a string list, removing empty strings.
-
-    :param values: A list of strings to clean.
-    :type values: list(str)
-    :return: A clean tuple.
-    :rtype: tuple(str)
-
-    """
-    return tuple([val for val in values if val])
-
-
-def _find_attrib(geometry, attrib_type, name):
-    """Find an attribute with a given name and type on the geometry.
-
-    :param geometry: The geometry to find an attribute on.
-    :type geometry: hou.Geometry
-    :param attrib_type: The attribute type.
-    :type attrib_type: hou.attribType.
-    :param name: The attribute name.
-    :type name: str
-    :return: A found attribute, otherwise None.
-    :rtype: hou.Attrib|None
-
-    """
-    if attrib_type == hou.attribType.Vertex:
-        return geometry.findVertexAttrib(name)
-
-    elif attrib_type == hou.attribType.Point:
-        return geometry.findPointAttrib(name)
-
-    elif attrib_type == hou.attribType.Prim:
-        return geometry.findPrimAttrib(name)
-
-    elif attrib_type == hou.attribType.Global:
-        return geometry.findGlobalAttrib(name)
-
-    else:
-        raise ValueError("Expected hou.attribType, got {}".format(type(attrib_type)))
-
-
-def _find_group(geometry, group_type, name):
-    """Find a group with a given name and type.
-
-    group_type corresponds to the integer returned by _get_group_type()
-
-    :param geometry: The geometry to find the group in.
-    :type geometry: hou.Geometry
-    :param group_type: The group type.
-    :type group_type: int
-    :param name: The attribute name.
-    :type name: str
-    :return: A found group.
-    :rtype: hou.EdgeGroup|hou.PointGroup|hou.PrimGroup
-
-    """
-    if group_type == 0:
-        return geometry.findPointGroup(name)
-
-    elif group_type == 1:
-        return geometry.findPrimGroup(name)
-
-    elif group_type == 2:
-        return geometry.findEdgeGroup(name)
-
-    else:
-        raise ValueError("Invalid group type {}".format(group_type))
-
-
-def _geo_details_match(geometry1, geometry2):
-    """Test if two hou.Geometry objects point to the same detail.
-
-    :param geometry1: A geometry detail.
-    :type geometry1: hou.Geometry
-    :param geometry2: A geometry detail.
-    :type geometry2: hou.Geometry
-    :return: Whether or not the objects represent the same detail.
-    :rtype: bool
-
-    """
-    handle1 = geometry1._guDetailHandle()
-    handle2 = geometry2._guDetailHandle()
-
-    details_match = long(handle1._asVoidPointer()) == long(handle2._asVoidPointer())
-
-    handle1.destroy()
-    handle2.destroy()
-
-    return details_match
-
-
-def _get_attrib_owner(attribute_type):
-    """Get an HDK compatible attribute owner value.
-
-    :param attribute_type: The type of attribute.
-    :type attribute_type: hou.attribType
-    :return: An HDK attribute owner value.
-    :rtype: int
-
-    """
-    try:
-        return _ATTRIB_TYPE_MAP[attribute_type]
-
-    except KeyError:
-        raise ValueError("Invalid attribute type: {}".format(attribute_type))
-
-
-def _get_attrib_owner_from_geometry_entity_type(entity_type):
-    """Get an HDK compatible attribute owner value from a geometry class.
-
-    The type can be of hou.Geometry, hou.Point, hou.Prim (or subclasses) or hou.Vertex.
-
-    :param entity_type: The entity to get a attribute owner for.
-    :type entity_type: hou.Vertex|hou.Point|hou.Prim|hou.Geometry
-    :return: An HDK attribute owner value.
-    :rtype: int
-
-    """
-    # If the class is a base class in the map then just return it.
-    try:
-        return _GEOMETRY_ATTRIB_MAP[entity_type]
-
-    except KeyError:
-        pass
-
-    # If it is not in the map then it is most likely a subclass of hou.Prim,
-    # such as hou.Polygon, hou.Face, hou.Volume, etc.  We will check the class
-    # against being a subclass of any of our valid types and if it is, return
-    # the owner of that class.
-    for key, value in _GEOMETRY_ATTRIB_MAP.items():
-        if issubclass(entity_type, key):
-            return value
-
-    # Something went wrong so raise an exception.
-    raise ValueError("Invalid entity type: {}".format(entity_type))
-
-
-def _get_attrib_owner_from_geometry_type(geometry_type):
-    """Get an HDK compatible attribute owner value from a hou.geometryType.
-
-    :param geometry_type: The entity to get a attribute owner for.
-    :type geometry_type: hou.geometryType
-    :return: An HDK attribute owner value.
-    :rtype: int
-
-    """
-    # If the class is a base class in the map then just return it.
-    try:
-        return _GEOMETRY_TYPE_MAP[geometry_type]
-
-    except KeyError:
-        # Something went wrong so raise an exception.
-        raise ValueError("Invalid geometry type: {}".format(geometry_type))
-
-
-def _get_attrib_storage(data_type):
-    """Get an HDK compatible attribute storage class value.
-
-    :param data_type: The type of data to store.
-    :type data_type: hou.attribData
-    :return: An HDK attribute storage type.
-    :rtype: int
-
-    """
-    try:
-        return _ATTRIB_STORAGE_MAP[data_type]
-
-    except KeyError:
-        raise ValueError("Invalid data type: {}".format(data_type))
-
-
-def _get_group_attrib_owner(group):
-    """Get an HDK compatible group attribute type value.
-
-    :param group: The group to get the attribute owner for.
-    :type group: hou.PointGroup|hou.PrimGroup
-    :return: An HDK attribute owner value.
-    :rtype: int
-
-    """
-    try:
-        return _GROUP_ATTRIB_MAP[type(group)]
-
-    except KeyError:
-        raise ValueError("Invalid group type")
-
-
-def _get_group_type(group):
-    """Get an HDK compatible group type value.
-
-    :param group: The group to get the group type for.
-    :type group: hou.EdgeGroup|hou.PointGroup|hou.PrimGroup
-    :return: An HDK group type value.
-    :rtype: int
-
-    """
-    try:
-        return _GROUP_TYPE_MAP[type(group)]
-
-    except KeyError:
-        raise ValueError("Invalid group type")
-
-
-def _get_nodes_from_paths(paths):
-    """Convert a list of string paths to hou.Node objects.
-
-    :param paths: A list of paths.
-    :type paths: list(str)
-    :return: A tuple of hou.Node objects.
-    :rtype: tuple(hou.Node)
-
-    """
-    return tuple([hou.node(path) for path in paths if path])
-
-
-def _get_points_from_list(geometry, point_list):
-    """Convert a list of point numbers to hou.Point objects.
-
-    :param geometry: The geometry to get points for.
-    :type geometry: hou.Geometry
-    :param point_list: A list of point numbers.
-    :type point_list: list(int)
-    :return: Matching points on the geometry.
-    :rtype: tuple(hou.Point)
-
-    """
-    # Return a empty tuple if the point list is empty.
-    if not point_list:
-        return ()
-
-    # Convert the list of integers to a space separated string.
-    point_str = ' '.join([str(i) for i in point_list])
-
-    # Glob for the specified points.
-    return geometry.globPoints(point_str)
-
-
-def _get_prims_from_list(geometry, prim_list):
-    """Convert a list of primitive numbers to hou.Prim objects.
-
-    :param geometry: The geometry to get prims for.
-    :type geometry: hou.Geometry
-    :param prim_list: A list of prim numbers.
-    :type prim_list: list(int)
-    :return: Matching prims on the geometry.
-    :rtype: tuple(hou.Prim)
-
-    """
-    # Return a empty tuple if the prim list is empty.
-    if not prim_list:
-        return ()
-
-    # Convert the list of integers to a space separated string.
-    prim_str = ' '.join([str(i) for i in prim_list])
-
-    # Glob for the specified prims.
-    return geometry.globPrims(prim_str)
 
 # =============================================================================
 # FUNCTIONS
@@ -446,7 +91,7 @@ def get_global_variable_names(dirty=False):
     var_names = _cpp_methods.getGlobalVariableNames(dirty)
 
     # Remove any empty names.
-    return _clean_string_values(var_names)
+    return utils.clean_string_values(var_names)
 
 
 def get_variable_names(dirty=False):
@@ -466,7 +111,7 @@ def get_variable_names(dirty=False):
     var_names = _cpp_methods.getVariableNames(dirty)
 
     # Remove any empty names.
-    return _clean_string_values(var_names)
+    return utils.clean_string_values(var_names)
 
 
 def get_variable_value(name):
@@ -692,7 +337,7 @@ def sort_geometry_by_attribute(geometry, attribute, tuple_index=0, reverse=False
         )
 
     # Get the corresponding attribute type id.
-    attrib_owner = _get_attrib_owner(attrib_type)
+    attrib_owner = utils.get_attrib_owner(attrib_type)
 
     _cpp_methods.sortGeometryByAttribute(
         geometry,
@@ -730,7 +375,7 @@ def sort_geometry_along_axis(geometry, geometry_type, axis):
             "Geometry type must be points or primitives."
         )
 
-    attrib_owner = _get_attrib_owner_from_geometry_type(geometry_type)
+    attrib_owner = utils.get_attrib_owner_from_geometry_type(geometry_type)
 
     _cpp_methods.sortGeometryAlongAxis(geometry, attrib_owner, axis)
 
@@ -773,10 +418,10 @@ def sort_geometry_by_values(geometry, geometry_type, values):
     else:
         raise ValueError("Geometry type must be points or primitives.")
 
-    attrib_owner = _get_attrib_owner_from_geometry_type(geometry_type)
+    attrib_owner = utils.get_attrib_owner_from_geometry_type(geometry_type)
 
     # Construct a ctypes double array to pass the values.
-    c_values = _build_c_double_array(values)
+    c_values = utils.build_c_double_array(values)
 
     _cpp_methods.sortGeometryByValues(geometry, attrib_owner, c_values)
 
@@ -805,7 +450,7 @@ def sort_geometry_randomly(geometry, geometry_type, seed=0.0):
     if geometry_type not in (hou.geometryType.Points, hou.geometryType.Primitives):
         raise ValueError("Geometry type must be points or primitives.")
 
-    attrib_owner = _get_attrib_owner_from_geometry_type(geometry_type)
+    attrib_owner = utils.get_attrib_owner_from_geometry_type(geometry_type)
     _cpp_methods.sortGeometryRandomly(geometry, attrib_owner, seed)
 
 
@@ -837,7 +482,7 @@ def shift_geometry_elements(geometry, geometry_type, offset):
     if geometry_type not in (hou.geometryType.Points, hou.geometryType.Primitives):
         raise ValueError("Geometry type must be points or primitives.")
 
-    attrib_owner = _get_attrib_owner_from_geometry_type(geometry_type)
+    attrib_owner = utils.get_attrib_owner_from_geometry_type(geometry_type)
     _cpp_methods.shiftGeometry(geometry, attrib_owner, offset)
 
 
@@ -860,7 +505,7 @@ def reverse_sort_geometry(geometry, geometry_type):
     if geometry_type not in (hou.geometryType.Points, hou.geometryType.Primitives):
         raise ValueError("Geometry type must be points or primitives.")
 
-    attrib_owner = _get_attrib_owner_from_geometry_type(geometry_type)
+    attrib_owner = utils.get_attrib_owner_from_geometry_type(geometry_type)
     _cpp_methods.reverseSortGeometry(geometry, attrib_owner)
 
 
@@ -887,7 +532,7 @@ def sort_geometry_by_proximity_to_position(geometry, geometry_type, pos):
     if geometry_type not in (hou.geometryType.Points, hou.geometryType.Primitives):
         raise ValueError("Geometry type must be points or primitives.")
 
-    attrib_owner = _get_attrib_owner_from_geometry_type(geometry_type)
+    attrib_owner = utils.get_attrib_owner_from_geometry_type(geometry_type)
     _cpp_methods.sortGeometryByProximity(geometry, attrib_owner, pos)
 
 
@@ -1039,7 +684,7 @@ def merge_points(geometry, points):
     if is_geometry_read_only(geometry):
         raise hou.GeometryPermissionError()
 
-    c_values = _build_c_int_array([point.number() for point in points])
+    c_values = utils.build_c_int_array([point.number() for point in points])
 
     _cpp_methods.mergePoints(geometry, points[0].geometry(), c_values, len(c_values))
 
@@ -1078,7 +723,7 @@ def merge_prims(geometry, prims):
     if is_geometry_read_only(geometry):
         raise hou.GeometryPermissionError()
 
-    c_values = _build_c_int_array([prim.number() for prim in prims])
+    c_values = utils.build_c_int_array([prim.number() for prim in prims])
 
     _cpp_methods.mergePrims(geometry, prims[0].geometry(), c_values, len(c_values))
 
@@ -1134,19 +779,19 @@ def copy_attribute_values(source_element, source_attribs, target_element):
         source_entity_num = 0
 
     # Get the attribute owners from the elements.
-    target_owner = _get_attrib_owner_from_geometry_entity_type(type(target_element))
-    source_owner = _get_attrib_owner_from_geometry_entity_type(type(source_element))
+    target_owner = utils.get_attrib_owner_from_geometry_entity_type(type(target_element))
+    source_owner = utils.get_attrib_owner_from_geometry_entity_type(type(source_element))
 
     # Get the attribute names, ensuring we only use attributes on the
     # source's geometry.
     attrib_names = [
         attrib.name() for attrib in source_attribs
-        if _get_attrib_owner(attrib.type()) == source_owner and
+        if utils.get_attrib_owner(attrib.type()) == source_owner and
         attrib.geometry().sopNode() == source_geometry.sopNode()
     ]
 
     # Construct a ctypes string array to pass the strings.
-    c_values = _build_c_string_array(attrib_names)
+    c_values = utils.build_c_string_array(attrib_names)
 
     _cpp_methods.copyAttributeValues(
         target_geometry,
@@ -1215,7 +860,7 @@ def point_adjacent_polygons(prim):
     # Get a list of prim numbers that are point adjacent the prim.
     result = _cpp_methods.pointAdjacentPolygons(geometry, prim.number())
 
-    return _get_prims_from_list(geometry, result)
+    return utils.get_prims_from_list(geometry, result)
 
 
 def edge_adjacent_polygons(prim):
@@ -1233,7 +878,7 @@ def edge_adjacent_polygons(prim):
     # Get a list of prim numbers that are edge adjacent the prim.
     result = _cpp_methods.edgeAdjacentPolygons(geometry, prim.number())
 
-    return _get_prims_from_list(geometry, result)
+    return utils.get_prims_from_list(geometry, result)
 
 
 def connected_points(point):
@@ -1252,7 +897,7 @@ def connected_points(point):
     result = _cpp_methods.connectedPoints(geometry, point.number())
 
     # Glob for the points and return them.
-    return _get_points_from_list(geometry, result)
+    return utils.get_points_from_list(geometry, result)
 
 
 def connected_prims(point):
@@ -1270,7 +915,7 @@ def connected_prims(point):
     # Get a list of primitive numbers that reference the point.
     result = _cpp_methods.connectedPrims(geometry, point.number())
 
-    return _get_prims_from_list(geometry, result)
+    return utils.get_prims_from_list(geometry, result)
 
 
 def referencing_vertices(point):
@@ -1314,7 +959,7 @@ def string_table_indices(attrib):
         raise ValueError("Attribute must be a string.")
 
     # Get the corresponding attribute type id.
-    attrib_owner = _get_attrib_owner(attrib.type())
+    attrib_owner = utils.get_attrib_owner(attrib.type())
 
     return tuple(_cpp_methods.getStringTableIndices(attrib.geometry(), attrib_owner, attrib.name()))
 
@@ -1370,7 +1015,7 @@ def set_vertex_string_attrib_values(geometry, name, values):
         raise ValueError("Incorrect attribute value sequence size.")
 
     # Construct a ctypes string array to pass the strings.
-    c_values = _build_c_string_array(values)
+    c_values = utils.build_c_string_array(values)
 
     _cpp_methods.setVertexStringAttribValues(
         geometry,
@@ -1419,7 +1064,7 @@ def set_shared_point_string_attrib(geometry, name, value, group=None):
 
     _cpp_methods.setSharedStringAttrib(
         geometry,
-        _get_attrib_owner(attribute.type()),
+        utils.get_attrib_owner(attribute.type()),
         name,
         value,
         group_name
@@ -1465,7 +1110,7 @@ def set_shared_prim_string_attrib(geometry, name, value, group=None):
 
     _cpp_methods.setSharedStringAttrib(
         geometry,
-        _get_attrib_owner(attribute.type()),
+        utils.get_attrib_owner(attribute.type()),
         name,
         value,
         group_name
@@ -1696,6 +1341,24 @@ def make_primitive_points_unique(prim):
     return _cpp_methods.makePrimitiveUnique(geometry, prim.number())
 
 
+def check_minimum_polygon_vertex_count(geometry, minimum_vertices, ignore_open=True):
+    """Check that all polygons have a minimum number of vertices.
+
+    This will ignore non-polygon types such as packed and volume primitives.
+
+    :param geometry: The geometry to check.
+    :type geometry: hou.Geometry
+    :param minimum_vertices: The minimum number of vertices a polygon must have.
+    :type minimum_vertices: int
+    :param ignore_open: Ignore polygons which are open.
+    :type ignore_open: bool
+    :return: Whether or not all the polygons have the minimum number of vertices.
+    :rtype: bool
+
+    """
+    return _cpp_methods.check_minimum_polygon_vertex_count(geometry, minimum_vertices, ignore_open)
+
+
 def primitive_bounding_box(prim):
     """Get the bounding box of the primitive.
 
@@ -1805,7 +1468,7 @@ def add_color_attribute(geometry, attrib_type):
     if attrib_type == hou.attribType.Global:
         raise ValueError("Invalid attribute type.")
 
-    owner = _get_attrib_owner(attrib_type)
+    owner = utils.get_attrib_owner(attrib_type)
 
     # Try to add the Cd attribute.
     success = _cpp_methods.addDiffuseAttribute(geometry, owner)
@@ -1814,7 +1477,7 @@ def add_color_attribute(geometry, attrib_type):
     if not success:
         raise hou.OperationFailed("Could not add Cd attribute.")
 
-    return _find_attrib(geometry, attrib_type, "Cd")
+    return utils.find_attrib(geometry, attrib_type, "Cd")
 
 
 def convex_polygons(geometry, max_points=3):
@@ -1902,7 +1565,7 @@ def destroy_empty_groups(geometry, attrib_type):
         )
 
     # Get the corresponding attribute type id.
-    attrib_owner = _get_attrib_owner(attrib_type)
+    attrib_owner = utils.get_attrib_owner(attrib_type)
 
     _cpp_methods.destroyEmptyGroups(geometry, attrib_owner)
 
@@ -2000,7 +1663,7 @@ def rename_group(group, new_name):
     if new_name == group.name():
         raise hou.OperationFailed("Cannot rename to same name.")
 
-    group_type = _get_group_type(group)
+    group_type = utils.get_group_type(group)
 
     success = _cpp_methods.renameGroup(
         geometry,
@@ -2010,7 +1673,7 @@ def rename_group(group, new_name):
     )
 
     if success:
-        return _find_group(geometry, group_type, new_name)
+        return utils.find_group(geometry, group_type, new_name)
 
     else:
         return None
@@ -2025,7 +1688,7 @@ def group_bounding_box(group):
     :rtype: hou.BoundingBox
 
     """
-    group_type = _get_group_type(group)
+    group_type = utils.get_group_type(group)
 
     # Calculate the bounds for the group.
     bounds = _cpp_methods.groupBoundingBox(
@@ -2046,7 +1709,7 @@ def group_size(group):
     :rtype: int
 
     """
-    group_type = _get_group_type(group)
+    group_type = utils.get_group_type(group)
 
     return _cpp_methods.groupSize(group.geometry(), group.name(), group_type)
 
@@ -2070,7 +1733,7 @@ def toggle_point_in_group(group, point):
     if is_geometry_read_only(geometry):
         raise hou.GeometryPermissionError()
 
-    group_type = _get_group_type(group)
+    group_type = utils.get_group_type(group)
 
     _cpp_methods.toggleGroupMembership(
         geometry,
@@ -2099,7 +1762,7 @@ def toggle_prim_in_group(group, prim):
     if is_geometry_read_only(geometry):
         raise hou.GeometryPermissionError()
 
-    group_type = _get_group_type(group)
+    group_type = utils.get_group_type(group)
 
     _cpp_methods.toggleGroupMembership(
         geometry,
@@ -2126,7 +1789,7 @@ def toggle_group_entries(group):
     if is_geometry_read_only(geometry):
         raise hou.GeometryPermissionError()
 
-    group_type = _get_group_type(group)
+    group_type = utils.get_group_type(group)
 
     _cpp_methods.toggleGroupEntries(geometry, group.name(), group_type)
 
@@ -2152,22 +1815,22 @@ def copy_group(group, new_group_name):
     if new_group_name == group.name():
         raise hou.OperationFailed("Cannot copy to group with same name.")
 
-    group_type = _get_group_type(group)
+    group_type = utils.get_group_type(group)
 
     # Check for an existing group of the same name.
-    if _find_group(geometry, group_type, new_group_name) is not None:
+    if utils.find_group(geometry, group_type, new_group_name) is not None:
         # If one exists, raise an exception.
         raise hou.OperationFailed(
             "Group '{}' already exists.".format(new_group_name)
         )
 
-    attrib_owner = _get_group_attrib_owner(group)
+    attrib_owner = utils.get_group_attrib_owner(group)
 
     # Copy the group.
     _cpp_methods.copyGroup(geometry, attrib_owner, group.name(), new_group_name)
 
     # Return the new group.
-    return _find_group(geometry, group_type, new_group_name)
+    return utils.find_group(geometry, group_type, new_group_name)
 
 
 def groups_share_elements(group1, group2):
@@ -2186,11 +1849,11 @@ def groups_share_elements(group1, group2):
     group1_geometry = group1.geometry()
     group2_geometry = group2.geometry()
 
-    if not _geo_details_match(group1_geometry, group2_geometry):
+    if not utils.geo_details_match(group1_geometry, group2_geometry):
         raise ValueError("Groups are not in the same detail.")
 
-    group1_type = _get_group_type(group1)
-    group2_type = _get_group_type(group2)
+    group1_type = utils.get_group_type(group1)
+    group2_type = utils.get_group_type(group2)
 
     if group1_type != group2_type:
         raise TypeError("Groups are not the same types.")
@@ -2792,6 +2455,10 @@ def eval_multiparm_instance(node, name, index):
     You cannot try to evaluate a single component of a tuple parameter, evaluate
     the entire tuple instead and get which values you need.
 
+    WARNING: This function will NOT create an evaluation dependency on the parameter.
+    This means you cannot use this function to evaluate parameters within a cooking
+    node and expect it to recook after change.
+
     # Float
     >>> eval_multiparm_instance(node, "float#", 1)
     0.53
@@ -3361,7 +3028,7 @@ def libraries_in_meta_source(meta_source):
     result = _cpp_methods.getLibrariesInMetaSource(meta_source)
 
     # Return a tuple of the valid values.
-    return _clean_string_values(result)
+    return utils.clean_string_values(result)
 
 
 def is_dummy_definition(definition):

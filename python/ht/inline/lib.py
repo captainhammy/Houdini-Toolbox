@@ -278,7 +278,7 @@ void
 packGeometry(GU_Detail *source, GU_Detail *target)
 {
     GU_DetailHandle gdh;
-    gdh.allocateAndSet(source);
+    gdh.allocateAndSet(source, false);
 
     GU_ConstDetailHandle const_handle(gdh);
 
@@ -1715,6 +1715,37 @@ groupUngroupedPrims(GU_Detail *gdp, const char *ungrouped_name)
 """,
 
 """
+bool
+check_minimum_polygon_vertex_count(const GU_Detail *gdp, int count, bool ignore_open)
+{
+
+    const GA_Primitive                 *prim;
+    const GEO_Face                     *face; 
+    
+    GA_FOR_ALL_PRIMITIVES(gdp, prim)
+    {
+        if (prim->getVertexCount() < count)
+        {
+            // Check if we're dealing with a polygons.
+            face = reinterpret_cast<const GEO_Face *>(prim);
+
+            // Ignore non-polygons
+            if (face == nullptr)
+                continue;
+            
+            // Ignore open faces.
+            if (ignore_open && !face->isClosed())
+                continue;
+            
+            return false;
+        }
+    }
+    
+    return true;
+}
+""",
+
+"""
 void
 clipGeometry(GU_Detail *gdp,
      UT_DMatrix4 *xform,
@@ -1949,7 +1980,8 @@ eval_multiparm_instance_string(OP_Node *node, const char *parm_name, int compone
     instance_idx = index + start_offset;
     node->evalStringInst(name, &instance_idx, value, component_index, t);
     
-    return value;
+    // For some reason we can sometimes get garbage values if we don't do this :/
+    return value.toStdString().c_str();
 }
 """,
 

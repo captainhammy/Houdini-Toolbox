@@ -23,6 +23,7 @@ from ht.inline import api
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -67,413 +68,6 @@ class Test__assert_prim_vertex_index(unittest.TestCase):
         api._assert_prim_vertex_index(mock_prim, 4)
 
 
-class Test__build_c_double_array(unittest.TestCase):
-    """Test ht.inline.api._build_c_double_array."""
-
-    def test(self):
-        values = [float(val) for val in range(5)]
-        values.reverse()
-
-        result = api._build_c_double_array(values)
-
-        self.assertEqual(list(result), values)
-
-        expected_type = type((ctypes.c_double * len(values))())
-        self.assertTrue(isinstance(result, expected_type))
-
-
-class Test__build_c_int_array(unittest.TestCase):
-    """Test ht.inline.api._build_c_int_array."""
-
-    def test(self):
-        values = range(5)
-        values.reverse()
-
-        result = api._build_c_int_array(values)
-
-        self.assertEqual(list(result), values)
-
-        expected_type = type((ctypes.c_int * len(values))())
-        self.assertTrue(isinstance(result, expected_type))
-
-
-class Test__build_c_string_array(unittest.TestCase):
-    """Test ht.inline.api._build_c_string_array."""
-
-    def test(self):
-        values = ["foo", "bar", "test"]
-
-        result = api._build_c_string_array(values)
-
-        self.assertEqual(list(result), values)
-
-        expected_type = type((ctypes.c_char_p * len(values))())
-        self.assertTrue(isinstance(result, expected_type))
-
-
-class Test__clean_string_values(unittest.TestCase):
-    """Test ht.inline.api._clean_string_values."""
-
-    def test(self):
-        mock_str1 = MagicMock(spec=str)
-        mock_str1.__len__.return_value = 1
-
-        mock_str2 = MagicMock(spec=str)
-        mock_str2.__len__.return_value = 0
-
-        mock_str3 = MagicMock(spec=str)
-        mock_str3.__len__.return_value = 2
-
-        values = [mock_str1, mock_str2, mock_str3]
-
-        result = api._clean_string_values(values)
-
-        self.assertEqual(result, tuple([mock_str1, mock_str3]))
-
-
-class Test__find_attrib(unittest.TestCase):
-    """Test ht.inline.api._find_attrib."""
-
-    def test_vertex(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
-
-        result = api._find_attrib(mock_geometry, hou.attribType.Vertex, mock_name)
-
-        self.assertEqual(result, mock_geometry.findVertexAttrib.return_value)
-
-        mock_geometry.findVertexAttrib.assert_called_with(mock_name)
-
-    def test_point(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
-
-        result = api._find_attrib(mock_geometry, hou.attribType.Point, mock_name)
-
-        self.assertEqual(result, mock_geometry.findPointAttrib.return_value)
-
-        mock_geometry.findPointAttrib.assert_called_with(mock_name)
-
-    def test_prim(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
-
-        result = api._find_attrib(mock_geometry, hou.attribType.Prim, mock_name)
-
-        self.assertEqual(result, mock_geometry.findPrimAttrib.return_value)
-
-        mock_geometry.findPrimAttrib.assert_called_with(mock_name)
-
-    def test_global(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
-
-        result = api._find_attrib(mock_geometry, hou.attribType.Global, mock_name)
-
-        self.assertEqual(result, mock_geometry.findGlobalAttrib.return_value)
-
-        mock_geometry.findGlobalAttrib.assert_called_with(mock_name)
-
-    def test_invalid(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
-
-        with self.assertRaises(ValueError):
-            api._find_attrib(mock_geometry, None, mock_name)
-
-
-class Test__find_group(unittest.TestCase):
-    """Test ht.inline.api._find_group."""
-
-    def test_point(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
-
-        result = api._find_group(mock_geometry, 0, mock_name)
-
-        self.assertEqual(result, mock_geometry.findPointGroup.return_value)
-
-        mock_geometry.findPointGroup.assert_called_with(mock_name)
-
-    def test_prim(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
-
-        result = api._find_group(mock_geometry, 1, mock_name)
-
-        self.assertEqual(result, mock_geometry.findPrimGroup.return_value)
-
-        mock_geometry.findPrimGroup.assert_called_with(mock_name)
-
-    def test_edge(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
-
-        result = api._find_group(mock_geometry, 2, mock_name)
-
-        self.assertEqual(result, mock_geometry.findEdgeGroup.return_value)
-
-        mock_geometry.findEdgeGroup.assert_called_with(mock_name)
-
-    def test_invalid(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
-
-        with self.assertRaises(ValueError):
-            api._find_group(mock_geometry, None, mock_name)
-
-
-class Test__geo_details_match(unittest.TestCase):
-    """Test ht.inline.api._geo_details_match."""
-
-    def test_match(self):
-        mock_geometry1 = MagicMock(spec=hou.Geometry)
-        mock_geometry2 = MagicMock(spec=hou.Geometry)
-
-        mock_geometry1._guDetailHandle.return_value._asVoidPointer.return_value = 1
-        mock_geometry2._guDetailHandle.return_value._asVoidPointer.return_value = 1
-
-        self.assertTrue(api._geo_details_match(mock_geometry1, mock_geometry2))
-
-        mock_geometry1._guDetailHandle.return_value.destroy.assert_called()
-        mock_geometry2._guDetailHandle.return_value.destroy.assert_called()
-
-    def test_no_match(self):
-        mock_geometry1 = MagicMock(spec=hou.Geometry)
-        mock_geometry2 = MagicMock(spec=hou.Geometry)
-
-        mock_geometry1._guDetailHandle.return_value._asVoidPointer.return_value = 0
-        mock_geometry2._guDetailHandle.return_value._asVoidPointer.return_value = 1
-
-        self.assertFalse(api._geo_details_match(mock_geometry1, mock_geometry2))
-
-        mock_geometry1._guDetailHandle.return_value.destroy.assert_called()
-        mock_geometry2._guDetailHandle.return_value.destroy.assert_called()
-
-
-class Test__get_attrib_owner(unittest.TestCase):
-    """Test ht.inline.api._get_attrib_owner."""
-
-    def test_in_map(self):
-        mock_data_type = MagicMock(spec=hou.attribType)
-        mock_dict = MagicMock(spec=dict)
-
-        with patch("ht.inline.api._ATTRIB_TYPE_MAP", mock_dict):
-            result = api._get_attrib_owner(mock_data_type)
-
-            self.assertEqual(result, mock_dict.__getitem__.return_value)
-
-            mock_dict.__getitem__.assert_called_with(mock_data_type)
-
-    def test_invalid(self):
-        mock_data_type = MagicMock(spec=hou.attribType)
-
-        with patch("ht.inline.api._ATTRIB_TYPE_MAP", {}):
-            with self.assertRaises(ValueError):
-                api._get_attrib_owner(mock_data_type)
-
-
-class Test__get_attrib_owner_from_geometry_entity_type(unittest.TestCase):
-    """Test ht.inline.api._get_attrib_owner_from_geometry_entity_type."""
-
-    def test_in_map(self):
-        mock_entity_type = MagicMock()
-        mock_owner_value = MagicMock(spec=int)
-
-        data = {
-            mock_entity_type: mock_owner_value
-        }
-
-        with patch("ht.inline.api._GEOMETRY_ATTRIB_MAP", data):
-            result = api._get_attrib_owner_from_geometry_entity_type(mock_entity_type)
-
-            self.assertEqual(result, mock_owner_value)
-
-    def test_subclass_in_map(self):
-        mock_entity_type = hou.Polygon
-        mock_parent_type = hou.Prim
-
-        mock_owner_value = MagicMock(spec=int)
-
-        data = {
-            mock_parent_type: mock_owner_value
-        }
-
-        with patch("ht.inline.api._GEOMETRY_ATTRIB_MAP", data):
-            result = api._get_attrib_owner_from_geometry_entity_type(mock_entity_type)
-
-            self.assertEqual(result, mock_owner_value)
-
-    def test_invalid_type(self):
-        mock_owner_value = MagicMock(spec=int)
-
-        data = {
-            MagicMock: mock_owner_value
-        }
-
-        with patch("ht.inline.api._GEOMETRY_ATTRIB_MAP", data):
-            with self.assertRaises(ValueError):
-                api._get_attrib_owner_from_geometry_entity_type(hou.Vector2)
-
-
-class Test__get_attrib_owner_from_geometry_type(unittest.TestCase):
-    """Test ht.inline.api._get_attrib_owner_from_geometry_type."""
-
-    def test_in_map(self):
-        mock_geometry_type = MagicMock(spec=hou.geometryType)
-        mock_owner_value = MagicMock(spec=int)
-
-        data = {mock_geometry_type: mock_owner_value}
-
-        with patch("ht.inline.api._GEOMETRY_TYPE_MAP", data):
-            result = api._get_attrib_owner_from_geometry_type(mock_geometry_type)
-
-            self.assertEqual(result, mock_owner_value)
-
-    def test_invalid_type(self):
-        mock_geometry_type = MagicMock(spec=hou.geometryType)
-
-        data = {}
-
-        with patch("ht.inline.api._GEOMETRY_TYPE_MAP", data):
-            with self.assertRaises(ValueError):
-                api._get_attrib_owner_from_geometry_type(mock_geometry_type)
-
-
-class Test__get_attrib_storage(unittest.TestCase):
-    """Test ht.inline.api._get_attrib_storage."""
-
-    def test(self):
-        mock_data_type = MagicMock(spec=hou.attribData)
-        mock_dict = MagicMock(spec=dict)
-
-        with patch("ht.inline.api._ATTRIB_STORAGE_MAP", mock_dict):
-            result = api._get_attrib_storage(mock_data_type)
-
-            self.assertEqual(result, mock_dict.__getitem__.return_value)
-
-            mock_dict.__getitem__.assert_called_with(mock_data_type)
-
-    def test_invalid(self):
-
-        mock_data_type = MagicMock(spec=hou.attribData)
-
-        with patch("ht.inline.api._ATTRIB_STORAGE_MAP", {}):
-            with self.assertRaises(ValueError):
-                api._get_attrib_storage(mock_data_type)
-
-
-class Test__get_group_attrib_owner(unittest.TestCase):
-    """Test ht.inline.api._get_group_attrib_owner."""
-
-    def test(self):
-        mock_data_type = MagicMock()
-        mock_dict = MagicMock(spec=dict)
-
-        with patch("ht.inline.api._GROUP_ATTRIB_MAP", mock_dict):
-            result = api._get_group_attrib_owner(mock_data_type)
-
-            self.assertEqual(result, mock_dict.__getitem__.return_value)
-
-            mock_dict.__getitem__.assert_called_with(type(mock_data_type))
-
-    def test_invalid(self):
-        mock_data_type = MagicMock()
-
-        with patch("ht.inline.api._GROUP_ATTRIB_MAP", {}):
-            with self.assertRaises(ValueError):
-                api._get_group_attrib_owner(mock_data_type)
-
-
-class Test__get_group_type(unittest.TestCase):
-    """Test ht.inline.api._get_group_type."""
-
-    def test(self):
-        mock_data_type = MagicMock()
-        mock_dict = MagicMock(spec=dict)
-
-        with patch("ht.inline.api._GROUP_TYPE_MAP", mock_dict):
-            result = api._get_group_type(mock_data_type)
-
-            self.assertEqual(result, mock_dict.__getitem__.return_value)
-
-            mock_dict.__getitem__.assert_called_with(type(mock_data_type))
-
-    def test_invalid(self):
-        mock_data_type = MagicMock()
-
-        with patch("ht.inline.api._GROUP_TYPE_MAP", {}):
-            with self.assertRaises(ValueError):
-                api._get_group_type(mock_data_type)
-
-
-class Test__get_nodes_from_paths(unittest.TestCase):
-    """Test ht.inline.api._get_nodes_from_paths."""
-
-    @patch("ht.inline.api.hou.node")
-    def test(self, mock_hou_node):
-        mock_path1 = MagicMock(spec=str)
-
-        mock_path2 = MagicMock(spec=str)
-        mock_path2.__len__.return_value = 1
-
-        mock_path3 = MagicMock(spec=str)
-        mock_path3.__len__.return_value = 1
-
-        result = api._get_nodes_from_paths([mock_path1, mock_path2, mock_path3])
-
-        self.assertEqual(result, (mock_hou_node.return_value, mock_hou_node.return_value))
-
-        mock_hou_node.assert_has_calls(
-            [call(mock_path2), call(mock_path3)]
-        )
-
-
-class Test__get_points_from_list(unittest.TestCase):
-    """Test ht.inline.api._get_points_from_list."""
-
-    def test_empty(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-
-        result = api._get_points_from_list(mock_geometry, [])
-
-        self.assertEqual(result, ())
-
-    def test(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-
-        mock_int1 = MagicMock(spec=int)
-        mock_int2 = MagicMock(spec=int)
-
-        result = api._get_points_from_list(mock_geometry, [mock_int1, mock_int2])
-
-        self.assertEqual(result, mock_geometry.globPoints.return_value)
-
-        mock_geometry.globPoints.assert_called_with("{} {}".format(mock_int1, mock_int2))
-
-
-class Test__get_prims_from_list(unittest.TestCase):
-    """Test ht.inline.api._get_prims_from_list."""
-
-    def test_empty(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-
-        result = api._get_prims_from_list(mock_geometry, [])
-
-        self.assertEqual(result, ())
-
-    def test(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-
-        mock_int1 = MagicMock(spec=int)
-        mock_int2 = MagicMock(spec=int)
-
-        result = api._get_prims_from_list(mock_geometry, [mock_int1, mock_int2])
-
-        self.assertEqual(result, mock_geometry.globPrims.return_value)
-
-        mock_geometry.globPrims.assert_called_with("{} {}".format(mock_int1, mock_int2))
-
 # Functions
 
 class Test_is_rendering(unittest.TestCase):
@@ -489,7 +83,7 @@ class Test_is_rendering(unittest.TestCase):
 class Test_get_global_variable_names(unittest.TestCase):
     """Test ht.inline.api.get_global_variable_names."""
 
-    @patch("ht.inline.api._clean_string_values")
+    @patch("ht.inline.utils.clean_string_values")
     @patch("ht.inline.api._cpp_methods.getGlobalVariableNames")
     def test_default_arg(self, mock_get_globals, mock_clean):
         result = api.get_global_variable_names()
@@ -499,7 +93,7 @@ class Test_get_global_variable_names(unittest.TestCase):
         mock_get_globals.assert_called_with(False)
         mock_clean.assert_called_with(mock_get_globals.return_value)
 
-    @patch("ht.inline.api._clean_string_values")
+    @patch("ht.inline.utils.clean_string_values")
     @patch("ht.inline.api._cpp_methods.getGlobalVariableNames")
     def test(self, mock_get_globals, mock_clean):
         mock_dirty = MagicMock(spec=bool)
@@ -515,7 +109,7 @@ class Test_get_global_variable_names(unittest.TestCase):
 class Test_get_variable_names(unittest.TestCase):
     """Test ht.inline.api.get_variable_names."""
 
-    @patch("ht.inline.api._clean_string_values")
+    @patch("ht.inline.utils.clean_string_values")
     @patch("ht.inline.api._cpp_methods.getVariableNames")
     def test_default_arg(self, mock_get_globals, mock_clean):
         result = api.get_variable_names()
@@ -525,7 +119,7 @@ class Test_get_variable_names(unittest.TestCase):
         mock_get_globals.assert_called_with(False)
         mock_clean.assert_called_with(mock_get_globals.return_value)
 
-    @patch("ht.inline.api._clean_string_values")
+    @patch("ht.inline.utils.clean_string_values")
     @patch("ht.inline.api._cpp_methods.getVariableNames")
     def test(self, mock_get_globals, mock_clean):
         mock_dirty = MagicMock(spec=bool)
@@ -806,7 +400,7 @@ class Test_sort_geometry_by_attribute(unittest.TestCase):
         mock_read_only.assert_called_with(mock_geometry)
 
     @patch("ht.inline.api._cpp_methods.sortGeometryByAttribute")
-    @patch("ht.inline.api._get_attrib_owner")
+    @patch("ht.inline.utils.get_attrib_owner")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_default_arg(self, mock_read_only, mock_get_owner, mock_sort):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -832,7 +426,7 @@ class Test_sort_geometry_by_attribute(unittest.TestCase):
         )
 
     @patch("ht.inline.api._cpp_methods.sortGeometryByAttribute")
-    @patch("ht.inline.api._get_attrib_owner")
+    @patch("ht.inline.utils.get_attrib_owner")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test(self, mock_read_only, mock_get_owner, mock_sort):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -894,7 +488,7 @@ class Test_sort_geometry_along_axis(unittest.TestCase):
             api.sort_geometry_along_axis(mock_geometry,geo_type, index)
 
     @patch("ht.inline.api._cpp_methods.sortGeometryAlongAxis")
-    @patch("ht.inline.api._get_attrib_owner_from_geometry_type")
+    @patch("ht.inline.utils.get_attrib_owner_from_geometry_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_points(self, mock_read_only, mock_get_owner, mock_sort):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -910,7 +504,7 @@ class Test_sort_geometry_along_axis(unittest.TestCase):
         mock_sort.assert_called_with(mock_geometry, mock_get_owner.return_value, index)
 
     @patch("ht.inline.api._cpp_methods.sortGeometryAlongAxis")
-    @patch("ht.inline.api._get_attrib_owner_from_geometry_type")
+    @patch("ht.inline.utils.get_attrib_owner_from_geometry_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_prims(self, mock_read_only, mock_get_owner, mock_sort):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -957,8 +551,8 @@ class Test_sort_geometry_by_values(unittest.TestCase):
         mock_num_points.assert_called_with(mock_geometry)
 
     @patch("ht.inline.api._cpp_methods.sortGeometryByValues")
-    @patch("ht.inline.api._build_c_double_array")
-    @patch("ht.inline.api._get_attrib_owner_from_geometry_type")
+    @patch("ht.inline.utils.build_c_double_array")
+    @patch("ht.inline.utils.get_attrib_owner_from_geometry_type")
     @patch("ht.inline.api.num_points")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_points(self, mock_read_only, mock_num_points, mock_get_owner, mock_build, mock_sort):
@@ -1001,8 +595,8 @@ class Test_sort_geometry_by_values(unittest.TestCase):
         mock_num_prims.assert_called_with(mock_geometry)
 
     @patch("ht.inline.api._cpp_methods.sortGeometryByValues")
-    @patch("ht.inline.api._build_c_double_array")
-    @patch("ht.inline.api._get_attrib_owner_from_geometry_type")
+    @patch("ht.inline.utils.build_c_double_array")
+    @patch("ht.inline.utils.get_attrib_owner_from_geometry_type")
     @patch("ht.inline.api.num_prims")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_prims(self, mock_read_only, mock_num_prims, mock_get_owner, mock_build, mock_sort):
@@ -1079,7 +673,7 @@ class Test_sort_geometry_randomly(unittest.TestCase):
         mock_read_only.assert_called_with(mock_geometry)
 
     @patch("ht.inline.api._cpp_methods.sortGeometryRandomly")
-    @patch("ht.inline.api._get_attrib_owner_from_geometry_type")
+    @patch("ht.inline.utils.get_attrib_owner_from_geometry_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_points_int(self, mock_read_only, mock_get_owner, mock_sort):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -1095,7 +689,7 @@ class Test_sort_geometry_randomly(unittest.TestCase):
         mock_sort.assert_called_with(mock_geometry, mock_get_owner.return_value, mock_seed)
 
     @patch("ht.inline.api._cpp_methods.sortGeometryRandomly")
-    @patch("ht.inline.api._get_attrib_owner_from_geometry_type")
+    @patch("ht.inline.utils.get_attrib_owner_from_geometry_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_prims_float(self, mock_read_only, mock_get_owner, mock_sort):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -1148,7 +742,7 @@ class Test_shift_geometry_elements(unittest.TestCase):
         mock_read_only.assert_called_with(mock_geometry)
 
     @patch("ht.inline.api._cpp_methods.shiftGeometry")
-    @patch("ht.inline.api._get_attrib_owner_from_geometry_type")
+    @patch("ht.inline.utils.get_attrib_owner_from_geometry_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_points(self, mock_read_only, mock_get_owner, mock_shift):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -1164,7 +758,7 @@ class Test_shift_geometry_elements(unittest.TestCase):
         mock_shift.assert_called_with(mock_geometry, mock_get_owner.return_value, mock_offset)
 
     @patch("ht.inline.api._cpp_methods.shiftGeometry")
-    @patch("ht.inline.api._get_attrib_owner_from_geometry_type")
+    @patch("ht.inline.utils.get_attrib_owner_from_geometry_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_prims(self, mock_read_only, mock_get_owner, mock_shift):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -1204,7 +798,7 @@ class Test_reverse_sort_geometry(unittest.TestCase):
         mock_read_only.assert_called_with(mock_geometry)
 
     @patch("ht.inline.api._cpp_methods.reverseSortGeometry")
-    @patch("ht.inline.api._get_attrib_owner_from_geometry_type")
+    @patch("ht.inline.utils.get_attrib_owner_from_geometry_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_points(self, mock_read_only, mock_get_owner, mock_reverse):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -1219,7 +813,7 @@ class Test_reverse_sort_geometry(unittest.TestCase):
         mock_reverse.assert_called_with(mock_geometry, mock_get_owner.return_value)
 
     @patch("ht.inline.api._cpp_methods.reverseSortGeometry")
-    @patch("ht.inline.api._get_attrib_owner_from_geometry_type")
+    @patch("ht.inline.utils.get_attrib_owner_from_geometry_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_prims(self, mock_read_only, mock_get_owner, mock_reverse):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -1260,7 +854,7 @@ class Test_sort_geometry_by_proximity_to_position(unittest.TestCase):
         mock_read_only.assert_called_with(mock_geometry)
 
     @patch("ht.inline.api._cpp_methods.sortGeometryByProximity")
-    @patch("ht.inline.api._get_attrib_owner_from_geometry_type")
+    @patch("ht.inline.utils.get_attrib_owner_from_geometry_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_points(self, mock_read_only, mock_get_owner, mock_proximity):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -1276,7 +870,7 @@ class Test_sort_geometry_by_proximity_to_position(unittest.TestCase):
         mock_proximity.assert_called_with(mock_geometry, mock_get_owner.return_value, mock_pos)
 
     @patch("ht.inline.api._cpp_methods.sortGeometryByProximity")
-    @patch("ht.inline.api._get_attrib_owner_from_geometry_type")
+    @patch("ht.inline.utils.get_attrib_owner_from_geometry_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_prims(self, mock_read_only, mock_get_owner, mock_proximity):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -1535,7 +1129,7 @@ class Test_merge_points(unittest.TestCase):
         mock_read_only.assert_called_with(mock_geometry)
 
     @patch("ht.inline.api._cpp_methods.mergePoints")
-    @patch("ht.inline.api._build_c_int_array")
+    @patch("ht.inline.utils.build_c_int_array")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test(self, mock_read_only, mock_build, mock_merge):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -1603,7 +1197,7 @@ class Test_merge_prims(unittest.TestCase):
         mock_read_only.assert_called_with(mock_geometry)
 
     @patch("ht.inline.api._cpp_methods.mergePrims")
-    @patch("ht.inline.api._build_c_int_array")
+    @patch("ht.inline.utils.build_c_int_array")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test(self, mock_read_only, mock_build, mock_merge):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -1642,9 +1236,9 @@ class Test_copy_attribute_values(unittest.TestCase):
         mock_read_only.assert_called_with(mock_target_geo)
 
     @patch("ht.inline.api._cpp_methods.copyAttributeValues")
-    @patch("ht.inline.api._get_attrib_owner")
-    @patch("ht.inline.api._build_c_string_array")
-    @patch("ht.inline.api._get_attrib_owner_from_geometry_entity_type")
+    @patch("ht.inline.utils.get_attrib_owner")
+    @patch("ht.inline.utils.build_c_string_array")
+    @patch("ht.inline.utils.get_attrib_owner_from_geometry_entity_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_vertex(self, mock_read_only, mock_owner_from_type, mock_build, mock_get_owner, mock_copy):
 
@@ -1706,9 +1300,9 @@ class Test_copy_attribute_values(unittest.TestCase):
         )
 
     @patch("ht.inline.api._cpp_methods.copyAttributeValues")
-    @patch("ht.inline.api._get_attrib_owner")
-    @patch("ht.inline.api._build_c_string_array")
-    @patch("ht.inline.api._get_attrib_owner_from_geometry_entity_type")
+    @patch("ht.inline.utils.get_attrib_owner")
+    @patch("ht.inline.utils.build_c_string_array")
+    @patch("ht.inline.utils.get_attrib_owner_from_geometry_entity_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_point(self, mock_read_only, mock_owner_from_type, mock_build, mock_get_owner, mock_copy):
 
@@ -1770,9 +1364,9 @@ class Test_copy_attribute_values(unittest.TestCase):
         )
 
     @patch("ht.inline.api._cpp_methods.copyAttributeValues")
-    @patch("ht.inline.api._get_attrib_owner")
-    @patch("ht.inline.api._build_c_string_array")
-    @patch("ht.inline.api._get_attrib_owner_from_geometry_entity_type")
+    @patch("ht.inline.utils.get_attrib_owner")
+    @patch("ht.inline.utils.build_c_string_array")
+    @patch("ht.inline.utils.get_attrib_owner_from_geometry_entity_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_geometry(self, mock_read_only, mock_owner_from_type, mock_build, mock_get_owner, mock_copy):
 
@@ -1857,7 +1451,7 @@ class Test_copy_prim_attribute_values(unittest.TestCase):
 class Test_point_adjacent_polygons(unittest.TestCase):
     """Test ht.inline.api.point_adjacent_polygons."""
 
-    @patch("ht.inline.api._get_prims_from_list")
+    @patch("ht.inline.api.utils.get_prims_from_list")
     @patch("ht.inline.api._cpp_methods.pointAdjacentPolygons")
     def test(self, mock_adjacent, mock_get):
         mock_prim = MagicMock(spec=hou.Prim)
@@ -1873,7 +1467,7 @@ class Test_point_adjacent_polygons(unittest.TestCase):
 class Test_edge_adjacent_polygons(unittest.TestCase):
     """Test ht.inline.api.edge_adjacent_polygons."""
 
-    @patch("ht.inline.api._get_prims_from_list")
+    @patch("ht.inline.api.utils.get_prims_from_list")
     @patch("ht.inline.api._cpp_methods.edgeAdjacentPolygons")
     def test(self, mock_adjacent, mock_get):
         mock_prim = MagicMock(spec=hou.Prim)
@@ -1889,7 +1483,7 @@ class Test_edge_adjacent_polygons(unittest.TestCase):
 class Test_connected_points(unittest.TestCase):
     """Test ht.inline.api.connected_points."""
 
-    @patch("ht.inline.api._get_points_from_list")
+    @patch("ht.inline.api.utils.get_points_from_list")
     @patch("ht.inline.api._cpp_methods.connectedPoints")
     def test(self, mock_connected, mock_get):
         mock_point = MagicMock(spec=hou.Point)
@@ -1905,7 +1499,7 @@ class Test_connected_points(unittest.TestCase):
 class Test_connected_prims(unittest.TestCase):
     """Test ht.inline.api.connected_prims."""
 
-    @patch("ht.inline.api._get_prims_from_list")
+    @patch("ht.inline.api.utils.get_prims_from_list")
     @patch("ht.inline.api._cpp_methods.connectedPrims")
     def test(self, mock_connected, mock_get):
         mock_point = MagicMock(spec=hou.Point)
@@ -1951,7 +1545,7 @@ class Test_string_table_indices(unittest.TestCase):
             api.string_table_indices(mock_attrib)
 
     @patch("ht.inline.api._cpp_methods.getStringTableIndices")
-    @patch("ht.inline.api._get_attrib_owner")
+    @patch("ht.inline.utils.get_attrib_owner")
     def test(self, mock_owner, mock_get):
         mock_attrib = MagicMock(spec=hou.Attrib)
         mock_attrib.dataType.return_value = hou.attribData.String
@@ -2070,7 +1664,7 @@ class Test_set_vertex_string_attrib_values(unittest.TestCase):
         mock_num.assert_called_with(mock_geometry)
 
     @patch("ht.inline.api._cpp_methods.setVertexStringAttribValues")
-    @patch("ht.inline.api._build_c_string_array")
+    @patch("ht.inline.utils.build_c_string_array")
     @patch("ht.inline.api.num_vertices")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test(self, mock_read_only, mock_num, mock_build, mock_set):
@@ -2139,7 +1733,7 @@ class Test_set_shared_point_string_attrib(unittest.TestCase):
         mock_geometry.findPointAttrib.assert_called_with(mock_name)
 
     @patch("ht.inline.api._cpp_methods.setSharedStringAttrib")
-    @patch("ht.inline.api._get_attrib_owner")
+    @patch("ht.inline.utils.get_attrib_owner")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_default(self, mock_read_only, mock_owner, mock_set):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -2159,7 +1753,7 @@ class Test_set_shared_point_string_attrib(unittest.TestCase):
         mock_set.assert_called_with(mock_geometry, mock_owner.return_value, mock_name, mock_value, 0)
 
     @patch("ht.inline.api._cpp_methods.setSharedStringAttrib")
-    @patch("ht.inline.api._get_attrib_owner")
+    @patch("ht.inline.utils.get_attrib_owner")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_group(self, mock_read_only, mock_owner, mock_set):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -2222,7 +1816,7 @@ class Test_set_shared_prim_string_attrib(unittest.TestCase):
         mock_geometry.findPrimAttrib.assert_called_with(mock_name)
 
     @patch("ht.inline.api._cpp_methods.setSharedStringAttrib")
-    @patch("ht.inline.api._get_attrib_owner")
+    @patch("ht.inline.utils.get_attrib_owner")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_default(self, mock_read_only, mock_owner, mock_set):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -2242,7 +1836,7 @@ class Test_set_shared_prim_string_attrib(unittest.TestCase):
         mock_set.assert_called_with(mock_geometry, mock_owner.return_value, mock_name, mock_value, 0)
 
     @patch("ht.inline.api._cpp_methods.setSharedStringAttrib")
-    @patch("ht.inline.api._get_attrib_owner")
+    @patch("ht.inline.utils.get_attrib_owner")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_group(self, mock_read_only, mock_owner, mock_set):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -2559,6 +2153,30 @@ class Test_make_primitive_points_unique(unittest.TestCase):
         mock_unique.assert_called_with(mock_geometry, mock_prim.number.return_value)
 
 
+class Test_check_minimum_polygon_vertex_count(unittest.TestCase):
+    """Test ht.inline.api.check_minimum_polygon_vertex_count."""
+
+    @patch("ht.inline.api._cpp_methods.check_minimum_polygon_vertex_count")
+    def test_default(self, mock_check):
+        mock_geometry = MagicMock(spec=hou.Geometry)
+        mock_minimum = MagicMock(spec=int)
+
+        result = api.check_minimum_polygon_vertex_count(mock_geometry, mock_minimum)
+        self.assertEqual(result, mock_check.return_value)
+        mock_check.assert_called_with(mock_geometry, mock_minimum, True)
+
+    @patch("ht.inline.api._cpp_methods.check_minimum_polygon_vertex_count")
+    def test(self, mock_check):
+        mock_geometry = MagicMock(spec=hou.Geometry)
+        mock_minimum = MagicMock(spec=int)
+        mock_ignore = MagicMock(spec=bool)
+
+        result = api.check_minimum_polygon_vertex_count(mock_geometry, mock_minimum, ignore_open=mock_ignore)
+        self.assertEqual(result, mock_check.return_value)
+
+        mock_check.assert_called_with(mock_geometry, mock_minimum, mock_ignore)
+
+
 class Test_primitive_bounding_box(unittest.TestCase):
     """Test ht.inline.api.primitive_bounding_box."""
 
@@ -2696,7 +2314,7 @@ class Test_add_color_attribute(unittest.TestCase):
             api.add_color_attribute(mock_geometry, hou.attribType.Global)
 
     @patch("ht.inline.api._cpp_methods.addDiffuseAttribute", return_value=False)
-    @patch("ht.inline.api._get_attrib_owner",)
+    @patch("ht.inline.utils.get_attrib_owner",)
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_failure(self, mock_read_only, mock_owner, mock_add):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -2709,9 +2327,9 @@ class Test_add_color_attribute(unittest.TestCase):
 
         mock_add.assert_called_with(mock_geometry, mock_owner.return_value)
 
-    @patch("ht.inline.api._find_attrib")
+    @patch("ht.inline.api.utils.find_attrib")
     @patch("ht.inline.api._cpp_methods.addDiffuseAttribute", return_value=True)
-    @patch("ht.inline.api._get_attrib_owner",)
+    @patch("ht.inline.utils.get_attrib_owner",)
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test(self, mock_read_only, mock_owner, mock_add, mock_find):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -2826,7 +2444,7 @@ class Test_destroy_empty_groups(unittest.TestCase):
             api.destroy_empty_groups(mock_geometry, hou.attribType.Global)
 
     @patch("ht.inline.api._cpp_methods.destroyEmptyGroups")
-    @patch("ht.inline.api._get_attrib_owner",)
+    @patch("ht.inline.utils.get_attrib_owner",)
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test(self, mock_read_only, mock_owner, mock_destroy):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -2956,9 +2574,9 @@ class Test_rename_group(unittest.TestCase):
         with self.assertRaises(hou.OperationFailed):
             api.rename_group(mock_group, mock_new_name)
 
-    @patch("ht.inline.api._find_group")
+    @patch("ht.inline.api.utils.find_group")
     @patch("ht.inline.api._cpp_methods.renameGroup", return_value=True)
-    @patch("ht.inline.api._get_group_type")
+    @patch("ht.inline.api.utils.get_group_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test(self, mock_read_only, mock_get_type, mock_rename, mock_find):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -2980,9 +2598,9 @@ class Test_rename_group(unittest.TestCase):
 
         mock_find.assert_called_with(mock_geometry, mock_get_type.return_value, mock_new_name)
 
-    @patch("ht.inline.api._find_group")
+    @patch("ht.inline.api.utils.find_group")
     @patch("ht.inline.api._cpp_methods.renameGroup", return_value=False)
-    @patch("ht.inline.api._get_group_type")
+    @patch("ht.inline.api.utils.get_group_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_failure(self, mock_read_only, mock_get_type, mock_rename, mock_find):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -3010,7 +2628,7 @@ class Test_group_bounding_box(unittest.TestCase):
 
     @patch("ht.inline.api.hou.BoundingBox")
     @patch("ht.inline.api._cpp_methods.groupBoundingBox")
-    @patch("ht.inline.api._get_group_type")
+    @patch("ht.inline.api.utils.get_group_type")
     def test(self, mock_get_type, mock_group_bbox, mock_bbox):
         mock_group = MagicMock(spec=hou.PointGroup)
 
@@ -3028,7 +2646,7 @@ class Test_group_size(unittest.TestCase):
     """Test ht.inline.api.group_size."""
 
     @patch("ht.inline.api._cpp_methods.groupSize")
-    @patch("ht.inline.api._get_group_type")
+    @patch("ht.inline.api.utils.get_group_type")
     def test(self, mock_get_type, mock_size):
         mock_group = MagicMock(spec=hou.PointGroup)
 
@@ -3058,7 +2676,7 @@ class Test_toggle_point_in_group(unittest.TestCase):
         mock_read_only.assert_called_with(mock_geometry)
 
     @patch("ht.inline.api._cpp_methods.toggleGroupMembership")
-    @patch("ht.inline.api._get_group_type")
+    @patch("ht.inline.api.utils.get_group_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test(self, mock_read_only, mock_get_type, mock_toggle):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -3100,7 +2718,7 @@ class Test_toggle_prim_in_group(unittest.TestCase):
         mock_read_only.assert_called_with(mock_geometry)
 
     @patch("ht.inline.api._cpp_methods.toggleGroupMembership")
-    @patch("ht.inline.api._get_group_type")
+    @patch("ht.inline.api.utils.get_group_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test(self, mock_read_only, mock_get_type, mock_toggle):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -3140,7 +2758,7 @@ class Test_toggle_group_entries(unittest.TestCase):
         mock_read_only.assert_called_with(mock_geometry)
 
     @patch("ht.inline.api._cpp_methods.toggleGroupEntries")
-    @patch("ht.inline.api._get_group_type")
+    @patch("ht.inline.api.utils.get_group_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test(self, mock_read_only, mock_get_type, mock_toggle):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -3192,8 +2810,8 @@ class Test_copy_group(unittest.TestCase):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    @patch("ht.inline.api._find_group")
-    @patch("ht.inline.api._get_group_type")
+    @patch("ht.inline.api.utils.find_group")
+    @patch("ht.inline.api.utils.get_group_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test_existing(self, mock_read_only, mock_get_type, mock_find):
         mock_geometry = MagicMock(spec=hou.Geometry)
@@ -3213,9 +2831,9 @@ class Test_copy_group(unittest.TestCase):
         mock_find.assert_called_with(mock_geometry, mock_get_type.return_value, mock_new_name)
 
     @patch("ht.inline.api._cpp_methods.copyGroup")
-    @patch("ht.inline.api._get_group_attrib_owner")
-    @patch("ht.inline.api._find_group")
-    @patch("ht.inline.api._get_group_type")
+    @patch("ht.inline.api.utils.get_group_attrib_owner")
+    @patch("ht.inline.api.utils.find_group")
+    @patch("ht.inline.api.utils.get_group_type")
     @patch("ht.inline.api.is_geometry_read_only", return_value=False)
     def test(self, mock_read_only, mock_get_type, mock_find, mock_get_owner, mock_copy):
         mock_new_group = MagicMock(spec=hou.PointGroup)
@@ -3251,7 +2869,7 @@ class Test_copy_group(unittest.TestCase):
 class Test_groups_share_elements(unittest.TestCase):
     """Test ht.inline.api.groups_share_elements."""
 
-    @patch("ht.inline.api._geo_details_match", return_value=False)
+    @patch("ht.inline.api.utils.geo_details_match", return_value=False)
     def test_different_details(self, mock_match):
         mock_geometry1 = MagicMock(spec=hou.Geometry)
 
@@ -3268,8 +2886,8 @@ class Test_groups_share_elements(unittest.TestCase):
 
         mock_match.assert_called_with(mock_geometry1, mock_geometry2)
 
-    @patch("ht.inline.api._get_group_type")
-    @patch("ht.inline.api._geo_details_match", return_value=True)
+    @patch("ht.inline.api.utils.get_group_type")
+    @patch("ht.inline.api.utils.geo_details_match", return_value=True)
     def test_different_group_types(self, mock_match, mock_get_type):
         mock_geometry = MagicMock(spec=hou.Geometry)
 
@@ -3291,8 +2909,8 @@ class Test_groups_share_elements(unittest.TestCase):
         )
 
     @patch("ht.inline.api._cpp_methods.groupsShareElements")
-    @patch("ht.inline.api._get_group_type")
-    @patch("ht.inline.api._geo_details_match", return_value=True)
+    @patch("ht.inline.api.utils.get_group_type")
+    @patch("ht.inline.api.utils.geo_details_match", return_value=True)
     def test(self, mock_match, mock_get_type, mock_contains):
         mock_geometry = MagicMock(spec=hou.Geometry)
 
@@ -5141,7 +4759,7 @@ class Test_remove_meta_source(unittest.TestCase):
 class Test_libraries_in_meta_source(unittest.TestCase):
     """Test ht.inline.api.libraries_in_meta_source."""
 
-    @patch("ht.inline.api._clean_string_values")
+    @patch("ht.inline.utils.clean_string_values")
     @patch("ht.inline.api._cpp_methods.getLibrariesInMetaSource")
     def test(self, mock_get, mock_clean):
         mock_source_name = MagicMock(spec=str)
@@ -5167,6 +4785,7 @@ class Test_is_dummy_definition(unittest.TestCase):
             mock_definition.nodeTypeCategory.return_value.name.return_value,
             mock_definition.nodeTypeName.return_value,
         )
+
 
 # =============================================================================
 
