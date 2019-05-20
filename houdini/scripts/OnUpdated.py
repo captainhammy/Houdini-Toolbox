@@ -13,7 +13,7 @@ from ht.events import NodeEvents, run_event
 
 def main():
     """Main function."""
-    run_event(NodeEvents.OnUpdated, kwargs)
+    run_event(NodeEvents.OnUpdated, kwargs) # pylint: disable=undefined-variable
 
 # =============================================================================
 

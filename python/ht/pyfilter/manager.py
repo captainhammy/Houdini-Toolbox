@@ -14,6 +14,7 @@ import json
 # Houdini Toolbox Imports
 from ht.logger import logger
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -98,16 +99,12 @@ class PyFilterManager(object):
                 cls = _get_class(module_name, class_name)
 
                 if cls is None:
-                    logger.warning(
-                        "Could not load {} from {}".format(class_name, module_name)
-                    )
+                    logger.warning("Could not load %s from %s", class_name, module_name)
 
                     continue
 
                 else:
-                    logger.debug(
-                        "Registering {} ({})".format(class_name, module_name)
-                    )
+                    logger.debug("Registering %s (%s)", class_name, module_name)
 
                 # Add an instance of it to our operations list.
                 self.operations.append(cls(self))
@@ -238,7 +235,7 @@ def _get_operation_data(file_path):
             data = json.load(fp)
 
     except (IOError, ValueError) as inst:
-        logger.error("Error loading operation data from {}".format(file_path))
+        logger.error("Error loading operation data from %s", file_path)
         logger.exception(inst)
 
         data = {}

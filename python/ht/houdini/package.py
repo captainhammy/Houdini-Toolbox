@@ -21,12 +21,14 @@ import tempfile
 # Third Party Imports
 from mechanize import Browser, LinkNotFoundError
 
+
 # =============================================================================
 # GLOBALS
 # =============================================================================
 
 BUILD_DATA_FILE = "build_data.json"
 PACKAGE_CONFIG_FILE = "houdini_package_config.json"
+
 
 # =============================================================================
 # CLASSES
@@ -302,8 +304,7 @@ class HoudiniBuildData(object):
         if len(components) == 2:
             return self._get_todays_build(build)
 
-        else:
-            return self._get_specified_build(build)
+        return self._get_specified_build(build)
 
     def get_archive_extension(self):
         """Get the installation archive file type based on the operating
@@ -476,6 +477,8 @@ class HoudiniBuildManager(object):
         # If there are any that match, use the latest/only one.
         if matching:
             return matching[-1]
+
+        return None
 
     def get_default_build(self):
         """Attempt to find a default build."""
@@ -1075,7 +1078,8 @@ def _download_build(build_file, target_directory):
 
     except LinkNotFoundError:
         print "Error: {} does not exist".format(build_file)
-        return
+
+        return None
 
     url = resp.geturl()
     url += 'get/'

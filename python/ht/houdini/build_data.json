@@ -11,8 +11,7 @@
                 "--accept-EULA",
                 "--make-dir",
                 "--no-root-check",
-                "--no-install-hfs-symlink",
-                "--no-local-licensing"
+                "--no-install-hfs-symlink"
             ]
         },
 
@@ -28,8 +27,12 @@
     },
 
     "versions": {
+        "18.0": {
+            "reference_date": ["30/03/19", 60]
+        },       
+        
         "17.5": {
-            "reference_date": ["25/10/18", 56]
+            "reference_date": ["28/03/19", 209]
         },       
         
         "17.0": {

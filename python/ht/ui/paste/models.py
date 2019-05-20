@@ -11,6 +11,7 @@ from operator import attrgetter
 # Houdini Toolbox Imports
 from ht.ui.paste import utils
 
+
 # ==============================================================================
 # CLASSES
 # ==============================================================================
@@ -37,7 +38,7 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
     def data(self, index, role=QtCore.Qt.DisplayRole):
         """Get item data."""
         if not index.isValid():
-            return
+            return None
 
         row = index.row()
         column = index.column()
@@ -57,6 +58,8 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
             elif column == 3:
                 if item.date is not None:
                     return utils.date_to_string(item.date)
+
+        return None
 
     def flags(self, index):
         """Item flags.

@@ -12,10 +12,11 @@ import pickle
 from ht.sohohooks.aovs import manager
 from ht.sohohooks.aovs.aov import AOV, IntrinsicAOVGroup
 from ht.ui.aovs import utils
-import ht.ui.icons
+import ht.ui.icons  # pylint: disable=unused-import
 
 # Houdini Imports
 import hou
+
 
 # =============================================================================
 # TREE NODES
@@ -81,6 +82,8 @@ class TreeNode(object):
         if self.parent is not None:
             return self.parent.children.index(self)
 
+        return None
+
     # =========================================================================
     # METHODS
     # =========================================================================
@@ -117,6 +120,7 @@ class TreeNode(object):
         """Return a tooltip for the node."""
         pass
 
+
 # =============================================================================
 
 class FolderNode(TreeNode):
@@ -145,6 +149,7 @@ class FolderNode(TreeNode):
     def name(self):
         """The display name"""
         return self._name
+
 
 # =============================================================================
 
@@ -176,13 +181,11 @@ class AOVBaseNode(TreeNode):
         """File path of this nodes item."""
         return self._item.filePath
 
+
 # =============================================================================
 
 class AOVNode(AOVBaseNode):
     """Node representing an AOV."""
-
-    def __init__(self, aov, parent=None):
-        super(AOVNode, self).__init__(aov, parent)
 
     # =========================================================================
     # PROPERTIES
@@ -264,6 +267,7 @@ class AOVNode(AOVBaseNode):
 
         return '\n'.join(lines)
 
+
 # =============================================================================
 
 class AOVGroupNode(AOVBaseNode):
@@ -323,18 +327,17 @@ class AOVGroupNode(AOVBaseNode):
 
         return '\n'.join(lines)
 
+
 # =============================================================================
 
 class IntrinsicAOVGroupNode(AOVGroupNode):
-
-    def __init__(self, group, parent=None):
-        super(IntrinsicAOVGroupNode, self).__init__(group, parent)
 
     # =========================================================================
 
     @property
     def name(self):
         return self.group.name.lstrip("i:")
+
 
 # =============================================================================
 # PROXY MODELS
@@ -417,6 +420,7 @@ class LeafFilterProxyModel(QtCore.QSortFilterProxyModel):
             self.mapToSource(index)
         )
 
+
 # =============================================================================
 # TREE MODELS
 # =============================================================================
@@ -449,10 +453,10 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
         """The number of columns in the view."""
         return 1
 
-    def data(self, index, role):
+    def data(self, index, role):  # pylint: disable=too-many-return-statements
         """Get item data."""
         if not index.isValid():
-            return
+            return None
 
         # Get the tree node.
         node = index.internalPointer()
@@ -482,7 +486,7 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
                 font.setItalic(True)
                 return font
 
-            return
+            return None
 
         if role == QtCore.Qt.ForegroundRole:
             brush = QtGui.QBrush()
@@ -497,7 +501,7 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
                 brush.setColor(QtGui.QColor(131, 131, 131))
                 return brush
 
-            return
+            return None
 
         if role == BaseAOVTreeModel.filterRole:
             if isinstance(node, FolderNode):
@@ -517,6 +521,8 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
         if role == self.sortRole:
             if isinstance(node, AOVBaseNode):
                 return node.name
+
+        return None
 
     def getNode(self, index):
         """Get the node at an index."""
@@ -563,6 +569,7 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
 
         return len(node.children)
 
+
 # =============================================================================
 
 class AOVSelectModel(BaseAOVTreeModel):
@@ -583,7 +590,7 @@ class AOVSelectModel(BaseAOVTreeModel):
             if child.name == name:
                 return self.createIndex(row, 0, child)
 
-        return
+        return None
 
     def initFromManager(self):
         """Initialize the data from the global manager."""
@@ -619,7 +626,7 @@ class AOVSelectModel(BaseAOVTreeModel):
     def flags(self, index):
         """Item flags."""
         if not index.isValid():
-            return
+            return None
 
         node = index.internalPointer()
         parent = node.parent
@@ -809,6 +816,7 @@ class AOVSelectModel(BaseAOVTreeModel):
                 # We're done here.
                 break
 
+
 # =============================================================================
 
 class AOVsToAddModel(BaseAOVTreeModel):
@@ -819,9 +827,6 @@ class AOVsToAddModel(BaseAOVTreeModel):
 
     insertedItemsSignal = QtCore.Signal([AOVBaseNode])
     removedItemsSignal = QtCore.Signal([AOVBaseNode])
-
-    def __init__(self, root, parent=None):
-        super(AOVsToAddModel, self).__init__(root, parent)
 
     # =========================================================================
     # METHODS
@@ -849,7 +854,7 @@ class AOVsToAddModel(BaseAOVTreeModel):
     def flags(self, index):
         """Tree node flags."""
         if not index.isValid():
-            return
+            return None
 
         node = index.internalPointer()
         parent = node.parent
@@ -860,7 +865,7 @@ class AOVsToAddModel(BaseAOVTreeModel):
         if isinstance(parent, AOVGroupNode):
             return QtCore.Qt.ItemIsEnabled
 
-        return
+        return None
 
     def insertData(self, data, position=None):
         """Insert data into the model."""
@@ -924,6 +929,7 @@ class AOVsToAddModel(BaseAOVTreeModel):
         # happening when you try and drop a node on a widget.
         return QtCore.Qt.CopyAction
 
+
 # =============================================================================
 
 class AOVGroupEditListModel(QtCore.QAbstractListModel):
@@ -974,6 +980,8 @@ class AOVGroupEditListModel(QtCore.QAbstractListModel):
         if role == QtCore.Qt.CheckStateRole:
             return self._checked[row]
 
+        return None
+
     def flags(self, index):
         """Item flags."""
         return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsUserCheckable
@@ -995,9 +1003,12 @@ class AOVGroupEditListModel(QtCore.QAbstractListModel):
 
             return True
 
+        return None
+
     def uncheckAll(self):
         """Uncheck all AOVs in the list."""
         self._checked = [False] * len(self._aovs)
+
 
 # =============================================================================
 # Info Dialog Models
@@ -1026,7 +1037,7 @@ class InfoTableModel(QtCore.QAbstractTableModel):
     def data(self, index, role=QtCore.Qt.DisplayRole):
         """Get item data."""
         if not index.isValid():
-            return
+            return None
 
         row = index.row()
         column = index.column()
@@ -1034,8 +1045,10 @@ class InfoTableModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             if column == 0:
                 return self._titles[row]
-            else:
-                return self._values[row]
+
+            return self._values[row]
+
+        return None
 
     def flags(self, index):
         """Item flags."""
@@ -1049,13 +1062,11 @@ class InfoTableModel(QtCore.QAbstractTableModel):
         """Number of rows."""
         return len(self._titles)
 
+
 # =============================================================================
 
 class AOVInfoTableModel(InfoTableModel):
     """This class represents information data about an AOV."""
-
-    def __init__(self, parent=None):
-        super(AOVInfoTableModel, self).__init__(parent)
 
     # =========================================================================
     # METHODS
@@ -1126,13 +1137,11 @@ class AOVInfoTableModel(InfoTableModel):
             self._titles.append("File Path")
             self._values.append(aov.path)
 
+
 # =============================================================================
 
 class AOVGroupInfoTableModel(InfoTableModel):
     """This class represents information data about an AOVGroup."""
-
-    def __init__(self, parent=None):
-        super(AOVGroupInfoTableModel, self).__init__(parent)
 
     # =========================================================================
     # METHODS
@@ -1168,6 +1177,7 @@ class AOVGroupInfoTableModel(InfoTableModel):
     def rowCount(self, parent):
         return len(self._titles)
 
+
 # =============================================================================
 
 class AOVGroupMemberListModel(QtCore.QAbstractListModel):
@@ -1201,6 +1211,8 @@ class AOVGroupMemberListModel(QtCore.QAbstractListModel):
 
         if role == QtCore.Qt.DecorationRole:
             return utils.getIconFromVexType(value.vextype)
+
+        return None
 
     def flags(self, index):
         """Item flags."""

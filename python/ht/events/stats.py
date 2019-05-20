@@ -12,6 +12,7 @@ import time
 # Houdini Toolbox Imports
 from ht.logger import logger
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -168,9 +169,9 @@ class HoudiniEventStats(object):
         :return:
 
         """
-        logger.info("Event name: {}".format(self.name))
-        logger.info("\tRun Count: {}".format(self.run_count))
-        logger.info("\tRun Time: {}".format(self.last_run_time))
+        logger.info("Event name: %s", self.name)
+        logger.info("\tRun Count: %s", self.run_count)
+        logger.info("\tRun Time: %s", self.last_run_time)
 
     def reset(self):
         """Reset all counts.
@@ -220,14 +221,14 @@ class HoudiniEventItemStats(HoudiniEventStats):
         :return:
 
         """
-        logger.info("Item: {}".format(self.name))
-        logger.info("\tRun Count: {}".format(self.run_count))
+        logger.info("Item: %s", self.name)
+        logger.info("\tRun Count: %s", self.run_count)
         logger.info("\tCallables:")
 
         for item_name, item_time in self.item_stats.iteritems():
-            logger.info("\t\t{}: {:0.4f}".format(item_name, item_time))
+            logger.info("\t\t%s: %0.4f", item_name, item_time)
 
-        logger.info("\tRun Time: {:0.4f}".format(self.last_run_time))
+        logger.info("\tRun Time: %0.4f", self.last_run_time)
 
     def reset(self):
         """Reset all counts.
@@ -260,6 +261,7 @@ class HoudiniEventItemStats(HoudiniEventStats):
 
         self.item_stats[name] += end - start
 
+
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
@@ -272,7 +274,7 @@ def _get_matching_stats(stats, tags):
     :param tags: The list of tag values to filter by.
     :type tags: [str]
     :return: A tuple of stat objects.
-    :rtype: (HoudiniEventStats)
+    :rtype: tuple(HoudiniEventStats)
 
     """
     matching_stats = []
@@ -287,6 +289,7 @@ def _get_matching_stats(stats, tags):
 
     return tuple(matching_stats)
 
+
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
@@ -297,7 +300,7 @@ def get_event_stats(matching_tags=None):
     :param matching_tags: An optional list of tag values to filter by.
     :type matching_tags: [str]
     :return: A tuple of stat objects.
-    :rtype: (HoudiniEventStats)
+    :rtype: tuple(HoudiniEventStats)
 
     """
     all_stats = _StatsMeta._instances.get(HoudiniEventStats, {}).values()
@@ -314,7 +317,7 @@ def get_item_stats(matching_tags=None):
     :param matching_tags: An optional list of tag values to filter by.
     :type matching_tags: [str]
     :return: A tuple of stat objects.
-    :rtype: (HoudiniEventItemStats)
+    :rtype: tuple(HoudiniEventItemStats)
 
     """
     all_stats = _StatsMeta._instances.get(HoudiniEventItemStats, {}).values()

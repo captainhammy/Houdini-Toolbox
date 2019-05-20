@@ -19,6 +19,7 @@ from ht.logger import logger
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -58,7 +59,7 @@ class RopRenderEvent(HoudiniEventGroup):
         # frame is completed to get the duration.
         self._frame_start = scriptargs["time"]
 
-        logger.info("Starting Frame: {}".format(scriptargs["frame"]))
+        logger.info("Starting Frame: %s", scriptargs["frame"])
 
     def pre_render(self, scriptargs):
         """Action run before the render starts.
@@ -75,7 +76,7 @@ class RopRenderEvent(HoudiniEventGroup):
         if frame_range is not None:
             start, end, inc = frame_range
 
-            logger.info("Starting render: {}-{}:{}".format(start, end, inc))
+            logger.info("Starting render: %s-%s:%s", start, end, inc)
 
         else:
             logger.info("Starting render")
@@ -96,13 +97,11 @@ class RopRenderEvent(HoudiniEventGroup):
             duration = end_time - self._frame_start
 
             # Print a complete message that includes our calculated duration.
-            logger.info(
-                "Completed Frame: {} ({:0.5f}s)".format(scriptargs["frame"], duration)
-            )
+            logger.info("Completed Frame: %s (%0.5fs)", scriptargs["frame"], duration)
 
         # If we somehow didn't, just print the complete message.
         else:
-            logger.info("Completed Frame: {}".format(scriptargs["frame"]))
+            logger.info("Completed Frame: %s", scriptargs["frame"])
 
     def post_render(self, scriptargs):
         """Action run after the render is complete.
@@ -115,7 +114,7 @@ class RopRenderEvent(HoudiniEventGroup):
         if self._render_start is not None:
             end_time = scriptargs["time"]
 
-            logger.info("Completed Render: {:0.5f}s".format(end_time-self._render_start))
+            logger.info("Completed Render: %0.5fs", end_time-self._render_start)
 
         else:
             logger.info("Completed Render")
@@ -129,10 +128,11 @@ class RopRenderEvent(HoudiniEventGroup):
 
         """
         if "path" in scriptargs:
-            logger.info("Wrote frame {} to {}".format(scriptargs["frame"], scriptargs["path"]))
+            logger.info("Wrote frame %s to %s", scriptargs["frame"], scriptargs["path"])
 
         else:
-            logger.info("Wrote frame {}".format(scriptargs["frame"]))
+            logger.info("Wrote frame %s", scriptargs["frame"])
+
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
@@ -160,8 +160,9 @@ def _get_target_file(node):
         if node.evalParm("soho_outputmode"):
             return node.evalParm("soho_diskfile")
 
-        else:
-            return node.evalParm("vm_picture")
+        return node.evalParm("vm_picture")
+
+    return None
 
 
 def _print_frame_write(scriptargs):
@@ -183,12 +184,7 @@ def _print_frame_write(scriptargs):
             pass
 
         else:
-            logger.info(
-                "Wrote frame {} to {}".format(
-                    scriptargs["frame"],
-                    scriptargs["path"]
-                )
-            )
+            logger.info("Wrote frame %s to %s", scriptargs["frame"], scriptargs["path"])
 
 
 # =============================================================================

@@ -167,7 +167,7 @@ class IpOverrides(PyFilterOperation):
     # =========================================================================
 
     @staticmethod
-    def build_arg_string(res_scale=None, sample_scale=None, disable_blur=False,
+    def build_arg_string(res_scale=None, sample_scale=None, disable_blur=False,  # pylint: disable=arguments-differ
                        disable_aovs=False, disable_deep=False,
                        disable_displacement=False, disable_subd=False,
                        disable_tilecallback=False, bucket_size=None,

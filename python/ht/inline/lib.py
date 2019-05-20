@@ -1720,8 +1720,8 @@ check_minimum_polygon_vertex_count(const GU_Detail *gdp, int count, bool ignore_
 {
 
     const GA_Primitive                 *prim;
-    const GEO_Face                     *face; 
-    
+    const GEO_Face                     *face;
+
     GA_FOR_ALL_PRIMITIVES(gdp, prim)
     {
         if (prim->getVertexCount() < count)
@@ -1732,15 +1732,15 @@ check_minimum_polygon_vertex_count(const GU_Detail *gdp, int count, bool ignore_
             // Ignore non-polygons
             if (face == nullptr)
                 continue;
-            
+
             // Ignore open faces.
             if (ignore_open && !face->isClosed())
                 continue;
-            
+
             return false;
         }
     }
-    
+
     return true;
 }
 """,
@@ -1945,9 +1945,9 @@ eval_multiparm_instance_float(OP_Node *node, const char *parm_name, int componen
 {
     fpreal                      t = CHgetEvalTime();
     int                         instance_idx;
-    
+
     UT_StringRef                name(parm_name);
-    
+
     instance_idx = index + start_offset;
     return node->evalFloatInst(name, &instance_idx, component_index, t);
 }
@@ -1959,7 +1959,7 @@ eval_multiparm_instance_int(OP_Node *node, const char *parm_name, int component_
 {
     fpreal                      t = CHgetEvalTime();
     int                         instance_idx;
-    
+
     UT_StringRef                name(parm_name);
 
     instance_idx = index + start_offset;
@@ -1979,7 +1979,7 @@ eval_multiparm_instance_string(OP_Node *node, const char *parm_name, int compone
 
     instance_idx = index + start_offset;
     node->evalStringInst(name, &instance_idx, value, component_index, t);
-    
+
     // For some reason we can sometimes get garbage values if we don't do this :/
     return value.toStdString().c_str();
 }

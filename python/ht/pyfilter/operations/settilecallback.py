@@ -41,7 +41,7 @@ class SetTileCallback(PyFilterOperation):
     # =========================================================================
 
     @staticmethod
-    def build_arg_string(path=None):
+    def build_arg_string(path=None):  # pylint: disable=arguments-differ
         """Build an argument string for this operation.
 
         :param path: The path to the tile callback.

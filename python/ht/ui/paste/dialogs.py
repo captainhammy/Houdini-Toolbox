@@ -5,12 +5,13 @@
 # ==============================================================================
 
 # Python Imports
-from PySide2 import QtCore, QtWidgets
+from PySide2 import QtWidgets
 
 from ht.ui.paste import utils, widgets
 
 # Houdini Imports
 import hou
+
 
 # ==============================================================================
 # CLASSES

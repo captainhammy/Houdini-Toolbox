@@ -8,6 +8,7 @@
 from ht.pyfilter.operations.operation import PyFilterOperation, log_filter
 from ht.pyfilter.property import get_property, set_property
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -52,7 +53,7 @@ class ZDepthPass(PyFilterOperation):
     # =========================================================================
 
     @staticmethod
-    def build_arg_string(active=False):
+    def build_arg_string(active=False):  # pylint: disable=arguments-differ
         """Build an argument string for this operation.
 
         :param active: Whether or not to run the operation.
@@ -127,10 +128,9 @@ class ZDepthPass(PyFilterOperation):
 
             # The plane is Pz and we have yet to indicate we've got a Pz so
             # store the data.
-            else:
-                self.data["set_pz"] = True
+            self.data["set_pz"] = True
 
-                return
+            return
 
         # If we haven't found a Pz plane yet and this channel isn't a primary
         # output channel then we will force it to be Pz.

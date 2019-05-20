@@ -7,8 +7,6 @@
 # Python Imports
 import re
 
-# Houdini Imports
-import hou
 
 # =============================================================================
 # GLOBALS
@@ -20,7 +18,7 @@ DEFAULT_FMT = "{namespace}_{name}_v{iversion}_{opdigits}"
 # FUNCTIONS
 # =============================================================================
 
-def isNamespacedType(node_type, require_version=True, require_namespace=True):
+def is_namespaced_type(node_type, require_version=True, require_namespace=True):
     """Determine if a node type is namespaced based on name components."""
     components = node_type.nameComponents()
 
@@ -35,7 +33,7 @@ def isNamespacedType(node_type, require_version=True, require_namespace=True):
     return components[1] != "" or components[-1] != ""
 
 
-def setNamespacedFormattedName(node, fmt=None):
+def set_namespaced_formatted_name(node, fmt=None):
     """Set a formatted name based on namespace information.
 
     Format string is based on Python's str.format() functionality.
@@ -43,7 +41,7 @@ def setNamespacedFormattedName(node, fmt=None):
     Allowable formatting values:
         scope: scope network type
         namespace: node type namespace
-        base_namespace: namespace with any preceeding 'com.' removed
+        base_namespace: namespace with any preceding 'com.' removed
         name: node type name
         version: node type version
         iversion: integer version
@@ -69,7 +67,7 @@ def setNamespacedFormattedName(node, fmt=None):
     data = {
         "scope": scope,
         "namespace": namespace,
-        "base_namespace": re.sub("(com\.)(.+)$", "\\2", namespace),
+        "base_namespace": re.sub("(com\\.)(.+)$", "\\2", namespace),
         "name": type_name,
         "version": version,
         "opdigits": node.digitsInName(),

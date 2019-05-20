@@ -80,7 +80,7 @@ class PropertySetterManager(object):
         :return:
 
         """
-        logger.debug("Reading properties from {}".format(file_path))
+        logger.debug("Reading properties from %s", file_path)
 
         # Load json data from the file.
         with open(file_path) as f:
@@ -197,7 +197,7 @@ class PropertySetter(object):
             if not hou.patternMatch(self.rendertype, rendertype):
                 return
 
-        logger.debug("Setting property '{}' to {}".format(self.name, self.value))
+        logger.debug("Setting property '%s' to %s", self.name, self.value)
 
         # Update the property value.
         set_property(self.name, self.value)
@@ -311,7 +311,7 @@ class SetProperties(PyFilterOperation):
     # =========================================================================
 
     @staticmethod
-    def build_arg_string(properties=None, properties_file=None):
+    def build_arg_string(properties=None, properties_file=None):  # pylint: disable=arguments-differ
         """Build an argument string for this operation.
 
         'properties' should be a json compatible dictionary.
@@ -457,12 +457,7 @@ def _create_property_setter(property_name, property_block, stage_name):
         # warning message.  We will still return a regular PropertySetter
         # object though.
         else:
-            logger.warning(
-                "No masking available for {}:{}.".format(
-                    stage_name,
-                    property_name
-                )
-            )
+            logger.warning("No masking available for %s:%s.", stage_name, property_name)
 
     # Generic property setter.
     return PropertySetter(property_name, property_block)
@@ -509,7 +504,7 @@ def _process_rendertype_block(properties, stage_name, rendertype, property_block
     :type properties: list
     :param stage_name: The filter stage to run for.
     :type stage_name: str
-    :param rendertype: The rendertype.
+    :param rendertype: The render type.
     :type rendertype: str
     :param property_block: The property data to set.
     :type property_block: dict

@@ -227,7 +227,7 @@ class HomeToolDirSource(CopyPasteSource):
     # METHODS
     # ==========================================================================
 
-    def copy_helper_widget(self, *args, **kwargs):
+    def copy_helper_widget(self, *args, **kwargs):  # pylint: disable=arguments-differ
         """Get the copy helper widget for this source.
 
         :return: The helper widget to copy items to this source.
@@ -236,7 +236,7 @@ class HomeToolDirSource(CopyPasteSource):
         """
         return ht.ui.paste.helpers.HomeToolDirItemsCopyHelperWidget(self, *args, **kwargs)
 
-    def create_source(self, context, name, description=None):
+    def create_source(self, context, name, description=None):  # pylint: disable=arguments-differ
         """Create a new item source.
 
         :param context: The operator context of the source.
@@ -301,7 +301,7 @@ class HomeToolDirSource(CopyPasteSource):
         """
         return self.sources.get(context, [])
 
-    def paste_helper_widget(self, *args, **kwargs):
+    def paste_helper_widget(self, *args, **kwargs):  # pylint: disable=arguments-differ
         """Get the paste helper widget for this source.
 
         :return: The helper widget to paste items from this source.

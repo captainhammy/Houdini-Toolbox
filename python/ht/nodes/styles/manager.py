@@ -19,6 +19,7 @@ from ht.nodes.styles import constants
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -255,9 +256,8 @@ class StyleManager(object):
 
         # Otherwise it is a ConstantRule so we have to resolve the constant
         # name and return its color.
-        else:
-            constant_name = rule.constant_name
-            return self.constants[constant_name]
+        constant_name = rule.constant_name
+        return self.constants[constant_name]
 
     # =========================================================================
     # PROPERTIES

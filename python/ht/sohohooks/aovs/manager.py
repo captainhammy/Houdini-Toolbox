@@ -565,7 +565,7 @@ class AOVFile(object):
         :param group: A group to replace.
         :type group: ht.sohohooks.aovs.aov.AOVGroup
         :return:
-        
+
         """
         idx = self.groups.index(group)
 

@@ -224,7 +224,7 @@ class SetDeepImage(PyFilterOperation):
                          deep_image_path=None, resolver=None, compositing=None,
                          compression=None, depth_planes=None, mipmaps=None,
                          ofsize=None, ofstorage=None, pzstorage=None, zbias=None
-                         ):
+                         ):   # pylint: disable=arguments-differ
         """Build an argument string for this operation.
 
         :param disable_deep_image: Whether or not to disable the deep image.
@@ -303,7 +303,7 @@ class SetDeepImage(PyFilterOperation):
     def register_parser_args(parser):
         """Register interested parser args for this operation.
 
-        :param parser: The argument parser to attach arguements to.
+        :param parser: The argument parser to attach arguments to.
         :type parser: argparse.ArgumentParser.
         :return:
 
@@ -382,7 +382,7 @@ class SetDeepImage(PyFilterOperation):
             self._modify_deep_args(deep_args)
 
             logger.debug(
-                "Setting 'image:deepresolver': {}".format(" ".join([str(arg) for arg in deep_args]))
+                "Setting 'image:deepresolver': %s", " ".join([str(arg) for arg in deep_args])
             )
 
             set_property("image:deepresolver", deep_args)

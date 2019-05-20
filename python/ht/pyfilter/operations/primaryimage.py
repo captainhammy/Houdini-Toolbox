@@ -56,7 +56,7 @@ class SetPrimaryImage(PyFilterOperation):
     # =========================================================================
 
     @staticmethod
-    def build_arg_string(primary_image_path=None, disable_primary_image=False):
+    def build_arg_string(primary_image_path=None, disable_primary_image=False):  # pylint: disable=arguments-differ
         """Build an argument string for this operation.
 
         :param primary_image_path: The primary image path to set.

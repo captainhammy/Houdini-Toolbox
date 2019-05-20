@@ -1675,8 +1675,7 @@ def rename_group(group, new_name):
     if success:
         return utils.find_group(geometry, group_type, new_name)
 
-    else:
-        return None
+    return None
 
 
 def group_bounding_box(group):

@@ -58,23 +58,23 @@ class LogOutput(PyFilterOperation):
         # Split message by newlines so we can log each line.
         messages = message.split('\n')
 
-        for message in messages:
+        for msg in messages:
             # Verbosity of 0 is always for errors.
             if level == 0:
-                self.logger.error(message)
+                self.logger.error(msg)
 
             # Mantra also only seems to set the prefix if the message is an
             # error/warning.
             elif prefix:
-                self.logger.warning(message)
+                self.logger.warning(msg)
 
             # Default verbosity level so we'll call that info.
             elif level == 1:
-                self.logger.info(message)
+                self.logger.info(msg)
 
             # Flag as debug.
             else:
-                self.logger.debug(message)
+                self.logger.debug(msg)
 
         # Return True to let Mantra know that we handled message output so it
         # will not output it itself.

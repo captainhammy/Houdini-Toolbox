@@ -7,6 +7,7 @@
 # Python Imports
 import argparse
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -24,8 +25,7 @@ class ArgumentParser(argparse.ArgumentParser):
 
     """
 
-    def __init__(self, description=None, epilog=None, add_help=True,
-                 allow_abbrev=True, *args, **kwargs):
+    def __init__(self, description=None, epilog=None, add_help=True, allow_abbrev=True, *args, **kwargs):  # pylint: disable=keyword-arg-before-vararg
         # Construct the base ArgumentParser object.  We don't want to allow
         # help since it will use flags we don't want.
         super(ArgumentParser, self).__init__(
@@ -52,7 +52,7 @@ class ArgumentParser(argparse.ArgumentParser):
     # NON-PUBLIC METHODS
     # =========================================================================
 
-    def _parse_optional(self, arg_string):
+    def _parse_optional(self, arg_string):  # pylint: disable=too-many-return-statements
         """Parse optional arguments."""
         # if it's an empty string, it was meant to be a positional
         if not arg_string:
@@ -95,7 +95,7 @@ class ArgumentParser(argparse.ArgumentParser):
             # if exactly one action matched, this segmentation is good,
             # so return the parsed action
             elif len(option_tuples) == 1:
-                option_tuple, = option_tuples
+                option_tuple, = option_tuples  # pylint: disable=unbalanced-tuple-unpacking
                 return option_tuple
 
         # if it was not found as an option, but it looks like a negative

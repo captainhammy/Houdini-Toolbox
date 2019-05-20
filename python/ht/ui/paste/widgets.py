@@ -9,10 +9,10 @@ from PySide2 import QtCore, QtGui, QtWidgets
 import re
 
 import ht.ui.paste
-from ht.ui.paste import models
 
 # Houdini Imports
 import hou
+
 
 # ==============================================================================
 # CLASSES

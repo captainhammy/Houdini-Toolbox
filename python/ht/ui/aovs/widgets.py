@@ -17,6 +17,7 @@ from ht.ui.aovs import models, uidata, utils
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -448,10 +449,9 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
             if isinstance(node, (models.AOVGroupNode, models.FolderNode)):
                 show_exp_col_all = True
 
-                if self.isExpanded(index):
-                    show_collapse = True
-                else:
-                    show_expand = True
+                show_collapse = self.isExpanded(index)
+
+                show_expand = not show_collapse
 
             # Show into item for AOVs and groups.
             if isinstance(node, (models.AOVNode, models.AOVGroupNode)):
@@ -465,11 +465,9 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
 
                 is_installed = source_model.isInstalled(node)
 
-                if is_installed:
-                    show_uninstall = True
+                show_uninstall = is_installed
 
-                else:
-                    show_install = True
+                show_install = not show_uninstall
 
         if show_collapse:
             menu.addAction(
@@ -1199,10 +1197,9 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
             node = source_index.internalPointer()
 
             if isinstance(node, models.AOVGroupNode):
-                if self.isExpanded(index):
-                    show_collapse = True
-                else:
-                    show_expand = True
+                show_collapse = self.isExpanded(index)
+
+                show_expand = not show_collapse
 
         if show_collapse:
             menu.addAction(
@@ -1404,7 +1401,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
 
         items = []
 
-        for node in nodes:
+        for node in nodes:  # pylint: disable=redefined-argument-from-local
             value = ""
 
             if node.parm("auto_aovs") is not None:
@@ -1666,7 +1663,7 @@ class InfoTableView(QtWidgets.QTableView):
         result = self.model().data(index)
 
         if result is not None:
-            clipboard = QtGui.QApplication.clipboard()
+            clipboard = QtGui.QApplication.clipboard()  # pylint: disable=c-extension-no-member
             clipboard.setText(result)
 
 

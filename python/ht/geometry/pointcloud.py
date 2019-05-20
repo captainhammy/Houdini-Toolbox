@@ -19,6 +19,14 @@ import hou
 class PointCloud(object):
     """A wrapper around scipy.spatial.KDTree to represent point positions.
 
+    :param geometry: The source geometry.
+    :type geometry: hou.Geometry
+    :param pattern: Optional point selecting pattern.
+    :type pattern: str
+    :param leaf_size: The tree leaf size.
+    :type leaf_size: int
+    :return:
+
     """
 
     def __init__(self, geometry, pattern=None, leaf_size=10):
@@ -69,8 +77,7 @@ class PointCloud(object):
         if self._geometry.sopNode() is not None:
             return "<PointCloud for {}>".format(self._geometry.sopNode().path())
 
-        else:
-            return "<PointCloud>"
+        return "<PointCloud>"
 
     # =========================================================================
     # NON-PUBLIC METHODS
@@ -175,7 +182,7 @@ class PointCloud(object):
                            if dist < maxdist]
 
                 # There are some points within the max distance so get them.
-                if len(indexes) > 0:
+                if indexes:
                     near_points = self._get_result_points(indexes)
 
                 else:

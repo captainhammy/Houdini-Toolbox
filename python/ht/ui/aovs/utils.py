@@ -16,6 +16,7 @@ from ht.ui.aovs import uidata
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -36,14 +37,12 @@ class AOVViewerInterface(QtCore.QObject):
     groupRemovedSignal = QtCore.Signal(AOVGroup)
     groupUpdatedSignal = QtCore.Signal(AOVGroup)
 
-    def __init__(self, parent=None):
-        super(AOVViewerInterface, self).__init__(parent)
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-def _getItemMenuIndex(items, item):
+def _get_item_menu_index(items, item):
     """Function to determine which index an item represents."""
     idx = 0
 
@@ -54,6 +53,7 @@ def _getItemMenuIndex(items, item):
         idx += 1
 
     return 0
+
 
 # =============================================================================
 # FUNCTIONS
@@ -247,7 +247,7 @@ def getIconFromVexType(vextype):
 
 def getLightExportMenuIndex(lightexport):
     """Find the menu index of the lightexport value."""
-    return _getItemMenuIndex(
+    return _get_item_menu_index(
         uidata.LIGHTEXPORT_MENU_ITEMS,
         lightexport
     )
@@ -255,7 +255,7 @@ def getLightExportMenuIndex(lightexport):
 
 def getQuantizeMenuIndex(quantize):
     """Find the menu index of the quantize value."""
-    return _getItemMenuIndex(
+    return _get_item_menu_index(
         uidata.QUANTIZE_MENU_ITEMS,
         quantize
     )
@@ -263,7 +263,7 @@ def getQuantizeMenuIndex(quantize):
 
 def getSFilterMenuIndex(sfilter):
     """Find the menu index of the sfilter value."""
-    return _getItemMenuIndex(
+    return _get_item_menu_index(
         uidata.SFILTER_MENU_ITEMS,
         sfilter
     )
@@ -271,7 +271,7 @@ def getSFilterMenuIndex(sfilter):
 
 def getVexTypeMenuIndex(vextype):
     """Find the menu index of the vextype value."""
-    return _getItemMenuIndex(
+    return _get_item_menu_index(
         uidata.VEXTYPE_MENU_ITEMS,
         vextype
     )

@@ -761,7 +761,7 @@ class EditAOVDialog(_BaseAOVDialog):
 
     # =========================================================================
 
-    def initFromAOV(self):
+    def initFromAOV(self):  # pylint: disable=arguments-differ
         """Initialize the dialog from its AOV."""
 
         super(EditAOVDialog, self).initFromAOV(self.aov)
