@@ -15,13 +15,6 @@ from ht.inline import utils
 # Houdini Imports
 import hou
 
-import coverage
-
-cov = coverage.Coverage(data_suffix=True)
-cov.start()
-
-reload(utils)
-
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -437,10 +430,5 @@ class Test_get_prims_from_list(unittest.TestCase):
 # =============================================================================
 
 if __name__ == '__main__':
-    try:
-        unittest.main()
+    unittest.main()
 
-    finally:
-        cov.stop()
-        cov.save()
-        cov.html_report()
