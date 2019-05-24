@@ -2454,10 +2454,6 @@ def eval_multiparm_instance(node, name, index):
     You cannot try to evaluate a single component of a tuple parameter, evaluate
     the entire tuple instead and get which values you need.
 
-    WARNING: This function will NOT create an evaluation dependency on the parameter.
-    This means you cannot use this function to evaluate parameters within a cooking
-    node and expect it to recook after change.
-
     # Float
     >>> eval_multiparm_instance(node, "float#", 1)
     0.53

@@ -1943,13 +1943,18 @@ getMultiParmInstances(OP_Node *node, const char *parm_name)
 float
 eval_multiparm_instance_float(OP_Node *node, const char *parm_name, int component_index, int index, int start_offset)
 {
-    fpreal                      t = CHgetEvalTime();
-    int                         instance_idx;
+    fpreal                      result, t = CHgetEvalTime();
+    int                         instance_index;
 
     UT_StringRef                name(parm_name);
 
-    instance_idx = index + start_offset;
-    return node->evalFloatInst(name, &instance_idx, component_index, t);
+    instance_index = index + start_offset;
+    
+    result = node->evalFloatInst(name, &instance_index, component_index, t);
+
+    addDependencyOnParm(node, name, instance_index, component_index);
+
+    return result;
 }
 """,
 
@@ -1958,12 +1963,17 @@ int
 eval_multiparm_instance_int(OP_Node *node, const char *parm_name, int component_index, int index, int start_offset)
 {
     fpreal                      t = CHgetEvalTime();
-    int                         instance_idx;
+    int                         instance_index, result;
 
     UT_StringRef                name(parm_name);
 
-    instance_idx = index + start_offset;
-    return node->evalIntInst(name, &instance_idx, component_index, t);
+    instance_index = index + start_offset;
+        
+    result = node->evalIntInst(name, &instance_index, component_index, t);
+    
+    addDependencyOnParm(node, name, instance_index, component_index);
+    
+    return result;
 }
 """,
 
@@ -1972,14 +1982,16 @@ const char *
 eval_multiparm_instance_string(OP_Node *node, const char *parm_name, int component_index, int index, int start_offset)
 {
     fpreal                      t = CHgetEvalTime();
-    int                         instance_idx;
+    int                         instance_index;
 
-    UT_StringRef                name(parm_name);
+    const UT_StringRef          &name(parm_name);
     UT_String                   value;
+     
+    instance_index = index + start_offset;
+    node->evalStringInst(name, &instance_index, value, component_index, t);
 
-    instance_idx = index + start_offset;
-    node->evalStringInst(name, &instance_idx, value, component_index, t);
-
+    addDependencyOnParm(node, name, instance_index, component_index);
+    
     // For some reason we can sometimes get garbage values if we don't do this :/
     return value.toStdString().c_str();
 }
@@ -2117,6 +2129,9 @@ cpp_methods = inlinecpp.createLibrary(
     catch_crashes=True,
     includes="""
 #include <CMD/CMD_Variable.h>
+#include <CH/CH_Channel.h>
+#include <CH/CH_Collection.h>
+#include <CH/CH_Manager.h>
 #include <GA/GA_AttributeRefMap.h>
 #include <GA/GA_Primitive.h>
 #include <GEO/GEO_Face.h>
@@ -2127,15 +2142,20 @@ cpp_methods = inlinecpp.createLibrary(
 #include <GU/GU_PrimPacked.h>
 #include <OBJ/OBJ_Node.h>
 #include <OP/OP_CommandManager.h>
+#include <OP/OP_Context.h>
 #include <OP/OP_Director.h>
+#include <OP/OP_Expression.h>
+#include <OP/OP_InterestRef.h>
 #include <OP/OP_Node.h>
 #include <OP/OP_OTLDefinition.h>
 #include <OP/OP_OTLLibrary.h>
 #include <OP/OP_OTLManager.h>
+#include <PRM/PRM_Name.h>
 #include <PRM/PRM_Parm.h>
 #include <ROP/ROP_RenderManager.h>
 #include <UT/UT_Version.h>
 #include <UT/UT_WorkArgs.h>
+#include <UT/UT_WorkBuffer.h>
 
 #if (UT_MAJOR_VERSION_INT >= 17)
     #include <UT/UT_StdUtil.h>
@@ -2152,6 +2172,36 @@ void validateStringVector(std::vector<std::string> &string_vec)
     {
         // An an empty string.
         string_vec.push_back("");
+    }
+}
+
+
+void addDependencyOnParm(OP_Node *node, const UT_StringRef &name, int instance_index, int component_index)
+{
+    int                         evaluating_parm_index, evaluating_sub_index, target_parm_index;
+
+    OP_ExprFindCh               cache;
+    OP_Node                     *evaluating_node;
+
+    UT_IntArray                 instance_numbers;
+    UT_WorkBuffer               wb;
+
+    instance_numbers.append(instance_index);
+        
+    cache.getEvaluatingSource(
+        evaluating_node, evaluating_parm_index, evaluating_sub_index, SYSgetSTID()
+    );
+    
+    if (evaluating_node)
+    {
+        PRM_Name::instanceToken(wb, name, instance_numbers);
+        
+        target_parm_index = node->getParmList()->getParmIndex(wb.buffer());
+    
+        OP_InterestRef target_ref(*evaluating_node, evaluating_parm_index, evaluating_sub_index);
+        OP_InterestRef source_ref(*node, target_parm_index, component_index);
+        
+        OP_Node::addExtraInput(target_ref, source_ref);
     }
 }
 
