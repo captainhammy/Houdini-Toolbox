@@ -21,23 +21,25 @@ The *ht.inline.utils* module contains functions that can be used to deal with co
 In many cases it can be useful to pass lists of values (floats, ints, strings) to your C++ functions.  To easily handle this there are convenience functions available to convert those data types to ctypes compatible objects.
 
 :box:
-    #display: raised
     {{{
-    eg. integer list ([0, 1, 2, 3, 4])
+    #!python
+    # eg. integer list ([0, 1, 2, 3, 4])
   
-    # Define a C++ function that accepts an array of ints
+    """
+    // Define a C++ function that accepts an array of ints
     void func(int *vals, int num_vals)
     {
         std::vector<int> vect {vals, vals + num_vals};    
     
         ...
     }
+    """
     
     # Construct an object we can pass
-    arr = utils.build_c_int_array([0, 1, 2, 3, 4])
-    # arr -> <c_int_Array_5 object at 0x7f4613505560>
-    lib.func(arr, len(arr))
-    
+    >>> arr = utils.build_c_int_array([0, 1, 2, 3, 4])
+    >>> arr
+    <c_int_Array_5 object at 0x7f4613505560>
+    >>> lib.func(arr, len(arr))
     }}}
 
 === HDK attribute/group conversion functions ===
@@ -45,30 +47,57 @@ In many cases it can be useful to pass lists of values (floats, ints, strings) t
 These functions will convert Houdini attribute and group types into integers that can be cast to HDK data types.
 
 :box:
-    #display: raised
     {{{
-    eg. point attribute (hou.Attrib.type() == hou.attribType.Point)
+    #!python
+    # eg. point attribute (hou.Attrib.type() == hou.attribType.Point)
 
-    # Define a C++ function that accepts an attribute type as an integer
+    """
+    // Define a C++ function that accepts an attribute type as an integer
+
     void func(GU_Detail *gdp, int attribute_type)
     {
         GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type)
         // owner -> GA_ATTRIB_POINT
         ...
     }
+    """
     
     # Convert to compatible object we can pass
-    attrib = geo.findPointAttrib("P")
-    attribute_type = utils.get_attrib_owner(attrib)
-    # attribute_type -> 1
-    lib.func(geo, attribute_type)    
+    >>> attrib = geo.findPointAttrib("P")
+    >>> attribute_type = utils.get_attrib_owner(attrib)
+    >>> attribute_type
+    1
+    >>> lib.func(geo, attribute_type)    
     }}}
 
 
 === Return value processing functions ===
 
 These functions are simple convenience functions that convert lists of values to hou objects such as points, prims or nodes from paths.
+
+:box:
+    {{{
+    #!python
+    # eg. Getting a tuple of hou.Point back
+
+    """
+    // Define a function which returns an integer array representing point numbers.
+    IntArray connectedPoints(const GU_Detail *gdp, int pt_num)
+    {
+        std::vector<int>        pt_nums;
+        ...
+        return pt_nums;
+    }
+    """
     
+    >>> result = lib.func(geo)
+    >>> result
+    [1, 10]
+    >>> utils.get_points_from_list(geometry, result)
+    (<hou.Point #1 of geometry in /obj/geo1/grid1>, <hou.Point #10 of geometry in /obj/geo1/grid1>)
+    }}}
+
+
 @parameters
     Recompile:
         #id: recompile
@@ -134,6 +163,10 @@ These functions are simple convenience functions that convert lists of values to
         
         Code that will be included after #include statements but before the primary function definitions.  Use this field to define any shared functions you might want to use.
         
+        Note:
+            By default there is a ```void validateStringVector(std::vector<std::string> &)``` function defined which can be useful for when your function returns a StringArray.
+            It is currently not possible to return an empty vector so calling this function with your vector before returning it will ensure there is at least 1 item (an empty
+            string) in it.
     
     === Structs ===
     

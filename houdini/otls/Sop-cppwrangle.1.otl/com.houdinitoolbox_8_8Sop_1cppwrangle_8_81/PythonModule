@@ -4,6 +4,9 @@ import ast
 import os
 import subprocess
 
+# Houdini Toolbox Imports
+from ht.inline.api import eval_multiparm_instance
+
 # Houdini Imports
 import hou
 import inlinecpp
@@ -136,10 +139,10 @@ def _get_function_sources(node):
     num_functions = node.evalParm("num_functions")
 
     for i in range(num_functions):
-        if not node.evalParm("enable_function{}".format(i)):
+        if not eval_multiparm_instance(node, "enable_function#", i):
             continue
 
-        source = node.evalParm("function{}".format(i))
+        source = eval_multiparm_instance(node, "function#", i)
 
         if not source:
             continue
@@ -173,10 +176,10 @@ def _get_includes(node):
     num_includes = node.evalParm("num_includes")
 
     for i in range(num_includes):
-        if not node.evalParm("enable_include_header{}".format(i)):
+        if not eval_multiparm_instance(node, "enable_include_header#", i):
             continue
 
-        header = node.evalParm("include_header{}".format(i))
+        header = eval_multiparm_instance(node, "include_header#", i)
 
         if header:
             headers.append(header)
@@ -214,11 +217,11 @@ def _get_structs(node):
     num_structs = node.evalParm("num_structs")
 
     for i in range(num_structs):
-        if not node.evalParm("enable_struct{}".format(i)):
+        if not eval_multiparm_instance(node, "enable_struct#", i):
             continue
 
-        struct_name = node.evalParm("struct_name{}".format(i))
-        struct_definition = node.evalParm("struct_definition{}".format(i))
+        struct_name = eval_multiparm_instance(node, "struct_name#", i)
+        struct_definition = eval_multiparm_instance(node, "struct_definition#", i)
 
         if not struct_name or not struct_definition:
             continue
@@ -296,6 +299,6 @@ def view_c_file(node):
     cpp_file_path = os.path.join(os.path.dirname(shared_object_path), cpp_file_name)
 
     if os.path.exists(cpp_file_path):
-        editor = os.environ.get("EDITOR", "gvim")
-        subprocess.Popen(" ".join([editor, cpp_file_path]), shell=True)
+        args = os.environ.get("EDITOR", "gvim").split() + [cpp_file_path]
+        subprocess.Popen(args)
 
