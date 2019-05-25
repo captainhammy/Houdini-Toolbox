@@ -1,0 +1,383 @@
+# Dialog script for com.houdinitoolbox::cppwrangle::1 automatically generated
+
+{
+    name	com.houdinitoolbox::cppwrangle::1
+    script	com.houdinitoolbox::cppwrangle::1
+    label	"C++ Wrangle"
+
+    help {
+	""
+    }
+
+    inputlabel	1	"Input 1"
+    inputlabel	2	"Input 2"
+    parmtag { inputisref2 1 }
+    inputlabel	3	"Input 3"
+    parmtag { inputisref3 1 }
+    inputlabel	4	"Input 4"
+    parmtag { inputisref4 1 }
+
+    parm {
+        name    "recompile"
+        label   "Recompile"
+        type    button
+        joinnext
+        default { "0" }
+        range   { 0 1 }
+        parmtag { "script_callback" "hou.phm().recompile(hou.pwd())" }
+        parmtag { "script_callback_language" "python" }
+    }
+    parm {
+        name    "pause_compiling"
+        label   "Pause Compiling"
+        type    toggle
+        default { "0" }
+        range   { 0 1 }
+    }
+    group {
+        name    "python_code"
+        label   "Python"
+
+        parm {
+            name    "code"
+            label   "Code"
+            type    string
+            default { "# Compiled code is available using the 'lib' var.\nnode = hou.pwd()\ngeo = node.geometry()" }
+            range   { 0 1 }
+            parmtag { "autoscope" "0000000000000000" }
+            parmtag { "editor" "1" }
+            parmtag { "editorlang" "python" }
+            parmtag { "editorlines" "25-40" }
+        }
+    }
+
+    group {
+        name    "python_code_1"
+        label   "C++ Definitions"
+
+        multiparm {
+            name    "num_functions"
+            label    "Number of functions"
+            default 1
+            parmtag { "autoscope" "0000000000000000" }
+            parmtag { "multistartoffset" "0" }
+
+            parm {
+                name    "enable_function#"
+                label   "Enable"
+                type    toggle
+                nolabel
+                joinnext
+                default { "1" }
+                range   { 0 1 }
+            }
+            parm {
+                name    "function#"
+                label   "C++ Code"
+                type    string
+                default { "" }
+                range   { 0 1 }
+                parmtag { "editor" "1" }
+                parmtag { "editorlang" "vex" }
+                parmtag { "editorlines" "8-40" }
+            }
+        }
+
+    }
+
+    group {
+        name    "python_code_2"
+        label   "Includes & Structs"
+
+        groupsimple {
+            name    "includes"
+            label   "Includes"
+
+            parm {
+                name    "common_includes_label"
+                label   "Common Includes"
+                type    label
+                default { "" }
+                range   { 0 1 }
+            }
+            parm {
+                name    "base_includes"
+                label   "Base"
+                type    toggle
+                default { "1" }
+                range   { 0 1 }
+                parmtag { "autoscope" "0000000000000000" }
+            }
+            parm {
+                name    "geo_includes"
+                label   "Geo"
+                type    toggle
+                default { "0" }
+                range   { 0 1 }
+                parmtag { "autoscope" "0000000000000000" }
+            }
+            parm {
+                name    "node_includes"
+                label   "Nodes"
+                type    toggle
+                default { "0" }
+                range   { 0 1 }
+                parmtag { "autoscope" "0000000000000000" }
+            }
+            parm {
+                name    "sepparm2"
+                label   "Separator"
+                type    separator
+                default { "" }
+                range   { 0 1 }
+            }
+            multiparm {
+                name    "num_includes"
+                label    "Number of headers"
+                parmtag { "multistartoffset" "0" }
+
+                parm {
+                    name    "enable_include_header#"
+                    label   "Enable Include Header#"
+                    type    toggle
+                    nolabel
+                    joinnext
+                    default { "1" }
+                    range   { 0 1 }
+                }
+                parm {
+                    name    "include_header#"
+                    label   "Header file"
+                    type    string
+                    default { "" }
+                    disablewhen "{ enable_include_header# == 0 }"
+                    range   { 0 1 }
+                }
+            }
+
+            parm {
+                name    "sepparm"
+                label   "Separator"
+                type    separator
+                default { "" }
+                range   { 0 1 }
+            }
+            parm {
+                name    "include_code"
+                label   "Include Code"
+                type    string
+                default { "using namespace std;\n\n// Validate a vector of strings so that it can be returned as a StringArray.\n// Currently we cannot return an empty vector.\nvoid validateStringVector(std::vector<std::string> &string_vec)\n{\n    // Check for an empty vector.\n    if (string_vec.size() == 0)\n    {\n        // An an empty string.\n        string_vec.push_back(\"\");\n    }\n}" }
+                range   { 0 1 }
+                parmtag { "editor" "1" }
+                parmtag { "editorlang" "vex" }
+            }
+        }
+
+        groupsimple {
+            name    "structs"
+            label   "Structs"
+
+            parm {
+                name    "common_structs"
+                label   "Common structs"
+                type    toggle
+                default { "on" }
+                range   { 0 1 }
+                parmtag { "autoscope" "0000000000000000" }
+            }
+            multiparm {
+                name    "num_structs"
+                label    "Number of structs"
+                default 0
+                parmtag { "autoscope" "0000000000000000" }
+                parmtag { "multistartoffset" "0" }
+
+                parm {
+                    name    "enable_struct#"
+                    label   "Enable Struct #"
+                    type    toggle
+                    nolabel
+                    joinnext
+                    default { "1" }
+                    range   { 0 1 }
+                }
+                parm {
+                    name    "struct_name#"
+                    label   "Struct"
+                    type    string
+                    joinnext
+                    default { "" }
+                    disablewhen "{ enable_struct# == 0 }"
+                    range   { 0 1 }
+                }
+                parm {
+                    name    "struct_definition#"
+                    label   "Definition"
+                    type    string
+                    nolabel
+                    default { "" }
+                    disablewhen "{ enable_struct# == 0 }"
+                    range   { 0 1 }
+                }
+            }
+
+        }
+
+    }
+
+    group {
+        name    "python_code_3"
+        label   "Options"
+
+        parm {
+            name    "view_c_file"
+            label   "View .C file"
+            type    button
+            default { "0" }
+            range   { 0 1 }
+            parmtag { "script_callback" "hou.phm().view_c_file(hou.pwd())" }
+            parmtag { "script_callback_language" "python" }
+        }
+        groupsimple {
+            name    "general"
+            label   "General"
+
+            parm {
+                name    "library_name"
+                label   "Library Name"
+                type    string
+                default { "`opname(\".\")`" }
+                range   { 0 1 }
+            }
+            parm {
+                name    "compile_target"
+                label   "Compile Target"
+                type    string
+                default { "temp" }
+                menu {
+                    "default"   "inlinecpp default ($HOME/houdiniX.Y/inlinecpp)"
+                    "temp"      "$TEMP"
+                    "custom"    "Custom"
+                }
+                range   { 0 1 }
+            }
+            parm {
+                name    "custom_compile_target"
+                label   "Compile Target Folder"
+                type    file
+                default { "" }
+                hidewhen "{ compile_target != custom }"
+                range   { 0 1 }
+                parmtag { "filechooser_mode" "read" }
+            }
+            parm {
+                name    "print_compile_errors"
+                label   "Print Compile Errors"
+                type    toggle
+                default { "1" }
+                range   { 0 1 }
+            }
+        }
+
+        groupsimple {
+            name    "options"
+            label   "Inlinecpp options"
+
+            parm {
+                name    "acquire_hom_lock"
+                label   "Acquire HOM Lock"
+                type    toggle
+                default { "on" }
+                range   { 0 1 }
+                parmtag { "autoscope" "0000000000000000" }
+            }
+            parm {
+                name    "catch_crashes"
+                label   "Catch Crashes"
+                type    toggle
+                default { "on" }
+                range   { 0 1 }
+                parmtag { "autoscope" "0000000000000000" }
+            }
+            parm {
+                name    "debug"
+                label   "Debug"
+                type    toggle
+                default { "on" }
+                range   { 0 1 }
+                parmtag { "autoscope" "0000000000000000" }
+            }
+            multiparm {
+                name    "num_include_dirs"
+                label    "Include Directories"
+
+                parm {
+                    name    "enable_include_dir#"
+                    label   "Enable Include Dir"
+                    type    toggle
+                    nolabel
+                    joinnext
+                    default { "1" }
+                    range   { 0 1 }
+                }
+                parm {
+                    name    "include_dir#"
+                    label   "Include Dir"
+                    type    string
+                    default { "" }
+                    disablewhen "{ enable_include_dir# == 0 }"
+                    range   { 0 1 }
+                }
+            }
+
+            multiparm {
+                name    "num_link_dirs"
+                label    "Link Directories"
+
+                parm {
+                    name    "enable_link_dir#"
+                    label   "Enable Link Dir"
+                    type    toggle
+                    nolabel
+                    joinnext
+                    default { "1" }
+                    range   { 0 1 }
+                }
+                parm {
+                    name    "link_dir#"
+                    label   "Link Dir"
+                    type    string
+                    default { "" }
+                    disablewhen "{ enable_link_dir# == 0 }"
+                    range   { 0 1 }
+                }
+            }
+
+            multiparm {
+                name    "num_link_libs"
+                label    "Link Libs"
+
+                parm {
+                    name    "enable_link_lib#"
+                    label   "Enable Link Lib"
+                    type    toggle
+                    nolabel
+                    joinnext
+                    default { "1" }
+                    range   { 0 1 }
+                }
+                parm {
+                    name    "link_lib#"
+                    label   "Link Lib"
+                    type    string
+                    default { "" }
+                    disablewhen "{ enable_link_lib# == 0 }"
+                    range   { 0 1 }
+                }
+            }
+
+        }
+
+    }
+
+}

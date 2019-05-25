@@ -1,0 +1,45 @@
+# Houdini Imports
+import hou
+import hutil.cppinline
+
+node = hou.pwd()
+
+# Initialize to None so there is an object name 'lib' around in the case that
+# compilation does not occur due to there being no function sources such as
+# when the node is initially created and cooked.
+lib = None
+
+if not node.evalParm("pause_compiling"):
+    hou.ui.setStatusMessage("Compiling: {}".format(node.path()))
+
+    try:
+        lib = node.hm().build_library(node)
+
+    # Couldn't compile
+    except hutil.cppinline.CompilerError as inst:
+        msg = "Compilation failed: {}".format(node.path())
+
+        if hou.isUIAvailable():
+            hou.ui.setStatusMessage(msg, hou.severityType.Error)
+
+        else:
+            print msg
+
+        if node.evalParm("print_compile_errors"):
+            print inst
+
+    # If there are no function sources
+    except node.hm().NoFunctionSourcesError:
+        msg = "No functions to compile: {}".format(node.path())
+
+        if hou.isUIAvailable():
+            hou.ui.setStatusMessage(msg, hou.severityType.Warning)
+
+    else:
+        if hou.isUIAvailable():
+            hou.ui.setStatusMessage("Compile complete: {}".format(node.path()))
+
+# Get and execute the Python code.
+code = node.parm("code").unexpandedString()
+exec(code)  # pylint: disable=exec-used
+

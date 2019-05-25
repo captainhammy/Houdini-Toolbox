@@ -1,0 +1,301 @@
+
+# Standard Library Imports
+import ast
+import os
+import subprocess
+
+# Houdini Imports
+import hou
+import inlinecpp
+
+
+# =============================================================================
+# INLINECPP CONSTANTS
+# =============================================================================
+
+_COMMON_INCLUDES = {
+    "base" : ["GU/GU_Detail.h", "OP/OP_Node.h"],
+    "nodes": ["OP/OP_Director.h", "PRM/PRM_Parm.h"],
+    "geo": ["GA/GA_AttributeRefMap.h", "GEO/GEO_Face.h", "GEO/GEO_PointTree.h", "GQ/GQ_Detail.h", "GU/GU_PackedGeometry.h", "GU/GU_PrimPacked.h"],
+}
+
+_DEFAULT_STRUCTS = [
+    ("IntArray", "*i"),
+    ("FloatArray", "*d"),
+    ("StringArray", "**c"),
+    ("StringTuple", "*StringArray"),
+    ("VertexMap", (("prims", "*i"), ("indices", "*i"))),
+    ("Position3D", (("x", "d"), ("y", "d"), ("z", "d"))),
+]
+
+
+# =============================================================================
+# CLASSES
+# =============================================================================
+
+class CPPWrangleCompilerHook(inlinecpp.HcustomCompilerHook):
+    """Custom hcustom compiler hook for use with C++ Wrangle.
+
+    This custom compiler hook allows passing a specific compilation target
+    directory.
+
+    :param target_directory: The target directory for the compiled files.
+    :type target_directory: str
+
+    """
+
+    def __init__(self, target_directory):
+        super(CPPWrangleCompilerHook, self).__init__()
+
+        self.target_directory = target_directory
+
+    def default_shared_library_directory(self):
+        """Get the default directory for the shared library file.
+
+        :return: The default shared library file.
+        :rtype: str
+
+        """
+        return os.path.join(
+            self.target_directory,
+            self._houdini_path_subdir_name()
+        )
+
+    def find_shared_library(self, shared_library_file_name):
+        """Find a shared library with a given name.
+
+        :param shared_library_file_name: The library name to find.
+        :type shared_library_file_name: str
+        :return: The shared library path if found.
+        :rtype: str
+
+        """
+        path = os.path.join(
+            self.default_shared_library_directory(),
+            shared_library_file_name
+        )
+
+        return path if os.path.isfile(path) else None
+
+
+# =============================================================================
+# EXCEPTIONS
+# =============================================================================
+
+class NoFunctionSourcesError(Exception):
+    """Exception to indicate that there were no valid functions when
+    attempting to compile.
+
+    """
+
+
+# =============================================================================
+# NON-PUBLIC FUNCTIONS
+# =============================================================================
+
+def _get_compile_target_folder(node):
+    """Determine which folder to compile to.
+
+    :param node: A C++ Wrangle node.
+    :type node: hou.SopNode
+    :return: The path files will be compiled into.
+    :rtype: str
+
+    """
+    target = node.evalParm("compile_target")
+
+    if target == "default":
+        return None
+
+    if target == "temp":
+        compile_target = hou.expandString("$TEMP")
+
+    elif target == "custom":
+        compile_target = node.evalParm("custom_compile_target")
+
+    else:
+        raise ValueError("Invalid target: {}".format(target))
+
+    if not os.path.isdir(compile_target):
+        raise IOError("Target directory '{}' does not exist".format(compile_target))
+
+    return compile_target
+
+
+def _get_function_sources(node):
+    """Get a tuple of function source code.
+
+    :param node: A C++ Wrangle node.
+    :type node: hou.SopNode
+    :return: A tuple of function sources.
+    :rtype: list(str)
+
+    """
+    sources = []
+
+    num_functions = node.evalParm("num_functions")
+
+    for i in range(num_functions):
+        if not node.evalParm("enable_function{}".format(i)):
+            continue
+
+        source = node.evalParm("function{}".format(i))
+
+        if not source:
+            continue
+
+        sources.append(source)
+
+    return sources
+
+
+def _get_includes(node):
+    """Get a list of header include statements and code.
+
+    :param node: A C++ Wrangle node.
+    :type node: hou.SopNode
+    :return: A tuple of include statements.
+    :rtype: list(str)
+
+    """
+    headers = []
+
+    if node.evalParm("base_includes"):
+        headers.extend(_COMMON_INCLUDES["base"])
+
+    if node.evalParm("geo_includes"):
+        headers.extend(_COMMON_INCLUDES["geo"])
+
+    if node.evalParm("node_includes"):
+        headers.extend(_COMMON_INCLUDES["nodes"])
+
+    # Handle custom includes.
+    num_includes = node.evalParm("num_includes")
+
+    for i in range(num_includes):
+        if not node.evalParm("enable_include_header{}".format(i)):
+            continue
+
+        header = node.evalParm("include_header{}".format(i))
+
+        if header:
+            headers.append(header)
+
+    # Build include statements.
+    includes = "\n".join(["#include <{}>".format(header) for header in headers])
+
+    # Handle any custom code to add as well.
+    include_code = node.evalParm("include_code")
+
+    if include_code:
+        includes += "\n\n{}\n\n".format(include_code)
+
+    return includes
+
+
+def _get_structs(node):
+    """Get a list of struct definitions.
+
+    Each element of the result is a two item tuple ({struct_name}, {struct_definition}).
+
+    :param node: A C++ Wrangle node.
+    :type node: hou.SopNode
+    :return: A tuple of struct definitions.
+    :rtype: list
+
+    """
+    use_common = node.evalParm("common_structs")
+
+    structs = []
+
+    if use_common:
+        structs.extend(_DEFAULT_STRUCTS)
+
+    num_structs = node.evalParm("num_structs")
+
+    for i in range(num_structs):
+        if not node.evalParm("enable_struct{}".format(i)):
+            continue
+
+        struct_name = node.evalParm("struct_name{}".format(i))
+        struct_definition = node.evalParm("struct_definition{}".format(i))
+
+        if not struct_name or not struct_definition:
+            continue
+
+        structs.append((struct_name, ast.literal_eval(struct_definition)))
+
+    return structs
+
+
+# =============================================================================
+# FUNCTIONS
+# =============================================================================
+
+def build_library(node):
+    """Build the library based on specified data.
+
+    :param node: A C++ Wrangle node.
+    :type node: hou.SopNode
+    :return: The compiled library.
+    :rtype: hutil.cppinline._Library
+
+    """
+    includes = _get_includes(node)
+    structs = _get_structs(node)
+    function_sources = _get_function_sources(node)
+
+    if not function_sources:
+        raise NoFunctionSourcesError()
+
+    config = inlinecpp._create_cppinline_config()
+
+    compile_target = _get_compile_target_folder(node)
+
+    if compile_target is not None:
+        config.compiler_hook = CPPWrangleCompilerHook(compile_target)
+
+    lib = inlinecpp.createLibrary(
+        node.evalParm("library_name"),
+        acquire_hom_lock=node.evalParm("acquire_hom_lock"),
+        catch_crashes=node.evalParm("catch_crashes"),
+        debug=node.evalParm("debug"),
+        includes=includes,
+        structs=structs,
+        function_sources=function_sources,
+        config=config,
+    )
+
+    return lib
+
+
+def recompile(node):
+    """Callback to recompile if necessary.
+
+    :param node: A C++ Wrangle node.
+    :type node: hou.SopNode
+    :return:
+
+    """
+    build_library(node)
+
+
+def view_c_file(node):
+    """View the created .C file in a text editor.
+
+    :param node: A C++ Wrangle node.
+    :type node: hou.SopNode
+    :return:
+
+    """
+    lib = build_library(node)
+
+    cpp_file_name = lib._cpp_file_name()
+    shared_object_path = lib._shared_object_path()
+
+    cpp_file_path = os.path.join(os.path.dirname(shared_object_path), cpp_file_name)
+
+    if os.path.exists(cpp_file_path):
+        editor = os.environ.get("EDITOR", "gvim")
+        subprocess.Popen(" ".join([editor, cpp_file_path]), shell=True)
+
