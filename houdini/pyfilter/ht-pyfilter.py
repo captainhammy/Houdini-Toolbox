@@ -1,5 +1,5 @@
 """This script is run by Mantra to execute custom Python filtering of IFDs
-before, during and after rendertime.
+before, during and after render time.
 
 For more information, please see:
     http://www.sidefx.com/docs/houdini/rendering/python
@@ -14,6 +14,10 @@ For more information, please see:
 import logging
 
 # Houdini Toolbox Imports
+import ht.logging
+
+ht.logging.init_config()
+
 from ht.pyfilter.manager import PyFilterManager
 
 # Houdini Imports
@@ -23,9 +27,10 @@ import mantra
 # GLOBALS
 # =============================================================================
 
-LOGGER = logging.getLogger(__file__)
+LOGGER = logging.getLogger("ht-pyfilter")
 
 PYFILTER_MANAGER = None
+
 
 # =============================================================================
 # FUNCTIONS
@@ -47,6 +52,7 @@ def filterCamera():
     LOGGER.debug("filterCamera")
 
     PYFILTER_MANAGER.run_operations_for_stage("filterCamera")
+
 
 def filterCameraSegment():
     """Modify properties for a camera motion segment.

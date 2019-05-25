@@ -17,13 +17,18 @@
 		},
 
 		"houdini_python_shell": {
-			"class": "ht.loggers.shellio.PythonShellHandler",
+			"class": "ht.logging.shellio.PythonShellHandler",
 			"level": "WARNING",
 			"formatter": "default"
 		}
     },
 
     "loggers": {
+		"ht": {
+			"level": "INFO",
+			"handlers": ["console", "houdini_python_shell"],
+			"propagate": false
+		},
 		"mantra": {
 			"level": "DEBUG",
 			"handlers": ["console"],
@@ -33,6 +38,6 @@
 
     "root": {
 		"level": "INFO",
-		"handlers": ["console", "houdini_python_shell"]
+		"handlers": ["console"]
     }
 }

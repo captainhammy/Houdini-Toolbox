@@ -6,12 +6,14 @@
 
 # Houdini Toolbox Imports
 
-# We want to initialize our logger first thing before the UI starts so that our
+# We want to initialize our logging first thing before the UI starts so that our
 # base stream logger is using the actual sys.stdout/shell output.  If we don't
 # then it will use sys.stdout which is redirected to any interactive Python
 # Shell panes.  We explicitly provide an alternate stream handler for output
 # to only these pane tabs.
-import ht.logger
+import ht.logging
+ht.logging.init_config()
+
 
 import ht.events
 import ht.events.callbacks
