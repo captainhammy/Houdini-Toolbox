@@ -308,7 +308,7 @@ class Test_HoudiniEventStats(unittest.TestCase):
 
         mock_print.assert_not_called()
 
-    @patch("ht.events.stats.logger")
+    @patch("ht.events.stats.LOGGER")
     @patch.object(ht.events.stats.HoudiniEventStats, "__init__", lambda x, y: None)
     def test_print_report(self, mock_logger):
         stats = ht.events.stats.HoudiniEventStats(None)
@@ -363,7 +363,7 @@ class Test_HoudiniEventItemStats(unittest.TestCase):
 
     # Methods
 
-    @patch("ht.events.stats.logger")
+    @patch("ht.events.stats.LOGGER")
     @patch.object(ht.events.stats.HoudiniEventItemStats, "__init__", lambda x, y: None)
     def test_print_report(self, mock_logger):
         item_stats = OrderedDict()

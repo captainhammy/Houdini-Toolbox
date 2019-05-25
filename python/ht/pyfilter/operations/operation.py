@@ -6,9 +6,14 @@
 
 # Python Imports
 from functools import wraps
+import logging
 
-# Houdini Toolbox Imports
-from ht.logger import logger
+# =============================================================================
+# GLOBALS
+# =============================================================================
+
+LOGGER = logging.getLogger(__name__)
+
 
 # =============================================================================
 # CLASSES
@@ -68,7 +73,7 @@ class PyFilterOperation(object):
     def register_parser_args(parser):
         """Register interested parser args for this operation.
 
-        :param parser: The argument parser to attach arguements to.
+        :param parser: The argument parser to attach arguments to.
         :type parser: argparse.ArgumentParser.
         :return:
 
@@ -97,6 +102,7 @@ class PyFilterOperation(object):
 
         """
         return True
+
 
 # =============================================================================
 # FUNCTIONS
@@ -134,7 +140,7 @@ def log_filter(method_or_name):
                     mantra.property(method_or_name)[0]
                 )
 
-            logger.debug(msg)
+            LOGGER.debug(msg)
 
             func(*args, **kwargs)
 

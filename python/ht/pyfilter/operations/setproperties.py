@@ -10,11 +10,18 @@ file path.
 # Python Imports
 from collections import Iterable
 import json
+import logging
 
 # Houdini Toolbox Imports
-from ht.logger import logger
 from ht.pyfilter.operations.operation import PyFilterOperation, log_filter
 from ht.pyfilter.property import get_property, set_property
+
+# =============================================================================
+# GLOBALS
+# =============================================================================
+
+LOGGER = logging.getLogger(__name__)
+
 
 # =============================================================================
 # CLASSES
@@ -80,7 +87,7 @@ class PropertySetterManager(object):
         :return:
 
         """
-        logger.debug("Reading properties from %s", file_path)
+        LOGGER.debug("Reading properties from %s", file_path)
 
         # Load json data from the file.
         with open(file_path) as f:
@@ -197,7 +204,7 @@ class PropertySetter(object):
             if not hou.patternMatch(self.rendertype, rendertype):
                 return
 
-        logger.debug("Setting property '%s' to %s", self.name, self.value)
+        LOGGER.debug("Setting property '%s' to %s", self.name, self.value)
 
         # Update the property value.
         set_property(self.name, self.value)
@@ -457,7 +464,7 @@ def _create_property_setter(property_name, property_block, stage_name):
         # warning message.  We will still return a regular PropertySetter
         # object though.
         else:
-            logger.warning("No masking available for %s:%s.", stage_name, property_name)
+            LOGGER.warning("No masking available for %s:%s.", stage_name, property_name)
 
     # Generic property setter.
     return PropertySetter(property_name, property_block)

@@ -4,10 +4,20 @@
 # IMPORTS
 # =============================================================================
 
+# Python Imports
+import logging
+
 # Houdini Toolbox Imports
-from ht.logger import logger
 from ht.pyfilter.operations.operation import PyFilterOperation, log_filter
 from ht.pyfilter.property import get_property, set_property
+
+
+# =============================================================================
+# GLOBALS
+# =============================================================================
+
+LOGGER = logging.getLogger(__name__)
+
 
 # =============================================================================
 # CLASSES
@@ -354,11 +364,11 @@ class SetDeepImage(PyFilterOperation):
         render_type = get_property("renderer:rendertype")
 
         if not self.all_passes and render_type != "beauty":
-            logger.warning("Not a beauty render, skipping deepresolver")
+            LOGGER.warning("Not a beauty render, skipping deepresolver")
             return
 
         if self.disable_deep_image:
-            logger.info("Disabling deep resolver")
+            LOGGER.info("Disabling deep resolver")
             set_property("image:deepresolver", [])
 
         else:
@@ -374,14 +384,14 @@ class SetDeepImage(PyFilterOperation):
 
                 # Log an error and abort.
                 else:
-                    logger.error("Cannot set deepresolver: deep output is not enabled")
+                    LOGGER.error("Cannot set deepresolver: deep output is not enabled")
 
                     return
 
             # Modify the args to include any passed along options.
             self._modify_deep_args(deep_args)
 
-            logger.debug(
+            LOGGER.debug(
                 "Setting 'image:deepresolver': %s", " ".join([str(arg) for arg in deep_args])
             )
 

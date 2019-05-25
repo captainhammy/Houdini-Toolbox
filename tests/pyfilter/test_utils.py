@@ -24,7 +24,7 @@ class Test_build_pyfilter_command(unittest.TestCase):
     """Test ht.pyfilter.utils.build_pyfilter_command"""
 
     @patch("os.path.exists")
-    @patch("ht.pyfilter.utils.logger")
+    @patch("ht.pyfilter.utils.LOGGER")
     def test_no_found_script(self, mock_logger, mock_exists):
         def raise_error(*args, **kwargs):
             raise hou.OperationFailed()

@@ -10,8 +10,10 @@ For more information, please see:
 # IMPORTS
 # =============================================================================
 
+# Python Imports
+import logging
+
 # Houdini Toolbox Imports
-from ht.logger import logger
 from ht.pyfilter.manager import PyFilterManager
 
 # Houdini Imports
@@ -20,6 +22,8 @@ import mantra
 # =============================================================================
 # GLOBALS
 # =============================================================================
+
+LOGGER = logging.getLogger(__file__)
 
 PYFILTER_MANAGER = None
 
@@ -40,7 +44,7 @@ def filterCamera():
     don't declare the property explicitly.
 
     """
-    logger.debug("filterCamera")
+    LOGGER.debug("filterCamera")
 
     PYFILTER_MANAGER.run_operations_for_stage("filterCamera")
 
@@ -51,14 +55,14 @@ def filterCameraSegment():
     camera motion segment.
 
     """
-    logger.debug("filterCameraSegment")
+    LOGGER.debug("filterCameraSegment")
 
     PYFILTER_MANAGER.run_operations_for_stage("filterCameraSegment")
 
 
 def filterEndRender():
     """Perform actions just after the image has been rendered."""
-    logger.debug("filterEndRender")
+    LOGGER.debug("filterEndRender")
 
     PYFILTER_MANAGER.run_operations_for_stage("filterEndRender")
 
@@ -81,7 +85,7 @@ def filterFog():
     a fog object. The function can query fog: settings and possibly alter them.
 
     """
-    logger.debug("filterFog ({})".format(mantra.property("object:name")[0]))
+    LOGGER.debug("filterFog ({})".format(mantra.property("object:name")[0]))
 
     PYFILTER_MANAGER.run_operations_for_stage("filterFog")
 
@@ -94,7 +98,7 @@ def filterGeometry():
     alter them.
 
     """
-    logger.debug("filterGeometry")
+    LOGGER.debug("filterGeometry")
 
     PYFILTER_MANAGER.run_operations_for_stage("filterGeometry")
 
@@ -107,7 +111,7 @@ def filterInstance():
     alter them.
 
     """
-    logger.debug("filterInstance ({})".format(mantra.property("object:name")[0]))
+    LOGGER.debug("filterInstance ({})".format(mantra.property("object:name")[0]))
     PYFILTER_MANAGER.run_operations_for_stage("filterInstance")
 
 
@@ -119,7 +123,7 @@ def filterLight():
     them.
 
     """
-    logger.debug("filterLight ({})".format(mantra.property("object:name")[0]))
+    LOGGER.debug("filterLight ({})".format(mantra.property("object:name")[0]))
 
     PYFILTER_MANAGER.run_operations_for_stage("filterLight")
 
@@ -132,7 +136,7 @@ def filterMaterial():
     add or change properties on the material.
 
     """
-    logger.debug("filterMaterial")
+    LOGGER.debug("filterMaterial")
 
     PYFILTER_MANAGER.run_operations_for_stage("filterMaterial")
 
@@ -144,7 +148,7 @@ def filterOutputAssets(assets):
     during the render.
 
     """
-    logger.debug("filterOutputAssets")
+    LOGGER.debug("filterOutputAssets")
 
     PYFILTER_MANAGER.run_operations_for_stage("filterOutputAssets")
 
@@ -155,16 +159,16 @@ def filterPlane():
     channel = mantra.property("plane:channel")[0]
 
     if variable == channel or channel == "":
-        logger.debug("filterPlane ({})".format(variable))
+        LOGGER.debug("filterPlane ({})".format(variable))
     else:
-        logger.debug("filterPlane ({} -> {})".format(variable, channel))
+        LOGGER.debug("filterPlane ({} -> {})".format(variable, channel))
 
     PYFILTER_MANAGER.run_operations_for_stage("filterPlane")
 
 
 def filterQuit():
     """Perform actions just before Mantra quits."""
-    logger.debug("filterQuit")
+    LOGGER.debug("filterQuit")
 
     PYFILTER_MANAGER.run_operations_for_stage("filterQuit")
 
@@ -177,7 +181,7 @@ def filterRender():
     statistics or validation, it might be useful to have this method available.
 
     """
-    logger.debug("filterRender")
+    LOGGER.debug("filterRender")
 
     PYFILTER_MANAGER.run_operations_for_stage("filterRender")
 

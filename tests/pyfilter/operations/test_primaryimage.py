@@ -25,7 +25,7 @@ class Test_SetPrimaryImage(unittest.TestCase):
     def setUp(self):
         super(Test_SetPrimaryImage, self).setUp()
 
-        self.patcher = patch("ht.pyfilter.operations.operation.logger", autospec=True)
+        self.patcher = patch("ht.pyfilter.operations.operation.LOGGER", autospec=True)
         self.patcher.start()
 
     def tearDown(self):
@@ -103,7 +103,7 @@ class Test_SetPrimaryImage(unittest.TestCase):
 
     # Methods
 
-    @patch("ht.pyfilter.operations.primaryimage.logger")
+    @patch("ht.pyfilter.operations.primaryimage.LOGGER")
     @patch("ht.pyfilter.operations.primaryimage.set_property")
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
     def test_filterCamera__disable(self, mock_set, mock_logger):
@@ -114,7 +114,7 @@ class Test_SetPrimaryImage(unittest.TestCase):
 
         mock_set.assert_called_with("image:filename", "null:")
 
-    @patch("ht.pyfilter.operations.primaryimage.logger")
+    @patch("ht.pyfilter.operations.primaryimage.LOGGER")
     @patch("ht.pyfilter.operations.primaryimage.set_property")
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
     def test_filterCamera__path(self, mock_set, mock_logger):
@@ -128,7 +128,7 @@ class Test_SetPrimaryImage(unittest.TestCase):
 
         mock_set.assert_called_with("image:filename", path)
 
-    @patch("ht.pyfilter.operations.primaryimage.logger")
+    @patch("ht.pyfilter.operations.primaryimage.LOGGER")
     @patch("ht.pyfilter.operations.primaryimage.set_property")
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
     def test_filterCamera__no_op(self, mock_set, mock_logger):

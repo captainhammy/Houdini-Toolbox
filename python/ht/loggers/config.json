@@ -16,7 +16,7 @@
 			"stream": "ext://sys.stdout"
 		},
 
-		"python_shell": {
+		"houdini_python_shell": {
 			"class": "ht.loggers.shellio.PythonShellHandler",
 			"level": "WARNING",
 			"formatter": "default"
@@ -24,12 +24,6 @@
     },
 
     "loggers": {
-		"Houdini-Toolbox": {
-			"level": "DEBUG",
-			"handlers": ["console", "python_shell"],
-			"propagate": false
-		},
-
 		"mantra": {
 			"level": "DEBUG",
 			"handlers": ["console"],
@@ -39,6 +33,6 @@
 
     "root": {
 		"level": "INFO",
-		"handlers": ["console"]
+		"handlers": ["console", "houdini_python_shell"]
     }
 }

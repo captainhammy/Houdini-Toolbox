@@ -7,10 +7,15 @@
 # Python Imports
 from collections import OrderedDict
 from contextlib import contextmanager
+import logging
 import time
 
-# Houdini Toolbox Imports
-from ht.logger import logger
+
+# =============================================================================
+# GLOBALS
+# =============================================================================
+
+LOGGER = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -169,9 +174,9 @@ class HoudiniEventStats(object):
         :return:
 
         """
-        logger.info("Event name: %s", self.name)
-        logger.info("\tRun Count: %s", self.run_count)
-        logger.info("\tRun Time: %s", self.last_run_time)
+        LOGGER.info("Event name: %s", self.name)
+        LOGGER.info("\tRun Count: %s", self.run_count)
+        LOGGER.info("\tRun Time: %s", self.last_run_time)
 
     def reset(self):
         """Reset all counts.
@@ -221,14 +226,14 @@ class HoudiniEventItemStats(HoudiniEventStats):
         :return:
 
         """
-        logger.info("Item: %s", self.name)
-        logger.info("\tRun Count: %s", self.run_count)
-        logger.info("\tCallables:")
+        LOGGER.info("Item: %s", self.name)
+        LOGGER.info("\tRun Count: %s", self.run_count)
+        LOGGER.info("\tCallables:")
 
         for item_name, item_time in self.item_stats.iteritems():
-            logger.info("\t\t%s: %0.4f", item_name, item_time)
+            LOGGER.info("\t\t%s: %0.4f", item_name, item_time)
 
-        logger.info("\tRun Time: %0.4f", self.last_run_time)
+        LOGGER.info("\tRun Time: %0.4f", self.last_run_time)
 
     def reset(self):
         """Reset all counts.

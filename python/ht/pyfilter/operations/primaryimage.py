@@ -4,10 +4,20 @@
 # IMPORTS
 # =============================================================================
 
+# Python Imports
+import logging
+
 # Houdini Toolbox Imports
-from ht.logger import logger
 from ht.pyfilter.operations.operation import PyFilterOperation, log_filter
 from ht.pyfilter.property import set_property
+
+
+# =============================================================================
+# GLOBALS
+# =============================================================================
+
+LOGGER = logging.getLogger(__name__)
+
 
 # =============================================================================
 # CLASSES
@@ -106,7 +116,7 @@ class SetPrimaryImage(PyFilterOperation):
 
         """
         if self.disable_primary_image:
-            logger.info("Disabling primary image")
+            LOGGER.info("Disabling primary image")
             set_property("image:filename", "null:")
 
         elif self.primary_image_path is not None:

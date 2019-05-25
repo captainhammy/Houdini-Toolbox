@@ -5,10 +5,15 @@
 # =============================================================================
 
 # Python Imports
+import logging
 import os
 
-# Houdini Toolbox Imports
-from ht.logger import logger
+# =============================================================================
+# GLOBALS
+# =============================================================================
+
+LOGGER = logging.getLogger(__name__)
+
 
 # =============================================================================
 # FUNCTIONS
@@ -37,7 +42,7 @@ def build_pyfilter_command(pyfilter_args=None, pyfilter_path=None):
 
             # If we can't find the script them log an error and return nothing.
         except hou.OperationFailed:
-            logger.error("Could not find pyfilter/ht-pyfilter.py")
+            LOGGER.error("Could not find pyfilter/ht-pyfilter.py")
 
             return ""
 

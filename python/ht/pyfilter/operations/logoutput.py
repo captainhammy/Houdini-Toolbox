@@ -11,31 +11,18 @@ import logging
 from ht.pyfilter.operations.operation import PyFilterOperation
 
 # =============================================================================
+# GLOBALS
+# =============================================================================
+
+LOGGER = logging.getLogger("mantra")
+
+
+# =============================================================================
 # CLASSES
 # =============================================================================
 
 class LogOutput(PyFilterOperation):
-    """Operation to log Mantra output.
-
-    :param manager: The manager this operation is registered with.
-    :type manager: ht.pyfilter.manager.PyFilterManager
-
-    """
-
-    def __init__(self, manager):
-        super(LogOutput, self).__init__(manager)
-
-        # Get our custom mantra logger setup via config.
-        self._logger = logging.getLogger("mantra")
-
-    # =========================================================================
-    # PROPERTIES
-    # =========================================================================
-
-    @property
-    def logger(self):
-        """logging.Logger: The logger to use when outputting."""
-        return self._logger
+    """Operation to log Mantra output."""
 
     # =========================================================================
     # METHODS
@@ -61,20 +48,20 @@ class LogOutput(PyFilterOperation):
         for msg in messages:
             # Verbosity of 0 is always for errors.
             if level == 0:
-                self.logger.error(msg)
+                LOGGER.error(msg)
 
             # Mantra also only seems to set the prefix if the message is an
             # error/warning.
             elif prefix:
-                self.logger.warning(msg)
+                LOGGER.warning(msg)
 
             # Default verbosity level so we'll call that info.
             elif level == 1:
-                self.logger.info(msg)
+                LOGGER.info(msg)
 
             # Flag as debug.
             else:
-                self.logger.debug(msg)
+                LOGGER.debug(msg)
 
         # Return True to let Mantra know that we handled message output so it
         # will not output it itself.

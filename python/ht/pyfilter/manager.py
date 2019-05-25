@@ -10,9 +10,14 @@ actions.
 import argparse
 import importlib
 import json
+import logging
 
-# Houdini Toolbox Imports
-from ht.logger import logger
+
+# =============================================================================
+# GLOBALS
+# =============================================================================
+
+LOGGER = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -99,12 +104,12 @@ class PyFilterManager(object):
                 cls = _get_class(module_name, class_name)
 
                 if cls is None:
-                    logger.warning("Could not load %s from %s", class_name, module_name)
+                    LOGGER.warning("Could not load %s from %s", class_name, module_name)
 
                     continue
 
                 else:
-                    logger.debug("Registering %s (%s)", class_name, module_name)
+                    LOGGER.debug("Registering %s (%s)", class_name, module_name)
 
                 # Add an instance of it to our operations list.
                 self.operations.append(cls(self))
@@ -191,7 +196,7 @@ def _find_operation_files():
 
     # If no files could be found then abort.
     except hou.OperationFailed:
-        logger.debug("Could not find any operations to load")
+        LOGGER.debug("Could not find any operations to load")
         files = ()
 
     return files
@@ -235,8 +240,8 @@ def _get_operation_data(file_path):
             data = json.load(fp)
 
     except (IOError, ValueError) as inst:
-        logger.error("Error loading operation data from %s", file_path)
-        logger.exception(inst)
+        LOGGER.error("Error loading operation data from %s", file_path)
+        LOGGER.exception(inst)
 
         data = {}
 
