@@ -1,4 +1,4 @@
-"""Custom network editor event handlers"""
+"""Custom network editor event handlers."""
 
 # ==============================================================================
 # IMPORTS
@@ -11,14 +11,31 @@ from ht.ui import paste
 from canvaseventtypes import KeyboardEvent
 from nodegraphdisplay import setKeyPrompt
 
+
+# ==============================================================================
+# GLOBALS
+# ==============================================================================
+
+KEY_HIT_TYPES = ('keyhit', 'menukeyhit', 'parentkeyhit')
+
+
 # ==============================================================================
 # FUNCTIONS
 # ==============================================================================
 
 def createEventHandler(uievent, pending_actions):
-    """Create an event handler for Houdini's network editor."""
+    """Create an event handler for Houdini's network editor.
 
-    if isinstance(uievent, KeyboardEvent) and uievent.eventtype in ('keyhit', 'menukeyhit', 'parentkeyhit'):
+    :param uievent: The occurring event.
+    :type uievent: canvaseventtypes.KeyboardEvent
+    :param pending_actions: Pending actions.
+    :type pending_actions: list
+    :return: Handler event information.
+    :rtype: tuple
+
+    """
+
+    if isinstance(uievent, KeyboardEvent) and uievent.eventtype in KEY_HIT_TYPES:
         editor = uievent.editor
         eventtype = uievent.eventtype
         key = uievent.key

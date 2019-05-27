@@ -2,6 +2,7 @@
 related applications based on arguments.
 
 """
+
 # =============================================================================
 # IMPORTS
 # =============================================================================
@@ -16,6 +17,7 @@ import ht.argument
 import ht.houdini.package
 import ht.output
 import ht.utils
+
 
 # =============================================================================
 # CLASSES
@@ -44,8 +46,6 @@ class HoudiniWrapper(object):
         self._no_jemalloc = self.arguments.no_jemalloc
         self._test_path = self.arguments.test_path
         self._log_level = self.arguments.log_level
-
-        os.environ["HT_LOG_LEVEL"] = self._log_level
 
         _print("Houdini Wrapper:\n", colored="darkyellow")
 
@@ -179,6 +179,8 @@ class HoudiniWrapper(object):
         """Display a list of Houdini versions that are available to install,
         run or uninstall.
 
+        :return:
+
         """
         # Construct a HoudiniBuildManager to handle all our available Houdini
         # options.
@@ -223,7 +225,13 @@ class HoudiniWrapper(object):
             _print()
 
     def _download_and_install(self, create_symlink=False):
-        """Download and automatically install a build."""
+        """Download and automatically install a build.
+
+        :param create_symlink: Whether or not to create a major.minor symlink.
+        :type create_symlink: bool
+        :return:
+
+        """
         ht.houdini.package.HoudiniBuildManager.download_and_install(
             self.arguments.dl_install,
             create_symlink
@@ -232,6 +240,8 @@ class HoudiniWrapper(object):
     def _find_build(self):
         """Search for the selected build.  If no valid build was selected
         print a message.
+
+        :return:
 
         """
         # Construct a HoudiniBuildManager to handle all our available Houdini
@@ -284,7 +294,12 @@ class HoudiniWrapper(object):
                 self.build = result
 
     def _set_no_jemalloc(self):
-        """Set the environment in order to run without jemalloc."""
+        """Set the environment in order to run without jemalloc.
+
+        :return: A list of command args to run without jemalloc.
+        :rtype: list(str)
+
+        """
         ld_path = os.path.join(os.environ["HDSO"], "empty_jemalloc")
 
         # See if the LD_LIBRARY_PATH is already set since we need to modify it.
@@ -314,14 +329,14 @@ class HoudiniWrapper(object):
 
     @property
     def arguments(self):
-        """The parsed, known wrapper args."""
+        """argparse.Namespace: The parsed, known wrapper args."""
         return self._arguments
 
     # =========================================================================
 
     @property
     def build(self):
-        """The Houdini build to run."""
+        """ht.houdini.package.HoudiniBase: The Houdini build to act on."""
         return self._build
 
     @build.setter
@@ -332,14 +347,14 @@ class HoudiniWrapper(object):
 
     @property
     def no_jemalloc(self):
-        """Launch with out jemalloc."""
+        """bool: Launch with out jemalloc."""
         return self._no_jemalloc
 
     # =========================================================================
 
     @property
     def parser(self):
-        """The wrapper argument parser."""
+        """ht.argument.ArgumentParser: The wrapper argument parser."""
         return self._parser
 
     @parser.setter
@@ -350,7 +365,7 @@ class HoudiniWrapper(object):
 
     @property
     def program_args(self):
-        """A list of arguments to pass to the application."""
+        """list(str): A list of arguments to pass to the application."""
         return self._program_args
 
     @program_args.setter
@@ -361,7 +376,7 @@ class HoudiniWrapper(object):
 
     @property
     def program_name(self):
-        """The name of the program to run."""
+        """str: The name of the program to run."""
         return self._program_name
 
     @program_name.setter
@@ -375,12 +390,18 @@ class HoudiniWrapper(object):
         """Run the application outside of the custom environment."""
         return self._test_path
 
+
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
 def _build_parser():
-    """Build an ArgumentParser for the wrapper."""
+    """Build an ArgumentParser for the wrapper.
+
+    :return: The wrapper argument parser.
+    :rtype: ht.argument.ArgumentParser
+
+    """
     # Don't allow abbreviations since we don't want them to interfere with any
     # flags that might need to be passed through.
     parser = ht.argument.ArgumentParser(
@@ -462,6 +483,12 @@ def _build_parser():
 
 def _print(msg="", colored=None):
     """Print a message, optionally with color.
+
+    :param msg: The message to print.
+    :type msg: str
+    :param colored: Output color.
+    :type colored: str
+    :return:
 
     """
     # Doing colored output.

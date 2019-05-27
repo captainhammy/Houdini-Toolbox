@@ -1949,7 +1949,7 @@ eval_multiparm_instance_float(OP_Node *node, const char *parm_name, int componen
     UT_StringRef                name(parm_name);
 
     instance_index = index + start_offset;
-    
+
     result = node->evalFloatInst(name, &instance_index, component_index, t);
 
     addDependencyOnParm(node, name, instance_index, component_index);
@@ -1968,11 +1968,11 @@ eval_multiparm_instance_int(OP_Node *node, const char *parm_name, int component_
     UT_StringRef                name(parm_name);
 
     instance_index = index + start_offset;
-        
+
     result = node->evalIntInst(name, &instance_index, component_index, t);
-    
+
     addDependencyOnParm(node, name, instance_index, component_index);
-    
+
     return result;
 }
 """,
@@ -1986,12 +1986,12 @@ eval_multiparm_instance_string(OP_Node *node, const char *parm_name, int compone
 
     const UT_StringRef          &name(parm_name);
     UT_String                   value;
-     
+
     instance_index = index + start_offset;
     node->evalStringInst(name, &instance_index, value, component_index, t);
 
     addDependencyOnParm(node, name, instance_index, component_index);
-    
+
     // For some reason we can sometimes get garbage values if we don't do this :/
     return value.toStdString().c_str();
 }
@@ -2187,20 +2187,20 @@ void addDependencyOnParm(OP_Node *node, const UT_StringRef &name, int instance_i
     UT_WorkBuffer               wb;
 
     instance_numbers.append(instance_index);
-        
+
     cache.getEvaluatingSource(
         evaluating_node, evaluating_parm_index, evaluating_sub_index, SYSgetSTID()
     );
-    
+
     if (evaluating_node)
     {
         PRM_Name::instanceToken(wb, name, instance_numbers);
-        
+
         target_parm_index = node->getParmList()->getParmIndex(wb.buffer());
-    
+
         OP_InterestRef target_ref(*evaluating_node, evaluating_parm_index, evaluating_sub_index);
         OP_InterestRef source_ref(*node, target_parm_index, component_index);
-        
+
         OP_Node::addExtraInput(target_ref, source_ref);
     }
 }

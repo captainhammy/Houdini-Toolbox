@@ -9,6 +9,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 import re
 
 import ht.ui.paste
+import ht.ui.paste.models
 
 # Houdini Imports
 import hou

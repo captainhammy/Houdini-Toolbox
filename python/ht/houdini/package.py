@@ -37,6 +37,11 @@ PACKAGE_CONFIG_FILE = "houdini_package_config.json"
 class HoudiniBase(object):
     """This class represents a Houdini build on disk.
 
+    :param path: The path to the build on disk.
+    :type path: str
+    :param version: The build version
+    :type version: tuple(int)
+
     """
 
     def __init__(self, path, version):
@@ -93,42 +98,45 @@ class HoudiniBase(object):
 
     @property
     def build(self):
-        """The build number for this build. """
+        """int: The build number for this build. """
         return self._build
 
     @property
     def candidate(self):
-        """The release candidate number for this build. """
+        """int: The release candidate number for this build. """
         return self._candidate
 
     @property
     def major(self):
-        """The major number for this build. """
+        """int: The major number for this build. """
         return self._major
 
     @property
     def major_minor(self):
-        """The major number for this build. """
+        """str: The major.minor number for this build. """
         return "{}.{}".format(self.major, self.minor)
 
     @property
     def minor(self):
-        """The minor number for this build. """
+        """int: The minor number for this build. """
         return self._minor
 
     @property
     def path(self):
-        """The file path on disk of the build. """
+        """str: The file path on disk of the build. """
         return self._path
 
     @property
     def plugin_path(self):
-        """The location of any plugins for this build."""
+        """str: The location of any plugins for this build."""
+        if self._plugin_path is None:
+            return None
+
         return os.path.expandvars(self._plugin_path)
 
     @property
     def version(self):
-        """A tuple containing version information. """
+        """tuple(int): A tuple containing version information. """
         version = [self.major, self.minor, self.build]
 
         # Add the candidate number if necessary.
@@ -142,7 +150,14 @@ class HoudiniBase(object):
     # =========================================================================
 
     def format_string(self, value):
-        """Format a string given information about this build."""
+        """Format a string given information about this build.
+
+        :param value: The string to format.
+        :type value: str
+        :return: The formatted string.
+        :rtype: str
+
+        """
         args = {
             "version": str(self),
             "major": self.major,
@@ -158,6 +173,9 @@ class HoudiniBase(object):
 class HoudiniBuildData(object):
     """This class stores Houdini build data.
 
+    :param data: A build data dictionary.
+    :type data: dict
+
     """
 
     def __init__(self, data):
@@ -170,7 +188,16 @@ class HoudiniBuildData(object):
     # =========================================================================
 
     def _format_version_template(self, build_number, arch=None):
-        """Format the file template for the build number and architecture."""
+        """Format the file template for the build number and architecture.
+
+        :param build_number: The build (version) string.
+        :type build_number: str
+        :param arch: Optional machine architecture string.
+        :type arch: str
+        :return: A formatted file template.
+        :rtype: str
+
+        """
         system = platform.system()
 
         type_info = self.types[system]
@@ -186,7 +213,14 @@ class HoudiniBuildData(object):
         )
 
     def _get_specified_arch_for_build(self, major_minor):
-        """Check for a specific machine architecture for a build."""
+        """Check for a specific machine architecture for a build.
+
+        :param major_minor: The major.minor version number.
+        :type major_minor: str
+        :return: A matching architecture string, if any.
+        :rtype: str|None
+
+        """
         version_data = self.versions[major_minor]
 
         system = platform.system()
@@ -204,7 +238,14 @@ class HoudiniBuildData(object):
         return None
 
     def _get_specified_build(self, build_number):
-        """Construct the build string for a specific build number."""
+        """Construct the build string for a specific build number.
+
+        :param build_number: The build (version) string.
+        :type build_number: str
+        :return: A constructed file name.
+        :rtype: str
+
+        """
         components = build_number.split(".")
 
         # We need the major and minor versions to get key information.
@@ -220,7 +261,14 @@ class HoudiniBuildData(object):
         return self._format_version_template(build_number, arch)
 
     def _get_todays_build(self, major_minor):
-        """Construct the build string for today's major/minor build."""
+        """Construct the build string for today's major/minor build.
+
+        :param major_minor: The base Houdini version to get.
+        :type major_minor: str
+        :return: The build string for the current day's build.
+        :rtype: str
+
+        """
         if major_minor not in self.versions:
             raise ValueError("Invalid build number")
 
@@ -275,17 +323,17 @@ class HoudiniBuildData(object):
 
     @property
     def file_template(self):
-        """Archive file template."""
+        """str: Archive file template."""
         return self._file_template
 
     @property
     def types(self):
-        """Build types dictionary."""
+        """dict: Build types dictionary."""
         return self._types
 
     @property
     def versions(self):
-        """Build versions dictionary."""
+        """dict: Build versions dictionary."""
         return self._versions
 
     # =========================================================================
@@ -297,6 +345,11 @@ class HoudiniBuildData(object):
 
         If the passed value is not an explict build number (eg. 15.0) then
         the build for the current day of that major/minor will be downloaded.
+
+        :param build: The target build number.
+        :type build: str
+        :return: The build string to download.
+        :rtype: str
 
         """
         components = build.split(".")
@@ -310,13 +363,23 @@ class HoudiniBuildData(object):
         """Get the installation archive file type based on the operating
         system.
 
+        :return: The file extension.
+        :rtype: str
+
         """
         system = platform.system()
 
         return self._types[system]["ext"]
 
     def get_install_args(self, major_minor=None):
-        """Get installer args."""
+        """Get installer args.
+
+        :param major_minor: The base version to install.
+        :type major_minor: str
+        :return: A tuple of installer args.
+        :rtype: tuple(str)
+
+        """
         system = platform.system()
 
         all_args = []
@@ -375,7 +438,11 @@ class HoudiniBuildManager(object):
     # =========================================================================
 
     def _populate_installable_packages(self):
-        """Populate the installable build lists."""
+        """Populate the installable build lists.
+
+        :return:
+
+        """
         files = []
 
         archive_ext = _SETTINGS_MANAGER.build_data.get_archive_extension()
@@ -405,7 +472,11 @@ class HoudiniBuildManager(object):
         self.installable.sort(key=attrgetter("version"))
 
     def _populate_installed_builds(self):
-        """Populate the installed build lists."""
+        """Populate the installed build lists.
+
+        :return:
+
+        """
 
         format_args = {
             "version": "*",
@@ -433,16 +504,16 @@ class HoudiniBuildManager(object):
 
     @property
     def installable(self):
-        """A tuple of installable Houdini builds."""
+        """tuple(HoudiniInstallFile): A tuple of installable Houdini builds."""
         return self._installable
 
     @property
     def installed(self):
-        """A tuple of installed Houdini builds."""
+        """tuple(InstalledHoudiniBuild): A tuple of installed Houdini builds."""
         return self._installed
 
     # =========================================================================
-    # METHODS
+    # STATIC METHODS
     # =========================================================================
 
     @staticmethod
@@ -450,6 +521,13 @@ class HoudiniBuildManager(object):
         """Download and install a list of build numbers.
 
         Build numbers can be explicit numbers or major.minor versions.
+
+        :param build_numbers: A list of build numbers to process.
+        :type build_numbers: list(str)
+        :param create_symlink: Whether or not to create a major.minor symlink.
+        :type create_symlink: bool
+        :return:
+
         """
         # Get build information.
         build_data = _SETTINGS_MANAGER.build_data
@@ -467,21 +545,17 @@ class HoudiniBuildManager(object):
                 package = HoudiniInstallFile(downloaded_path)
                 package.install(create_symlink)
 
-    def find_matching_builds(self, match_string, builds):
-        """Find a matching build given a string and list of builds"""
-        # Filter all installed builds that match the build version
-        # string.
-        matching = [build for build in builds
-                    if str(build).startswith(match_string)]
-
-        # If there are any that match, use the latest/only one.
-        if matching:
-            return matching[-1]
-
-        return None
+    # =========================================================================
+    # METHODS
+    # =========================================================================
 
     def get_default_build(self):
-        """Attempt to find a default build."""
+        """Attempt to find a default build.
+
+        :return: The default build, if any.
+        :rtype: InstalledHoudiniBuild|None
+
+        """
         default = None
 
         # Ensure we have system settings available.
@@ -490,7 +564,7 @@ class HoudiniBuildManager(object):
             default_name = _SETTINGS_MANAGER.system.default_version
 
             if default_name is not None:
-                default = self.find_matching_builds(default_name, self.installed)
+                default = _find_matching_builds(default_name, self.installed)
 
         # If the default could not be found (or none was specified) use the
         # latest build.
@@ -503,10 +577,12 @@ class HoudiniBuildManager(object):
 class HoudiniEnvironmentSettings(object):
     """This class stores environment settings.
 
+    :param data: The source data dict.
+    :type data: dict
+
     """
 
     def __init__(self, data):
-        """Initialize a HoudiniEnvironmentSettings object."""
         self._paths = data.get("paths", {})
         self._variables = data.get("variables", [])
 
@@ -519,42 +595,38 @@ class HoudiniEnvironmentSettings(object):
 
     @property
     def paths(self):
-        """A dictionary of paths to set."""
+        """dict: A dictionary of paths to set."""
         return self._paths
 
     @property
     def test_paths(self):
-        """A dictionary of paths to set."""
+        """dict: A dictionary of paths to set."""
         return self._test_paths
 
     @property
     def test_variables(self):
-        """A dictionary of environment variables to set."""
+        """dict: A dictionary of environment variables to set."""
         return self._test_variables
 
     @property
     def variables(self):
-        """A dictionary of environment variables to set."""
+        """dict: A dictionary of environment variables to set."""
         return self._variables
 
     # =========================================================================
-    # METHODS
+    # STATIC METHODS
     # =========================================================================
 
-    def set_custom_environment(self):
-        """Apply custom env settings from package file."""
-        # Set variables first so they can possibly be used in custom paths.
-        for variable, value in self.paths.iteritems():
-            _set_variable(variable, ":".join(value))
-
-        for variable, value in self.variables.iteritems():
-            _set_variable(variable, value)
-
+    # FIXME: Why is this static???
     @staticmethod
     def set_default_environment(installed_build):
-        """This function will initialize the environment variables necessary
-        to run applications.  This is equivalent to sourcing the houdini_setup
-        file located in $HFS.
+        """Initialize the environment variables necessary to run applications.
+
+        This is equivalent to sourcing the houdini_setup file located in $HFS.
+
+        :param installed_build: An installed Houdini build.
+        :type installed_build: InstalledHoudiniBuild
+        :return:
 
         """
         # The base Houdini location.
@@ -593,8 +665,29 @@ class HoudiniEnvironmentSettings(object):
             (os.environ["HB"], os.environ["HSB"], os.environ["PATH"])
         )
 
+    # =========================================================================
+    # METHODS
+    # =========================================================================
+
+    def set_custom_environment(self):
+        """Apply custom env settings from package file.
+
+        :return:
+
+        """
+        # Set variables first so they can possibly be used in custom paths.
+        for variable, value in self.paths.iteritems():
+            _set_variable(variable, ":".join(value))
+
+        for variable, value in self.variables.iteritems():
+            _set_variable(variable, value)
+
     def set_test_path_environment(self):
-        """Apply test_path env settings from package file."""
+        """Apply test_path env settings from package file.
+
+        :return:
+
+        """
         # Set variables first so they can possibly be used in custom paths.
         for variable, value in self.test_paths.iteritems():
             _set_variable(variable, ":".join(value))
@@ -606,7 +699,8 @@ class HoudiniEnvironmentSettings(object):
 class HoudiniInstallFile(HoudiniBase):
     """This class represents an installable Houdini package.
 
-    The path is a path to the installable archive on disk.
+    :param path: The path to the installable archive on disk.
+    :type path: str
 
     """
 
@@ -643,7 +737,15 @@ class HoudiniInstallFile(HoudiniBase):
     # =========================================================================
 
     def _install_linux(self, install_path, link_path):
-        """Install the build on linux."""
+        """Install the build on linux.
+
+        :param install_path: The path to install to.
+        :type install_path: str
+        :param link_path: The symlink path.
+        :type link_path: str
+        :return:
+
+        """
         # Let our system tell us where we can store the temp files.
         temp_path = tempfile.gettempdir()
 
@@ -704,6 +806,10 @@ class HoudiniInstallFile(HoudiniBase):
         can then run the shipped installer script to properly install Houdini.
         Afterwards we remove the temp directory.
 
+        :param create_symlink: Whether or not to create a major/minor symlink.
+        :type create_symlink: bool
+        :return:
+
         """
         # Generate the path to install the build to.
         install_path = os.path.join(
@@ -742,6 +848,9 @@ class HoudiniInstallFile(HoudiniBase):
 class HoudiniInstallationSettings(object):
     """This class stores Houdini installation settings.
 
+    :param data: The source data dict.
+    :type data: dict
+
     """
 
     def __init__(self, data):
@@ -755,22 +864,25 @@ class HoudiniInstallationSettings(object):
 
     @property
     def link_name(self):
-        """The name of the symlink, if any."""
+        """str: The name of the symlink, if any."""
         return self._link_name
 
     @property
     def folder(self):
-        """The folder to install Houdini to."""
+        """str: The folder to install Houdini to."""
         return self._folder
 
     @property
     def target(self):
-        """The base path to install Houdini to."""
+        """str: The base path to install Houdini to."""
         return self._target
 
 
 class HoudiniPluginSettings(object):
     """This class stores Houdini plugin settings.
+
+    :param data: The source data dict.
+    :type data: dict
 
     """
 
@@ -787,12 +899,12 @@ class HoudiniPluginSettings(object):
 
     @property
     def folder(self):
-        """The folder for Houdini plugins."""
+        """str: The folder for Houdini plugins."""
         return self._folder
 
     @property
     def target(self):
-        """The base path to the Houdini plugin directory."""
+        """str: The base path to the Houdini plugin directory."""
         return self._target
 
 
@@ -805,7 +917,7 @@ class HoudiniSettingsManager(object):
         self._environment = None
         self._system = None
 
-        # File to load configuation information from.
+        # File to load configuration information from.
         config_path = None
 
         # Support directly specifying with an variable.
@@ -873,22 +985,25 @@ class HoudiniSettingsManager(object):
 
     @property
     def build_data(self):
-        """Houdini build data."""
+        """HoudiniBuildData: Houdini build data."""
         return self._build_data
 
     @property
     def environment(self):
-        """Houdini environment settings."""
+        """HoudiniEnvironmentSettings: Houdini environment settings."""
         return self._environment
 
     @property
     def system(self):
-        """Houdini environment settings."""
+        """HoudiniSystemSettings: Houdini system settings."""
         return self._system
 
 
 class HoudiniSystemSettings(object):
     """This class stores Houdini system settings.
+
+    :param data: The source data dict.
+    :type data: dict
 
     """
 
@@ -912,27 +1027,30 @@ class HoudiniSystemSettings(object):
 
     @property
     def default_version(self):
-        """A default build version string."""
+        """str|None: A default build version string."""
         return self._default_version
 
     @property
     def installation(self):
-        """Houdini installation settings."""
+        """HoudiniInstallationSettings: Houdini installation settings."""
         return self._installation
 
     @property
     def locations(self):
-        """A list of locations to search for installable packages."""
+        """list(str): A list of locations to search for installable packages."""
         return self._locations
 
     @property
     def plugins(self):
-        """Houdini plugin settings."""
+        """HoudiniPluginSettings|None: Houdini plugin settings."""
         return self._plugins
 
 
 class InstalledHoudiniBuild(HoudiniBase):
     """This class represents an installed Houdini build.
+
+    :param path: The path to the build.
+    :type path: str
 
     """
 
@@ -963,7 +1081,13 @@ class InstalledHoudiniBuild(HoudiniBase):
     # =========================================================================
 
     def setup_environment(self, test_path=False):
-        """Setup the environment in order to run this build."""
+        """Setup the environment in order to run this build.
+
+        :param test_path: Whether or not to run in test mode.
+        :type test_path: bool
+        :return:
+
+        """
         # Run the default environment setup.
         HoudiniEnvironmentSettings.set_default_environment(self)
 
@@ -984,6 +1108,8 @@ class InstalledHoudiniBuild(HoudiniBase):
 
         This function will remove the install directory and optionally
         remove any compiled operators for the build.
+
+        :return:
 
         """
         parent = os.path.dirname(self.path)
@@ -1020,12 +1146,22 @@ class InstalledHoudiniBuild(HoudiniBase):
 
                 shutil.rmtree(self.plugin_path)
 
+
 # =============================================================================
 # EXCEPTIONS
 # =============================================================================
 
-class BuildAlreadyInstalledError(Exception):
-    """Exception raised when a build is already installed."""
+class HoudiniPackageError(Exception):
+    """Base class for Houdini package related errors."""
+
+
+class BuildAlreadyInstalledError(HoudiniPackageError):
+    """Exception raised when a build is already installed.
+
+    :param build: A version string.
+    :type build: str
+
+    """
 
     def __init__(self, build):
         super(BuildAlreadyInstalledError, self).__init__()
@@ -1036,17 +1172,15 @@ class BuildAlreadyInstalledError(Exception):
         return "Houdini {} is already installed.".format(self.build)
 
 
-class UnsupportedMachineArchitectureError(Exception):
+class UnsupportedMachineArchitectureError(HoudiniPackageError):
     """Exception raised when there is no specified machine architecture for
     a certain build.
 
     """
-    pass
 
 
-class UnsupportedOSError(Exception):
+class UnsupportedOSError(HoudiniPackageError):
     """Exception raised when there is no known way to install for an OS."""
-    pass
 
 
 # =============================================================================
@@ -1056,6 +1190,13 @@ class UnsupportedOSError(Exception):
 def _download_build(build_file, target_directory):
     """Download a build file from the SESI website and place it in the target
     directory.
+
+    :param build_file: The file name to download.
+    :type build_file: str
+    :param target_directory: The download target location.
+    :type target_directory: str
+    :return: The path to the downloaded file.
+    :rtype: str|None
 
     """
     print "Attempting to download build: {}".format(build_file)
@@ -1120,8 +1261,38 @@ def _download_build(build_file, target_directory):
     return target_path
 
 
+def _find_matching_builds(match_string, builds):
+    """Find a matching build given a string and list of builds.
+
+    :param match_string: The string to match against.
+    :type match_string: str
+    :param builds: Installed builds to match against.
+    :type builds: tuple(InstalledHoudiniBuild)
+    :return: A matching build.
+    :rtype: InstalledHoudiniBuild|None
+
+    """
+    # Filter all installed builds that match the build version
+    # string.
+    matching = [build for build in builds
+                if str(build).startswith(match_string)]
+
+    # If there are any that match, use the latest/only one.
+    if matching:
+        return matching[-1]
+
+    return None
+
+
 def _flatten_items(items):
-    """Flatten a list of items."""
+    """Flatten a list of items.
+
+    :param items: A list of items to flatted.
+    :type items: list
+    :return: The flattened items.
+    :rtype: list
+
+    """
     flattened = []
 
     for item in items:
@@ -1146,6 +1317,9 @@ def _get_sesi_auth_info():
         "username": "your_name,
         "password": "your_password"
     }
+
+    :return: A user name and password.
+    :rtype: tuple(str)
 
     """
     auth_path = os.path.expandvars("$HOME/.sesi_login_details")
@@ -1172,6 +1346,12 @@ def _set_variable(name, value):
     This function will automatically expand any variables in the value before
     setting.
 
+    :param name: The name of the variable to set.
+    :type name: str
+    :param value: The value to set.
+    :type value: type
+    :return:
+
     """
     # If the value is a list, join the entries together ensuring they are
     # strings.
@@ -1187,6 +1367,7 @@ def _set_variable(name, value):
     value = os.path.expandvars(value)
 
     os.environ[name] = value
+
 
 # =============================================================================
 
