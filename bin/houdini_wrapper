@@ -8,10 +8,15 @@
 # Python Imports
 import os
 import signal
+import subprocess
 import sys
 
 # Houdini Toolbox Imports
-import ht.houdini.wrapper
+import ht.argument
+import ht.houdini.package
+import ht.output
+import ht.utils
+
 
 # =============================================================================
 # GLOBALS
@@ -25,14 +30,228 @@ SIGNALS = {
     signal.SIGTERM: "TERM"
 }
 
+
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-def _handler(signal_num, frame):
+def _build_parser():
+    """Build an ArgumentParser for the wrapper.
+
+    :return: The wrapper argument parser.
+    :rtype: ht.argument.ArgumentParser
+
+    """
+    # Don't allow abbreviations since we don't want them to interfere with any
+    # flags that might need to be passed through.
+    parser = ht.argument.ArgumentParser(
+        description="Run Houdini related applications.",
+        allow_abbrev=False
+    )
+
+    parser.add_argument(
+        "--dump-env",
+        action="store_true",
+        help="Display environment variables and values.",
+        dest="dump_env"
+    )
+
+    parser.add_argument(
+        "--no-jemalloc",
+        action="store_true",
+        help="Launch Houdini in debugging mode without jemalloc.",
+        dest="no_jemalloc"
+    )
+
+    parser.add_argument(
+        "--test-path",
+        action="store_true",
+        default=False,
+        help="Don't include any non-standard environment settings.",
+        dest="test_path"
+    )
+
+    parser.add_argument(
+        "--version",
+        nargs="?",
+        default="default",
+        help="Set the package version."
+    )
+
+    # Exclusive group to handle installs and uninstalls.
+    install_group = parser.add_mutually_exclusive_group()
+
+    install_group.add_argument(
+        "--install",
+        action="store_true",
+        default=False,
+        help="Install a Houdini build."
+    )
+
+    install_group.add_argument(
+        "--uninstall",
+        action="store_true",
+        default=False,
+        help="Uninstall a Houdini build."
+    )
+
+    install_group.add_argument(
+        "--dl-install",
+        nargs=1,
+        help="Download and install today's Houdini build.",
+        dest="dl_install"
+    )
+
+    parser.add_argument(
+        "--create-symlink",
+        action="store_true",
+        default=True,
+        help="Create a major.minor symlink",
+        dest="create_symlink"
+    )
+
+    return parser
+
+
+def _display_versions(arguments):
+    """Display a list of Houdini versions that are available to install,
+    run or uninstall.
+
+    :param arguments: The wrapper args.
+    :type arguments: argparse.Namespace
+    :return:
+
+    """
+    # Construct a HoudiniBuildManager to handle all our available Houdini
+    # options.
+    manager = ht.houdini.package.HoudiniBuildManager()
+
+    # List builds that can be installed.
+    if arguments.install:
+        _print("Houdini builds to install:")
+
+        _print(
+            '\t' + " ".join(
+                [str(build) for build in manager.installable]
+            )
+        )
+
+        _print()
+
+    # Builds that can be ran can also be uninstalled.
+    else:
+        if arguments.uninstall:
+            _print("Houdini builds to uninstall:")
+
+        else:
+            _print("Installed Houdini builds:")
+
+        default_build = manager.get_default_build()
+
+        output = []
+
+        for build in manager.installed:
+            if build == default_build:
+                # Run the message through the style function.
+                msg = ht.output.ShellOutput.blue(str(build))
+
+                output.append(msg)
+
+            else:
+                output.append(str(build))
+
+        _print('\t' + ' '.join(output))
+
+        _print()
+
+
+def _download_and_install(arguments):
+    """Download and automatically install a build.
+
+    :param arguments: The wrapper args.
+    :type arguments: argparse.Namespace
+    :return:
+
+    """
+    ht.houdini.package.HoudiniBuildManager.download_and_install(
+        arguments.dl_install,
+        arguments.create_symlink
+    )
+
+
+def _find_build(arguments):
+    """Search for the selected build.  If no valid build was selected
+    print a message.
+
+    :param arguments: The wrapper args.
+    :type arguments: argparse.Namespace
+    :return:
+
+    """
+    # Construct a HoudiniBuildManager to handle all our available Houdini
+    # options.
+    manager = ht.houdini.package.HoudiniBuildManager()
+
+    version = arguments.version
+
+    # If trying to install, get any builds that are installable.
+    if arguments.install:
+        search_builds = manager.installable
+
+        # If we are installing builds there is no default so remap to 'latest'.
+        if version == "default":
+            version = "latest"
+
+    # Get the installed builds.
+    else:
+        search_builds = manager.installed
+
+    # Couldn't find any builds, so print the appropriate message.
+    if not search_builds:
+        if arguments.install:
+            _print("No builds found to install.")
+
+        elif arguments.uninstall:
+            _print("No builds found to uninstall.")
+
+        else:
+            _print("No builds found.")
+
+        return None
+
+    build = None
+
+    # Use the last build in the list since it is sorted by version.
+    if version == "latest":
+        build = search_builds[-1]
+
+    # Support a 'default' build as defined in the config file.
+    elif version == "default":
+        build = manager.get_default_build()
+
+    # Look for a build matching the string.
+    else:
+        result = ht.houdini.package.find_matching_builds(version, search_builds)
+
+        if result is None:
+            _print("Could not find version: {ver}".format(ver=version))
+
+        else:
+            build = result
+
+    return build
+
+
+def _handler(signal_num, current_frame):
     """Signal handler to catch incoming signals and kill the process group.
 
     This allows things like the Render Scheduler to kill Mantra renders.
+
+    :param signal_num: The number of the received signal.
+    :type signal_num: int
+    :param current_frame: The current stack frame.
+    :type current_frame: frame
+    :return:
 
     """
     signal_name = SIGNALS[signal_num]
@@ -51,21 +270,206 @@ def _handler(signal_num, frame):
     # Exit with non-default status.
     sys.exit(1)
 
+
+def _print(msg="", colored=None):
+    """Print a message, optionally with color.
+
+    :param msg: The message to print.
+    :type msg: str
+    :param colored: Output color.
+    :type colored: str
+    :return:
+
+    """
+    # Doing colored output.
+    if colored is not None:
+        # Run the message through the style function.
+        msg = getattr(ht.output.ShellOutput, colored)(msg)
+
+    # Print the message.
+    print msg
+
+
+def _set_no_jemalloc(build_path, program_name):
+    """Set the environment in order to run without jemalloc.
+
+    :param build_path: THe path to the install location.
+    :type build_path: str
+    :param program_name: The name of the running program.
+    :type program_name: str
+    :return: A list of command args to run without jemalloc.
+    :rtype: list(str)
+
+    """
+    ld_path = os.path.join(os.environ["HDSO"], "empty_jemalloc")
+
+    # See if the LD_LIBRARY_PATH is already set since we need to modify it.
+    current_ld_path = os.getenv("LD_LIBRARY_PATH")
+
+    # If the path exists we insert our custom part before the existing
+    # values.
+    if current_ld_path is not None:
+        ld_path = ":".join([ld_path, current_ld_path])
+
+    # Set the variable to contain our path.
+    os.environ["LD_LIBRARY_PATH"] = ld_path
+
+    # Disable warning about no jemalloc.
+    os.environ["HOUDINI_DISABLE_JEMALLOCTEST"] = "1"
+
+    # Build the new list of main run arguments and return them.
+    run_args = [
+        "/lib64/ld-linux-x86-64.so.2",
+        "--inhibit-rpath",
+        "''",
+        "{}/bin/{}-bin".format(build_path, program_name)
+    ]
+
+    return run_args
+
+
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
 
 def main():
-    """Main function."""
+    """Execute the wrapper.
+
+    :return:
+
+    """
     # Handle specified signals.
     for sig in SIGNALS:
         signal.signal(sig, _handler)
 
-    # Construct and run the wrapper object.
-    ht.houdini.wrapper.HoudiniWrapper()
+    parser = _build_parser()
+
+    # Parse the arguments.
+    arguments, program_args = parser.parse_known_args()
+
+    # Get the name of the executable we are trying to run.
+    program_name = os.path.basename(sys.argv[0])
+
+    no_jemalloc = arguments.no_jemalloc
+    test_path = arguments.test_path
+    # log_level = arguments.log_level
+
+    _print("Houdini Wrapper:\n", colored="darkyellow")
+
+    # If version is False (no argument), display any available versions and
+    # exit.
+    if not arguments.version:
+        _display_versions(arguments)
+
+        return
+
+    # We are going to download and install a build so do this before
+    # anything else.
+    if arguments.dl_install:
+        _download_and_install(arguments)
+
+        return
+
+    # Try to find a build.
+    build = _find_build(arguments)
+
+    # No build found, so abort.
+    if build is None:
+        return
+
+    # Install the selected build.
+    if arguments.install:
+        build.install(arguments.create_symlink)
+
+        return
+
+    # Uninstall the selected build.
+    elif arguments.uninstall:
+        build.uninstall()
+
+        return
+
+    # Set the base environment for the build.
+    build.setup_environment(test_path=test_path)
+
+    # Handle setting options when the 'hcmake' compile command is used.
+    if program_name == "hcmake":
+        program_name = "cmake"
+
+        # Set the plugin installation directory to the plugin path if
+        # the build has one.
+        if build.plugin_path is not None:
+            os.environ["PLUGIN_BUILD_DIR"] = build.plugin_path
+
+    # Dumping all the environment and Houdini settings.
+    if arguments.dump_env:
+        # To display the Houdini configuration, change the program to run
+        # hconfig -a.
+        program_name = "hconfig"
+        program_args = ["-a"]
+
+        _print("Dumping env settings\n", colored="darkyellow")
+
+        # Dump the environment with 'printenv'.
+        proc = subprocess.Popen(
+            "printenv",
+            stdout=subprocess.PIPE
+        )
+
+        _print(proc.communicate()[0])
+        _print()
+
+        # Start with the name of the program to run.
+    run_args = [program_name]
+
+    # If we don't want to have Houdini use jemalloc we need to replace the
+    # run args. For more information, see
+    # http://www.sidefx.com/docs/houdini/ref/panes/perfmon
+    if no_jemalloc:
+        run_args = _set_no_jemalloc(build.path, program_name)
+
+    # Print the Houdini version information.
+    _print("\tHoudini {}: {}\n".format(build, build.path))
+
+    # Print the command being run.
+    _print(
+        "Launching {} {} ... ".format(
+            " ".join(run_args),
+            " ".join(program_args)
+        ),
+        colored="darkyellow"
+    )
+
+    # Run the application.
+    proc = subprocess.Popen(run_args + program_args)
+
+    # Display the process id.
+    _print(
+        "{} process id: {}".format(program_name, proc.pid+2),
+        colored="blue"
+    )
+
+    # Wait for the program to complete.
+    proc.wait()
+
+    # Get the return code.
+    return_code = proc.returncode
+
+    # If the program didn't end clean, print a message.
+    if return_code != 0:
+        _print(
+            "{} exited with signal {}.".format(
+                program_name,
+                abs(return_code)
+            ),
+            colored="darkred"
+        )
+
+    # Exit with the program's return code.
+    sys.exit(return_code)
+
 
 # =============================================================================
 
 if __name__ == "__main__":
     main()
-

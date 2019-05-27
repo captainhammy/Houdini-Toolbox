@@ -260,7 +260,7 @@ class HoudiniBuildData(object):
 
         return self._format_version_template(build_number, arch)
 
-    def _get_todays_build(self, major_minor):
+    def _get_daily_build(self, major_minor):
         """Construct the build string for today's major/minor build.
 
         :param major_minor: The base Houdini version to get.
@@ -288,10 +288,10 @@ class HoudiniBuildData(object):
         build_delta = today - start_date
 
         # The build number is the reference build + time delta in days.
-        todays_build = reference_build + build_delta.days
+        daily_build = reference_build + build_delta.days
 
         # It's release candidate time so that means there are now stub
-        # versions.  If we have the stubdata set we can determine
+        # versions.  If we have the stubdate set we can determine
         # which release candidate build we can download.
         if "stubdate" in version_data:
             stub_date = datetime.strptime(
@@ -302,7 +302,7 @@ class HoudiniBuildData(object):
             stub_delta = today - stub_date
 
             # Offset the normal build number by the stub's build number.
-            release_num = todays_build - stub_delta.days
+            release_num = daily_build - stub_delta.days
 
             build_number = "{}.{}.{}".format(
                 major_minor,
@@ -311,7 +311,7 @@ class HoudiniBuildData(object):
             )
 
         else:
-            build_number = "{}.{}".format(major_minor, todays_build)
+            build_number = "{}.{}".format(major_minor, daily_build)
 
         arch = self._get_specified_arch_for_build(major_minor)
 
@@ -355,7 +355,7 @@ class HoudiniBuildData(object):
         components = build.split(".")
 
         if len(components) == 2:
-            return self._get_todays_build(build)
+            return self._get_daily_build(build)
 
         return self._get_specified_build(build)
 
@@ -564,7 +564,7 @@ class HoudiniBuildManager(object):
             default_name = _SETTINGS_MANAGER.system.default_version
 
             if default_name is not None:
-                default = _find_matching_builds(default_name, self.installed)
+                default = find_matching_builds(default_name, self.installed)
 
         # If the default could not be found (or none was specified) use the
         # latest build.
@@ -1261,29 +1261,6 @@ def _download_build(build_file, target_directory):
     return target_path
 
 
-def _find_matching_builds(match_string, builds):
-    """Find a matching build given a string and list of builds.
-
-    :param match_string: The string to match against.
-    :type match_string: str
-    :param builds: Installed builds to match against.
-    :type builds: tuple(InstalledHoudiniBuild)
-    :return: A matching build.
-    :rtype: InstalledHoudiniBuild|None
-
-    """
-    # Filter all installed builds that match the build version
-    # string.
-    matching = [build for build in builds
-                if str(build).startswith(match_string)]
-
-    # If there are any that match, use the latest/only one.
-    if matching:
-        return matching[-1]
-
-    return None
-
-
 def _flatten_items(items):
     """Flatten a list of items.
 
@@ -1349,7 +1326,7 @@ def _set_variable(name, value):
     :param name: The name of the variable to set.
     :type name: str
     :param value: The value to set.
-    :type value: type
+    :type value: object
     :return:
 
     """
@@ -1370,7 +1347,33 @@ def _set_variable(name, value):
 
 
 # =============================================================================
+# FUNCTIONS
+# =============================================================================
+
+def find_matching_builds(match_string, builds):
+    """Find a matching build given a string and list of builds.
+
+    :param match_string: The string to match against.
+    :type match_string: str
+    :param builds: Installed builds to match against.
+    :type builds: tuple(InstalledHoudiniBuild)
+    :return: A matching build.
+    :rtype: InstalledHoudiniBuild|None
+
+    """
+    # Filter all installed builds that match the build version
+    # string.
+    matching = [build for build in builds
+                if str(build).startswith(match_string)]
+
+    # If there are any that match, use the latest/only one.
+    if matching:
+        return matching[-1]
+
+    return None
+
+
+# =============================================================================
 
 # Build settings for common use by all Houdini objects.
 _SETTINGS_MANAGER = HoudiniSettingsManager()
-
