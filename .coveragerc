@@ -12,8 +12,7 @@ source =
     ht.events.events.scene_load
     ht.inline.api
     ht.inline.utils
-    ht.logger
-    ht.loggers.shellio
+    ht.logging.shellio
     ht.nodes.styles.event
     ht.nodes.styles.styles
     ht.nodes.styles.manager
