@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
-from ht.pyfilter.operations.operation import PyFilterOperation, log_filter
+from ht.pyfilter.operations.operation import PyFilterOperation, log_filter_call
 from ht.pyfilter.property import get_property, set_property
 
 
@@ -73,7 +73,7 @@ class ZDepthPass(PyFilterOperation):
     def register_parser_args(parser):
         """Register interested parser args for this operation.
 
-        :param parser: The argument parser to attach arguements to.
+        :param parser: The argument parser to attach arguments to.
         :type parser: argparse.ArgumentParser.
         :return:
 
@@ -87,7 +87,7 @@ class ZDepthPass(PyFilterOperation):
     # METHODS
     # =========================================================================
 
-    @log_filter("object:name")
+    @log_filter_call("object:name")
     def filterInstance(self):
         """Apply constant black shader to objects.
 
@@ -107,7 +107,7 @@ class ZDepthPass(PyFilterOperation):
             set_property("object:surface", self.CONST_SHADER.split())
             set_property("object:displace", None)
 
-    @log_filter("plane:variable")
+    @log_filter_call("plane:variable")
     def filterPlane(self):
         """Modify image planes to ensure one will output Pz.
 

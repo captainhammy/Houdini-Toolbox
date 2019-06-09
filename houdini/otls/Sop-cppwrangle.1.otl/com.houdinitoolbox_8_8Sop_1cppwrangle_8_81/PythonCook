@@ -1,3 +1,5 @@
+# pylint: disable=missing-docstring
+
 # Houdini Imports
 import hou
 import hutil.cppinline

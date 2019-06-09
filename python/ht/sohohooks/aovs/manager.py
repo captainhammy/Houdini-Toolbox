@@ -19,6 +19,7 @@ from ht.sohohooks.aovs import constants as consts
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -599,6 +600,7 @@ class AOVFile(object):
         with open(path, 'w') as handle:
             json.dump(data, handle, indent=4)
 
+
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
@@ -656,13 +658,14 @@ def _get_aov_path_folders():
     # search through the HOUDINI_PATH as well.
     if '&' in search_path:
         # Find any config/aovs folders in HOUDINI_PATH.
-        hpath_dirs = _find_houdinipath_aov_folders()
+        directories = _find_houdinipath_aov_folders()
 
         # If there are any then we replace the '&' with those paths.
-        if hpath_dirs:
-            search_path = search_path.replace('&', ':'.join(hpath_dirs))
+        if directories:
+            search_path = search_path.replace('&', ':'.join(directories))
 
     return tuple(search_path.split(":"))
+
 
 # =============================================================================
 # FUNCTIONS
@@ -730,7 +733,7 @@ def load_json_files():
         if os.path.exists(path):
             MANAGER.load(path)
 
+
 # =============================================================================
 
 MANAGER = AOVManager()
-

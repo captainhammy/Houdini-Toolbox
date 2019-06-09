@@ -1,3 +1,4 @@
+#  pylint: disable=bad-continuation
 """This module contains functions designed to extend the Houdini Object Model
 (HOM) through the use of the inlinecpp module and regular Python.
 

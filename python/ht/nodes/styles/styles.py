@@ -7,10 +7,10 @@
 # Python Imports
 import re
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
-
 
 class StyleConstant(object):
     """This class represents a named constant style.
@@ -153,9 +153,9 @@ class StyleRule(object):
     def __str__(self):
         value = self._get_typed_color_value()
 
-        strs = [re.sub("\\.*0+$", "", "{:0.3f}".format(val)) for val in value]
+        components = [re.sub("\\.*0+$", "", "{:0.3f}".format(val)) for val in value]
 
-        return "(" + ", ".join(strs) + ")"
+        return "(" + ", ".join(components) + ")"
 
     # =========================================================================
     # NON-PUBLIC METHODS

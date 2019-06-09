@@ -346,6 +346,7 @@ class StyleManager(object):
 
         self._build()
 
+
 # =============================================================================
 # EXCEPTIONS
 # =============================================================================
@@ -356,11 +357,13 @@ class ConstantDoesNotExistError(Exception):
 
     """
 
+
 class InvalidColorTypeError(Exception):
     """Exception raised when a color is not a valid type defined in
     hou.colorType.
 
     """
+
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
@@ -535,6 +538,7 @@ def _get_tool_menu_locations(node_type):
         return tool.toolMenuLocations()
 
     return ()
+
 
 # =============================================================================
 

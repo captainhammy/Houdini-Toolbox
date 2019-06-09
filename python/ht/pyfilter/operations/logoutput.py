@@ -10,11 +10,8 @@ import logging
 # Houdini Toolbox Imports
 from ht.pyfilter.operations.operation import PyFilterOperation
 
-# =============================================================================
-# GLOBALS
-# =============================================================================
-
-LOGGER = logging.getLogger("mantra")
+# Name the logger 'mantra' since we're logging Mantra output.
+logger = logging.getLogger("mantra")
 
 
 # =============================================================================
@@ -28,7 +25,7 @@ class LogOutput(PyFilterOperation):
     # METHODS
     # =========================================================================
 
-    def filterError(self, level, message, prefix):
+    def filterError(self, level, message, prefix):  # pylint: disable=no-self-use
         """Handle message outputting.
 
         :param level: The output level.
@@ -48,20 +45,20 @@ class LogOutput(PyFilterOperation):
         for msg in messages:
             # Verbosity of 0 is always for errors.
             if level == 0:
-                LOGGER.error(msg)
+                logger.error(msg)
 
             # Mantra also only seems to set the prefix if the message is an
             # error/warning.
             elif prefix:
-                LOGGER.warning(msg)
+                logger.warning(msg)
 
             # Default verbosity level so we'll call that info.
             elif level == 1:
-                LOGGER.info(msg)
+                logger.info(msg)
 
             # Flag as debug.
             else:
-                LOGGER.debug(msg)
+                logger.debug(msg)
 
         # Return True to let Mantra know that we handled message output so it
         # will not output it itself.

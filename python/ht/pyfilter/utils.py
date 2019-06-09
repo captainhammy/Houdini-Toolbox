@@ -8,11 +8,7 @@
 import logging
 import os
 
-# =============================================================================
-# GLOBALS
-# =============================================================================
-
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -42,7 +38,7 @@ def build_pyfilter_command(pyfilter_args=None, pyfilter_path=None):
 
             # If we can't find the script them log an error and return nothing.
         except hou.OperationFailed:
-            LOGGER.error("Could not find pyfilter/ht-pyfilter.py")
+            logger.error("Could not find pyfilter/ht-pyfilter.py")
 
             return ""
 

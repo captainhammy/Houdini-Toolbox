@@ -5,9 +5,11 @@
 # ==============================================================================
 
 # Python Imports
-from PySide2 import QtCore, QtGui, QtWidgets
 import re
 
+from PySide2 import QtCore, QtGui, QtWidgets
+
+# Houdini Toolbox Imports
 import ht.ui.paste
 import ht.ui.paste.models
 
@@ -107,7 +109,7 @@ class BasicSourceItemTable(QtWidgets.QTableView):
         self.source.refresh()
         self.table_model.refresh()
 
-    def _on_table_selection_changed(self, new_selection, old_selection):
+    def _on_table_selection_changed(self, new_selection, old_selection):  # pylint: disable=unused-argument
         """Verify the selection to enable the Paste button.
 
         The selection is valid if one or more rows is selected.

@@ -23,13 +23,14 @@ from ht.pyfilter.manager import PyFilterManager
 # Houdini Imports
 import mantra
 
+logger = logging.getLogger("ht-pyfilter")
+
+
 # =============================================================================
 # GLOBALS
 # =============================================================================
 
-LOGGER = logging.getLogger("ht-pyfilter")
-
-PYFILTER_MANAGER = None
+_PYFILTER_MANAGER = None
 
 
 # =============================================================================
@@ -49,9 +50,9 @@ def filterCamera():
     don't declare the property explicitly.
 
     """
-    LOGGER.debug("filterCamera")
+    logger.debug("filterCamera")
 
-    PYFILTER_MANAGER.run_operations_for_stage("filterCamera")
+    _PYFILTER_MANAGER.run_operations_for_stage("filterCamera")
 
 
 def filterCameraSegment():
@@ -61,16 +62,16 @@ def filterCameraSegment():
     camera motion segment.
 
     """
-    LOGGER.debug("filterCameraSegment")
+    logger.debug("filterCameraSegment")
 
-    PYFILTER_MANAGER.run_operations_for_stage("filterCameraSegment")
+    _PYFILTER_MANAGER.run_operations_for_stage("filterCameraSegment")
 
 
 def filterEndRender():
     """Perform actions just after the image has been rendered."""
-    LOGGER.debug("filterEndRender")
+    logger.debug("filterEndRender")
 
-    PYFILTER_MANAGER.run_operations_for_stage("filterEndRender")
+    _PYFILTER_MANAGER.run_operations_for_stage("filterEndRender")
 
 
 def filterError(level, message, prefix):
@@ -79,7 +80,7 @@ def filterError(level, message, prefix):
     This function allows you to disable the printing of messages.
 
     """
-    result = PYFILTER_MANAGER.run_operations_for_stage("filterError", level, message, prefix)
+    result = _PYFILTER_MANAGER.run_operations_for_stage("filterError", level, message, prefix)
 
     return result
 
@@ -91,9 +92,9 @@ def filterFog():
     a fog object. The function can query fog: settings and possibly alter them.
 
     """
-    LOGGER.debug("filterFog ({})".format(mantra.property("object:name")[0]))
+    logger.debug("filterFog ({})".format(mantra.property("object:name")[0]))
 
-    PYFILTER_MANAGER.run_operations_for_stage("filterFog")
+    _PYFILTER_MANAGER.run_operations_for_stage("filterFog")
 
 
 def filterGeometry():
@@ -104,9 +105,9 @@ def filterGeometry():
     alter them.
 
     """
-    LOGGER.debug("filterGeometry")
+    logger.debug("filterGeometry")
 
-    PYFILTER_MANAGER.run_operations_for_stage("filterGeometry")
+    _PYFILTER_MANAGER.run_operations_for_stage("filterGeometry")
 
 
 def filterInstance():
@@ -117,8 +118,8 @@ def filterInstance():
     alter them.
 
     """
-    LOGGER.debug("filterInstance ({})".format(mantra.property("object:name")[0]))
-    PYFILTER_MANAGER.run_operations_for_stage("filterInstance")
+    logger.debug("filterInstance ({})".format(mantra.property("object:name")[0]))
+    _PYFILTER_MANAGER.run_operations_for_stage("filterInstance")
 
 
 def filterLight():
@@ -129,9 +130,9 @@ def filterLight():
     them.
 
     """
-    LOGGER.debug("filterLight ({})".format(mantra.property("object:name")[0]))
+    logger.debug("filterLight ({})".format(mantra.property("object:name")[0]))
 
-    PYFILTER_MANAGER.run_operations_for_stage("filterLight")
+    _PYFILTER_MANAGER.run_operations_for_stage("filterLight")
 
 
 def filterMaterial():
@@ -142,9 +143,9 @@ def filterMaterial():
     add or change properties on the material.
 
     """
-    LOGGER.debug("filterMaterial")
+    logger.debug("filterMaterial")
 
-    PYFILTER_MANAGER.run_operations_for_stage("filterMaterial")
+    _PYFILTER_MANAGER.run_operations_for_stage("filterMaterial")
 
 
 def filterOutputAssets(assets):
@@ -154,9 +155,9 @@ def filterOutputAssets(assets):
     during the render.
 
     """
-    LOGGER.debug("filterOutputAssets")
+    logger.debug("filterOutputAssets")
 
-    PYFILTER_MANAGER.run_operations_for_stage("filterOutputAssets")
+    _PYFILTER_MANAGER.run_operations_for_stage("filterOutputAssets")
 
 
 def filterPlane():
@@ -165,18 +166,18 @@ def filterPlane():
     channel = mantra.property("plane:channel")[0]
 
     if variable == channel or channel == "":
-        LOGGER.debug("filterPlane ({})".format(variable))
+        logger.debug("filterPlane ({})".format(variable))
     else:
-        LOGGER.debug("filterPlane ({} -> {})".format(variable, channel))
+        logger.debug("filterPlane ({} -> {})".format(variable, channel))
 
-    PYFILTER_MANAGER.run_operations_for_stage("filterPlane")
+    _PYFILTER_MANAGER.run_operations_for_stage("filterPlane")
 
 
 def filterQuit():
     """Perform actions just before Mantra quits."""
-    LOGGER.debug("filterQuit")
+    logger.debug("filterQuit")
 
-    PYFILTER_MANAGER.run_operations_for_stage("filterQuit")
+    _PYFILTER_MANAGER.run_operations_for_stage("filterQuit")
 
 
 def filterRender():
@@ -187,19 +188,19 @@ def filterRender():
     statistics or validation, it might be useful to have this method available.
 
     """
-    LOGGER.debug("filterRender")
+    logger.debug("filterRender")
 
-    PYFILTER_MANAGER.run_operations_for_stage("filterRender")
+    _PYFILTER_MANAGER.run_operations_for_stage("filterRender")
 
 
 def main():
     """Build the manager."""
-    global PYFILTER_MANAGER
+    global _PYFILTER_MANAGER
 
-    PYFILTER_MANAGER = PyFilterManager()
+    _PYFILTER_MANAGER = PyFilterManager()
+
 
 # =============================================================================
 
 if __name__ == "__main__":
     main()
-

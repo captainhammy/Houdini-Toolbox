@@ -25,7 +25,7 @@ class Test_SetTileCallback(unittest.TestCase):
     def setUp(self):
         super(Test_SetTileCallback, self).setUp()
 
-        self.patcher = patch("ht.pyfilter.operations.operation.LOGGER", autospec=True)
+        self.patcher = patch("ht.pyfilter.operations.operation.logger", autospec=True)
         self.patcher.start()
 
     def tearDown(self):

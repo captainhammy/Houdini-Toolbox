@@ -12,6 +12,7 @@ from ht.events.types import SceneEvents
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -34,7 +35,7 @@ class SceneLoadEvent(HoudiniEventGroup):
     # METHODS
     # =========================================================================
 
-    def clear_session_settings(self, scriptargs):
+    def clear_session_settings(self, scriptargs):  # pylint: disable=no-self-use,unused-argument
         """Clear out potentially annoying/bad settings."""
         # Remove an icon cache directory variable if it exists.
         hou.hscript("set -u HOUDINI_ICON_CACHE_DIR")

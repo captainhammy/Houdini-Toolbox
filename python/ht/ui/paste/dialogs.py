@@ -7,6 +7,7 @@
 # Python Imports
 from PySide2 import QtWidgets
 
+# Houdini Toolbox Imports
 from ht.ui.paste import utils, widgets
 
 # Houdini Imports

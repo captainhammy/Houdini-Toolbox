@@ -14,11 +14,12 @@ from ht.events.types import HipFileEvents, SceneEvents
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-def _atexit_callback(*args, **kwargs):
+def _atexit_callback(*args, **kwargs):  # pylint: disable=unused-argument
     """Run SceneEvents.Exit events.
 
     :return:
@@ -27,7 +28,7 @@ def _atexit_callback(*args, **kwargs):
     run_event(SceneEvents.Exit)
 
 
-def _emit_ui_available(*args, **kwargs):
+def _emit_ui_available(*args, **kwargs):  # pylint: disable=unused-argument
     """Run SceneEvents.WhenUIAvailable events.
 
     :return:

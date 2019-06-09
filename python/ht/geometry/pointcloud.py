@@ -11,10 +11,10 @@ from scipy.spatial import KDTree
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
-
 
 class PointCloud(object):
     """A wrapper around scipy.spatial.KDTree to represent point positions.

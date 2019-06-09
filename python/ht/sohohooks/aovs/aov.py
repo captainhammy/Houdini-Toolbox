@@ -10,6 +10,7 @@ import copy
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import constants as consts
 
+
 # =============================================================================
 # GLOBALS
 # =============================================================================
@@ -44,6 +45,7 @@ _DEFAULT_AOV_DATA = {
     consts.QUANTIZE_KEY: None,
     consts.SFILTER_KEY: None,
 }
+
 
 # =============================================================================
 # CLASSES
@@ -174,7 +176,7 @@ class AOV(object):
 
     @property
     def channel(self):
-        """str: The name of the output AOV's channel."""
+        """str: The name of the output channel."""
         return self._data[consts.CHANNEL_KEY]
 
     @channel.setter
@@ -218,7 +220,7 @@ class AOV(object):
 
     @property
     def exclude_from_dcm(self):
-        """bool: Exclude this aov from dcms."""
+        """bool: Exclude this aov from dcm renders."""
         return self._data[consts.EXCLUDE_DCM_KEY]
 
     @exclude_from_dcm.setter
@@ -284,7 +286,7 @@ class AOV(object):
 
     @property
     def pfilter(self):
-        """str: The name of the output AOV's pixel filter."""
+        """str: The name of the pixel filter."""
         return self._data[consts.PFILTER_KEY]
 
     @pfilter.setter
@@ -295,7 +297,7 @@ class AOV(object):
 
     @property
     def planefile(self):
-        """str: The name of the output AOV's specific file, if any."""
+        """str: The path to the specific file, if any."""
         return self._data[consts.PLANEFILE_KEY]
 
     @planefile.setter
@@ -328,7 +330,7 @@ class AOV(object):
 
     @property
     def sfilter(self):
-        """str: The name of the output AOV's sample filter."""
+        """str: The name of the sample filter."""
         return self._data[consts.SFILTER_KEY]
 
     @sfilter.setter
@@ -339,7 +341,7 @@ class AOV(object):
 
     @property
     def variable(self):
-        """str: The name of the output AOV's vex variable."""
+        """str: The name of the vex variable."""
         return self._data[consts.VARIABLE_KEY]
 
     @variable.setter
@@ -645,6 +647,7 @@ class IntrinsicAOVGroup(AOVGroup):
 
         self._comment = "Automatically generated"
 
+
 # =============================================================================
 # EXCEPTIONS
 # =============================================================================
@@ -702,6 +705,7 @@ class MissingVexTypeError(AOVError):  # pragma: no cover
         return "Cannot create AOV {}: missing 'vextype'.".format(
             self.variable
         )
+
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS

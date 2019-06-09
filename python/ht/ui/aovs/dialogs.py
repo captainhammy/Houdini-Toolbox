@@ -21,9 +21,11 @@ from ht.ui.aovs import uidata, utils, widgets
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
+
 
 # =============================================================================
 # Create/Edit Dialogs
@@ -177,6 +179,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
                 self.components.setDisabled(False)
 
     def enableComponents(self, value):
+        """Enable the components list."""
         if value == 1:
             self.components_label.setDisabled(False)
             self.components.setDisabled(False)
@@ -949,7 +952,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
 
         source_model.beginResetModel()
 
-        source_model.uncheckAll()
+        source_model.uncheck_all()
 
         for aov in aovs:
             try:
@@ -1367,7 +1370,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         # Update the table data.
         model = self.table.model()
         model.beginResetModel()
-        model.initDataFromAOV(self.aov)
+        model.init_data_from_aov(self.aov)
         model.endResetModel()
 
         self.table.resizeColumnToContents(0)
@@ -1422,10 +1425,10 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         if choice == 1:
             aov_file = manager.AOVFile(self.group.path)
-            aov_file.removeGroup(self.group)
+            aov_file.remove_group(self.group)
             aov_file.write_to_file()
 
-            manager.MANAGER.removeGroup(self.group)
+            manager.MANAGER.remove_group(self.group)
 
     # =========================================================================
 
@@ -1555,13 +1558,13 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         # Update the group information table.
         table_model = self.table.model()
         table_model.beginResetModel()
-        table_model.initDataFromGroup(self.group)
+        table_model.init_data_from_group(self.group)
         table_model.endResetModel()
 
         # Update the group member data.
         member_model = self.members.model().sourceModel()
         member_model.beginResetModel()
-        member_model.initDataFromGroup(self.group)
+        member_model.init_data_from_group(self.group)
         member_model.endResetModel()
 
         self.table.resizeColumnToContents(0)

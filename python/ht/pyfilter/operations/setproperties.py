@@ -13,14 +13,10 @@ import json
 import logging
 
 # Houdini Toolbox Imports
-from ht.pyfilter.operations.operation import PyFilterOperation, log_filter
+from ht.pyfilter.operations.operation import PyFilterOperation, log_filter_call
 from ht.pyfilter.property import get_property, set_property
 
-# =============================================================================
-# GLOBALS
-# =============================================================================
-
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -87,7 +83,7 @@ class PropertySetterManager(object):
         :return:
 
         """
-        LOGGER.debug("Reading properties from %s", file_path)
+        logger.debug("Reading properties from %s", file_path)
 
         # Load json data from the file.
         with open(file_path) as f:
@@ -204,7 +200,7 @@ class PropertySetter(object):
             if not hou.patternMatch(self.rendertype, rendertype):
                 return
 
-        LOGGER.debug("Setting property '%s' to %s", self.name, self.value)
+        logger.debug("Setting property '%s' to %s", self.name, self.value)
 
         # Update the property value.
         set_property(self.name, self.value)
@@ -349,7 +345,7 @@ class SetProperties(PyFilterOperation):
     def register_parser_args(parser):
         """Register interested parser args for this operation.
 
-        :param parser: The argument parser to attach arguements to.
+        :param parser: The argument parser to attach arguments to.
         :type parser: argparse.ArgumentParser.
         :return:
 
@@ -371,7 +367,7 @@ class SetProperties(PyFilterOperation):
     # METHODS
     # =========================================================================
 
-    @log_filter
+    @log_filter_call
     def filterCamera(self):
         """Apply camera properties.
 
@@ -380,7 +376,7 @@ class SetProperties(PyFilterOperation):
         """
         self.property_manager.set_properties("camera")
 
-    @log_filter("object:name")
+    @log_filter_call("object:name")
     def filterInstance(self):
         """Apply object properties.
 
@@ -389,7 +385,7 @@ class SetProperties(PyFilterOperation):
         """
         self.property_manager.set_properties("instance")
 
-    @log_filter("object:name")
+    @log_filter_call("object:name")
     def filterLight(self):
         """Apply light properties.
 
@@ -424,6 +420,7 @@ class SetProperties(PyFilterOperation):
 
         """
         return any(self.property_manager.properties)
+
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
@@ -464,7 +461,7 @@ def _create_property_setter(property_name, property_block, stage_name):
         # warning message.  We will still return a regular PropertySetter
         # object though.
         else:
-            LOGGER.warning("No masking available for %s:%s.", stage_name, property_name)
+            logger.warning("No masking available for %s:%s.", stage_name, property_name)
 
     # Generic property setter.
     return PropertySetter(property_name, property_block)

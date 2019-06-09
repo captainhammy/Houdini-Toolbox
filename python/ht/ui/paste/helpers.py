@@ -10,6 +10,7 @@ from PySide2 import QtCore, QtWidgets
 # Houdini Toolbox Imports
 from ht.ui.paste import widgets
 
+
 # ==============================================================================
 # CLASSES
 # ==============================================================================
@@ -24,6 +25,7 @@ class _BaseCopyHelperWidget(QtWidgets.QWidget):
         self.source = source
 
     def get_source(self):
+        """Get the source item."""
         pass
 
 
@@ -37,6 +39,7 @@ class _BasePasteHelperWidget(QtWidgets.QWidget):
         self.source = source
 
     def get_sources(self):
+        """Get sources."""
         pass
 
 

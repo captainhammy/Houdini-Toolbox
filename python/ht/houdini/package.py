@@ -18,7 +18,6 @@ import sys
 import tarfile
 import tempfile
 
-# Third Party Imports
 from mechanize import Browser, LinkNotFoundError
 
 
@@ -26,8 +25,8 @@ from mechanize import Browser, LinkNotFoundError
 # GLOBALS
 # =============================================================================
 
-BUILD_DATA_FILE = "build_data.json"
-PACKAGE_CONFIG_FILE = "houdini_package_config.json"
+_BUILD_DATA_FILE = "build_data.json"
+_PACKAGE_CONFIG_FILE = "houdini_package_config.json"
 
 
 # =============================================================================
@@ -929,7 +928,7 @@ class HoudiniSettingsManager(object):
         # the home directory.
         else:
             home_path = os.path.expandvars(
-                os.path.join("${HOME}", PACKAGE_CONFIG_FILE)
+                os.path.join("${HOME}", _PACKAGE_CONFIG_FILE)
             )
 
             # If that file exists then use it.
@@ -941,7 +940,7 @@ class HoudiniSettingsManager(object):
         if config_path is None:
             config_path = os.path.join(
                 os.path.dirname(__file__),
-                PACKAGE_CONFIG_FILE
+                _PACKAGE_CONFIG_FILE
             )
 
         # Couldn't find any valid files so we have nothing left to do.
@@ -965,7 +964,7 @@ class HoudiniSettingsManager(object):
         # alongside this module.
         build_config_path = os.path.join(
             os.path.dirname(__file__),
-            BUILD_DATA_FILE
+            _BUILD_DATA_FILE
         )
 
         # Couldn't find any valid files so we have nothing left to do.

@@ -8,11 +8,7 @@
 from functools import wraps
 import logging
 
-# =============================================================================
-# GLOBALS
-# =============================================================================
-
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -94,7 +90,7 @@ class PyFilterOperation(object):
         """
         pass
 
-    def should_run(self):
+    def should_run(self):  # pylint: disable=no-self-use
         """Determine whether or not this filter should be run.
 
         :return: Whether or not this operation should run.
@@ -108,7 +104,7 @@ class PyFilterOperation(object):
 # FUNCTIONS
 # =============================================================================
 
-def log_filter(method_or_name):
+def log_filter_call(method_or_name):
     """Custom filter logging decorator.
 
     You can decorate each filter* method of a PyFilterOperation class to
@@ -123,10 +119,10 @@ def log_filter(method_or_name):
     :rtype: function
 
     """
-    def decorator(func):
+    def decorator(func):  # pylint: disable=missing-docstring
 
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs):  # pylint: disable=missing-docstring
             func_name = func.__name__
             class_name = args[0].__class__.__name__
 
@@ -140,7 +136,7 @@ def log_filter(method_or_name):
                     mantra.property(method_or_name)[0]
                 )
 
-            LOGGER.debug(msg)
+            logger.debug(msg)
 
             func(*args, **kwargs)
 

@@ -8,15 +8,10 @@
 import logging
 
 # Houdini Toolbox Imports
-from ht.pyfilter.operations.operation import PyFilterOperation, log_filter
+from ht.pyfilter.operations.operation import PyFilterOperation, log_filter_call
 from ht.pyfilter.property import set_property
 
-
-# =============================================================================
-# GLOBALS
-# =============================================================================
-
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -91,7 +86,7 @@ class SetPrimaryImage(PyFilterOperation):
     def register_parser_args(parser):
         """Register interested parser args for this operation.
 
-        :param parser: The argument parser to attach arguements to.
+        :param parser: The argument parser to attach arguments to.
         :type parser: argparse.ArgumentParser.
         :return:
 
@@ -108,7 +103,7 @@ class SetPrimaryImage(PyFilterOperation):
     # METHODS
     # =========================================================================
 
-    @log_filter
+    @log_filter_call
     def filterCamera(self):
         """Apply camera properties.
 
@@ -116,7 +111,7 @@ class SetPrimaryImage(PyFilterOperation):
 
         """
         if self.disable_primary_image:
-            LOGGER.info("Disabling primary image")
+            logger.info("Disabling primary image")
             set_property("image:filename", "null:")
 
         elif self.primary_image_path is not None:

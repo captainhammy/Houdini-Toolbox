@@ -10,12 +10,7 @@ from contextlib import contextmanager
 import logging
 import time
 
-
-# =============================================================================
-# GLOBALS
-# =============================================================================
-
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -109,10 +104,10 @@ class HoudiniEventStats(object):
 
     def __repr__(self):
         return "<{}: {} run_count={} total_time={:0.3f}>".format(
-                self.__class__.__name__,
-                self.name,
-                self.run_count,
-                self.total_time,
+            self.__class__.__name__,
+            self.name,
+            self.run_count,
+            self.total_time,
         )
 
     def __enter__(self):
@@ -157,6 +152,7 @@ class HoudiniEventStats(object):
 
     @property
     def tags(self):
+        """list(str): Tags associated with the stats."""
         return self._tags
 
     @property
@@ -174,9 +170,9 @@ class HoudiniEventStats(object):
         :return:
 
         """
-        LOGGER.info("Event name: %s", self.name)
-        LOGGER.info("\tRun Count: %s", self.run_count)
-        LOGGER.info("\tRun Time: %s", self.last_run_time)
+        logger.info("Event name: %s", self.name)
+        logger.info("\tRun Count: %s", self.run_count)
+        logger.info("\tRun Time: %s", self.last_run_time)
 
     def reset(self):
         """Reset all counts.
@@ -226,14 +222,14 @@ class HoudiniEventItemStats(HoudiniEventStats):
         :return:
 
         """
-        LOGGER.info("Item: %s", self.name)
-        LOGGER.info("\tRun Count: %s", self.run_count)
-        LOGGER.info("\tCallables:")
+        logger.info("Item: %s", self.name)
+        logger.info("\tRun Count: %s", self.run_count)
+        logger.info("\tCallables:")
 
         for item_name, item_time in self.item_stats.iteritems():
-            LOGGER.info("\t\t%s: %0.4f", item_name, item_time)
+            logger.info("\t\t%s: %0.4f", item_name, item_time)
 
-        LOGGER.info("\tRun Time: %0.4f", self.last_run_time)
+        logger.info("\tRun Time: %0.4f", self.last_run_time)
 
     def reset(self):
         """Reset all counts.

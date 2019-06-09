@@ -7,6 +7,7 @@
 # Python Imports
 import traceback
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -16,6 +17,10 @@ class SohoHookManager(object):
 
     def __init__(self):
         self._hooks = {}
+
+    # =========================================================================
+    # SPECIAL METHODS
+    # =========================================================================
 
     def __repr__(self):
         return "<SohoHookManager ({} hooks)>".format(len(self.hooks))
@@ -52,7 +57,7 @@ class SohoHookManager(object):
 
                 ray_comment(
                     "Traceback:\n# {}\n".format(
-                            "\n#".join(traceback.format_exc().split('\n'))
+                        "\n#".join(traceback.format_exc().split('\n'))
                     )
                 )
 
@@ -67,6 +72,7 @@ class SohoHookManager(object):
         hooks = self.hooks.setdefault(name, [])
 
         hooks.append(hook)
+
 
 # =============================================================================
 

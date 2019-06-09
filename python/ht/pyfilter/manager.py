@@ -12,12 +12,7 @@ import importlib
 import json
 import logging
 
-
-# =============================================================================
-# GLOBALS
-# =============================================================================
-
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -104,12 +99,12 @@ class PyFilterManager(object):
                 cls = _get_class(module_name, class_name)
 
                 if cls is None:
-                    LOGGER.warning("Could not load %s from %s", class_name, module_name)
+                    logger.warning("Could not load %s from %s", class_name, module_name)
 
                     continue
 
                 else:
-                    LOGGER.debug("Registering %s (%s)", class_name, module_name)
+                    logger.debug("Registering %s (%s)", class_name, module_name)
 
                 # Add an instance of it to our operations list.
                 self.operations.append(cls(self))
@@ -165,6 +160,7 @@ class PyFilterManager(object):
 
         return True in results
 
+
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
@@ -196,7 +192,7 @@ def _find_operation_files():
 
     # If no files could be found then abort.
     except hou.OperationFailed:
-        LOGGER.debug("Could not find any operations to load")
+        logger.debug("Could not find any operations to load")
         files = ()
 
     return files
@@ -240,8 +236,8 @@ def _get_operation_data(file_path):
             data = json.load(fp)
 
     except (IOError, ValueError) as inst:
-        LOGGER.error("Error loading operation data from %s", file_path)
-        LOGGER.exception(inst)
+        logger.error("Error loading operation data from %s", file_path)
+        logger.exception(inst)
 
         data = {}
 

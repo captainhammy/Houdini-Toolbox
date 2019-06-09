@@ -27,7 +27,7 @@ class Test_DeepImage(unittest.TestCase):
     def setUp(self):
         super(Test_DeepImage, self).setUp()
 
-        self.patcher = patch("ht.pyfilter.operations.operation.LOGGER", autospec=True)
+        self.patcher = patch("ht.pyfilter.operations.operation.logger", autospec=True)
         self.patcher.start()
 
     def tearDown(self):
@@ -396,7 +396,7 @@ class Test_DeepImage(unittest.TestCase):
     # filterCamera
 
     @patch("ht.pyfilter.operations.deepimage.get_property")
-    @patch("ht.pyfilter.operations.deepimage.LOGGER")
+    @patch("ht.pyfilter.operations.deepimage.logger")
     @patch.object(deepimage.SetDeepImage, "_modify_deep_args")
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_filterCamera__not_beatuy(self, mock_modify, mock_logger, mock_get):
@@ -412,7 +412,7 @@ class Test_DeepImage(unittest.TestCase):
 
     @patch("ht.pyfilter.operations.deepimage.set_property")
     @patch("ht.pyfilter.operations.deepimage.get_property")
-    @patch("ht.pyfilter.operations.deepimage.LOGGER")
+    @patch("ht.pyfilter.operations.deepimage.logger")
     @patch.object(deepimage.SetDeepImage, "_modify_deep_args")
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_filterCamera__disable_deep_image(self, mock_modify, mock_logger, mock_get, mock_set):
@@ -430,7 +430,7 @@ class Test_DeepImage(unittest.TestCase):
 
     @patch("ht.pyfilter.operations.deepimage.set_property")
     @patch("ht.pyfilter.operations.deepimage.get_property")
-    @patch("ht.pyfilter.operations.deepimage.LOGGER")
+    @patch("ht.pyfilter.operations.deepimage.logger")
     @patch.object(deepimage.SetDeepImage, "_modify_deep_args")
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_filterCamera__no_deep_args_no_resolver(self, mock_modify, mock_logger, mock_get, mock_set):
@@ -458,7 +458,7 @@ class Test_DeepImage(unittest.TestCase):
 
     @patch("ht.pyfilter.operations.deepimage.set_property")
     @patch("ht.pyfilter.operations.deepimage.get_property")
-    @patch("ht.pyfilter.operations.deepimage.LOGGER")
+    @patch("ht.pyfilter.operations.deepimage.logger")
     @patch.object(deepimage.SetDeepImage, "_modify_deep_args")
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_filterCamera__no_deep_args_no_file(self, mock_modify, mock_logger, mock_get, mock_set):
@@ -486,7 +486,7 @@ class Test_DeepImage(unittest.TestCase):
 
     @patch("ht.pyfilter.operations.deepimage.set_property")
     @patch("ht.pyfilter.operations.deepimage.get_property")
-    @patch("ht.pyfilter.operations.deepimage.LOGGER")
+    @patch("ht.pyfilter.operations.deepimage.logger")
     @patch.object(deepimage.SetDeepImage, "_modify_deep_args")
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_filterCamera__no_deep_args_resolver_and_file(self, mock_modify, mock_logger, mock_get, mock_set):
@@ -518,7 +518,7 @@ class Test_DeepImage(unittest.TestCase):
 
     @patch("ht.pyfilter.operations.deepimage.set_property")
     @patch("ht.pyfilter.operations.deepimage.get_property")
-    @patch("ht.pyfilter.operations.deepimage.LOGGER")
+    @patch("ht.pyfilter.operations.deepimage.logger")
     @patch.object(deepimage.SetDeepImage, "_modify_deep_args")
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
     def test_filterCamera__deep_args(self, mock_modify, mock_logger, mock_get, mock_set):

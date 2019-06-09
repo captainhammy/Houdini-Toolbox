@@ -8,9 +8,10 @@
 import math
 
 # Houdini Toolbox Imports
-from ht.pyfilter.operations.operation import PyFilterOperation, log_filter
+from ht.pyfilter.operations.operation import PyFilterOperation, log_filter_call
 from ht.pyfilter.property import get_property, set_property
 from ht.pyfilter.utils import build_pyfilter_command
+
 
 # =============================================================================
 # CLASSES
@@ -168,10 +169,10 @@ class IpOverrides(PyFilterOperation):
 
     @staticmethod
     def build_arg_string(res_scale=None, sample_scale=None, disable_blur=False,  # pylint: disable=arguments-differ
-                       disable_aovs=False, disable_deep=False,
-                       disable_displacement=False, disable_subd=False,
-                       disable_tilecallback=False, bucket_size=None,
-                       transparent_samples=None, disable_matte=False):
+                         disable_aovs=False, disable_deep=False,
+                         disable_displacement=False, disable_subd=False,
+                         disable_tilecallback=False, bucket_size=None,
+                         transparent_samples=None, disable_matte=False):
         """Build an argument string for this operation.
 
         :param res_scale: The resolution scale.
@@ -241,7 +242,7 @@ class IpOverrides(PyFilterOperation):
     def register_parser_args(parser):
         """Register interested parser args for this operation.
 
-        :param parser: The argument parser to attach arguements to.
+        :param parser: The argument parser to attach arguments to.
         :type parser: argparse.ArgumentParser.
         :return:
 
@@ -272,7 +273,7 @@ class IpOverrides(PyFilterOperation):
     # METHODS
     # =========================================================================
 
-    @log_filter
+    @log_filter_call
     def filterCamera(self):
         """Apply camera properties.
 
@@ -311,7 +312,7 @@ class IpOverrides(PyFilterOperation):
         if self.transparent_samples:
             set_property("image:transparentsamples", self.transparent_samples)
 
-    @log_filter
+    @log_filter_call
     def filterInstance(self):
         """Modify object properties.
 
@@ -331,7 +332,7 @@ class IpOverrides(PyFilterOperation):
             elif get_property("object:surface") == "opdef:/Shop/v_matte":
                 set_property("object:renderable", False)
 
-    @log_filter
+    @log_filter_call
     def filterMaterial(self):
         """Modify material properties.
 
@@ -341,7 +342,7 @@ class IpOverrides(PyFilterOperation):
         if self.disable_displacement:
             set_property("object:displace", [])
 
-    @log_filter
+    @log_filter_call
     def filterPlane(self):
         """Modify aov properties.
 
@@ -409,6 +410,7 @@ class IpOverrides(PyFilterOperation):
             )
         )
 
+
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
@@ -435,6 +437,7 @@ def _scale_samples(samples, scale):
 
     """
     return [max(1, int(math.ceil(value * scale))) for value in samples]
+
 
 # =============================================================================
 # FUNCTIONS

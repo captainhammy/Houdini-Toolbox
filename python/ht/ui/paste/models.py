@@ -5,8 +5,9 @@
 # ==============================================================================
 
 # Python Imports
-from PySide2 import QtCore
 from operator import attrgetter
+
+from PySide2 import QtCore
 
 # Houdini Toolbox Imports
 from ht.ui.paste import utils
@@ -31,7 +32,7 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
 
         self.refresh()
 
-    def columnCount(self, parent):
+    def columnCount(self, parent):  # pylint: disable=unused-argument
         """The number of columns."""
         return len(self.header_labels)
 
@@ -61,7 +62,7 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def flags(self, index):
+    def flags(self, index):  # pylint: disable=unused-argument
         """Item flags.
 
         We want items to be enabled and selectable.
@@ -85,7 +86,7 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
         self.items.sort(key=attrgetter("name"))
         self.modelReset.emit()
 
-    def rowCount(self, parent):
+    def rowCount(self, parent):  # pylint: disable=unused-argument
         """The number of rows.
 
         Equal to the number of files we can paste.

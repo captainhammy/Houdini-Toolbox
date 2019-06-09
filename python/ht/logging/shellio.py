@@ -41,5 +41,5 @@ class PythonShellHandler(logging.StreamHandler):
         except (KeyboardInterrupt, SystemExit):
             raise
 
-        except:
+        except Exception:
             self.handleError(record)

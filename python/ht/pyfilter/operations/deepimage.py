@@ -8,15 +8,10 @@
 import logging
 
 # Houdini Toolbox Imports
-from ht.pyfilter.operations.operation import PyFilterOperation, log_filter
+from ht.pyfilter.operations.operation import PyFilterOperation, log_filter_call
 from ht.pyfilter.property import get_property, set_property
 
-
-# =============================================================================
-# GLOBALS
-# =============================================================================
-
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -108,7 +103,7 @@ class SetDeepImage(PyFilterOperation):
 
     @property
     def compositing(self):
-        """int: Precomposite the samples."""
+        """int: Pre-composite the samples."""
         return self._compositing
 
     @compositing.setter
@@ -230,11 +225,10 @@ class SetDeepImage(PyFilterOperation):
     # =========================================================================
 
     @staticmethod
-    def build_arg_string(disable_deep_image=None, deep_all_passes=None,
+    def build_arg_string(disable_deep_image=None, deep_all_passes=None,  # pylint: disable=arguments-differ
                          deep_image_path=None, resolver=None, compositing=None,
                          compression=None, depth_planes=None, mipmaps=None,
-                         ofsize=None, ofstorage=None, pzstorage=None, zbias=None
-                         ):   # pylint: disable=arguments-differ
+                         ofsize=None, ofstorage=None, pzstorage=None, zbias=None):
         """Build an argument string for this operation.
 
         :param disable_deep_image: Whether or not to disable the deep image.
@@ -354,7 +348,7 @@ class SetDeepImage(PyFilterOperation):
     # METHODS
     # =========================================================================
 
-    @log_filter
+    @log_filter_call
     def filterCamera(self):
         """Apply camera properties.
 
@@ -364,11 +358,11 @@ class SetDeepImage(PyFilterOperation):
         render_type = get_property("renderer:rendertype")
 
         if not self.all_passes and render_type != "beauty":
-            LOGGER.warning("Not a beauty render, skipping deepresolver")
+            logger.warning("Not a beauty render, skipping deepresolver")
             return
 
         if self.disable_deep_image:
-            LOGGER.info("Disabling deep resolver")
+            logger.info("Disabling deep resolver")
             set_property("image:deepresolver", [])
 
         else:
@@ -384,14 +378,14 @@ class SetDeepImage(PyFilterOperation):
 
                 # Log an error and abort.
                 else:
-                    LOGGER.error("Cannot set deepresolver: deep output is not enabled")
+                    logger.error("Cannot set deepresolver: deep output is not enabled")
 
                     return
 
             # Modify the args to include any passed along options.
             self._modify_deep_args(deep_args)
 
-            LOGGER.debug(
+            logger.debug(
                 "Setting 'image:deepresolver': %s", " ".join([str(arg) for arg in deep_args])
             )
 

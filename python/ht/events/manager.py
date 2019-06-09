@@ -16,6 +16,7 @@ from ht.events.event import HoudiniEventFactory
 from ht.events.group import HoudiniEventGroup
 from ht.events.item import HoudiniEventItem
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -192,6 +193,7 @@ class HoudiniEventManager(object):
 
             event.run(scriptargs)
 
+
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
@@ -261,6 +263,7 @@ def run_event(event_name, scriptargs=None):
 
     """
     MANAGER.run_event(event_name, scriptargs)
+
 
 # =============================================================================
 
