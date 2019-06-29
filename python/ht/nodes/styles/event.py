@@ -28,9 +28,10 @@ class StyleNodeEvent(HoudiniEventGroup):
                 NodeEvents.OnNameChanged: HoudiniEventItem((self.style_node_by_name,)),
             }
         )
-    # =========================================================================
+
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def style_node_by_name(self, scriptargs):
         """Style a node based on a name.

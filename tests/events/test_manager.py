@@ -144,7 +144,7 @@ class Test_HoudiniEventManager(unittest.TestCase):
         mock_states = MagicMock(spec=dict)
 
         states = {mock_event1.name: False, mock_event2.name: True}
-        mock_states.iteritems.return_value = states.iteritems()
+        mock_states.items.return_value = states.items()
 
         manager = ht.events.manager.HoudiniEventManager()
         manager._event_states = mock_states
@@ -437,7 +437,7 @@ class Test_register_function(unittest.TestCase):
 
         ht.events.manager.register_function(mock_func, mock_event_name, mock_item_name, mock_priority, mock_tags)
 
-        mock_cls.assert_called_with([mock_func], mock_item_name, mock_priority, stat_tags=mock_tags)
+        mock_cls.assert_called_with((mock_func, ), mock_item_name, mock_priority, stat_tags=mock_tags)
 
         mock_register_item.assert_called_with(mock_cls.return_value, mock_event_name)
 

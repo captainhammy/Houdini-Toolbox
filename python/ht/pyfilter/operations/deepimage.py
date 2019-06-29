@@ -11,7 +11,7 @@ import logging
 from ht.pyfilter.operations.operation import PyFilterOperation, log_filter_call
 from ht.pyfilter.property import get_property, set_property
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -43,9 +43,9 @@ class SetDeepImage(PyFilterOperation):
         self._pzstorage = None
         self._zbias = None
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def _modify_deep_args(self, deep_args):
         """Modify the args either in place or by adding to them.
@@ -86,9 +86,9 @@ class SetDeepImage(PyFilterOperation):
                 else:
                     deep_args.extend((arg_name, value))
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def all_passes(self):
@@ -99,7 +99,7 @@ class SetDeepImage(PyFilterOperation):
     def all_passes(self, all_passes):
         self._all_passes = all_passes
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def compositing(self):
@@ -110,7 +110,7 @@ class SetDeepImage(PyFilterOperation):
     def compositing(self, compositing):
         self._compositing = compositing
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def deepcompression(self):
@@ -121,7 +121,7 @@ class SetDeepImage(PyFilterOperation):
     def deepcompression(self, deepcompression):
         self._deepcompression = deepcompression
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def depth_planes(self):
@@ -132,7 +132,7 @@ class SetDeepImage(PyFilterOperation):
     def depth_planes(self, depth_planes):
         self._depth_planes = depth_planes
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def disable_deep_image(self):
@@ -143,7 +143,7 @@ class SetDeepImage(PyFilterOperation):
     def disable_deep_image(self, disable_deep_image):
         self._disable_deep_image = disable_deep_image
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def filename(self):
@@ -154,7 +154,7 @@ class SetDeepImage(PyFilterOperation):
     def filename(self, filename):
         self._filename = filename
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def mipmaps(self):
@@ -165,7 +165,7 @@ class SetDeepImage(PyFilterOperation):
     def mipmaps(self, mipmaps):
         self._mipmaps = mipmaps
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def ofsize(self):
@@ -176,7 +176,7 @@ class SetDeepImage(PyFilterOperation):
     def ofsize(self, ofsize):
         self._ofsize = ofsize
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def ofstorage(self):
@@ -187,7 +187,7 @@ class SetDeepImage(PyFilterOperation):
     def ofstorage(self, ofstorage):
         self._ofstorage = ofstorage
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def pzstorage(self):
@@ -198,7 +198,7 @@ class SetDeepImage(PyFilterOperation):
     def pzstorage(self, pzstorage):
         self._pzstorage = pzstorage
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def resolver(self):
@@ -209,7 +209,7 @@ class SetDeepImage(PyFilterOperation):
     def resolver(self, resolver):
         self._resolver = resolver
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def zbias(self):
@@ -220,9 +220,9 @@ class SetDeepImage(PyFilterOperation):
     def zbias(self, zbias):
         self._zbias = zbias
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # STATIC METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @staticmethod
     def build_arg_string(disable_deep_image=None, deep_all_passes=None,  # pylint: disable=arguments-differ
@@ -245,7 +245,7 @@ class SetDeepImage(PyFilterOperation):
         :param compression: The compression value.
         :type compression: int
         :param depth_planes: A list of special planes.
-        :type depth_planes: str|list(str)
+        :type depth_planes: str or list(str)
         :param mipmaps: Whether or not to create MIP mapped images.
         :type mipmaps: bool
         :param ofsize: The opacity size (float vs vector).
@@ -344,9 +344,9 @@ class SetDeepImage(PyFilterOperation):
 
         parser.add_argument("--deep-zbias", type=float, dest="deep_zbias")
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @log_filter_call
     def filterCamera(self):
@@ -358,11 +358,11 @@ class SetDeepImage(PyFilterOperation):
         render_type = get_property("renderer:rendertype")
 
         if not self.all_passes and render_type != "beauty":
-            logger.warning("Not a beauty render, skipping deepresolver")
+            _logger.warning("Not a beauty render, skipping deepresolver")
             return
 
         if self.disable_deep_image:
-            logger.info("Disabling deep resolver")
+            _logger.info("Disabling deep resolver")
             set_property("image:deepresolver", [])
 
         else:
@@ -378,14 +378,14 @@ class SetDeepImage(PyFilterOperation):
 
                 # Log an error and abort.
                 else:
-                    logger.error("Cannot set deepresolver: deep output is not enabled")
+                    _logger.error("Cannot set deepresolver: deep output is not enabled")
 
                     return
 
             # Modify the args to include any passed along options.
             self._modify_deep_args(deep_args)
 
-            logger.debug(
+            _logger.debug(
                 "Setting 'image:deepresolver': %s", " ".join([str(arg) for arg in deep_args])
             )
 

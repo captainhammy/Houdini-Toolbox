@@ -199,7 +199,7 @@ class CopyItemNameWidget(QtWidgets.QWidget):
 
         layout.addWidget(QtWidgets.QLabel("Enter a simple name (ie: a cool box)"))
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.name = QtWidgets.QLineEdit()
         layout.addWidget(self.name)

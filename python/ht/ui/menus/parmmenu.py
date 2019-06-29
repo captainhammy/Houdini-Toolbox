@@ -7,6 +7,7 @@
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
@@ -89,6 +90,7 @@ def _valid_to_convert_to_relative_reference(parm):
                     return True
 
     return False
+
 
 # =============================================================================
 # FUNCTIONS
@@ -270,4 +272,3 @@ def promote_parameter_to_node(scriptargs):
 
             # Create the channel reference.
             parm.set(target_parm)
-

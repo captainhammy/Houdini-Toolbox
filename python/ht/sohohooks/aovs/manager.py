@@ -34,9 +34,9 @@ class AOVManager(object):
 
         self._init_from_files()
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # SPECIAL METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def __repr__(self):
         return "<AOVManager AOVs:{} groups:{}>".format(
@@ -44,9 +44,9 @@ class AOVManager(object):
             len(self.groups),
         )
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def _build_intrinsic_groups(self):
         """Build intrinsic groups.
@@ -55,7 +55,7 @@ class AOVManager(object):
 
         """
         # Process any AOVs that we have to look for any intrinsic groups.
-        for aov in self.aovs.itervalues():
+        for aov in self.aovs.values():
             for intrinsic_name in aov.intrinsics:
                 # Intrinsic groups are prefixed with "i:".
                 name = "i:" + intrinsic_name
@@ -163,9 +163,9 @@ class AOVManager(object):
         for reader in readers:
             self._init_reader_groups(reader)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def aovs(self):
@@ -182,9 +182,9 @@ class AOVManager(object):
         """AOVViewerInterface: A viewer interface assigned to the manager."""
         return self._interface
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def add_aov(self, aov):
         """Add an AOV to the manager.
@@ -386,9 +386,9 @@ class AOVFile(object):
         if self.exists:
             self._init_from_file()
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def _create_aovs(self, definitions):
         """Create AOVs based on definitions.
@@ -414,7 +414,7 @@ class AOVFile(object):
         :return:
 
         """
-        for name, group_data in definitions.iteritems():
+        for name, group_data in definitions.items():
             # Create a new AOVGroup.
             group = AOVGroup(name)
 
@@ -454,9 +454,9 @@ class AOVFile(object):
         if consts.FILE_GROUPS_KEY in data:
             self._create_groups(data[consts.FILE_GROUPS_KEY])
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def aovs(self):
@@ -478,9 +478,9 @@ class AOVFile(object):
         """bool: Check if the file actually exists."""
         return os.path.isfile(self.path)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def add_aov(self, aov):
         """Add an AOV for writing.

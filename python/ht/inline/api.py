@@ -120,7 +120,7 @@ def get_variable_value(name):
     :param name: The variable name.
     :type name: str
     :return: The value of the variable if it exists, otherwise None
-    :rtype: str|None
+    :rtype: str or None
 
     """
     # If the variable name isn't in list of variables, return None.
@@ -325,7 +325,7 @@ def sort_geometry_by_attribute(geometry, attribute, tuple_index=0, reverse=False
         raise hou.GeometryPermissionError()
 
     # Verify the tuple index is valid.
-    if tuple_index not in range(attribute.size()):
+    if not 0 <= tuple_index < attribute.size():
         raise IndexError("Invalid tuple index: {}".format(tuple_index))
 
     attrib_type = attribute.type()
@@ -367,7 +367,7 @@ def sort_geometry_along_axis(geometry, geometry_type, axis):
         raise hou.GeometryPermissionError()
 
     # Verify the axis.
-    if axis not in range(3):
+    if not 0 <= axis < 3:
         raise ValueError("Invalid axis: {}".format(axis))
 
     if geometry_type not in (hou.geometryType.Points, hou.geometryType.Primitives):
@@ -732,11 +732,11 @@ def copy_attribute_values(source_element, source_attribs, target_element):
     """Copy a list of attributes from the source element to the target element.
 
     :param source_element: The element to copy from.
-    :type source_element: hou.Point|hou.Prim|hou.Vertex|hou.Geometry
+    :type source_element: hou.Point or hou.Prim or hou.Vertex or hou.Geometry
     :param source_attribs: A list of attributes to copy.
     :type source_attribs: list(hou.Attrib)
     :param target_element: The element to copy to.
-    :type target_element: hou.Point|hou.Prim|hou.Vertex|hou.Geometry
+    :type target_element: hou.Point or hou.Prim or hou.Vertex or hou.Geometry
     :return:
 
     """
@@ -1645,11 +1645,11 @@ def rename_group(group, new_name):
     """Rename a group.
 
     :param group: The group to rename.
-    :type group: hou.PointGroup|hou.PrimGroup|hou.EdgeGroup
+    :type group: hou.PointGroup or hou.PrimGroup or hou.EdgeGroup
     :param new_name: The new group name.
     :type new_name: str
     :return: The new group, if it was renamed, otherwise None.
-    :rtype: hou.PointGroup|hou.PrimGroup|hou.EdgeGroup|None
+    :rtype: hou.PointGroup or hou.PrimGroup or hou.EdgeGroup or None
 
 
     """
@@ -1682,7 +1682,7 @@ def group_bounding_box(group):
     """Get the bounding box of the group.
 
     :param group: The group to get the bounding box for.
-    :type group: hou.EdgeGroup|hou.PointGroup|hou.PrimGroup
+    :type group: hou.EdgeGroup or hou.PointGroup or hou.PrimGroup
     :return: The bounding box for the group.
     :rtype: hou.BoundingBox
 
@@ -1703,7 +1703,7 @@ def group_size(group):
     """Get the number of elements in this group.
 
     :param group: The group to get the size of.
-    :type group: hou.EdgeGroup|hou.PointGroup|hou.PrimGroup
+    :type group: hou.EdgeGroup or hou.PointGroup or hou.PrimGroup
     :return: The group size.
     :rtype: int
 
@@ -1778,7 +1778,7 @@ def toggle_group_entries(group):
     will be removed.
 
     :param group: The group to toggle entries for.
-    :type group: hou.EdgeGroup|hou.PointGroup|hou.PrimGroup
+    :type group: hou.EdgeGroup or hou.PointGroup or hou.PrimGroup
     :return:
 
     """
@@ -1797,11 +1797,11 @@ def copy_group(group, new_group_name):
     """Create a new group under the new name with the same membership.
 
     :param group: The group to copy.
-    :type group: hou.PointGroup|hou.PrimGroup
+    :type group: hou.PointGroup or hou.PrimGroup
     :param new_group_name: The new group name.
     :type new_group_name: str
     :return: The new group.
-    :rtype: hou.PointGroup|hou.PrimGroup
+    :rtype: hou.PointGroup or hou.PrimGroup
 
     """
     geometry = group.geometry()
@@ -1838,9 +1838,9 @@ def groups_share_elements(group1, group2):
     The groups must be of the same type and in the same detail.
 
     :param group1: Group to compare..
-    :type group1: hou.PointGroup|hou.PrimGroup
+    :type group1: hou.PointGroup or hou.PrimGroup
     :param group2: Group to compare with.
-    :type group2: hou.PointGroup|hou.PrimGroup
+    :type group2: hou.PointGroup or hou.PrimGroup
     :return: Whether or not the groups share any elements.
     :rtype: bool
 
@@ -2152,7 +2152,7 @@ def eval_parm_tuple_as_vector(parm_tuple):
     :param parm_tuple: The parm tuple to eval.
     :type parm_tuple: hou.ParmTuple
     :return: The evaluated parameter as a hou.Vector*
-    :rtype: hou.Vector2|hou.Vector3|hou.Vector4
+    :rtype: hou.Vector2 or hou.Vector3 or hou.Vector4
 
     """
     if not is_parm_tuple_vector(parm_tuple):
@@ -2272,7 +2272,7 @@ def is_parm_multiparm(parm):
     """Check if this parameter is a multiparm.
 
     :param parm: The parm or tuple to check for being a multiparm.
-    :type parm: hou.Parm|hou.ParmTuple
+    :type parm: hou.Parm or hou.ParmTuple
     :return: Whether or not the parameter is a multiparm.
     :rtype: bool
 
@@ -2296,7 +2296,7 @@ def get_multiparm_instances_per_item(parm):
     """Get the number of items in a multiparm instance.
 
     :param parm: The parm to get multiparm instances for.
-    :type parm: hou.Parm|hou.ParmTuple
+    :type parm: hou.Parm or hou.ParmTuple
     :return: The number of items in a multiparm instance.
     :rtype: int
 
@@ -2317,7 +2317,7 @@ def get_multiparm_start_offset(parm):
     """Get the start offset of items in the multiparm.
 
     :param parm: The parm to get the multiparm start offset for.
-    :type parm: hou.Parm|hou.ParmTuple
+    :type parm: hou.Parm or hou.ParmTuple
     :return: The start offset of the multiparm.
     :rtype: int
 
@@ -2340,7 +2340,7 @@ def get_multiparm_instance_index(parm):
     in the tuple.
 
     :param parm: The parm to get the multiparm instance index for.
-    :type parm: hou.Parm|hou.ParmTuple
+    :type parm: hou.Parm or hou.ParmTuple
     :return The instance indices for the parameter.
     :rtype: tuple(int)
 
@@ -2366,7 +2366,7 @@ def get_multiparm_instances(parm):
     instance.
 
     :param parm: The parm to get the multiparm instances for.
-    :type parm: hou.Parm|hou.ParmTuple
+    :type parm: hou.Parm or hou.ParmTuple
     :return: All parameters in the multiparm block.
     :rtype: tuple
 
@@ -2414,7 +2414,7 @@ def get_multiparm_instance_values(parm):
     The values are returned as a tuple of values based on each instance.
 
     :param parm: The parm to get the multiparm instances values for.
-    :type parm: hou.Parm|hou.ParmTuple
+    :type parm: hou.Parm or hou.ParmTuple
     :return: All parameter values in the multiparm block.
     :rtype: tuple
 
@@ -2605,7 +2605,7 @@ def get_node_dive_target(node):
     :param node: The node to get the dive target of.
     :type node: hou.Node
     :return: The node's dive target.
-    :rtype: hou.Node|None
+    :rtype: hou.Node or None
 
     """
     # Get the otl definition for this node's type, if any.
@@ -2629,7 +2629,7 @@ def get_node_representative_node(node):
     :param node: The node to get the representative node for.
     :type node: hou.Node
     :return: The node's representative node.
-    :rtype: hou.Node|None
+    :rtype: hou.Node or None
 
     """
     # Get the otl definition for this node's type, if any.
@@ -2778,7 +2778,7 @@ def vector_contains_nans(vector):
     """Check if the vector contains NaNs.
 
     :param vector: The vector to check for NaNs.
-    :type vector: hou.Vector2|hou.Vector3|hou.Vector4
+    :type vector: hou.Vector2 or hou.Vector3 or hou.Vector4
     :return: Whether or not there are any NaNs in the vector.
     :rtype: bool
 
@@ -2818,7 +2818,7 @@ def is_identity_matrix(matrix):
     """Check if the matrix is the identity matrix.
 
     :param matrix: The matrix to check.
-    :type matrix:  hou.Matrix3|hou.Matrix4
+    :type matrix:  hou.Matrix3 or hou.Matrix4
     :return: Whether or not the matrix is the identity matrix.
     :rtype: bool
 
@@ -2971,7 +2971,7 @@ def asset_file_meta_source(file_path):
     :param file_path: The path to get the install location for.
     :type file_path: str
     :return: The meta install location, if any.
-    :rtype: str|None
+    :rtype: str or None
 
     """
     if file_path not in hou.hda.loadedFiles():
@@ -2990,7 +2990,7 @@ def get_definition_meta_source(definition):
     :param definition: The definition to get the meta source for.
     :type definition: hou.HDADefinition
     :return: The meta install location, if any.
-    :rtype: str|None
+    :rtype: str or None
 
     """
     return asset_file_meta_source(definition.libraryFilePath())

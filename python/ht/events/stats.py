@@ -8,9 +8,10 @@
 from collections import OrderedDict
 from contextlib import contextmanager
 import logging
+import six
 import time
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -26,6 +27,10 @@ class _StatsMeta(type):
 
     # Dict of stats classes and their instances.
     _instances = {}
+
+    # -------------------------------------------------------------------------
+    # SPECIAL METHODS
+    # -------------------------------------------------------------------------
 
     def __call__(cls, *args, **kwargs):
         # Key off the name.
@@ -74,6 +79,7 @@ class _StatsMeta(type):
         return inst
 
 
+@six.add_metaclass(_StatsMeta)
 class HoudiniEventStats(object):
     """The base statistics class.
 
@@ -87,8 +93,6 @@ class HoudiniEventStats(object):
 
     """
 
-    __metaclass__ = _StatsMeta
-
     def __init__(self, name, tags=None, post_report=False):
         self._last_run_time = 0
         self._last_started = 0
@@ -101,6 +105,10 @@ class HoudiniEventStats(object):
             tags = []
 
         self._tags = tags
+
+    # -------------------------------------------------------------------------
+    # SPECIAL METHODS
+    # -------------------------------------------------------------------------
 
     def __repr__(self):
         return "<{}: {} run_count={} total_time={:0.3f}>".format(
@@ -126,9 +134,9 @@ class HoudiniEventStats(object):
         if self.post_report:
             self.print_report()
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def last_run_time(self):
@@ -160,9 +168,9 @@ class HoudiniEventStats(object):
         """float: The total time for all stats runs."""
         return self._total_time
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def print_report(self):
         """Print (log) a stats report for the last run.
@@ -170,9 +178,9 @@ class HoudiniEventStats(object):
         :return:
 
         """
-        logger.info("Event name: %s", self.name)
-        logger.info("\tRun Count: %s", self.run_count)
-        logger.info("\tRun Time: %s", self.last_run_time)
+        _logger.info("Event name: %s", self.name)
+        _logger.info("\tRun Count: %s", self.run_count)
+        _logger.info("\tRun Time: %s", self.last_run_time)
 
     def reset(self):
         """Reset all counts.
@@ -203,18 +211,18 @@ class HoudiniEventItemStats(HoudiniEventStats):
 
         self._item_stats = OrderedDict()
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def item_stats(self):
         """OrderedDict: Item statistics."""
         return self._item_stats
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def print_report(self):
         """Print (log) a stats report for the last run.
@@ -222,14 +230,14 @@ class HoudiniEventItemStats(HoudiniEventStats):
         :return:
 
         """
-        logger.info("Item: %s", self.name)
-        logger.info("\tRun Count: %s", self.run_count)
-        logger.info("\tCallables:")
+        _logger.info("Item: %s", self.name)
+        _logger.info("\tRun Count: %s", self.run_count)
+        _logger.info("\tCallables:")
 
-        for item_name, item_time in self.item_stats.iteritems():
-            logger.info("\t\t%s: %0.4f", item_name, item_time)
+        for item_name, item_time in self.item_stats.items():
+            _logger.info("\t\t%s: %0.4f", item_name, item_time)
 
-        logger.info("\tRun Time: %0.4f", self.last_run_time)
+        _logger.info("\tRun Time: %0.4f", self.last_run_time)
 
     def reset(self):
         """Reset all counts.

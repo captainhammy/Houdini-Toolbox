@@ -12,7 +12,7 @@ import importlib
 import json
 import logging
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -34,9 +34,9 @@ class PyFilterManager(object):
 
         self._process_parsed_args(filter_args)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def data(self):
@@ -48,9 +48,9 @@ class PyFilterManager(object):
         """list: A list of registered operations."""
         return self._operations
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def _get_parsed_args(self):
         """Parse any args passed to PyFilter.
@@ -99,12 +99,12 @@ class PyFilterManager(object):
                 cls = _get_class(module_name, class_name)
 
                 if cls is None:
-                    logger.warning("Could not load %s from %s", class_name, module_name)
+                    _logger.warning("Could not load %s from %s", class_name, module_name)
 
                     continue
 
                 else:
-                    logger.debug("Registering %s (%s)", class_name, module_name)
+                    _logger.debug("Registering %s (%s)", class_name, module_name)
 
                 # Add an instance of it to our operations list.
                 self.operations.append(cls(self))
@@ -123,9 +123,9 @@ class PyFilterManager(object):
         for operation in self.operations:
             operation.register_parser_args(parser)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def run_operations_for_stage(self, stage_name, *args, **kwargs):
         """Run all filter operations for the specified stage.
@@ -192,7 +192,7 @@ def _find_operation_files():
 
     # If no files could be found then abort.
     except hou.OperationFailed:
-        logger.debug("Could not find any operations to load")
+        _logger.debug("Could not find any operations to load")
         files = ()
 
     return files
@@ -236,8 +236,8 @@ def _get_operation_data(file_path):
             data = json.load(fp)
 
     except (IOError, ValueError) as inst:
-        logger.error("Error loading operation data from %s", file_path)
-        logger.exception(inst)
+        _logger.error("Error loading operation data from %s", file_path)
+        _logger.exception(inst)
 
         data = {}
 

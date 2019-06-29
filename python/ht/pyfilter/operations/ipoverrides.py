@@ -40,9 +40,9 @@ class IpOverrides(PyFilterOperation):
         self._sample_scale = None
         self._transparent_samples = None
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def bucket_size(self):
@@ -53,7 +53,7 @@ class IpOverrides(PyFilterOperation):
     def bucket_size(self, bucket_size):
         self._bucket_size = bucket_size
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def disable_aovs(self):
@@ -64,7 +64,7 @@ class IpOverrides(PyFilterOperation):
     def disable_aovs(self, disable_aovs):
         self._disable_aovs = disable_aovs
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def disable_blur(self):
@@ -75,7 +75,7 @@ class IpOverrides(PyFilterOperation):
     def disable_blur(self, disable_blur):
         self._disable_blur = disable_blur
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def disable_deep(self):
@@ -86,7 +86,7 @@ class IpOverrides(PyFilterOperation):
     def disable_deep(self, disable_deep):
         self._disable_deep = disable_deep
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def disable_displacement(self):
@@ -97,7 +97,7 @@ class IpOverrides(PyFilterOperation):
     def disable_displacement(self, disable_displacement):
         self._disable_displacement = disable_displacement
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def disable_matte(self):
@@ -108,7 +108,7 @@ class IpOverrides(PyFilterOperation):
     def disable_matte(self, disable_matte):
         self._disable_matte = disable_matte
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def disable_subd(self):
@@ -119,7 +119,7 @@ class IpOverrides(PyFilterOperation):
     def disable_subd(self, disable_subd):
         self._disable_subd = disable_subd
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def disable_tilecallback(self):
@@ -130,7 +130,7 @@ class IpOverrides(PyFilterOperation):
     def disable_tilecallback(self, disable_tilecallback):
         self._disable_tilecallback = disable_tilecallback
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def res_scale(self):
@@ -141,7 +141,7 @@ class IpOverrides(PyFilterOperation):
     def res_scale(self, res_scale):
         self._res_scale = res_scale
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def sample_scale(self):
@@ -152,7 +152,7 @@ class IpOverrides(PyFilterOperation):
     def sample_scale(self, sample_scale):
         self._sample_scale = sample_scale
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def transparent_samples(self):
@@ -163,9 +163,9 @@ class IpOverrides(PyFilterOperation):
     def transparent_samples(self, value):
         self._transparent_samples = value
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # STATIC METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @staticmethod
     def build_arg_string(res_scale=None, sample_scale=None, disable_blur=False,  # pylint: disable=arguments-differ
@@ -269,9 +269,9 @@ class IpOverrides(PyFilterOperation):
 
         parser.add_argument("--ip-transparent-samples", nargs="?", default=None, type=int, action="store", dest="ip_transparent_samples")
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @log_filter_call
     def filterCamera(self):

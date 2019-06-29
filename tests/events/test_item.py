@@ -78,6 +78,8 @@ class Test_HoudiniEventItem(unittest.TestCase):
         # Should be equal now
         self.assertEqual(item1, item2)
 
+        self.assertEqual(item1.__eq__(MagicMock()), NotImplemented)
+
     @patch.object(ht.events.item.HoudiniEventItem, "__eq__")
     @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
     def test___ne__(self, mock_eq):
@@ -87,6 +89,19 @@ class Test_HoudiniEventItem(unittest.TestCase):
 
         self.assertEqual(item.__ne__(mock_item), not mock_eq.return_value)
         mock_eq.assert_called_with(mock_item)
+
+    @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
+    def test___hash__(self):
+        """Test the not-equals operator."""
+        item = ht.events.item.HoudiniEventItem(None, None, None, None)
+
+        mock_name = MagicMock(spec=str)
+        mock_priority = MagicMock(spec=int)
+
+        item._name = mock_name
+        item._priority = mock_priority
+
+        self.assertEqual(item.__hash__(), hash((mock_name, mock_priority)))
 
     # Properties
 

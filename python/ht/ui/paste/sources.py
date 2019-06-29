@@ -11,6 +11,7 @@ import getpass
 import json
 import os
 from pwd import getpwuid
+import six
 
 # Houdini Toolbox Imports
 from ht.ui.paste import utils
@@ -18,6 +19,7 @@ import ht.ui.paste.helpers
 
 # Houdini Imports
 import hou
+
 
 # ==============================================================================
 # CLASSES
@@ -29,9 +31,9 @@ class SourceManager(object):
     def __init__(self):
         self._sources = []
 
-    # ==========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # ==========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def sources(self):
@@ -40,18 +42,19 @@ class SourceManager(object):
 
 # Sources
 
+
+@six.add_metaclass(abc.ABCMeta)
 class CopyPasteSource(object):
     """Base class for managing copy/paste items.
 
     """
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self):
         self._sources = {}
 
-    # ==========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # ==========================================================================
+    # -------------------------------------------------------------------------
 
     @abc.abstractproperty
     def display_name(self):
@@ -68,9 +71,9 @@ class CopyPasteSource(object):
         """list(ht.ui.paste.sources.CopyPasteItemSource): A list of item sources."""
         return self._sources
 
-    # ==========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # ==========================================================================
+    # -------------------------------------------------------------------------
 
     @abc.abstractmethod
     def copy_helper_widget(self):
@@ -131,9 +134,9 @@ class HomeToolDirSource(CopyPasteSource):
 
         self._init_sources()
 
-    # ==========================================================================
+    # -------------------------------------------------------------------------
     # STATIC METHODS
-    # ==========================================================================
+    # -------------------------------------------------------------------------
 
     @staticmethod
     def pack_name(name):
@@ -163,9 +166,9 @@ class HomeToolDirSource(CopyPasteSource):
         """
         return name.replace("--", " ")
 
-    # ==========================================================================
+    # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
-    # ==========================================================================
+    # -------------------------------------------------------------------------
 
     def _create_sidecar_file(self, base_path, data):
         """Write a .json sidecar file with the item info.
@@ -209,9 +212,9 @@ class HomeToolDirSource(CopyPasteSource):
                     context_sources = self.sources.setdefault(item.context, [])
                     context_sources.append(item)
 
-    # ==========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # ==========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def display_name(self):
@@ -223,9 +226,9 @@ class HomeToolDirSource(CopyPasteSource):
         """PySide2.QtGui.QIcon: The icon for the source."""
         return hou.qt.createIcon("MISC_satchel")
 
-    # ==========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # ==========================================================================
+    # -------------------------------------------------------------------------
 
     def copy_helper_widget(self, *args, **kwargs):  # pylint: disable=arguments-differ
         """Get the copy helper widget for this source.
@@ -325,6 +328,8 @@ class HomeToolDirSource(CopyPasteSource):
 
 # Item Sources
 
+
+@six.add_metaclass(abc.ABCMeta)
 class CopyPasteItemSource(object):
     """Class responsible for loading and saving items from a source.
 
@@ -333,14 +338,12 @@ class CopyPasteItemSource(object):
 
     """
 
-    __metaclass__ = abc.ABCMeta
-
     def __init__(self, context):
         self._context = context
 
-    # ==========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # ==========================================================================
+    # -------------------------------------------------------------------------
 
     @abc.abstractproperty
     def author(self):
@@ -367,9 +370,9 @@ class CopyPasteItemSource(object):
         """str: The item name."""
         pass
 
-    # ==========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # ==========================================================================
+    # -------------------------------------------------------------------------
 
     @abc.abstractmethod
     def destroy(self):
@@ -432,12 +435,16 @@ class CPIOContextCopyPasteItemFile(CopyPasteItemSource):
 
         self._init_metadata()
 
+    # -------------------------------------------------------------------------
+    # SPECIAL METHODS
+    # -------------------------------------------------------------------------
+
     def __repr__(self):
         return "<{} {}>".format(self.__class__.__name__, self.file_path)
 
-    # ==========================================================================
+    # -------------------------------------------------------------------------
     # CLASS METHODS
-    # ==========================================================================
+    # -------------------------------------------------------------------------
 
     @classmethod
     def from_path(cls, file_path):
@@ -457,9 +464,9 @@ class CPIOContextCopyPasteItemFile(CopyPasteItemSource):
 
         return cls(file_path, context, name)
 
-    # ==========================================================================
+    # -------------------------------------------------------------------------
     # STATIC METHODS
-    # ==========================================================================
+    # -------------------------------------------------------------------------
 
     @staticmethod
     def pack_name(name):
@@ -489,9 +496,9 @@ class CPIOContextCopyPasteItemFile(CopyPasteItemSource):
         """
         return name.replace("--", " ")
 
-    # ==========================================================================
+    # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
-    # ==========================================================================
+    # -------------------------------------------------------------------------
 
     def _init_metadata(self):
         """Initialize data based on the sidecar file.
@@ -530,9 +537,9 @@ class CPIOContextCopyPasteItemFile(CopyPasteItemSource):
             self._author = getpwuid(stat_data.st_uid).pw_name
             self._date = datetime.datetime.fromtimestamp(stat_data.st_mtime)
 
-    # ==========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # ==========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def author(self):
@@ -559,9 +566,9 @@ class CPIOContextCopyPasteItemFile(CopyPasteItemSource):
         """str: The item name."""
         return self._name
 
-    # ==========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # ==========================================================================
+    # -------------------------------------------------------------------------
 
     def destroy(self):
         """Remove this item and all associated files.
@@ -602,4 +609,3 @@ class CPIOContextCopyPasteItemFile(CopyPasteItemSource):
             os.mkdir(target_folder)
 
         parent.saveItemsToFile(items, self.file_path)
-

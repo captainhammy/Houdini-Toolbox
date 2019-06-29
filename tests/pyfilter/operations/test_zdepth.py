@@ -31,7 +31,7 @@ class Test_ZDepthPass(unittest.TestCase):
         self.patcher = patch.dict("sys.modules", modules)
         self.patcher.start()
 
-        self.log_patcher = patch("ht.pyfilter.operations.operation.logger", autospec=True)
+        self.log_patcher = patch("ht.pyfilter.operations.operation._logger", autospec=True)
         self.log_patcher.start()
 
     def tearDown(self):

@@ -16,7 +16,7 @@ import logging
 from ht.pyfilter.operations.operation import PyFilterOperation, log_filter_call
 from ht.pyfilter.property import get_property, set_property
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -29,9 +29,9 @@ class PropertySetterManager(object):
     def __init__(self):
         self._properties = {}
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def _load_from_data(self, data):
         """Build PropertySetter objects from data.
@@ -42,12 +42,12 @@ class PropertySetterManager(object):
 
         """
         # Process each filter stage name and it's data.
-        for stage_name, stage_data in data.iteritems():
+        for stage_name, stage_data in data.items():
             # A list of properties for this stage.
             properties = self.properties.setdefault(stage_name, [])
 
             # The data is stored by property name.
-            for property_name, property_block in stage_data.iteritems():
+            for property_name, property_block in stage_data.items():
                 # Wrapping properties in a 'rendertype:type' block is supported
                 # if the the name indicates that we have to modify the data.
                 if property_name.startswith("rendertype:"):
@@ -62,18 +62,18 @@ class PropertySetterManager(object):
                         properties, stage_name, property_name, property_block
                     )
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def properties(self):
         """dict: Dictionary containing properties."""
         return self._properties
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def load_from_file(self, file_path):
         """Load properties from a file.
@@ -83,7 +83,7 @@ class PropertySetterManager(object):
         :return:
 
         """
-        logger.debug("Reading properties from %s", file_path)
+        _logger.debug("Reading properties from %s", file_path)
 
         # Load json data from the file.
         with open(file_path) as f:
@@ -125,9 +125,9 @@ class PropertySetter(object):
 
     """
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # CONSTRUCTORS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def __init__(self, name, property_block):
         self._name = name
@@ -142,9 +142,9 @@ class PropertySetter(object):
             import hou
             self._value = hou.findFile(self.value)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # SPECIAL METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def __repr__(self):
         value = self.value
@@ -155,9 +155,9 @@ class PropertySetter(object):
 
         return "<PropertySetter {}={}>".format(self.name, value)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def find_file(self):
@@ -179,9 +179,9 @@ class PropertySetter(object):
         """object: The value to set the property."""
         return self._value
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def set_property(self):
         """Set the property to the value.
@@ -200,7 +200,7 @@ class PropertySetter(object):
             if not hou.patternMatch(self.rendertype, rendertype):
                 return
 
-        logger.debug("Setting property '%s' to %s", self.name, self.value)
+        _logger.debug("Setting property '%s' to %s", self.name, self.value)
 
         # Update the property value.
         set_property(self.name, self.value)
@@ -218,9 +218,9 @@ class MaskedPropertySetter(PropertySetter):
 
     """
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # CONSTRUCTORS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def __init__(self, name, property_block, mask_property_name):
         super(MaskedPropertySetter, self).__init__(name, property_block)
@@ -230,9 +230,9 @@ class MaskedPropertySetter(PropertySetter):
 
         self._mask_property_name = mask_property_name
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # SPECIAL METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def __repr__(self):
         value = self.value
@@ -248,9 +248,9 @@ class MaskedPropertySetter(PropertySetter):
             self.mask
         )
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def mask(self):
@@ -262,9 +262,9 @@ class MaskedPropertySetter(PropertySetter):
         """str: The property name to compare the mask against."""
         return self._mask_property_name
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def set_property(self):
         """Set the property under mantra.
@@ -300,18 +300,18 @@ class SetProperties(PyFilterOperation):
 
         self._property_manager = PropertySetterManager()
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def property_manager(self):
         """PropertySetterManager: The property manager to use."""
         return self._property_manager
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # STATIC METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @staticmethod
     def build_arg_string(properties=None, properties_file=None):  # pylint: disable=arguments-differ
@@ -363,9 +363,9 @@ class SetProperties(PyFilterOperation):
             dest="properties_file"
         )
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @log_filter_call
     def filterCamera(self):
@@ -461,7 +461,7 @@ def _create_property_setter(property_name, property_block, stage_name):
         # warning message.  We will still return a regular PropertySetter
         # object though.
         else:
-            logger.warning("No masking available for %s:%s.", stage_name, property_name)
+            _logger.warning("No masking available for %s:%s.", stage_name, property_name)
 
     # Generic property setter.
     return PropertySetter(property_name, property_block)
@@ -477,7 +477,7 @@ def _process_block(properties, stage_name, name, block):
     :param name: The name of the property to set.
     :type name: str
     :param block: The property data to set.
-    :type block: dict|list(dict)
+    :type block: dict or list(dict)
     :return:
 
     """
@@ -516,7 +516,7 @@ def _process_rendertype_block(properties, stage_name, rendertype, property_block
 
     """
     # Process each child property block.
-    for name, block in property_block.iteritems():
+    for name, block in property_block.items():
         # If the child data is the standard dictionary of data
         # we can just insert the rendertype value into it.
         if isinstance(block, dict):

@@ -40,8 +40,23 @@ class TreeNode(object):
     # SPECIAL METHODS
     # =========================================================================
 
-    def __cmp__(self, node):
-        return cmp(self.name, node.name)
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __lt__(self, other):
+        return self.name < other.name
+
+    def __le__(self, other):
+        return self.name <= other.name
+
+    def __gt__(self, other):
+        return self.name > other.name
+
+    def __ge__(self, other):
+        return self.name >= other.name
 
     def __hash__(self):
         return hash(self.name)
@@ -605,7 +620,7 @@ class AOVSelectModel(BaseAOVTreeModel):
         if manager.MANAGER.groups:
             groups = manager.MANAGER.groups
 
-            for group in groups.itervalues():
+            for group in groups.values():
                 if isinstance(group, IntrinsicAOVGroup):
                     IntrinsicAOVGroupNode(group, groups_node)
                 else:
@@ -614,7 +629,7 @@ class AOVSelectModel(BaseAOVTreeModel):
         if manager.MANAGER.aovs:
             aovs = manager.MANAGER.aovs
 
-            for aov in aovs.itervalues():
+            for aov in aovs.values():
                 AOVNode(aov, aovs_node)
 
         self.endResetModel()
@@ -942,7 +957,7 @@ class AOVGroupEditListModel(QtCore.QAbstractListModel):
         super(AOVGroupEditListModel, self).__init__(parent)
 
         # Grab all the possible AOVs at time of creation.
-        self._aovs = manager.MANAGER.aovs.values()
+        self._aovs = list(manager.MANAGER.aovs.values())
 
         # List containing the checked state of each AOV
         self._checked = [False] * len(self._aovs)

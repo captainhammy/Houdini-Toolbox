@@ -36,69 +36,81 @@ class StyleConstant(object):
         self._file_path = file_path
         self._name = name
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # SPECIAL METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
-    def __eq__(self, rule):
+    def __eq__(self, other):
+        if not isinstance(other, StyleConstant):
+            return NotImplemented
+
         # For our purposes we only care if the names match.
-        return self.name == rule.name
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def __ne__(self, other):
+        if not isinstance(other, StyleConstant):
+            return NotImplemented
+
+        return not self.__eq__(other)
 
     def __repr__(self):
         return "<StyleConstant {} ({})>".format(self.name, self.color)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def color(self):
         """hou.Color: The mapped color."""
         return self._color
+    #
+    # @color.setter
+    # def color(self, color):
+    #     self._color = color
 
-    @color.setter
-    def color(self, color):
-        self._color = color
-
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def color_type(self):
         """str: The mapped color type."""
         return self._color_type
+    #
+    # @color_type.setter
+    # def color_type(self, color_type):
+    #     self._color_type = color_type
 
-    @color_type.setter
-    def color_type(self, color_type):
-        self._color_type = color_type
-
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def file_path(self):
         """str: Path the definition was from."""
         return self._file_path
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def name(self):
         """str: The name the color is mapped to."""
         return self._name
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def shape(self):
         """str: The mapped shape."""
         return self._shape
+    #
+    # @shape.setter
+    # def shape(self, shape):
+    #     self._shape = shape
 
-    @shape.setter
-    def shape(self, shape):
-        self._shape = shape
-
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def apply_to_node(self, node):
         """Apply styling to a node.
@@ -139,13 +151,25 @@ class StyleRule(object):
         self._file_path = file_path
         self._name = name
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # SPECIAL METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
-    def __eq__(self, entry):
+    def __eq__(self, other):
+        if not isinstance(other, StyleRule):
+            return NotImplemented
+
         # For our purposes we only care if the names match.
-        return self.name == entry.name
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def __ne__(self, other):
+        if not isinstance(other, StyleRule):
+            return NotImplemented
+
+        return not self.__eq__(other)
 
     def __repr__(self):
         return "<StyleRule {} ({})>".format(self.name, self.color)
@@ -157,9 +181,9 @@ class StyleRule(object):
 
         return "(" + ", ".join(components) + ")"
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def _get_typed_color_value(self):
         """Get the appropriately typed color values.
@@ -172,9 +196,9 @@ class StyleRule(object):
 
         return to_func()
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def color(self):
@@ -201,9 +225,9 @@ class StyleRule(object):
         """str: The name the style is mapped to."""
         return self._name
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def apply_to_node(self, node):
         """Apply styling to a node.
@@ -238,20 +262,32 @@ class ConstantRule(object):
         self._file_path = file_path
         self._name = name
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # SPECIAL METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
-    def __eq__(self, entry):
+    def __eq__(self, other):
+        if not isinstance(other, ConstantRule):
+            return NotImplemented
+
         # For our purposes we only care if the names match.
-        return self.name == entry.name
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash((self.constant_name, self.name))
+
+    def __ne__(self, other):
+        if not isinstance(other, ConstantRule):
+            return NotImplemented
+
+        return not self.__eq__(other)
 
     def __repr__(self):
         return "<ConstantRule {} ({})>".format(self.name, self.constant_name)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def constant_name(self):

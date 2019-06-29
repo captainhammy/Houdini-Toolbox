@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Python Imports
+from __future__ import absolute_import
 import logging
 import sys
 
@@ -27,12 +28,27 @@ class PythonShellHandler(logging.StreamHandler):
 
     """
 
+    # -------------------------------------------------------------------------
+    # METHODS
+    # -------------------------------------------------------------------------
+
     def emit(self, record):
+        """Emit a log message.
+
+        :param record: The log record to emit.
+        :type record: logging.Record
+        :return:
+
+        """
         try:
+            # Format the message
             msg = self.format(record)
 
+            # Get the current stdout stream.
             stream = sys.stdout
 
+            # If the stream is really an output to a Python Shell then write
+            # the message to it.
             if isinstance(stream, hou.ShellIO):
                 stream.write(msg)
                 stream.write('\n')

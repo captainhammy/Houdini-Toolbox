@@ -7,7 +7,8 @@
 # Houdini Toolbox Imports
 from ht.events import SceneEvents, run_event
 
+
 # =============================================================================
 
-run_event(SceneEvents.PreSave, kwargs) # pylint: disable=undefined-variable
+run_event(SceneEvents.PreSave, kwargs)  # pylint: disable=undefined-variable
 

@@ -5,8 +5,13 @@
 # =============================================================================
 
 # Python Imports
+from __future__ import absolute_import
 import contextlib
+import logging
 import time
+
+_logger = logging.getLogger(__name__)
+
 
 # =============================================================================
 # FUNCTIONS
@@ -16,10 +21,15 @@ import time
 def timer(label=None):
     """Context manager for outputting timing information.
 
->>> with ht.utils.timer("sleeping"):
-...     time.sleep(2)
-...
-sleeping - 2.00206804276
+    >>> with ht.utils.timer("sleeping"):
+    ...     time.sleep(2)
+    ...
+    'sleeping - 2.00206804276'
+
+    :param label: Optional label for output.
+    :type label: str
+    :return:
+
 
     """
     # Start time.
@@ -32,16 +42,24 @@ sleeping - 2.00206804276
         duration = time.time() - t
 
         if label is not None:
-            print "{} - {}".format(label, duration)
+            _logger.info("{} - {}".format(label, duration))
         else:
-            print duration
+            _logger.info(duration)
 
 
 @contextlib.contextmanager
-def updateMode(update_mode):
-    """Context manager for setting the interface's update mode.
+def restore_update_mode(update_mode):
+    """Set a UI update mode and restore the current mode on exit.
 
-    update_mode should be one of hou.updateMode
+    >>> with ht.utils.restore_update_mode(hou.updateMode.Manual):
+    ...     # do some stuff while it is in manual mode
+    ...
+
+    Original update mode restored after with
+
+    :param update_mode: The update mode to set for the duration.
+    :type update_mode: hou.updateMode
+    :return:
 
     """
     import hou

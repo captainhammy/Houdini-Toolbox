@@ -23,7 +23,7 @@ import ht.utils
 # =============================================================================
 
 # Signals we want to handle and their names.
-SIGNALS = {
+_SIGNALS = {
     signal.SIGHUP: "HUP",
     signal.SIGINT: "INT",
     signal.SIGQUIT: "QUIT",
@@ -254,11 +254,11 @@ def _handler(signal_num, current_frame):
     :return:
 
     """
-    signal_name = SIGNALS[signal_num]
+    signal_name = _SIGNALS[signal_num]
     print "Houdini wrapper caught sig SIG{}".format(signal_name)
 
     # Ignore further signals.
-    for sig in SIGNALS:
+    for sig in _SIGNALS:
         signal.signal(sig, signal.SIG_DFL)
 
     # Get the current process group id.
@@ -339,7 +339,7 @@ def main():
 
     """
     # Handle specified signals.
-    for sig in SIGNALS:
+    for sig in _SIGNALS:
         signal.signal(sig, _handler)
 
     parser = _build_parser()

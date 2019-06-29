@@ -16,6 +16,7 @@ import hou
 
 reload(styles)
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -57,21 +58,56 @@ class Test_StyleConstant(unittest.TestCase):
 
         self.assertEqual(constant, mock_constant)
 
+        result = constant.__eq__(MagicMock())
+        self.assertEqual(result, NotImplemented)
+
+    @patch.object(styles.StyleConstant, "name", new_callable=PropertyMock)
+    @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
+    def test___hash__(self, mock_name_prop):
+        """Test the hash operator."""
+        constant = styles.StyleConstant(None, None, None, None)
+
+        result = constant.__hash__()
+
+        self.assertEqual(result, hash(constant.name))
+
+        self.assertEqual(hash(constant), hash(constant.name))
+
+    # ne
+
+    @patch.object(styles.StyleConstant, "__eq__")
+    @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
+    def test___ne__(self, mock_eq):
+        """Test the ne operator."""
+        constant = styles.StyleConstant(None, None, None, None)
+
+        mock_constant = MagicMock(spec=styles.StyleConstant)
+
+        result = constant.__ne__(mock_constant)
+
+        self.assertEqual(result, not mock_eq.return_value)
+
+    @patch.object(styles.StyleConstant, "__eq__")
+    @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
+    def test___ne___different_type(self, mock_eq):
+        """Test the ne operator when the other item isn't a StyleConstant."""
+        constant = styles.StyleConstant(None, None, None, None)
+
+        result = constant.__ne__(MagicMock())
+
+        self.assertEqual(result, NotImplemented)
+
     # Properties
 
     @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
     def test_color(self):
         """Test the 'color' property."""
         mock_color1 = MagicMock(spec=hou.Color)
-        mock_color2 = MagicMock(spec=hou.Color)
 
         constant = styles.StyleConstant(None, None, None, None)
         constant._color = mock_color1
 
         self.assertEqual(constant.color, mock_color1)
-
-        constant.color = mock_color2
-        self.assertEqual(constant._color, mock_color2)
 
     @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
     def test_color_type(self):
@@ -81,10 +117,6 @@ class Test_StyleConstant(unittest.TestCase):
         constant._color_type = value1
 
         self.assertEqual(constant.color_type, value1)
-
-        value2 = MagicMock(spec=str)
-        constant.color_type = value2
-        self.assertEqual(constant._color_type, value2)
 
     @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
     def test_file_path(self):
@@ -112,10 +144,6 @@ class Test_StyleConstant(unittest.TestCase):
         constant._shape = value1
 
         self.assertEqual(constant.shape, value1)
-
-        value2 = MagicMock(spec=str)
-        constant.shape = value2
-        self.assertEqual(constant._shape, value2)
 
     # Methods
 
@@ -182,6 +210,45 @@ class Test_StyleRule(unittest.TestCase):
 
         mock_rule.name = "name"
         self.assertEqual(rule, mock_rule)
+
+        result = rule.__eq__(MagicMock())
+        self.assertEqual(result, NotImplemented)
+
+    @patch.object(styles.StyleRule, "name", new_callable=PropertyMock(return_value="name"))
+    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
+    def test___hash__(self, mock_name_prop):
+        """Test the hash operator."""
+        rule = styles.StyleRule(None, None, None, None)
+
+        result = rule.__hash__()
+
+        self.assertEqual(result, hash(rule.name))
+
+        self.assertEqual(hash(rule), hash(rule.name))
+
+    # ne
+
+    @patch.object(styles.StyleRule, "__eq__")
+    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
+    def test___ne__(self, mock_eq):
+        """Test the ne operator."""
+        rule = styles.StyleRule(None, None, None, None)
+
+        mock_rule = MagicMock(spec=styles.StyleRule)
+
+        result = rule.__ne__(mock_rule)
+
+        self.assertEqual(result, not mock_eq.return_value)
+
+    @patch.object(styles.StyleRule, "__eq__")
+    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
+    def test___ne___different_type(self, mock_eq):
+        """Test the ne operator when the other item isn't a StyleConstant."""
+        rule = styles.StyleRule(None, None, None, None)
+
+        result = rule.__ne__(MagicMock())
+
+        self.assertEqual(result, NotImplemented)
 
     @patch.object(styles.StyleRule, "_get_typed_color_value")
     @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
@@ -326,6 +393,45 @@ class Test_ConstantRule(unittest.TestCase):
 
         self.assertEqual(constant, mock_constant)
 
+        result = constant.__eq__(MagicMock())
+        self.assertEqual(result, NotImplemented)
+
+    @patch.object(styles.ConstantRule, "constant_name", new_callable=PropertyMock)
+    @patch.object(styles.ConstantRule, "name", new_callable=PropertyMock)
+    @patch.object(styles.ConstantRule, "__init__", lambda x, y, z: None)
+    def test___hash__(self, mock_name_prop, mock_constant_prop):
+        """Test the hash operator."""
+        constant = styles.ConstantRule(None, None)
+
+        result = constant.__hash__()
+
+        self.assertEqual(result, hash((constant.constant_name, constant.name)))
+
+        self.assertEqual(hash(constant), hash((constant.constant_name, constant.name)))
+
+    # ne
+
+    @patch.object(styles.ConstantRule, "__eq__")
+    @patch.object(styles.ConstantRule, "__init__", lambda x, y, z: None)
+    def test___ne__(self, mock_eq):
+        """Test the ne operator."""
+        constant = styles.ConstantRule(None, None)
+        mock_constant = MagicMock(spec=styles.ConstantRule)
+
+        result = constant.__ne__(mock_constant)
+
+        self.assertEqual(result, not mock_eq.return_value)
+
+    @patch.object(styles.ConstantRule, "__eq__")
+    @patch.object(styles.ConstantRule, "__init__", lambda x, y, z: None)
+    def test___ne___different_type(self, mock_eq):
+        """Test the ne operator when the other item isn't a StyleConstant."""
+        constant = styles.ConstantRule(None, None)
+
+        result = constant.__ne__(MagicMock())
+
+        self.assertEqual(result, NotImplemented)
+
     # Properties
 
     @patch.object(styles.ConstantRule, "__init__", lambda x, y, z: None)
@@ -354,6 +460,7 @@ class Test_ConstantRule(unittest.TestCase):
         rule._name = value
 
         self.assertEqual(rule.name, value)
+
 
 # =============================================================================
 

@@ -52,40 +52,228 @@ class Test_AOV(unittest.TestCase):
         mock_copy.assert_called_with(aov._DEFAULT_AOV_DATA)
         mock_update.assert_called_with(data)
 
-    # __cmp__
+    # __eq__
 
     @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="P"))
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
-    def test___cmp___equal(self, mock_variable):
+    def test___eq___equal(self, mock_variable):
         inst1 = aov.AOV(None)
 
         inst2 = MagicMock(spec=aov.AOV)
         type(inst2).variable = PropertyMock(return_value="P")
 
-        result = inst1.__cmp__(inst2)
+        result = inst1.__eq__(inst2)
 
-        self.assertEqual(result, 0)
+        self.assertTrue(result)
 
     @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="N"))
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
-    def test___cmp___not_equal(self, mock_variable):
+    def test___eq___not_equal(self, mock_variable):
         inst1 = aov.AOV(None)
 
         inst2 = MagicMock(spec=aov.AOV)
         type(inst2).variable = PropertyMock(return_value="P")
 
-        result = inst1.__cmp__(inst2)
+        result = inst1.__eq__(inst2)
 
-        self.assertNotEqual(result, 0)
+        self.assertFalse(result)
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
-    def test___cmp___non_aov(self):
+    def test___eq___non_aov(self):
         inst1 = aov.AOV(None)
         inst2 = MagicMock()
 
-        result = inst1.__cmp__(inst2)
+        result = inst1.__eq__(inst2)
 
-        self.assertNotEqual(result, 0)
+        self.assertEqual(result, NotImplemented)
+
+    # __ge__
+
+    @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="O"))
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___ge___less_than(self, mock_variable):
+        inst1 = aov.AOV(None)
+
+        inst2 = MagicMock(spec=aov.AOV)
+        type(inst2).variable = PropertyMock(return_value="P")
+
+        result = inst1.__ge__(inst2)
+
+        self.assertFalse(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="P"))
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___ge___equal(self, mock_variable):
+        inst1 = aov.AOV(None)
+
+        inst2 = MagicMock(spec=aov.AOV)
+        type(inst2).variable = PropertyMock(return_value="P")
+
+        result = inst1.__ge__(inst2)
+
+        self.assertTrue(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="Q"))
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___ge___greater_than(self, mock_variable):
+        inst1 = aov.AOV(None)
+
+        inst2 = MagicMock(spec=aov.AOV)
+        type(inst2).variable = PropertyMock(return_value="P")
+
+        result = inst1.__ge__(inst2)
+
+        self.assertTrue(result)
+
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___ge___non_aov(self):
+        inst1 = aov.AOV(None)
+        inst2 = MagicMock()
+
+        result = inst1.__ge__(inst2)
+
+        self.assertEqual(result, NotImplemented)
+
+    # __gt__
+
+    @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="O"))
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___gt___less_than(self, mock_variable):
+        inst1 = aov.AOV(None)
+
+        inst2 = MagicMock(spec=aov.AOV)
+        type(inst2).variable = PropertyMock(return_value="P")
+
+        result = inst1.__gt__(inst2)
+
+        self.assertFalse(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="P"))
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___gt___equal(self, mock_variable):
+        inst1 = aov.AOV(None)
+
+        inst2 = MagicMock(spec=aov.AOV)
+        type(inst2).variable = PropertyMock(return_value="P")
+
+        result = inst1.__gt__(inst2)
+
+        self.assertFalse(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="Q"))
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___gt___greater_than(self, mock_variable):
+        inst1 = aov.AOV(None)
+
+        inst2 = MagicMock(spec=aov.AOV)
+        type(inst2).variable = PropertyMock(return_value="P")
+
+        result = inst1.__gt__(inst2)
+
+        self.assertTrue(result)
+
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___gt___non_aov(self):
+        inst1 = aov.AOV(None)
+        inst2 = MagicMock()
+
+        result = inst1.__gt__(inst2)
+
+        self.assertEqual(result, NotImplemented)
+
+    # __le__
+
+    @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="O"))
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___le___less_than(self, mock_variable):
+        inst1 = aov.AOV(None)
+
+        inst2 = MagicMock(spec=aov.AOV)
+        type(inst2).variable = PropertyMock(return_value="P")
+
+        result = inst1.__le__(inst2)
+
+        self.assertTrue(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="P"))
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___le___equal(self, mock_variable):
+        inst1 = aov.AOV(None)
+
+        inst2 = MagicMock(spec=aov.AOV)
+        type(inst2).variable = PropertyMock(return_value="P")
+
+        result = inst1.__le__(inst2)
+
+        self.assertTrue(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="Q"))
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___le___greater_than(self, mock_variable):
+        inst1 = aov.AOV(None)
+
+        inst2 = MagicMock(spec=aov.AOV)
+        type(inst2).variable = PropertyMock(return_value="P")
+
+        result = inst1.__le__(inst2)
+
+        self.assertFalse(result)
+
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___le___non_aov(self):
+        inst1 = aov.AOV(None)
+        inst2 = MagicMock()
+
+        result = inst1.__le__(inst2)
+
+        self.assertEqual(result, NotImplemented)
+
+    # __lt__
+
+    @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="O"))
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___lt___less_than(self, mock_variable):
+        inst1 = aov.AOV(None)
+
+        inst2 = MagicMock(spec=aov.AOV)
+        type(inst2).variable = PropertyMock(return_value="P")
+
+        result = inst1.__lt__(inst2)
+
+        self.assertTrue(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="P"))
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___lt___equal(self, mock_variable):
+        inst1 = aov.AOV(None)
+
+        inst2 = MagicMock(spec=aov.AOV)
+        type(inst2).variable = PropertyMock(return_value="P")
+
+        result = inst1.__lt__(inst2)
+
+        self.assertFalse(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="Q"))
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___lt___greater_than(self, mock_variable):
+        inst1 = aov.AOV(None)
+
+        inst2 = MagicMock(spec=aov.AOV)
+        type(inst2).variable = PropertyMock(return_value="P")
+
+        result = inst1.__lt__(inst2)
+
+        self.assertFalse(result)
+
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___lt___non_aov(self):
+        inst1 = aov.AOV(None)
+        inst2 = MagicMock()
+
+        result = inst1.__lt__(inst2)
+
+        self.assertEqual(result, NotImplemented)
 
     # __hash__
 
@@ -99,6 +287,29 @@ class Test_AOV(unittest.TestCase):
         self.assertEqual(result, hash("N"))
 
         self.assertEqual(hash(inst1), hash("N"))
+
+    # __ne__
+
+    @patch.object(aov.AOV, "__eq__")
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___ne___(self, mock_eq):
+        inst1 = aov.AOV(None)
+
+        inst2 = MagicMock(spec=aov.AOV)
+
+        result = inst1.__ne__(inst2)
+
+        self.assertEqual(result, not mock_eq.return_value)
+        mock_eq.assert_called_with(inst2)
+
+    @patch.object(aov.AOV, "__init__", lambda x, y: None)
+    def test___ne___non_aov(self):
+        inst1 = aov.AOV(None)
+        inst2 = MagicMock()
+
+        result = inst1.__ne__(inst2)
+
+        self.assertEqual(result, NotImplemented)
 
     # __str__
 
@@ -168,8 +379,6 @@ class Test_AOV(unittest.TestCase):
     @patch("ht.sohohooks.aovs.aov.AOV.lightexport", new_callable=PropertyMock(return_value=consts.LIGHTEXPORT_SINGLE_KEY))
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test__light_export_planes__single(self, mock_lightexport, mock_scope, mock_select, mock_write):
-        inst = aov.AOV(None)
-        inst = aov.AOV(None)
         inst = aov.AOV(None)
 
         mock_light1 = MagicMock()
@@ -834,44 +1043,276 @@ class Test_AOVGroup(unittest.TestCase):
         self.assertEqual(group._path, None)
         self.assertEqual(group._priority, -1)
 
-    # __cmp__
+    # __eq__
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
-    def test___cmp___equal(self, mock_name):
+    def test___eq___equal(self, mock_name):
         group1 = aov.AOVGroup(None)
 
         group2 = MagicMock(spec=aov.AOVGroup)
         type(group2).name = PropertyMock(return_value="name")
 
-        result = group1.__cmp__(group2)
+        result = group1.__eq__(group2)
 
-        self.assertEqual(result, 0)
+        self.assertTrue(result)
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
-    def test___cmp___not_equal(self, mock_name):
+    def test___eq___not_equal(self, mock_name):
         group1 = aov.AOVGroup(None)
 
         group2 = MagicMock(spec=aov.AOVGroup)
         type(group2).name = PropertyMock(return_value="name2")
 
-        result = group1.__cmp__(group2)
+        result = group1.__eq__(group2)
 
-        self.assertNotEqual(result, 0)
+        self.assertFalse(result)
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
-    def test___cmp___non_group(self, mock_name):
+    def test___eq___non_group(self, mock_name):
         group1 = aov.AOVGroup(None)
 
         group2 = MagicMock()
 
-        result = group1.__cmp__(group2)
+        result = group1.__eq__(group2)
 
-        self.assertNotEqual(result, 0)
+        self.assertEqual(result, NotImplemented)
 
-    # properties
+    # ge
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___ge___less_than(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock(spec=aov.AOVGroup)
+        type(group2).name = PropertyMock(return_value="name2")
+
+        result = group1.__ge__(group2)
+
+        self.assertFalse(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___ge___equal(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock(spec=aov.AOVGroup)
+        type(group2).name = PropertyMock(return_value="name1")
+
+        result = group1.__ge__(group2)
+
+        self.assertTrue(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name3"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___ge___greater_than(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock(spec=aov.AOVGroup)
+        type(group2).name = PropertyMock(return_value="name2")
+
+        result = group1.__ge__(group2)
+
+        self.assertTrue(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___ge___non_group(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock()
+
+        result = group1.__ge__(group2)
+        self.assertEqual(result, NotImplemented)
+
+    # gt
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___gt___less_than(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock(spec=aov.AOVGroup)
+        type(group2).name = PropertyMock(return_value="name2")
+
+        result = group1.__gt__(group2)
+
+        self.assertFalse(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___gt___equal(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock(spec=aov.AOVGroup)
+        type(group2).name = PropertyMock(return_value="name1")
+
+        result = group1.__gt__(group2)
+
+        self.assertFalse(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name3"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___gt___greater_than(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock(spec=aov.AOVGroup)
+        type(group2).name = PropertyMock(return_value="name2")
+
+        result = group1.__gt__(group2)
+
+        self.assertTrue(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___gt___non_group(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock()
+
+        result = group1.__gt__(group2)
+        self.assertEqual(result, NotImplemented)
+
+    # __hash__
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___hash__(self, mock_variable):
+        group1 = aov.AOVGroup(None)
+
+        result = group1.__hash__()
+
+        self.assertEqual(result, hash("name1"))
+
+        self.assertEqual(hash(group1), hash("name1"))
+
+    # le
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___le___less_than(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock(spec=aov.AOVGroup)
+        type(group2).name = PropertyMock(return_value="name2")
+
+        result = group1.__le__(group2)
+
+        self.assertTrue(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___le___equal(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock(spec=aov.AOVGroup)
+        type(group2).name = PropertyMock(return_value="name1")
+
+        result = group1.__le__(group2)
+
+        self.assertTrue(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name3"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___le___greater_than(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock(spec=aov.AOVGroup)
+        type(group2).name = PropertyMock(return_value="name2")
+
+        result = group1.__le__(group2)
+
+        self.assertFalse(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___le___non_group(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock()
+
+        result = group1.__le__(group2)
+
+        self.assertEqual(result, NotImplemented)
+
+    # lt
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___lt___less_than(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock(spec=aov.AOVGroup)
+        type(group2).name = PropertyMock(return_value="name2")
+
+        result = group1.__lt__(group2)
+
+        self.assertTrue(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___lt___equal(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock(spec=aov.AOVGroup)
+        type(group2).name = PropertyMock(return_value="name1")
+
+        result = group1.__lt__(group2)
+
+        self.assertFalse(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name3"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___lt___greater_than(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock(spec=aov.AOVGroup)
+        type(group2).name = PropertyMock(return_value="name2")
+
+        result = group1.__lt__(group2)
+
+        self.assertFalse(result)
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___lt___non_group(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock()
+
+        result = group1.__lt__(group2)
+
+        self.assertEqual(result, NotImplemented)
+
+    # __ne__
+
+    @patch.object(aov.AOVGroup, "__eq__")
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___ne___not_equal(self, mock_eq):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock(spec=aov.AOVGroup)
+
+        result = group1.__ne__(group2)
+
+        self.assertEqual(result, not mock_eq.return_value)
+        mock_eq.assert_called_with(group2)
+
+    @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
+    @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
+    def test___ne___non_group(self, mock_name):
+        group1 = aov.AOVGroup(None)
+
+        group2 = MagicMock()
+
+        result = group1.__ne__(group2)
+
+        self.assertEqual(result, NotImplemented)
+
+    # Properties
 
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
     def test_aovs(self):

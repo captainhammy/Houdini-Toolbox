@@ -112,4 +112,3 @@ class ArgumentParser(argparse.ArgumentParser):
         # it was meant to be an optional but there is no such option
         # in this parser (though it might be a valid option in a sub-parser)
         return None, arg_string, None
-

@@ -19,7 +19,7 @@ from ht.events.types import RopEvents
 # Houdini Imports
 import hou
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -45,9 +45,9 @@ class RopRenderEvent(HoudiniEventGroup):
             }
         )
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def pre_frame(self, scriptargs):
         """Action run before the frame starts rendering.
@@ -61,7 +61,7 @@ class RopRenderEvent(HoudiniEventGroup):
         # frame is completed to get the duration.
         self._frame_start = scriptargs["time"]
 
-        logger.info("Starting Frame: %s", scriptargs["frame"])
+        _logger.info("Starting Frame: %s", scriptargs["frame"])
 
     def pre_render(self, scriptargs):
         """Action run before the render starts.
@@ -78,10 +78,10 @@ class RopRenderEvent(HoudiniEventGroup):
         if frame_range is not None:
             start, end, inc = frame_range
 
-            logger.info("Starting render: %s-%s:%s", start, end, inc)
+            _logger.info("Starting render: %s-%s:%s", start, end, inc)
 
         else:
-            logger.info("Starting render")
+            _logger.info("Starting render")
 
     def post_frame(self, scriptargs):
         """Action run after the frame has rendered.
@@ -99,11 +99,11 @@ class RopRenderEvent(HoudiniEventGroup):
             duration = end_time - self._frame_start
 
             # Print a complete message that includes our calculated duration.
-            logger.info("Completed Frame: %s (%0.5fs)", scriptargs["frame"], duration)
+            _logger.info("Completed Frame: %s (%0.5fs)", scriptargs["frame"], duration)
 
         # If we somehow didn't, just print the complete message.
         else:
-            logger.info("Completed Frame: %s", scriptargs["frame"])
+            _logger.info("Completed Frame: %s", scriptargs["frame"])
 
     def post_render(self, scriptargs):
         """Action run after the render is complete.
@@ -116,10 +116,10 @@ class RopRenderEvent(HoudiniEventGroup):
         if self._render_start is not None:
             end_time = scriptargs["time"]
 
-            logger.info("Completed Render: %0.5fs", end_time-self._render_start)
+            _logger.info("Completed Render: %0.5fs", end_time-self._render_start)
 
         else:
-            logger.info("Completed Render")
+            _logger.info("Completed Render")
 
     def post_write(self, scriptargs):  # pylint: disable=no-self-use
         """Action run after the frame is written to disk.
@@ -130,10 +130,10 @@ class RopRenderEvent(HoudiniEventGroup):
 
         """
         if "path" in scriptargs:
-            logger.info("Wrote frame %s to %s", scriptargs["frame"], scriptargs["path"])
+            _logger.info("Wrote frame %s to %s", scriptargs["frame"], scriptargs["path"])
 
         else:
-            logger.info("Wrote frame %s", scriptargs["frame"])
+            _logger.info("Wrote frame %s", scriptargs["frame"])
 
 
 # =============================================================================
@@ -186,7 +186,7 @@ def _print_frame_write(scriptargs):
             pass
 
         else:
-            logger.info("Wrote frame %s to %s", scriptargs["frame"], scriptargs["path"])
+            _logger.info("Wrote frame %s to %s", scriptargs["frame"], scriptargs["path"])
 
 
 # =============================================================================
@@ -222,4 +222,3 @@ def build_scriptargs(node=None):
         scriptargs["path"] = _get_target_file(node)
 
     return scriptargs
-

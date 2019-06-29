@@ -99,7 +99,7 @@ class TestManager(unittest.TestCase):
 
     # _register_operations
 
-    @patch("ht.pyfilter.manager.logger")
+    @patch("ht.pyfilter.manager._logger")
     @patch("ht.pyfilter.manager._get_class")
     @patch("ht.pyfilter.manager._get_operation_data")
     @patch("ht.pyfilter.manager._find_operation_files")
@@ -118,7 +118,7 @@ class TestManager(unittest.TestCase):
         mock_get_data.assert_called_with(mock_file_path)
         mock_get_class.assert_not_called()
 
-    @patch("ht.pyfilter.manager.logger")
+    @patch("ht.pyfilter.manager._logger")
     @patch("ht.pyfilter.manager._get_class", return_value=None)
     @patch("ht.pyfilter.manager._get_operation_data")
     @patch("ht.pyfilter.manager._find_operation_files")
@@ -151,7 +151,7 @@ class TestManager(unittest.TestCase):
         self.assertEqual(operations, [])
         mock_logger.warning.assert_called()
 
-    @patch("ht.pyfilter.manager.logger")
+    @patch("ht.pyfilter.manager._logger")
     @patch("ht.pyfilter.manager._get_class")
     @patch("ht.pyfilter.manager._get_operation_data")
     @patch("ht.pyfilter.manager._find_operation_files")
@@ -281,7 +281,7 @@ class Test__build_parser(unittest.TestCase):
 class Test__find_operation_files(unittest.TestCase):
     """Test ht.pyfilter.manager._find_operation_files."""
 
-    @patch("ht.pyfilter.manager.logger")
+    @patch("ht.pyfilter.manager._logger")
     @patch("hou.findFiles")
     def test_no_files(self, mock_find_files, mock_logger):
         def raise_exc(*args, **kwargs):
@@ -338,7 +338,7 @@ class Test__get_class(unittest.TestCase):
 class Test__get_operation_data(unittest.TestCase):
     """Test ht.pyfilter.manager._get_operation_data."""
 
-    @patch("ht.pyfilter.manager.logger")
+    @patch("ht.pyfilter.manager._logger")
     @patch("__builtin__.open")
     def test_IOError(self, mock_open, mock_logger):
         mock_file_path = MagicMock(spec=str)
@@ -348,7 +348,7 @@ class Test__get_operation_data(unittest.TestCase):
         result = manager._get_operation_data(mock_file_path)
         self.assertEqual(result, {})
 
-    @patch("ht.pyfilter.manager.logger")
+    @patch("ht.pyfilter.manager._logger")
     @patch("json.load")
     @patch("__builtin__.open", new_callable=mock_open)
     def test_ValueError(self, mock_open_file, mock_load, mock_logger):

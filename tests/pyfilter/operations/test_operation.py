@@ -24,7 +24,7 @@ class Test_PyFilterOperation(unittest.TestCase):
     def setUp(self):
         super(Test_PyFilterOperation, self).setUp()
 
-        self.patcher = patch("ht.pyfilter.operations.operation.logger", autospec=True)
+        self.patcher = patch("ht.pyfilter.operations.operation._logger", autospec=True)
         self.patcher.start()
 
     def tearDown(self):

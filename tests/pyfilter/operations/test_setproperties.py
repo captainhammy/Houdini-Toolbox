@@ -1,4 +1,4 @@
-"""Test the ht.pyfilter.operations.deepimage module."""
+"""Test the ht.pyfilter.operations.setproperties module."""
 
 # =============================================================================
 # IMPORTS
@@ -14,6 +14,7 @@ from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.operations import setproperties
 
 reload(setproperties)
+
 
 # =============================================================================
 # CLASSES
@@ -89,7 +90,7 @@ class Test_PropertySetterManager(unittest.TestCase):
     # load_from_file
 
     @patch("ht.pyfilter.operations.setproperties.json.load")
-    @patch("ht.pyfilter.operations.setproperties.logger")
+    @patch("ht.pyfilter.operations.setproperties._logger")
     @patch.object(setproperties.PropertySetterManager, "_load_from_data")
     @patch.object(setproperties.PropertySetterManager, "__init__", lambda x, y: None)
     def test_load_from_file(self, mock_from_data, mock_logger, mock_json_load):
@@ -261,7 +262,7 @@ class Test_PropertySetter(unittest.TestCase):
     # set_property
 
     @patch("ht.pyfilter.operations.setproperties.set_property")
-    @patch("ht.pyfilter.operations.setproperties.logger")
+    @patch("ht.pyfilter.operations.setproperties._logger")
     @patch("ht.pyfilter.operations.setproperties.get_property")
     @patch.object(setproperties.PropertySetter, "rendertype", new_callable=PropertyMock)
     @patch.object(setproperties.PropertySetter, "__init__", lambda x, y, z: None)
@@ -278,7 +279,7 @@ class Test_PropertySetter(unittest.TestCase):
         mock_set.assert_not_called()
 
     @patch("ht.pyfilter.operations.setproperties.set_property")
-    @patch("ht.pyfilter.operations.setproperties.logger")
+    @patch("ht.pyfilter.operations.setproperties._logger")
     @patch("ht.pyfilter.operations.setproperties.get_property")
     @patch.object(setproperties.PropertySetter, "value", new_callable=PropertyMock)
     @patch.object(setproperties.PropertySetter, "name", new_callable=PropertyMock)
@@ -296,7 +297,7 @@ class Test_PropertySetter(unittest.TestCase):
         mock_set.assert_called_with(mock_name.return_value, mock_value.return_value)
 
     @patch("ht.pyfilter.operations.setproperties.set_property")
-    @patch("ht.pyfilter.operations.setproperties.logger")
+    @patch("ht.pyfilter.operations.setproperties._logger")
     @patch("ht.pyfilter.operations.setproperties.get_property")
     @patch.object(setproperties.PropertySetter, "value", new_callable=PropertyMock)
     @patch.object(setproperties.PropertySetter, "name", new_callable=PropertyMock)
@@ -426,7 +427,7 @@ class Test_SetProperties(unittest.TestCase):
         self.patcher = patch.dict("sys.modules", modules)
         self.patcher.start()
 
-        self.log_patcher = patch("ht.pyfilter.operations.operation.logger", autospec=True)
+        self.log_patcher = patch("ht.pyfilter.operations.operation._logger", autospec=True)
         self.log_patcher.start()
 
     def tearDown(self):
@@ -713,7 +714,7 @@ class Test__create_property_setter(unittest.TestCase):
         mock_block.__contains__.assert_called_with("mask")
         mock_setter.assert_called_with(mock_name, mock_block, "object:name")
 
-    @patch("ht.pyfilter.operations.setproperties.logger")
+    @patch("ht.pyfilter.operations.setproperties._logger")
     @patch("ht.pyfilter.operations.setproperties.PropertySetter", autospec=True)
     def test_mask_unknown_stage(self, mock_setter, mock_logger):
         mock_name = MagicMock(spec=str)

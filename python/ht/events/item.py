@@ -36,36 +36,46 @@ class HoudiniEventItem(object):
 
         self._stats = HoudiniEventItemStats(self.name, tags=stat_tags)
 
-    def __eq__(self, item):
+    # -------------------------------------------------------------------------
+    # SPECIAL METHODS
+    # -------------------------------------------------------------------------
+
+    def __eq__(self, other):
         """Equality implementation that ignores the stats object.
 
-        :param item: The item to compare to.
-        :type item: HoudiniEventItem
+        :param other: The item to compare to.
+        :type other: HoudiniEventItem
         :return: Whether the objects are equal.
         :rtype: bool
 
         """
-        if self.name != item.name:
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+
+        if self.name != other.name:
             return False
 
-        if self.callables != item.callables:
+        if self.callables != other.callables:
             return False
 
-        if self.priority != item.priority:
+        if self.priority != other.priority:
             return False
 
         return True
 
-    def __ne__(self, item):
+    def __ne__(self, other):
         """Inequality implementation that ignores the stats object.
 
-        :param item: The item to compare to.
-        :type item: HoudiniEventItem
+        :param other: The other item to compare to.
+        :type other: HoudiniEventItem
         :return: Whether the objects are not equal.
         :rtype: bool
 
         """
-        return not self.__eq__(item)
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash((self.name, self.priority))
 
     def __repr__(self):
         return "<{} {} ({} callables)>".format(
@@ -74,9 +84,9 @@ class HoudiniEventItem(object):
             len(self.callables)
         )
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def callables(self):
@@ -104,9 +114,9 @@ class HoudiniEventItem(object):
         """HoudiniEventItemStats: Stats for the item."""
         return self._stats
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def run(self, scriptargs):
         """Run the callables with the given args.
@@ -144,6 +154,10 @@ class ExclusiveHoudiniEventItem(HoudiniEventItem):
         # If this item has the higher priority then point to this item.
         if self.priority > exclusive_item.priority:
             self._exclusive_map[name] = self
+
+    # -------------------------------------------------------------------------
+    # METHODS
+    # -------------------------------------------------------------------------
 
     def run(self, scriptargs):
         """Run the callables with the given args.

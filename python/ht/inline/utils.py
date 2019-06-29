@@ -142,7 +142,7 @@ def find_attrib(geometry, attrib_type, name):
     :param name: The attribute name.
     :type name: str
     :return: A found attribute, otherwise None.
-    :rtype: hou.Attrib|None
+    :rtype: hou.Attrib or None
 
     """
     if attrib_type == hou.attribType.Vertex:
@@ -173,7 +173,7 @@ def find_group(geometry, group_type, name):
     :param name: The attribute name.
     :type name: str
     :return: A found group.
-    :rtype: hou.EdgeGroup|hou.PointGroup|hou.PrimGroup
+    :rtype: hou.EdgeGroup or hou.PointGroup or hou.PrimGroup
 
     """
     if group_type == 0:
@@ -203,7 +203,7 @@ def geo_details_match(geometry1, geometry2):
     handle1 = geometry1._guDetailHandle()
     handle2 = geometry2._guDetailHandle()
 
-    details_match = long(handle1._asVoidPointer()) == long(handle2._asVoidPointer())
+    details_match = int(handle1._asVoidPointer()) == int(handle2._asVoidPointer())
 
     handle1.destroy()
     handle2.destroy()
@@ -233,7 +233,7 @@ def get_attrib_owner_from_geometry_entity_type(entity_type):
     The type can be of hou.Geometry, hou.Point, hou.Prim (or subclasses) or hou.Vertex.
 
     :param entity_type: The entity to get a attribute owner for.
-    :type entity_type: hou.Vertex|hou.Point|hou.Prim|hou.Geometry
+    :type entity_type: hou.Vertex or hou.Point or hou.Prim or hou.Geometry
     :return: An HDK attribute owner value.
     :rtype: int
 
@@ -295,7 +295,7 @@ def get_group_attrib_owner(group):
     """Get an HDK compatible group attribute type value.
 
     :param group: The group to get the attribute owner for.
-    :type group: hou.PointGroup|hou.PrimGroup
+    :type group: hou.PointGroup or hou.PrimGroup
     :return: An HDK attribute owner value.
     :rtype: int
 
@@ -311,7 +311,7 @@ def get_group_type(group):
     """Get an HDK compatible group type value.
 
     :param group: The group to get the group type for.
-    :type group: hou.EdgeGroup|hou.PointGroup|hou.PrimGroup
+    :type group: hou.EdgeGroup or hou.PointGroup or hou.PrimGroup
     :return: An HDK group type value.
     :rtype: int
 

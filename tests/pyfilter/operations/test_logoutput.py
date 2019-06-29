@@ -16,6 +16,7 @@ from ht.pyfilter.operations import logoutput
 
 reload(logoutput)
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -25,7 +26,7 @@ class Test_LogOutput(unittest.TestCase):
 
     # Methods
 
-    @patch("ht.pyfilter.operations.logoutput.logger", autospec=True)
+    @patch("ht.pyfilter.operations.logoutput._logger", autospec=True)
     @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
     def test_filterError__level_0(self, mock_logger):
 
@@ -51,7 +52,7 @@ class Test_LogOutput(unittest.TestCase):
             [call(mock_message1), call(mock_message2)]
         )
 
-    @patch("ht.pyfilter.operations.logoutput.logger", autospec=True)
+    @patch("ht.pyfilter.operations.logoutput._logger", autospec=True)
     @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
     def test_filterError__prefix(self, mock_logger):
         level = 1
@@ -72,7 +73,7 @@ class Test_LogOutput(unittest.TestCase):
 
         mock_logger.warning.assert_called_with(mock_message)
 
-    @patch("ht.pyfilter.operations.logoutput.logger", autospec=True)
+    @patch("ht.pyfilter.operations.logoutput._logger", autospec=True)
     @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
     def test_filterError__level_1(self, mock_logger):
         level = 1
@@ -92,7 +93,7 @@ class Test_LogOutput(unittest.TestCase):
 
         mock_logger.info.assert_called_with(mock_message)
 
-    @patch("ht.pyfilter.operations.logoutput.logger", autospec=True)
+    @patch("ht.pyfilter.operations.logoutput._logger", autospec=True)
     @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
     def test_filterError__debug(self, mock_logger):
         level = MagicMock(spec=int)

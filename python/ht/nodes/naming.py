@@ -12,6 +12,7 @@ import re
 # GLOBALS
 # =============================================================================
 
+# TODO: Convert to jinja template
 DEFAULT_FMT = "{namespace}_{name}_v{iversion}_{opdigits}"
 
 
@@ -20,7 +21,18 @@ DEFAULT_FMT = "{namespace}_{name}_v{iversion}_{opdigits}"
 # =============================================================================
 
 def is_namespaced_type(node_type, require_version=True, require_namespace=True):
-    """Determine if a node type is namespaced based on name components."""
+    """Determine if a node type is namespaced based on name components.
+
+    :param node_type: The node type.
+    :type node_type: hou.NodeType
+    :param require_version: Whether or not to require the type have a version.
+    :type require_version: bool
+    :param require_namespace: Whether or not to require the type have a version.
+    :type require_namespace: bool
+    :return: Whether or not the node type is namespaced.
+    :rtype: bool
+
+    """
     components = node_type.nameComponents()
 
     if require_version:
@@ -56,6 +68,12 @@ def set_namespaced_formatted_name(node, fmt=None):
 
         foo1 -> com.houdinitoolbox_foo_v2_1
 
+    :param node: The node to name.
+    :type node: hou.Node
+    :param fmt: The format string.
+    :type fmt: str
+    :return:
+
     """
     # Use default formatting string if none was passed.
     if fmt is None:
@@ -83,4 +101,3 @@ def set_namespaced_formatted_name(node, fmt=None):
     name = fmt.format(**data)
 
     node.setName(name, unique_name=True)
-

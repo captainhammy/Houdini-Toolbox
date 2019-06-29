@@ -36,16 +36,16 @@ class StyleManager(object):
         # Build mappings for this object.
         self._build()
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # SPECIAL METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def __repr__(self):
         return "<StyleManager>"
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def _build(self):
         """Build styling data from files.
@@ -83,7 +83,7 @@ class StyleManager(object):
 
             # Process any constants first so they can be used by assignments.
             if constants.CONSTANT_DEFINITION_KEY in data:
-                for name, entry in data[constants.CONSTANT_DEFINITION_KEY].iteritems():
+                for name, entry in data[constants.CONSTANT_DEFINITION_KEY].items():
                     # Get the color from the info.
 
                     color, color_type = _build_color(entry)
@@ -112,12 +112,12 @@ class StyleManager(object):
 
                 path = data[constants.PATH_KEY]
 
-                for rule_type, rule_data in rules_data.iteritems():
+                for rule_type, rule_data in rules_data.items():
                     # Get the mapping dictionary from the manager.
                     rule_type_map = getattr(self, rule_type)
 
                     # Process each category in the data.
-                    for category_name, rules in rule_data.iteritems():
+                    for category_name, rules in rule_data.items():
                         # Get a mapping list for the category name.
                         category_map = rule_type_map.setdefault(category_name, {})
 
@@ -130,7 +130,7 @@ class StyleManager(object):
         :param node_type: A manager/generator node type
         :type node_type: hou.NodeType
         :return: An applicable styling object.
-        :rtype: StyleConstant|StyleRule
+        :rtype: StyleConstant or StyleRule
 
         """
         categories = (node_type.category().name(), constants.ALL_CATEGORY_KEY)
@@ -167,7 +167,7 @@ class StyleManager(object):
         :param node: Node to style by name.
         :type node: hou.Node
         :return: An applicable styling object.
-        :rtype: StyleConstant|StyleRule
+        :rtype: StyleConstant or StyleRule
 
         """
         # The node name.
@@ -179,7 +179,7 @@ class StyleManager(object):
             # Check for rules for the node type category.
             if category_name in self.name_rules:
                 # Check if the name matches any of the category rules.
-                for rule in self.name_rules[category_name].itervalues():
+                for rule in self.name_rules[category_name].values():
                     if hou.patternMatch(rule.name, name):
                         return self._resolve_rule(rule)
 
@@ -191,7 +191,7 @@ class StyleManager(object):
         :param node_type: Node type to style by name
         :type node_type: hou.NodeType
         :return: An applicable styling object.
-        :rtype: StyleConstant|StyleRule
+        :rtype: StyleConstant or StyleRule
 
         """
         type_name = node_type.nameComponents()[2]
@@ -205,7 +205,7 @@ class StyleManager(object):
             if category_name in self.node_type_rules:
                 # Check if the node type name matches any of the category
                 # rules.
-                for rule in self.node_type_rules[category_name].itervalues():
+                for rule in self.node_type_rules[category_name].values():
                     if hou.patternMatch(rule.name, type_name):
                         return self._resolve_rule(rule)
 
@@ -218,7 +218,7 @@ class StyleManager(object):
         :param node_type: Node type to style by tab menu location
         :type node_type: hou.NodeType
         :return: An applicable styling object.
-        :rtype: StyleConstant|StyleRule
+        :rtype: StyleConstant or StyleRule
 
         """
         categories = (node_type.category().name(), constants.ALL_CATEGORY_KEY)
@@ -231,7 +231,7 @@ class StyleManager(object):
                 # Process the locations, looking for the first match.
                 for location in menu_locations:
                     # Check if the location matches any of the category rules.
-                    for rule in self.tool_rules[category_name].itervalues():
+                    for rule in self.tool_rules[category_name].values():
                         if hou.patternMatch(rule.name, location):
                             return self._resolve_rule(rule)
 
@@ -244,9 +244,9 @@ class StyleManager(object):
         style.
 
         :param rule: A rule object to resolve.
-        :type rule: ConstantRule|StyleRule
+        :type rule: ConstantRule or StyleRule
         :return: A resolved rule.
-        :rtype: StyleConstant|StyleRule
+        :rtype: StyleConstant or StyleRule
 
         """
         # If the entry object is a ColorEntry then we can just return the
@@ -259,9 +259,9 @@ class StyleManager(object):
         constant_name = rule.constant_name
         return self.constants[constant_name]
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def constants(self):
@@ -283,9 +283,9 @@ class StyleManager(object):
         """dict: A dictionary of tool menu location styles."""
         return self._tool_rules
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def style_node(self, node):
         """Style the node given its properties.

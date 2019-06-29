@@ -7,6 +7,7 @@
 # Python Imports
 from collections import Iterable
 import json
+import six
 
 
 # =============================================================================
@@ -48,7 +49,7 @@ def _prep_value_to_set(value):
         value = []
 
     # Convert to a list of a single string value.
-    elif isinstance(value, (str, unicode)):
+    elif isinstance(value, six.string_types):
         value = [value]
 
     elif isinstance(value, dict):

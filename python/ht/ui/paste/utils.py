@@ -10,6 +10,7 @@ import datetime
 # Houdini Imports
 import hou
 
+
 # ==============================================================================
 # FUNCTIONS
 # ==============================================================================
@@ -48,7 +49,7 @@ def find_current_pane_tab(scriptargs):
     :param scriptargs: Houdini kwargs dict.
     :type scriptargs: dict
     :return: The found current network editor pane tab, if any.
-    :rtype: hou.NetworkEditor|None
+    :rtype: hou.NetworkEditor or None
 
     """
     # Try to get the current pane.
@@ -127,4 +128,3 @@ def save_items_to_source(source, parent, items):
 
     """
     source.save_items(parent, items)
-

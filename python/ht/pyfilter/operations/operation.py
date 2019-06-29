@@ -8,7 +8,7 @@
 from functools import wraps
 import logging
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -27,16 +27,16 @@ class PyFilterOperation(object):
         self._data = {}
         self._manager = manager
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # SPECIAL METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def __repr__(self):
         return "<PyFilterOperation: {}>".format(self.__class__.__name__)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def data(self):
@@ -51,9 +51,9 @@ class PyFilterOperation(object):
         """
         return self._manager
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # STATIC METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @staticmethod
     def build_arg_string(*args, **kwargs):
@@ -76,9 +76,9 @@ class PyFilterOperation(object):
         """
         pass
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def process_parsed_args(self, filter_args):
         """Process any parsed args that the operation may be interested in.
@@ -114,7 +114,7 @@ def log_filter_call(method_or_name):
     the output.
 
     :param method_or_name: A method or  property name.
-    :type method_or_name: function|str
+    :type method_or_name: function or str
     :return: A wrapped function.
     :rtype: function
 
@@ -136,7 +136,7 @@ def log_filter_call(method_or_name):
                     mantra.property(method_or_name)[0]
                 )
 
-            logger.debug(msg)
+            _logger.debug(msg)
 
             func(*args, **kwargs)
 

@@ -32,12 +32,16 @@ class HoudiniEventManager(object):
         # disabling context manager.
         self._event_states = {}
 
+    # -------------------------------------------------------------------------
+    # SPECIAL METHODS
+    # -------------------------------------------------------------------------
+
     def __repr__(self):
         return "<EventManager>"
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def _disable_events(self, names=None):
         """Disable any events with matching names.
@@ -64,14 +68,14 @@ class HoudiniEventManager(object):
         :return:
 
         """
-        for name, state in self._event_states.iteritems():
+        for name, state in self._event_states.items():
             self.events[name].enabled = state
 
         self._event_states.clear()
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def data(self):
@@ -83,9 +87,9 @@ class HoudiniEventManager(object):
         """dict: The map of events to run."""
         return self._events
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def create_event(self, name):
         """Create an event with a given name.
@@ -139,7 +143,7 @@ class HoudiniEventManager(object):
 
         event_mappings = event_group.event_map
 
-        for name, items in event_mappings.iteritems():
+        for name, items in event_mappings.items():
             if name not in self.events:
                 self.create_event(name)
 
@@ -231,7 +235,7 @@ def register_function(func, event_name, item_name=None, priority=1, stat_tags=No
     if not isinstance(func, collections.Callable):
         raise TypeError("{} is not callable".format(func))
 
-    item = HoudiniEventItem([func], item_name, priority, stat_tags=stat_tags)
+    item = HoudiniEventItem((func,), item_name, priority, stat_tags=stat_tags)
 
     register_item(item, event_name)
 

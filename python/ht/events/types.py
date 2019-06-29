@@ -64,4 +64,3 @@ class SceneEvents(Enum):
     # When the UI first appears and Houdini begins running the UI loop
     WhenUIAvailable = "uiavailable"
     ExternalDragDrop = "externaldragdrop"
-

@@ -31,9 +31,9 @@ class SceneLoadEvent(HoudiniEventGroup):
             }
         )
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def clear_session_settings(self, scriptargs):  # pylint: disable=no-self-use,unused-argument
         """Clear out potentially annoying/bad settings."""

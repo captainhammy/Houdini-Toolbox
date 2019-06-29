@@ -65,18 +65,48 @@ class AOV(object):
 
         self._update_data(data)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # SPECIAL METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
-    def __cmp__(self, other):
-        if isinstance(other, self.__class__):
-            return cmp(self.variable, other.variable)
+    def __eq__(self, other):
+        if not isinstance(other, AOV):
+            return NotImplemented
 
-        return -1
+        return self.variable == other.variable
+
+    def __ge__(self, other):
+        if not isinstance(other, AOV):
+            return NotImplemented
+
+        return self.variable >= other.variable
+
+    def __gt__(self, other):
+        if not isinstance(other, AOV):
+            return NotImplemented
+
+        return self.variable > other.variable
 
     def __hash__(self):
         return hash(self.variable)
+
+    def __le__(self, other):
+        if not isinstance(other, AOV):
+            return NotImplemented
+
+        return self.variable <= other.variable
+
+    def __lt__(self, other):
+        if not isinstance(other, AOV):
+            return NotImplemented
+
+        return self.variable < other.variable
+
+    def __ne__(self, other):
+        if not isinstance(other, AOV):
+            return NotImplemented
+
+        return not self.__eq__(other)
 
     def __repr__(self):
         return "<AOV {} ({})>".format(self.variable, self.vextype)
@@ -84,9 +114,9 @@ class AOV(object):
     def __str__(self):
         return self.variable
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def _light_export_planes(self, data, wrangler, cam, now):
         """Handle exporting the image planes based on their export settings.
@@ -140,7 +170,7 @@ class AOV(object):
         :return:
 
         """
-        for name, value in data.iteritems():
+        for name, value in data.items():
             # Check if there is a restriction on the data type.
             if name in ALLOWABLE_VALUES:
                 # Get the allowable types for this data.
@@ -170,9 +200,9 @@ class AOV(object):
         if self.vextype is None:
             raise MissingVexTypeError(self.variable)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def channel(self):
@@ -183,7 +213,7 @@ class AOV(object):
     def channel(self, channel):
         self._data[consts.CHANNEL_KEY] = channel
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def comment(self):
@@ -194,7 +224,7 @@ class AOV(object):
     def comment(self, comment):
         self._data[consts.COMMENT_KEY] = comment
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def componentexport(self):
@@ -205,7 +235,7 @@ class AOV(object):
     def componentexport(self, componentexport):
         self._data[consts.COMPONENTEXPORT_KEY] = componentexport
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def components(self):
@@ -216,7 +246,7 @@ class AOV(object):
     def components(self, components):
         self._data[consts.COMPONENTS_KEY] = components
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def exclude_from_dcm(self):
@@ -227,7 +257,7 @@ class AOV(object):
     def exclude_from_dcm(self, exclude):
         self._data[consts.EXCLUDE_DCM_KEY] = exclude
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def intrinsics(self):
@@ -238,7 +268,7 @@ class AOV(object):
     def intrinsics(self, intrinsics):
         self._data[consts.INTRINSICS_KEY] = intrinsics
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def lightexport(self):
@@ -249,7 +279,7 @@ class AOV(object):
     def lightexport(self, lightexport):
         self._data[consts.LIGHTEXPORT_KEY] = lightexport
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def lightexport_scope(self):
@@ -260,7 +290,7 @@ class AOV(object):
     def lightexport_scope(self, lightexport_scope):
         self._data[consts.LIGHTEXPORT_SCOPE_KEY] = lightexport_scope
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def lightexport_select(self):
@@ -271,7 +301,7 @@ class AOV(object):
     def lightexport_select(self, lightexport_select):
         self._data[consts.LIGHTEXPORT_SELECT_KEY] = lightexport_select
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def path(self):
@@ -282,7 +312,7 @@ class AOV(object):
     def path(self, path):
         self._data[consts.PATH_KEY] = path
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def pfilter(self):
@@ -293,7 +323,7 @@ class AOV(object):
     def pfilter(self, pfilter):
         self._data[consts.PFILTER_KEY] = pfilter
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def planefile(self):
@@ -304,7 +334,7 @@ class AOV(object):
     def planefile(self, planefile):
         self._data[consts.PLANEFILE_KEY] = planefile
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def priority(self):
@@ -315,7 +345,7 @@ class AOV(object):
     def priority(self, priority):
         self._data[consts.PRIORITY_KEY] = priority
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def quantize(self):
@@ -326,7 +356,7 @@ class AOV(object):
     def quantize(self, quantize):
         self._data[consts.QUANTIZE_KEY] = quantize
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def sfilter(self):
@@ -337,7 +367,7 @@ class AOV(object):
     def sfilter(self, sfilter):
         self._data[consts.SFILTER_KEY] = sfilter
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def variable(self):
@@ -348,7 +378,7 @@ class AOV(object):
     def variable(self, variable):
         self._data[consts.VARIABLE_KEY] = variable
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def vextype(self):
@@ -359,9 +389,9 @@ class AOV(object):
     def vextype(self, vextype):
         self._data[consts.VEXTYPE_KEY] = vextype
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def as_data(self):
         """Get a dictionary representing the AOV.
@@ -413,8 +443,6 @@ class AOV(object):
             data[consts.PRIORITY_KEY] = self.priority
 
         return data
-
-    # =========================================================================
 
     def write_to_ifd(self, wrangler, cam, now):
         """Output the AOV.
@@ -496,15 +524,48 @@ class AOVGroup(object):
         self._path = None
         self._priority = -1
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # SPECIAL METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
-    def __cmp__(self, other):
-        if isinstance(other, self.__class__):
-            return cmp(self.name, other.name)
+    def __eq__(self, other):
+        if not isinstance(other, AOVGroup):
+            return NotImplemented
 
-        return -1
+        return self.name == other.name
+
+    def __ge__(self, other):
+        if not isinstance(other, AOVGroup):
+            return NotImplemented
+
+        return self.name >= other.name
+
+    def __gt__(self, other):
+        if not isinstance(other, AOVGroup):
+            return NotImplemented
+
+        return self.name > other.name
+
+    def __le__(self, other):
+        if not isinstance(other, AOVGroup):
+            return NotImplemented
+
+        return self.name <= other.name
+
+    def __lt__(self, other):
+        if not isinstance(other, AOVGroup):
+            return NotImplemented
+
+        return self.name < other.name
+
+    def __ne__(self, other):
+        if not isinstance(other, AOVGroup):
+            return NotImplemented
+
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(self.name)
 
     def __repr__(self):
         return "<{} {} ({} AOVs)>".format(
@@ -513,16 +574,16 @@ class AOVGroup(object):
             len(self.aovs)
         )
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def aovs(self):
         """list(ht.sohohooks.aovs.aov.AOV)A list of AOVs in the group."""
         return self._aovs
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def comment(self):
@@ -533,7 +594,7 @@ class AOVGroup(object):
     def comment(self, comment):
         self._comment = comment
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def icon(self):
@@ -544,21 +605,21 @@ class AOVGroup(object):
     def icon(self, icon):
         self._icon = icon
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def includes(self):
         """list(str): List of AOV names belonging to the group."""
         return self._includes
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def name(self):
         """str: The name of the group."""
         return self._name
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def path(self):
@@ -569,7 +630,7 @@ class AOVGroup(object):
     def path(self, path):
         self._path = path
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def priority(self):
@@ -580,9 +641,9 @@ class AOVGroup(object):
     def priority(self, priority):
         self._priority = priority
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def clear(self):
         """Clear the list of AOVs belonging to this group.
@@ -958,7 +1019,7 @@ def _write_per_category(lights, base_channel, data, wrangler, cam, now):
     category_map = _build_category_map(lights, now)
 
     # Process all the found categories and their member lights.
-    for category, category_lights in category_map.iteritems():
+    for category, category_lights in category_map.items():
         # Construct the export string to contain all the member
         # lights.
         data[consts.LIGHTEXPORT_KEY] = ' '.join([light.getName() for light in category_lights])

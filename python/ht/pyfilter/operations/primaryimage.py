@@ -11,7 +11,7 @@ import logging
 from ht.pyfilter.operations.operation import PyFilterOperation, log_filter_call
 from ht.pyfilter.property import set_property
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -32,9 +32,9 @@ class SetPrimaryImage(PyFilterOperation):
         self._disable_primary_image = False
         self._primary_image_path = None
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def disable_primary_image(self):
@@ -45,7 +45,7 @@ class SetPrimaryImage(PyFilterOperation):
     def disable_primary_image(self, disable_primary_image):
         self._disable_primary_image = disable_primary_image
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def primary_image_path(self):
@@ -56,9 +56,9 @@ class SetPrimaryImage(PyFilterOperation):
     def primary_image_path(self, primary_image_path):
         self._primary_image_path = primary_image_path
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # STATIC METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @staticmethod
     def build_arg_string(primary_image_path=None, disable_primary_image=False):  # pylint: disable=arguments-differ
@@ -99,9 +99,9 @@ class SetPrimaryImage(PyFilterOperation):
             dest="disable_primary_image"
         )
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @log_filter_call
     def filterCamera(self):
@@ -111,7 +111,7 @@ class SetPrimaryImage(PyFilterOperation):
 
         """
         if self.disable_primary_image:
-            logger.info("Disabling primary image")
+            _logger.info("Disabling primary image")
             set_property("image:filename", "null:")
 
         elif self.primary_image_path is not None:

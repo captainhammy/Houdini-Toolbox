@@ -1,8 +1,17 @@
-# pylint: disable=missing-docstring
+"""Cook code for C++ Wrangle SOP."""
+
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Python Imports
+import six
 
 # Houdini Imports
 import hou
 import hutil.cppinline
+
+# =============================================================================
 
 node = hou.pwd()
 
@@ -25,10 +34,10 @@ if not node.evalParm("pause_compiling"):
             hou.ui.setStatusMessage(msg, hou.severityType.Error)
 
         else:
-            print msg
+            six.print_(msg)
 
         if node.evalParm("print_compile_errors"):
-            print inst
+            six.print_(inst)
 
     # If there are no function sources
     except node.hm().NoFunctionSourcesError:
@@ -43,5 +52,4 @@ if not node.evalParm("pause_compiling"):
 
 # Get and execute the Python code.
 code = node.parm("code").unexpandedString()
-exec(code)  # pylint: disable=exec-used
-
+six.exec_(code)
