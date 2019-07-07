@@ -135,6 +135,7 @@ class AOVViewerToolBar(QtWidgets.QToolBar):
         self.setStyleSheet(uidata.AOVVIEWERTOOLBAR_STYLE)
         self.setIconSize(QtCore.QSize(24, 24))
 
+
 # =============================================================================
 # AOVs and Groups
 # =============================================================================
@@ -1570,14 +1571,16 @@ class AOVsToAddWidget(QtWidgets.QWidget):
 
     def setNode(self, node):
         """Register a node as the target apply node."""
-        self._node = node
 
-        # Update the top label to indicate that we are targeting a specific
-        # node when applying.
-        self.label.setText("AOVs to Apply - {}".format(node.path()))
+        if node is not None:
+            self._node = node
 
-        # Initialize the tree by loading the AOVs from the target node.
-        self.toolbar.load_from_node(node)
+            # Update the top label to indicate that we are targeting a specific
+            # node when applying.
+            self.label.setText("AOVs to Apply - {}".format(node.path()))
+
+            # Initialize the tree by loading the AOVs from the target node.
+            self.toolbar.load_from_node(node)
 
     def uninstallListener(self, nodes):
         """Listen for items to be removed."""

@@ -718,6 +718,7 @@ class NewAOVDialog(_BaseAOVDialog):
 
         self.enableCreation(False)
 
+
 # =============================================================================
 
 class EditAOVDialog(_BaseAOVDialog):
@@ -793,6 +794,7 @@ class EditAOVDialog(_BaseAOVDialog):
     def reset(self):
         """Reset any changes made."""
         self.initFromAOV()
+
 
 # =============================================================================
 
@@ -1036,6 +1038,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
 
         self.validateAllValues()
 
+
 # =============================================================================
 
 class NewGroupDialog(_BaseGroupDialog):
@@ -1114,6 +1117,7 @@ class NewGroupDialog(_BaseGroupDialog):
         self.priority.valueChanged.connect(self.validateGroupName)
 
         self.enableCreation(False)
+
 
 # =============================================================================
 
@@ -1375,6 +1379,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
 
         self.table.resizeColumnToContents(0)
 
+
 # =============================================================================
 
 class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
@@ -1576,6 +1581,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 # FUNCTIONS
 # =============================================================================
 
+
 def createNewAOV(aov=None):
     """Display the Create AOV dialog."""
     parent = hou.qt.mainWindow()
@@ -1606,4 +1612,3 @@ def createNewGroup(aovs=()):
     )
 
     new_group_dialog.show()
-

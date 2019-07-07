@@ -1271,7 +1271,7 @@ def _download_build(build_file, target_directory):
     resp = browser.open(url)
 
     file_size = int(resp.info()["Content-Length"])
-    block_size = file_size / 10
+    block_size = file_size // 10
 
     target_path = os.path.join(target_directory, build_file)
 
