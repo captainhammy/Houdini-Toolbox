@@ -1025,7 +1025,7 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
         """Event occurring when something is dragged into the widget."""
         # Dropping our items.
         if event.mimeData().hasFormat("text/csv"):
-            data = pickle.loads(event.mimeData().data("text/csv"))
+            data = pickle.loads(event.mimeData().data("text/csv").data())
 
             if not data:
                 event.ignore()
@@ -1053,14 +1053,14 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
         # Handle our own drop events.
         if mime_data.hasFormat("text/csv"):
             # Extract the serialized json mime data from the event.
-            data = pickle.loads(mime_data.data("text/csv"))
+            data = pickle.loads(mime_data.data("text/csv").data())
 
             # Flatten any data when moving with Ctrl.
             if event.keyboardModifiers() == QtCore.Qt.ControlModifier:
                 data = utils.flattenList(data)
 
-                # Repack the data with out flattened list.
-                mime_data.setData("text/csv", pickle.dumps(data))
+                # Repack the data with our flattened list.
+                mime_data.setData("text/csv", QtCore.QByteArray(pickle.dumps(data)))
 
         # Try to handle dropping nodes on the tree.
         elif mime_data.hasFormat("text/plain"):
@@ -1100,7 +1100,7 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
             # If we've found any nodes we'll add the AOV data and remove the
             # old data.
             if found_nodes:
-                mime_data.setData("text/csv", pickle.dumps(new_data))
+                mime_data.setData("text/csv", QtCore.QByteArray(pickle.dumps(new_data)))
                 mime_data.removeFormat("text/plain")
 
         # Call the superclass dropEvent() with our possibly modified data to
@@ -1593,6 +1593,7 @@ class AOVsToAddWidget(QtWidgets.QWidget):
             # If the node exists, remove its index from the source model
             if index is not None:
                 model.remove_index(index)
+
 
 # =============================================================================
 # New Group Widgets

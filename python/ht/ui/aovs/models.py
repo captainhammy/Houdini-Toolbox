@@ -767,7 +767,7 @@ class AOVSelectModel(BaseAOVTreeModel):
 
         mime_data = QtCore.QMimeData()
 
-        mime_data.setData("text/csv", pickle.dumps(items))
+        mime_data.setData("text/csv", QtCore.QByteArray(pickle.dumps(items)))
 
         return mime_data
 
@@ -865,7 +865,7 @@ class AOVsToAddModel(BaseAOVTreeModel):
         if not data.hasFormat("text/csv"):
             return False
 
-        self.insert_data(pickle.loads(data.data("text/csv")))
+        self.insert_data(pickle.loads(data.data("text/csv").data()))
 
         return True
 
