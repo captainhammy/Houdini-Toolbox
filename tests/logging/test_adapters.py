@@ -7,7 +7,7 @@
 # Python Imports
 from __future__ import absolute_import
 import logging
-from mock import MagicMock, PropertyMock, patch
+from mock import MagicMock, PropertyMock, call, patch
 import unittest
 
 # Houdini Toolbox Imports
@@ -43,13 +43,20 @@ class Test_HoudiniLoggerAdapter(unittest.TestCase):
         self.assertEqual(log._status_bar, mock_status_bar)
 
     @patch("ht.logging.adapters._wrap_logger")
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
-    def test___new__(self, mock_wrap):
+    @patch("ht.logging.adapters.callable", side_effect=(True, False))
+    @patch.object(ht.logging.adapters.logging.LoggerAdapter, "__new__")
+    def test___new__(self, mock_super_new, mock_callable, mock_wrap):
         """Test object creation."""
         mock_base_logger = MagicMock(spec=logging.Logger)
         mock_dialog = MagicMock(spec=bool)
-        mock_node = MagicMock(spec=hou.Node)
-        mock_status_bar = MagicMock(spec=bool)
+
+        mock_inst = MagicMock(spec=ht.logging.adapters.HoudiniLoggerAdapter)
+
+        orig_info = mock_inst.info
+
+        mock_super_new.return_value = mock_inst
+
+        cls = ht.logging.adapters.HoudiniLoggerAdapter
 
         wrap_dict = {
             "info": hou.severityType.ImportantMessage,
@@ -58,21 +65,21 @@ class Test_HoudiniLoggerAdapter(unittest.TestCase):
         }
 
         with patch.dict(ht.logging.adapters._TO_WRAP, wrap_dict, clear=True):
-            with patch.object(ht.logging.adapters.logging.LoggerAdapter, "__new__") as mock_super_new:
-                del mock_super_new.return_value.foobles
+            result = cls.__new__(cls, mock_base_logger, dialog=mock_dialog)
 
-                orig_info = mock_super_new.return_value.info
+        self.assertEqual(result, mock_inst)
+        mock_super_new.assert_called_with(cls)
 
-                with patch("ht.logging.adapters.callable", side_effect=(True, False)):
-                    adapter = ht.logging.adapters.HoudiniLoggerAdapter(mock_base_logger, mock_dialog, mock_node, status_bar=mock_status_bar)
+        mock_callable.assert_has_calls(
+            [
+                call(orig_info),
+                call(mock_inst.warning)
+            ]
+        )
 
-                    self.assertEqual(adapter, mock_super_new.return_value)
+        mock_wrap.assert_called_with(orig_info, hou.severityType.ImportantMessage)
 
-                    mock_super_new.assert_called_with(ht.logging.adapters.HoudiniLoggerAdapter, mock_base_logger, mock_dialog, mock_node, status_bar=mock_status_bar)
-
-                    mock_wrap.assert_called_with(orig_info, hou.severityType.ImportantMessage)
-
-                    self.assertEqual(adapter.info, mock_wrap.return_value)
+        self.assertEqual(mock_inst.info, mock_wrap.return_value)
 
     # Properties
 

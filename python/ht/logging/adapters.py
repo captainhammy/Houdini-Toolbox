@@ -62,7 +62,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
     # --------------------------------------------------------------------------
 
     def __new__(cls, *args, **kwargs):
-        inst = super(HoudiniLoggerAdapter, cls).__new__(cls, *args, **kwargs)
+        inst = super(HoudiniLoggerAdapter, cls).__new__(cls)
 
         # We want to wrap various log calls to process args and set severities.
         for key, severity in _TO_WRAP.items():
