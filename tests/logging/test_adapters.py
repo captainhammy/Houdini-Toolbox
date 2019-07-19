@@ -51,23 +51,26 @@ class Test_HoudiniLoggerAdapter(unittest.TestCase):
 
         wrap_dict = {
             "info": hou.severityType.ImportantMessage,
+            "warning": None,
             "foobles": None
         }
 
-        orig_info = ht.logging.adapters.HoudiniLoggerAdapter.info
-
-        with patch.dict(ht.logging.adapters.HoudiniLoggerAdapter._TO_WRAP, wrap_dict, clear=True):
+        with patch.dict(ht.logging.adapters._TO_WRAP, wrap_dict, clear=True):
             with patch.object(ht.logging.adapters.logging.LoggerAdapter, "__new__") as mock_super_new:
+                del mock_super_new.return_value.foobles
 
-                log = ht.logging.adapters.HoudiniLoggerAdapter(mock_base_logger, mock_dialog, mock_node, status_bar=mock_status_bar)
+                orig_info = mock_super_new.return_value.info
 
-                self.assertEqual(log, mock_super_new.return_value)
+                with patch("ht.logging.adapters.callable", side_effect=(True, False)):
+                    log = ht.logging.adapters.HoudiniLoggerAdapter(mock_base_logger, mock_dialog, mock_node, status_bar=mock_status_bar)
 
-                mock_super_new.assert_called_with(ht.logging.adapters.HoudiniLoggerAdapter, mock_base_logger, mock_dialog, mock_node, status_bar=mock_status_bar)
+                    self.assertEqual(log, mock_super_new.return_value)
 
-        mock_wrap.assert_called_with(orig_info, hou.severityType.ImportantMessage)
+                    mock_super_new.assert_called_with(ht.logging.adapters.HoudiniLoggerAdapter, mock_base_logger, mock_dialog, mock_node, status_bar=mock_status_bar)
 
-        self.assertEqual(ht.logging.adapters.HoudiniLoggerAdapter.info, mock_wrap.return_value)
+                    mock_wrap.assert_called_with(orig_info, hou.severityType.ImportantMessage)
+
+                    self.assertEqual(log.info, mock_wrap.return_value)
 
     # Properties
 
@@ -75,7 +78,7 @@ class Test_HoudiniLoggerAdapter(unittest.TestCase):
 
     @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
     def test_dialog(self):
-        with patch.dict(ht.logging.adapters.HoudiniLoggerAdapter._TO_WRAP, {}, clear=True):
+        with patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True):
             log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
 
         mock_value1 = MagicMock(spec=bool)
@@ -93,7 +96,7 @@ class Test_HoudiniLoggerAdapter(unittest.TestCase):
 
     @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
     def test_node(self):
-        with patch.dict(ht.logging.adapters.HoudiniLoggerAdapter._TO_WRAP, {}, clear=True):
+        with patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True):
             log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
 
         mock_value1 = MagicMock(spec=hou.Node)
@@ -111,7 +114,7 @@ class Test_HoudiniLoggerAdapter(unittest.TestCase):
 
     @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
     def test_status_bar(self):
-        with patch.dict(ht.logging.adapters.HoudiniLoggerAdapter._TO_WRAP, {}, clear=True):
+        with patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True):
             log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
 
         mock_value1 = MagicMock(spec=bool)
@@ -143,7 +146,7 @@ class Test_HoudiniLoggerAdapter(unittest.TestCase):
             "extra": {"node": mock_node}
         }
 
-        with patch.dict(ht.logging.adapters.HoudiniLoggerAdapter._TO_WRAP, {}, clear=True):
+        with patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True):
             log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
 
         result = log.process(mock_message, kwargs)
@@ -164,7 +167,7 @@ class Test_HoudiniLoggerAdapter(unittest.TestCase):
             "extra": {}
         }
 
-        with patch.dict(ht.logging.adapters.HoudiniLoggerAdapter._TO_WRAP, {}, clear=True):
+        with patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True):
             log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
 
         result = log.process(mock_message, kwargs)
@@ -188,7 +191,7 @@ class Test_HoudiniLoggerAdapter(unittest.TestCase):
         mock_ui = MagicMock()
         hou.ui = mock_ui
 
-        with patch.dict(ht.logging.adapters.HoudiniLoggerAdapter._TO_WRAP, {}, clear=True):
+        with patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True):
             log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
 
         result = log.process(mock_message, kwargs)
@@ -216,7 +219,7 @@ class Test_HoudiniLoggerAdapter(unittest.TestCase):
         mock_ui = MagicMock()
         hou.ui = mock_ui
 
-        with patch.dict(ht.logging.adapters.HoudiniLoggerAdapter._TO_WRAP, {}, clear=True):
+        with patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True):
             log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
 
         result = log.process(mock_message, kwargs)
@@ -245,7 +248,7 @@ class Test_HoudiniLoggerAdapter(unittest.TestCase):
         mock_ui = MagicMock()
         hou.ui = mock_ui
 
-        with patch.dict(ht.logging.adapters.HoudiniLoggerAdapter._TO_WRAP, {}, clear=True):
+        with patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True):
             log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
 
         result = log.process(mock_message, kwargs)
@@ -254,6 +257,31 @@ class Test_HoudiniLoggerAdapter(unittest.TestCase):
 
         mock_ui.displayMessage.assert_not_called()
         mock_ui.setStatusMessage.assert_not_called()
+
+        del hou.ui
+
+    @patch("ht.logging.adapters.hou.hipFile.basename")
+    @patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
+    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=PropertyMock(return_value=False))
+    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=PropertyMock(return_value=True))
+    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=PropertyMock(return_value=None))
+    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
+    def test_process__message_args(self, mock_node_prop, mock_dialog_prop, mock_status_prop, mock_available, mock_basename):
+        mock_message = "foo %s"#MagicMock(spec=str)
+
+        kwargs = {"extra": {"message_args": ("bar")}}
+
+        mock_ui = MagicMock()
+        hou.ui = mock_ui
+
+        with patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True):
+            log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
+
+        result = log.process(mock_message, kwargs)
+
+        self.assertEqual(result, ("foo %s", kwargs))
+
+        mock_ui.displayMessage.assert_called_with("foo bar", severity=hou.severityType.Message, title=None)
 
         del hou.ui
 
@@ -268,7 +296,7 @@ class Test_HoudiniLoggerAdapter(unittest.TestCase):
 
         kwargs = {}
 
-        with patch.dict(ht.logging.adapters.HoudiniLoggerAdapter._TO_WRAP, {}, clear=True):
+        with patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True):
             log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
 
         result = log.process(mock_message, kwargs)
@@ -290,14 +318,15 @@ class Test__wrap_logger(unittest.TestCase):
 
         extra = {}
 
-        mock_arg = MagicMock()
+        mock_arg1 = MagicMock()
+        mock_arg2 = MagicMock()
 
         mock_node = MagicMock(spec=hou.Node)
         mock_dialog = MagicMock(spec=bool)
         mock_status_bar = MagicMock(spec=bool)
         mock_title = MagicMock(spec=str)
 
-        r(mock_arg, extra=extra, dialog=mock_dialog, node=mock_node, status_bar=mock_status_bar, title=mock_title)
+        r(mock_arg1, mock_arg2, extra=extra, dialog=mock_dialog, node=mock_node, status_bar=mock_status_bar, title=mock_title)
 
         expected = {
             "node": mock_node,
@@ -305,12 +334,13 @@ class Test__wrap_logger(unittest.TestCase):
             "status_bar": mock_status_bar,
             "severity": hou.severityType.Error,
             "title": mock_title,
+            "message_args": (mock_arg2,)
 
         }
 
         self.assertEqual(extra, expected)
 
-        mock_func.assert_called_with(mock_arg, extra=expected)
+        mock_func.assert_called_with(mock_arg1, mock_arg2, extra=expected)
 
     def test_no_kwargs(self):
         """Test with passing none of the optional kwarg args."""

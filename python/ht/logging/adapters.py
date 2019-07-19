@@ -15,6 +15,22 @@ import hou
 
 
 # ==============================================================================
+# GLOBALS
+# ==============================================================================
+
+# Logging functions to wrap, and a corresponding severity for popup
+# messages.
+_TO_WRAP = {
+    "critical": hou.severityType.Error,
+    "debug": hou.severityType.Message,
+    "error": hou.severityType.Error,
+    "exception": hou.severityType.Error,
+    "info": hou.severityType.ImportantMessage,
+    "warning": hou.severityType.Warning,
+}
+
+
+# ==============================================================================
 # CLASSES
 # ==============================================================================
 
@@ -34,17 +50,6 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 
     """
 
-    # Logging functions to wrap, and a corresponding severity for popup
-    # messages.
-    _TO_WRAP = {
-        "critical": hou.severityType.Error,
-        "debug": hou.severityType.Message,
-        "error": hou.severityType.Error,
-        "exception": hou.severityType.Error,
-        "info": hou.severityType.ImportantMessage,
-        "warning": hou.severityType.Warning,
-    }
-
     def __init__(self, base_logger, dialog=False, node=None, status_bar=False):
         super(HoudiniLoggerAdapter, self).__init__(base_logger, {})
 
@@ -57,16 +62,19 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
     # --------------------------------------------------------------------------
 
     def __new__(cls, *args, **kwargs):
+        inst = super(HoudiniLoggerAdapter, cls).__new__(cls, *args, **kwargs)
+
         # We want to wrap various log calls to process args and set severities.
-        for key, severity in cls._TO_WRAP.items():
-            if hasattr(cls, key):
-                attr = getattr(cls, key)
+        for key, severity in _TO_WRAP.items():
+            if hasattr(inst, key):
+                attr = getattr(inst, key)
 
-                wrapped = _wrap_logger(attr, severity)
+                if callable(attr):
+                    wrapped = _wrap_logger(attr, severity)
 
-                setattr(cls, key, wrapped)
+                    setattr(inst, key, wrapped)
 
-        return super(HoudiniLoggerAdapter, cls).__new__(cls, *args, **kwargs)
+        return inst
 
     # --------------------------------------------------------------------------
     # PROPERTIES
@@ -133,32 +141,38 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 
         """
         if "extra" in kwargs:
-            data = kwargs["extra"]
+            extra = kwargs["extra"]
 
-            node = data.pop("node", self.node)
+            node = extra.pop("node", self.node)
 
             # Prepend the message with the node path.
             if node is not None:
                 path = node.path()
                 msg = "{} - {}".format(path, msg)
 
-            dialog = data.pop("dialog", self.dialog)
-            status_bar = data.get("status_bar", self.status_bar)
+            dialog = extra.pop("dialog", self.dialog)
+            status_bar = extra.pop("status_bar", self.status_bar)
 
             severity = hou.severityType.Message
 
             if hou.isUIAvailable():
+                # Copy of the message for our display.
+                houdini_message = msg
+
+                # If we have message args we need to format the message with them.
+                if "message_args" in extra:
+                    houdini_message = houdini_message % extra["message_args"]
+
+                severity = extra.pop("severity", severity)
+
                 # Display the message as a popup.
                 if dialog:
-                    severity = data.pop("severity", severity)
-                    title = data.pop("title", None)
+                    title = extra.pop("title", None)
 
-                    hou.ui.displayMessage(msg, severity=severity, title=title)
+                    hou.ui.displayMessage(houdini_message, severity=severity, title=title)
 
                 if status_bar:
-                    severity = data.pop("severity", severity)
-
-                    hou.ui.setStatusMessage(msg, severity=severity)
+                    hou.ui.setStatusMessage(houdini_message, severity=severity)
 
         return msg, kwargs
 
@@ -197,6 +211,11 @@ def _wrap_logger(func, severity):
         # value.
         if "title" in kwargs:
             extra["title"] = kwargs.pop("title")
+
+        # If there is more than one arg we want to pass them as extra data so that
+        # we can use it to format the message for extra outputs.
+        if len(args) > 1:
+            extra["message_args"] = args[1:]
 
         return func(*args, **kwargs)
 
