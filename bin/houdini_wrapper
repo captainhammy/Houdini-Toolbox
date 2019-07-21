@@ -14,8 +14,8 @@ import sys
 from termcolor import colored, cprint
 
 # Houdini Toolbox Imports
-import ht.houdini.package
-import ht.houdini.argparser
+import ht.machinery.argparser
+import ht.machinery.package
 
 
 # =============================================================================
@@ -39,12 +39,12 @@ def _build_parser():
     """Build an ArgumentParser for the wrapper.
 
     :return: The wrapper argument parser.
-    :rtype: ht.houdini.argparser.ArgumentParser
+    :rtype: ht.machinery.argparser.ArgumentParser
 
     """
     # Don't allow abbreviations since we don't want them to interfere with any
     # flags that might need to be passed through.
-    parser = ht.houdini.argparser.ArgumentParser(
+    parser = ht.machinery.argparser.ArgumentParser(
         description="Run Houdini related applications.",
         allow_abbrev=False
     )
@@ -124,7 +124,7 @@ def _display_versions(arguments):
     """
     # Construct a HoudiniBuildManager to handle all our available Houdini
     # options.
-    manager = ht.houdini.package.HoudiniBuildManager()
+    manager = ht.machinery.package.HoudiniBuildManager()
 
     # List builds that can be installed.
     if arguments.install:
@@ -173,7 +173,7 @@ def _download_and_install(arguments):
     :return:
 
     """
-    ht.houdini.package.HoudiniBuildManager.download_and_install(
+    ht.machinery.package.HoudiniBuildManager.download_and_install(
         arguments.dl_install,
         arguments.create_symlink
     )
@@ -189,7 +189,7 @@ def _find_build(arguments):
     """
     # Construct a HoudiniBuildManager to handle all our available Houdini
     # options.
-    manager = ht.houdini.package.HoudiniBuildManager()
+    manager = ht.machinery.package.HoudiniBuildManager()
 
     version = arguments.version
 
@@ -230,7 +230,7 @@ def _find_build(arguments):
 
     # Look for a build matching the string.
     else:
-        result = ht.houdini.package.find_matching_builds(version, search_builds)
+        result = ht.machinery.package.find_matching_builds(version, search_builds)
 
         if result is None:
             six.print_("Could not find version: {ver}".format(ver=version))

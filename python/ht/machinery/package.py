@@ -19,7 +19,7 @@ import tarfile
 import tempfile
 
 # Houdini Toolbox Imports
-from ht.houdini import sidefx_web_api
+from ht.machinery import sidefx_web_api
 
 
 # =============================================================================
