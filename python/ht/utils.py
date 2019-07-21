@@ -76,4 +76,3 @@ def restore_update_mode(update_mode):
     finally:
         # Restore the update mode.
         hou.ui.setUpdateMode(current)
-

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """Launch Houdini related applications."""
 
 # =============================================================================
@@ -8,14 +8,14 @@
 # Python Imports
 import os
 import signal
+import six
 import subprocess
 import sys
+from termcolor import colored, cprint
 
 # Houdini Toolbox Imports
-import ht.argument
 import ht.houdini.package
-import ht.output
-import ht.utils
+import ht.houdini.argparser
 
 
 # =============================================================================
@@ -39,12 +39,12 @@ def _build_parser():
     """Build an ArgumentParser for the wrapper.
 
     :return: The wrapper argument parser.
-    :rtype: ht.argument.ArgumentParser
+    :rtype: ht.houdini.argparser.ArgumentParser
 
     """
     # Don't allow abbreviations since we don't want them to interfere with any
     # flags that might need to be passed through.
-    parser = ht.argument.ArgumentParser(
+    parser = ht.houdini.argparser.ArgumentParser(
         description="Run Houdini related applications.",
         allow_abbrev=False
     )
@@ -128,23 +128,23 @@ def _display_versions(arguments):
 
     # List builds that can be installed.
     if arguments.install:
-        _print("Houdini builds to install:")
+        six.print_("Houdini builds to install:")
 
-        _print(
+        six.print_(
             '\t' + " ".join(
                 [str(build) for build in manager.installable]
             )
         )
 
-        _print()
+        six.print_()
 
     # Builds that can be ran can also be uninstalled.
     else:
         if arguments.uninstall:
-            _print("Houdini builds to uninstall:")
+            six.print_("Houdini builds to uninstall:")
 
         else:
-            _print("Installed Houdini builds:")
+            six.print_("Installed Houdini builds:")
 
         default_build = manager.get_default_build()
 
@@ -153,16 +153,16 @@ def _display_versions(arguments):
         for build in manager.installed:
             if build == default_build:
                 # Run the message through the style function.
-                msg = ht.output.ShellOutput.blue(str(build))
+                msg = colored(str(build), "cyan")
 
                 output.append(msg)
 
             else:
                 output.append(str(build))
 
-        _print('\t' + ' '.join(output))
+        six.print_('\t' + ' '.join(output))
 
-        _print()
+        six.print_()
 
 
 def _download_and_install(arguments):
@@ -180,8 +180,7 @@ def _download_and_install(arguments):
 
 
 def _find_build(arguments):
-    """Search for the selected build.  If no valid build was selected
-    print a message.
+    """Search for the selected build.  If no valid build was selected print a message.
 
     :param arguments: The wrapper args.
     :type arguments: argparse.Namespace
@@ -209,13 +208,13 @@ def _find_build(arguments):
     # Couldn't find any builds, so print the appropriate message.
     if not search_builds:
         if arguments.install:
-            _print("No builds found to install.")
+            six.print_("No builds found to install.")
 
         elif arguments.uninstall:
-            _print("No builds found to uninstall.")
+            six.print_("No builds found to uninstall.")
 
         else:
-            _print("No builds found.")
+            six.print_("No builds found.")
 
         return None
 
@@ -234,7 +233,7 @@ def _find_build(arguments):
         result = ht.houdini.package.find_matching_builds(version, search_builds)
 
         if result is None:
-            _print("Could not find version: {ver}".format(ver=version))
+            six.print_("Could not find version: {ver}".format(ver=version))
 
         else:
             build = result
@@ -255,7 +254,7 @@ def _handler(signal_num, current_frame):
 
     """
     signal_name = _SIGNALS[signal_num]
-    print "Houdini wrapper caught sig SIG{}".format(signal_name)
+    six.print_("Houdini wrapper caught sig SIG{}".format(signal_name))
 
     # Ignore further signals.
     for sig in _SIGNALS:
@@ -269,25 +268,6 @@ def _handler(signal_num, current_frame):
 
     # Exit with non-default status.
     sys.exit(1)
-
-
-def _print(msg="", colored=None):
-    """Print a message, optionally with color.
-
-    :param msg: The message to print.
-    :type msg: str
-    :param colored: Output color.
-    :type colored: str
-    :return:
-
-    """
-    # Doing colored output.
-    if colored is not None:
-        # Run the message through the style function.
-        msg = getattr(ht.output.ShellOutput, colored)(msg)
-
-    # Print the message.
-    print msg
 
 
 def _set_no_jemalloc(build_path, program_name):
@@ -354,7 +334,7 @@ def main():
     test_path = arguments.test_path
     # log_level = arguments.log_level
 
-    _print("Houdini Wrapper:\n", colored="darkyellow")
+    cprint("Houdini Wrapper:\n", "yellow")
 
     # If version is False (no argument), display any available versions and
     # exit.
@@ -408,7 +388,7 @@ def main():
         program_name = "hconfig"
         program_args = ["-a"]
 
-        _print("Dumping env settings\n", colored="darkyellow")
+        cprint("Dumping env settings\n", "yellow")
 
         # Dump the environment with 'printenv'.
         proc = subprocess.Popen(
@@ -416,10 +396,10 @@ def main():
             stdout=subprocess.PIPE
         )
 
-        _print(proc.communicate()[0])
-        _print()
+        six.print_(proc.communicate()[0])
+        six.print_()
 
-        # Start with the name of the program to run.
+    # Start with the name of the program to run.
     run_args = [program_name]
 
     # If we don't want to have Houdini use jemalloc we need to replace the
@@ -429,24 +409,24 @@ def main():
         run_args = _set_no_jemalloc(build.path, program_name)
 
     # Print the Houdini version information.
-    _print("\tHoudini {}: {}\n".format(build, build.path))
+    six.print_("\tHoudini {}: {}\n".format(build, build.path))
 
     # Print the command being run.
-    _print(
+    cprint(
         "Launching {} {} ... ".format(
             " ".join(run_args),
             " ".join(program_args)
         ),
-        colored="darkyellow"
+        "yellow"
     )
 
     # Run the application.
     proc = subprocess.Popen(run_args + program_args)
 
     # Display the process id.
-    _print(
+    cprint(
         "{} process id: {}".format(program_name, proc.pid+2),
-        colored="blue"
+        "blue"
     )
 
     # Wait for the program to complete.
@@ -457,12 +437,12 @@ def main():
 
     # If the program didn't end clean, print a message.
     if return_code != 0:
-        _print(
+        cprint(
             "{} exited with signal {}.".format(
                 program_name,
                 abs(return_code)
             ),
-            colored="darkred"
+            "red"
         )
 
     # Exit with the program's return code.

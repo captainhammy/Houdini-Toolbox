@@ -1,6 +1,8 @@
 coverage
 enum34
-mechanize
+humanfriendly
 mock
 numpy
 scipy
+six
+termcolor

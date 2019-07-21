@@ -27,29 +27,7 @@
     },
 
     "versions": {
-        "18.0": {
-            "reference_date": ["30/03/19", 60]
-        },       
-        
-        "17.5": {
-            "reference_date": ["28/03/19", 209]
-        },       
-        
-        "17.0": {
-            "reference_date": ["25/10/18", 381]
-        },
-        
         "16.5": {
-            "reference_date": ["18/7/18", 536],
-            "types": {
-                "Linux": {
-                    "arch": "linux_x86_64_gcc4.8"
-                }
-            }
-        },
-        
-        "16.0": {
-            "reference_date": ["6/09/17", 721],
             "types": {
                 "Linux": {
                     "arch": "linux_x86_64_gcc4.8"

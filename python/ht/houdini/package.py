@@ -6,7 +6,6 @@
 
 # Python Imports
 from __future__ import division
-from datetime import datetime
 import glob
 import json
 from operator import attrgetter
@@ -16,11 +15,11 @@ import re
 import shutil
 import six
 import subprocess
-import sys
 import tarfile
 import tempfile
 
-from mechanize import Browser, LinkNotFoundError
+# Houdini Toolbox Imports
+from ht.houdini import sidefx_web_api
 
 
 # =============================================================================
@@ -228,136 +227,6 @@ class HoudiniBuildData(object):
     # NON-PUBLIC METHODS
     # -------------------------------------------------------------------------
 
-    def _format_version_template(self, build_number, arch=None):
-        """Format the file template for the build number and architecture.
-
-        :param build_number: The build (version) string.
-        :type build_number: str
-        :param arch: Optional machine architecture string.
-        :type arch: str
-        :return: A formatted file template.
-        :rtype: str
-
-        """
-        system = platform.system()
-
-        type_info = self.types[system]
-
-        # Use the "default" architecture for this system.
-        if arch is None:
-            arch = type_info["arch"]
-
-        return self.file_template.format(
-            version=build_number,
-            arch=arch,
-            ext=type_info["ext"]
-        )
-
-    def _get_specified_arch_for_build(self, major_minor):
-        """Check for a specific machine architecture for a build.
-
-        :param major_minor: The major.minor version number.
-        :type major_minor: str
-        :return: A matching architecture string, if any.
-        :rtype: str or None
-
-        """
-        version_data = self.versions[major_minor]
-
-        system = platform.system()
-
-        if "types" in version_data:
-            type_data = version_data["types"]
-
-            if system in type_data:
-                return type_data[system].get("arch")
-
-            raise UnsupportedMachineArchitectureError(
-                "Machine architecture not supported for {}".format(major_minor)
-            )
-
-        return None
-
-    def _get_specified_build(self, build_number):
-        """Construct the build string for a specific build number.
-
-        :param build_number: The build (version) string.
-        :type build_number: str
-        :return: A constructed file name.
-        :rtype: str
-
-        """
-        components = build_number.split(".")
-
-        # We need the major and minor versions to get key information.
-        major, minor = components[:2]
-
-        major_minor = "{}.{}".format(major, minor)
-
-        if major_minor not in self.versions:
-            raise ValueError("Invalid major/minor build number")
-
-        arch = self._get_specified_arch_for_build(major_minor)
-
-        return self._format_version_template(build_number, arch)
-
-    def _get_daily_build(self, major_minor):
-        """Construct the build string for today's major/minor build.
-
-        :param major_minor: The base Houdini version to get.
-        :type major_minor: str
-        :return: The build string for the current day's build.
-        :rtype: str
-
-        """
-        if major_minor not in self.versions:
-            raise ValueError("Invalid build number")
-
-        # Get the build information.
-        version_data = self.versions[major_minor]
-
-        # Today's date.
-        today = datetime.now().date()
-
-        # The date and build number to use as a reference in downloading
-        # today's build.
-        reference_date, reference_build = version_data["reference_date"]
-
-        # Build a date object for the reference date.
-        start_date = datetime.strptime(reference_date, "%d/%m/%y").date()
-
-        build_delta = today - start_date
-
-        # The build number is the reference build + time delta in days.
-        daily_build = reference_build + build_delta.days
-
-        # It's release candidate time so that means there are now stub
-        # versions.  If we have the stubdate set we can determine
-        # which release candidate build we can download.
-        if "stubdate" in version_data:
-            stub_date = datetime.strptime(
-                version_data["stubdate"],
-                "%d/%m/%y"
-            ).date()
-
-            stub_delta = today - stub_date
-
-            # Offset the normal build number by the stub's build number.
-            release_num = daily_build - stub_delta.days
-
-            build_number = "{}.{}.{}".format(
-                major_minor,
-                release_num,
-                stub_delta.days
-            )
-
-        else:
-            build_number = "{}.{}".format(major_minor, daily_build)
-
-        arch = self._get_specified_arch_for_build(major_minor)
-
-        return self._format_version_template(build_number, arch)
-
     # -------------------------------------------------------------------------
     # PROPERTIES
     # -------------------------------------------------------------------------
@@ -380,25 +249,6 @@ class HoudiniBuildData(object):
     # -------------------------------------------------------------------------
     # METHODS
     # -------------------------------------------------------------------------
-
-    def get_build_to_download(self, build):
-        """Get the build string to download.
-
-        If the passed value is not an explict build number (eg. 15.0) then
-        the build for the current day of that major/minor will be downloaded.
-
-        :param build: The target build number.
-        :type build: str
-        :return: The build string to download.
-        :rtype: str
-
-        """
-        components = build.split(".")
-
-        if len(components) == 2:
-            return self._get_daily_build(build)
-
-        return self._get_specified_build(build)
 
     def get_archive_extension(self):
         """Get the installation archive file type based on the operating
@@ -570,17 +420,15 @@ class HoudiniBuildManager(object):
         :return:
 
         """
-        # Get build information.
-        build_data = _SETTINGS_MANAGER.build_data
 
         # Download to the first available installation location.
         download_dir = os.path.expandvars(_SETTINGS_MANAGER.system.locations[0])
 
         for build_number in build_numbers:
             # Get the build file name for the current day
-            file_name = build_data.get_build_to_download(build_number)
+            version, build = _get_build_to_download(build_number)
 
-            downloaded_path = _download_build(file_name, download_dir)
+            downloaded_path = sidefx_web_api.download_build(download_dir, version, build)
 
             if downloaded_path is not None:
                 package = HoudiniInstallFile(downloaded_path)
@@ -1231,80 +1079,6 @@ class UnsupportedOSError(HoudiniPackageError):
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-def _download_build(build_file, target_directory):
-    """Download a build file from the SESI website and place it in the target
-    directory.
-
-    :param build_file: The file name to download.
-    :type build_file: str
-    :param target_directory: The download target location.
-    :type target_directory: str
-    :return: The path to the downloaded file.
-    :rtype: str or None
-
-    """
-    six.print_("Attempting to download build: {}".format(build_file))
-
-    user, password = _get_sesi_auth_info()
-
-    browser = Browser()
-    browser.set_handle_robots(False)
-    browser.open("https://www.sidefx.com/login/?next=/download/daily-builds/")
-
-    browser.select_form(nr=0)
-    browser.form['username'] = user
-    browser.form['password'] = password
-    browser.submit()
-
-    browser.open('http://www.sidefx.com/download/daily-builds/')
-
-    try:
-        resp = browser.follow_link(text=build_file, nr=0)
-
-    except LinkNotFoundError:
-        six.print_("Error: {} does not exist".format(build_file))
-
-        return None
-
-    url = resp.geturl()
-    url += 'get/'
-    resp = browser.open(url)
-
-    file_size = int(resp.info()["Content-Length"])
-    block_size = file_size // 10
-
-    target_path = os.path.join(target_directory, build_file)
-
-    six.print_("Downloading to {}".format(target_path))
-    six.print_("\tFile size: {:0.2f}MB".format(file_size / (1024.0**2)))
-    six.print_("\tDownload block size of {:0.2f}MB\n".format(block_size / (1024.0**2)))
-
-    total = 0
-
-    with open(target_path, 'wb') as handle:
-        sys.stdout.write("0% complete")
-        sys.stdout.flush()
-
-        while True:
-            buf = resp.read(block_size)
-
-            if not buf:
-                break
-
-            total += block_size
-
-            sys.stdout.write(
-                "\r{}% complete".format(min(int((total / file_size) * 100), 100))
-            )
-            sys.stdout.flush()
-
-            handle.write(buf)
-
-    six.print_("\n\nDownload complete")
-
-    return target_path
-
-
 def _flatten_items(items):
     """Flatten a list of items.
 
@@ -1326,36 +1100,27 @@ def _flatten_items(items):
     return flattened
 
 
-def _get_sesi_auth_info():
-    """This function reads a custom .json file in the user's home directory to
-    get their SESI website login credentials.
+def _get_build_to_download(build):
+    """Get the build version  to download.
 
-    This is necessary for automatic build downloading.
+    If the passed value is not an explict build number (eg. 15.0) then
+    the build for the current day of that major/minor will be downloaded.
 
-    Example file contents:
-
-    {
-        "username": "your_name,
-        "password": "your_password"
-    }
-
-    :return: A user name and password.
-    :rtype: tuple(str)
+    :param build: The target build number.
+    :type build: str
+    :return: The build string to download.
+    :rtype: str
 
     """
-    auth_path = os.path.expandvars("$HOME/.sesi_login_details")
+    components = build.split(".")
 
-    if not os.path.isfile(auth_path):
-        raise IOError(
-            "Could not find authentication information in {}".format(
-                auth_path
-            )
-        )
+    if len(components) == 1:
+        components.append("0")
 
-    with open(auth_path) as handle:
-        data = json.load(handle)
+    if len(components) == 2:
+        return '.'.join(components), None
 
-    return data["username"], data["password"]
+    return "{}.{}".format(components[0], components[1]), ".".join(components[2:])
 
 
 def _set_variable(name, value):

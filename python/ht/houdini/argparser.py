@@ -1,10 +1,11 @@
 """This module contains a custom version of argparse.ArgumentParser."""
 
 # =============================================================================
-# Import
+# IMPORTS
 # =============================================================================
 
 # Python Imports
+from __future__ import absolute_import
 import argparse
 
 
