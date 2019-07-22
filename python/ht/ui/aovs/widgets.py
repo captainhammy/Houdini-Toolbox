@@ -26,41 +26,61 @@ import hou
 class AOVManagerWidget(QtWidgets.QWidget):
     """Primary AOV Manager widget."""
 
-    invalidAOVSelectedSignal = QtCore.Signal()
-    selectedAOVContainedSignal = QtCore.Signal(bool)
+    invalid_aov_selected_signal = QtCore.Signal()
+    selected_aov_contained_signal = QtCore.Signal(bool)
 
     def __init__(self, node=None, parent=None):
         super(AOVManagerWidget, self).__init__(parent)
 
         self._node = None
 
-        self.initUI()
+        # Initialize the UI.
+
+        layout = QtWidgets.QVBoxLayout()
+        self.setLayout(layout)
+
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        # ---------------------------------------------------------------------
+
+        splitter = QtWidgets.QSplitter()
+        layout.addWidget(splitter)
+
+        self.select_widget = AOVSelectWidget()
+        splitter.addWidget(self.select_widget)
+
+        # ---------------------------------------------------------------------
+
+        self.to_add_widget = AOVsToAddWidget()
+        splitter.addWidget(self.to_add_widget)
+
+        # ---------------------------------------------------------------------
 
         # Left/right button action signals.
-        self.select_widget.installSignal.connect(self.to_add_widget.installListener)
-        self.select_widget.uninstallSignal.connect(self.to_add_widget.uninstallListener)
+        self.select_widget.install_signal.connect(self.to_add_widget.install_listener)
+        self.select_widget.uninstall_signal.connect(self.to_add_widget.uninstall_listener)
 
         # Update left/right buttons after data changed.
-        self.select_widget.aov_tree.selectionChangedSignal.connect(self.checkNodeAdded)
-        self.to_add_widget.updateEnabledSignal.connect(self.checkNodeAdded)
+        self.select_widget.aov_tree.selection_changed_signal.connect(self.check_node_added)
+        self.to_add_widget.update_enabled_signal.connect(self.check_node_added)
 
         # Left/right button enabling/disabling.
-        self.selectedAOVContainedSignal.connect(self.select_widget.install_bar.enableHandler)
-        self.invalidAOVSelectedSignal.connect(self.select_widget.install_bar.disableHandler)
+        self.selected_aov_contained_signal.connect(self.select_widget.install_bar._enable_handler)
+        self.invalid_aov_selected_signal.connect(self.select_widget.install_bar._disable_handler)
 
         # Really need a signal?  Maybe just refresh everything?
         manager.MANAGER.init_interface()
-        manager.MANAGER.interface.aovAddedSignal.connect(self.select_widget.aov_tree.insert_aov)
-        manager.MANAGER.interface.aovRemovedSignal.connect(self.select_widget.aov_tree.remove_aov)
-        manager.MANAGER.interface.groupAddedSignal.connect(self.select_widget.aov_tree.insert_group)
-        manager.MANAGER.interface.groupRemovedSignal.connect(self.select_widget.aov_tree.remove_group)
+        manager.MANAGER.interface.aov_added_signal.connect(self.select_widget.aov_tree.insert_aov)
+        manager.MANAGER.interface.aov_removed_signal.connect(self.select_widget.aov_tree.remove_aov)
+        manager.MANAGER.interface.group_added_signal.connect(self.select_widget.aov_tree.insert_group)
+        manager.MANAGER.interface.group_removed_signal.connect(self.select_widget.aov_tree.remove_group)
 
-        self.to_add_widget.tree.model().sourceModel().insertedItemsSignal.connect(
-            self.select_widget.markItemsInstalled
+        self.to_add_widget.tree.model().sourceModel().inserted_items_signal.connect(
+            self.select_widget.mark_items_installed
         )
 
-        self.to_add_widget.tree.model().sourceModel().removedItemsSignal.connect(
-            self.select_widget.markItemsUninstalled
+        self.to_add_widget.tree.model().sourceModel().removed_items_signal.connect(
+            self.select_widget.mark_items_uninstalled
         )
 
         self.setStyleSheet(uidata.TOOLTIP_STYLE)
@@ -69,19 +89,19 @@ class AOVManagerWidget(QtWidgets.QWidget):
 
         # If a node was passed along, set the UI to use it.
         if node is not None:
-            self.setNode(node)
+            self.set_node(node)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
-    def checkNodeAdded(self):
+    def check_node_added(self):
         """This function detects whether selected tree nodes are currently
         in the 'AOVs to Apply' tree.
 
         """
         # Get selected nodes in the 'AOVs and Groups' tree.
-        nodes = self.select_widget.getSelectedNodes()
+        nodes = self.select_widget.get_selected_tree_nodes()
 
         if nodes:
             # Are any contained.
@@ -89,41 +109,21 @@ class AOVManagerWidget(QtWidgets.QWidget):
 
             for node in nodes:
                 # See if the node corresponds to an index in the target view.
-                if self.to_add_widget.tree.nodeIndexInModel(node) is not None:
+                if self.to_add_widget.tree.get_tree_node_model_index(node) is not None:
                     contains = True
                     break
 
             # Notify the move to left/right buttons on the status.
-            self.selectedAOVContainedSignal.emit(contains)
+            self.selected_aov_contained_signal.emit(contains)
 
         else:
-            self.invalidAOVSelectedSignal.emit()
+            self.invalid_aov_selected_signal.emit()
 
-    def initUI(self):
-        """Initialize the UI."""
-        layout = QtWidgets.QVBoxLayout()
-        self.setLayout(layout)
-
-        layout.setContentsMargins(0, 0, 0, 0)
-
-        # =====================================================================
-
-        splitter = QtWidgets.QSplitter()
-        layout.addWidget(splitter)
-
-        self.select_widget = AOVSelectWidget()
-        splitter.addWidget(self.select_widget)
-
-        # =====================================================================
-
-        self.to_add_widget = AOVsToAddWidget()
-        splitter.addWidget(self.to_add_widget)
-
-    def setNode(self, node):
+    def set_node(self, node):
         """Register a node as the target apply node."""
         self._node = node
 
-        self.to_add_widget.setNode(node)
+        self.to_add_widget.set_node(node)
 
 
 class AOVViewerToolBar(QtWidgets.QToolBar):
@@ -136,19 +136,17 @@ class AOVViewerToolBar(QtWidgets.QToolBar):
         self.setIconSize(QtCore.QSize(24, 24))
 
 
-# =============================================================================
 # AOVs and Groups
-# =============================================================================
 
 class AOVSelectTreeWidget(QtWidgets.QTreeView):
     """This class represents a tree with AOVs and AOVGroups that can be
     added to renders.
 
     """
-    selectionChangedSignal = QtCore.Signal()
+    selection_changed_signal = QtCore.Signal()
 
-    installItemsSignal = QtCore.Signal(models.AOVBaseNode)
-    uninstallItemsSignal = QtCore.Signal(models.AOVBaseNode)
+    install_items_signal = QtCore.Signal(models.AOVBaseNode)
+    uninstall_items_signal = QtCore.Signal(models.AOVBaseNode)
 
     def __init__(self, parent=None):
         super(AOVSelectTreeWidget, self).__init__(parent)
@@ -170,36 +168,36 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
         self.sortByColumn(0, QtCore.Qt.AscendingOrder)
 
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self.openMenu)
+        self.customContextMenuRequested.connect(self.open_menu)
 
         selection_model = self.selectionModel()
-        selection_model.selectionChanged.connect(self.selectionChangedHandler)
+        selection_model.selectionChanged.connect(self.selection_changed_handler)
 
         self.init_from_manager()
 
         self.setAcceptDrops(True)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
-    def collapseBelow(self):
+    def collapse_below(self):
         """Collapse all child folders and groups."""
         indexes = self.selectedIndexes()
 
         for index in indexes:
-            self.collapseIndex(index)
+            self.collapse_index(index)
 
-    def collapseIndex(self, index):
+    def collapse_index(self, index):
         """Collapse an index and all it's children."""
         self.collapse(index)
 
         if self.model().hasChildren(index):
             for i in range(self.model().rowCount(index)):
                 idx = self.model().index(i, 0, index)
-                self.collapseIndex(idx)
+                self.collapse_index(idx)
 
-    def collapseSelected(self):
+    def collapse_selected(self):
         """Collapse selected folders and groups."""
         indexes = self.selectedIndexes()
 
@@ -263,77 +261,71 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
                 continue
 
             # Get AOV objects from multi parms.
-            aovs = utils.buildAOVsFromMultiparm(node)
+            aovs = utils.build_aovs_from_multiparm(node)
 
             # Launch the Create New AOV dialog on each AOV.
             for aov in aovs:
-                ht.ui.aovs.dialogs.createNewAOV(aov)
+                ht.ui.aovs.dialogs.create_new_aov(aov)
 
-    def editSelected(self):
+    def edit_selected(self):
         """Edit selected nodes."""
-        self.editSelectedAOVs()
-        self.editSelectedGroups()
+        self.edit_selected_aovs()
+        self.edit_selected_groups()
 
-    def editSelectedAOVs(self):
+    def edit_selected_aovs(self):
         """Edit selected AOVs."""
         import ht.ui.aovs.dialogs
 
-        aovs = self.getSelectedAOVs()
+        aovs = self.get_selected_aovs()
 
         parent = hou.qt.mainWindow()
 
         for aov in aovs:
-            dialog = ht.ui.aovs.dialogs.EditAOVDialog(
-                aov,
-                parent
-            )
+            dialog = ht.ui.aovs.dialogs.EditAOVDialog(aov, parent)
 
             dialog.show()
 
-    def editSelectedGroups(self):
+    def edit_selected_groups(self):
         """Edit selected groups."""
         import ht.ui.aovs.dialogs
 
-        groups = self.getSelectedGroups(allow_intrinsic=False)
+        groups = self.get_selected_groups(allow_intrinsic=False)
 
         parent = hou.qt.mainWindow()
 
         for group in groups:
-            dialog = ht.ui.aovs.dialogs.EditGroupDialog(
-                group,
-                parent
-            )
+            dialog = ht.ui.aovs.dialogs.EditGroupDialog(group, parent)
 
-            dialog.groupUpdatedSignal.connect(self.update_group)
+            dialog.group_updated_signal.connect(self.update_group)
 
             dialog.show()
 
-    def expandBelow(self):
+    def expand_below(self):
         """Expand all child folders and groups."""
         indexes = self.selectedIndexes()
 
         for index in indexes:
-            self.expandIndex(index)
+            self.expand_index(index)
 
-    def expandIndex(self, index):
+    def expand_index(self, index):
         """Expand an index and all it's children."""
         self.expand(index)
 
         if self.model().hasChildren(index):
             for i in range(self.model().rowCount(index)):
                 idx = self.model().index(i, 0, index)
-                self.expandIndex(idx)
+                self.expand_index(idx)
 
-    def expandSelected(self):
+    def expand_selected(self):
         """Expand selected folders and groups."""
         indexes = self.selectedIndexes()
 
         for index in reversed(indexes):
             self.expand(index)
 
-    def getSelectedAOVs(self):
+    def get_selected_aovs(self):
         """Get selected AOVs."""
-        selected = self.getSelectedNodes()
+        selected = self.get_selected_tree_nodes()
 
         aovs = [node.item for node in selected
                 if not isinstance(node, models.FolderNode) and
@@ -341,9 +333,9 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
 
         return aovs
 
-    def getSelectedGroups(self, allow_intrinsic=True):
+    def get_selected_groups(self, allow_intrinsic=True):
         """Get selected groups."""
-        selected = self.getSelectedNodes()
+        selected = self.get_selected_tree_nodes()
 
         groups = [node.item for node in selected
                   if not isinstance(node, models.FolderNode) and
@@ -355,7 +347,7 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
 
         return groups
 
-    def getSelectedNodes(self):
+    def get_selected_tree_nodes(self):
         """Get a list of selected tree nodes."""
         nodes = []
 
@@ -389,17 +381,17 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
 
     def install_selected(self):
         """Install selected nodes."""
-        nodes = self.getSelectedNodes()
+        nodes = self.get_selected_tree_nodes()
 
         if nodes:
-            self.installItemsSignal.emit(nodes)
+            self.install_items_signal.emit(nodes)
 
     def keyPressEvent(self, event):
         """Handle keystrokes."""
         key = event.key()
 
         if key == QtCore.Qt.Key_I:
-            self.showInfo()
+            self.show_info()
             return
 
         elif key == QtCore.Qt.Key_Y:
@@ -411,20 +403,20 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
             return
 
         elif key == QtCore.Qt.Key_E:
-            self.editSelected()
+            self.edit_selected()
             return
 
         super(AOVSelectTreeWidget, self).keyPressEvent(event)
 
-    def markItemsInstalled(self, items):
+    def mark_items_installed(self, items):
         """Mark items as currently installed in the tree."""
         self.model().sourceModel().mark_installed(items)
 
-    def markItemsUninstalled(self, items):
+    def mark_items_uninstalled(self, items):
         """Mark items as not currently installed in the tree."""
         self.model().sourceModel().mark_uninstalled(items)
 
-    def openMenu(self, position):
+    def open_menu(self, position):
         """Open the RMB context menu."""
         indexes = self.selectedIndexes()
 
@@ -474,26 +466,26 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
         if show_collapse:
             menu.addAction(
                 "Collapse",
-                self.collapseSelected,
+                self.collapse_selected,
                 QtGui.QKeySequence(QtCore.Qt.Key_Left)
             )
 
         if show_expand:
             menu.addAction(
                 "Expand",
-                self.expandSelected,
+                self.expand_selected,
                 QtGui.QKeySequence(QtCore.Qt.Key_Right)
             )
 
         if show_exp_col_all:
             menu.addAction(
                 "Collapse All",
-                self.collapseBelow
+                self.collapse_below
             )
 
             menu.addAction(
                 "Expand All",
-                self.expandBelow
+                self.expand_below
             )
 
             menu.addSeparator()
@@ -509,7 +501,7 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
         if show_info:
             menu.addAction(
                 "Info",
-                self.showInfo,
+                self.show_info,
                 QtGui.QKeySequence(QtCore.Qt.Key_I),
             )
 
@@ -534,7 +526,7 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
 
             menu.addAction(
                 "Edit",
-                self.editSelected,
+                self.edit_selected,
                 QtGui.QKeySequence(QtCore.Qt.Key_E),
             )
 
@@ -548,15 +540,15 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
         """Remove a group from the model."""
         self.model().sourceModel().remove_group(group)
 
-    def selectionChangedHandler(self, selected, deselected):  # pylint: disable=unused-argument
+    def selection_changed_handler(self, selected, deselected):  # pylint: disable=unused-argument
         """Selection change handler."""
-        self.selectionChangedSignal.emit()
+        self.selection_changed_signal.emit()
 
-    def showAOVInfo(self):
+    def show_aov_info(self):
         """Show info for selected AOVs."""
         import ht.ui.aovs.dialogs
 
-        aovs = self.getSelectedAOVs()
+        aovs = self.get_selected_aovs()
 
         parent = hou.qt.mainWindow()
 
@@ -568,11 +560,11 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
 
             info_dialog.show()
 
-    def showAOVGroupInfo(self):
+    def show_aov_group_info(self):
         """Show info for selected AOVGroups."""
         import ht.ui.aovs.dialogs
 
-        groups = self.getSelectedGroups()
+        groups = self.get_selected_groups()
 
         parent = hou.qt.mainWindow()
 
@@ -582,21 +574,21 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
                 parent
             )
 
-            info_dialog.groupUpdatedSignal.connect(self.update_group)
+            info_dialog.group_updated_signal.connect(self.update_group)
 
             info_dialog.show()
 
-    def showInfo(self):
+    def show_info(self):
         """Show info for selected nodes."""
-        self.showAOVInfo()
-        self.showAOVGroupInfo()
+        self.show_aov_info()
+        self.show_aov_group_info()
 
     def uninstall_selected(self):
         """Uninstall selected nodes."""
-        nodes = self.getSelectedNodes()
+        nodes = self.get_selected_tree_nodes()
 
         if nodes:
-            self.uninstallItemsSignal.emit(nodes)
+            self.uninstall_items_signal.emit(nodes)
 
     def update_group(self, group):
         """Update a group's members."""
@@ -609,8 +601,8 @@ class AOVInstallBarWidget(QtWidgets.QWidget):
 
     """
 
-    installSignal = QtCore.Signal()
-    uninstallSignal = QtCore.Signal()
+    install_signal = QtCore.Signal()
+    uninstall_signal = QtCore.Signal()
 
     def __init__(self, parent=None):
         super(AOVInstallBarWidget, self).__init__(parent)
@@ -618,7 +610,7 @@ class AOVInstallBarWidget(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.reload = QtWidgets.QPushButton("")
         layout.addWidget(self.reload)
@@ -631,11 +623,11 @@ class AOVInstallBarWidget(QtWidgets.QWidget):
         self.reload.setToolTip("Refresh the tree display.")
         self.reload.setFlat(True)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         layout.addStretch(1)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.install_button = QtWidgets.QPushButton("")
         layout.addWidget(self.install_button, alignment=QtCore.Qt.AlignVCenter)
@@ -649,9 +641,9 @@ class AOVInstallBarWidget(QtWidgets.QWidget):
         self.install_button.setEnabled(False)
         self.install_button.setFlat(True)
 
-        self.install_button.clicked.connect(self.installSignal)
+        self.install_button.clicked.connect(self.install_signal)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.uninstall_button = QtWidgets.QPushButton("")
         layout.addWidget(self.uninstall_button, alignment=QtCore.Qt.AlignVCenter)
@@ -665,23 +657,23 @@ class AOVInstallBarWidget(QtWidgets.QWidget):
         self.uninstall_button.setEnabled(False)
         self.uninstall_button.setFlat(True)
 
-        self.uninstall_button.clicked.connect(self.uninstallSignal)
+        self.uninstall_button.clicked.connect(self.uninstall_signal)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         layout.addStretch(1)
         layout.setContentsMargins(0, 0, 0, 0)
 
-    # =========================================================================
-    # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
+    # NON-PUBLIC METHODS
+    # -------------------------------------------------------------------------
 
-    def disableHandler(self):
+    def _disable_handler(self):
         """Disable both buttons."""
         self.install_button.setEnabled(False)
         self.uninstall_button.setEnabled(False)
 
-    def enableHandler(self, contains):
+    def _enable_handler(self, contains):
         """Enable and disable buttons based on if an item is contained."""
         self.install_button.setEnabled(not contains)
         self.uninstall_button.setEnabled(contains)
@@ -690,10 +682,10 @@ class AOVInstallBarWidget(QtWidgets.QWidget):
 class AvailableAOVsToolBar(AOVViewerToolBar):
     """This class represents the toolbar for the 'AOVs and Groups' tree."""
 
-    displayInfoSignal = QtCore.Signal()
-    editAOVSignal = QtCore.Signal()
-    editGroupSignal = QtCore.Signal()
-    newGroupSignal = QtCore.Signal()
+    display_info_signal = QtCore.Signal()
+    edit_aov_signal = QtCore.Signal()
+    edit_group_signal = QtCore.Signal()
+    new_group_signal = QtCore.Signal()
 
     def __init__(self, parent=None):
         super(AvailableAOVsToolBar, self).__init__(parent)
@@ -708,12 +700,12 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
             QtGui.QIcon(":ht/rsc/icons/aovs/create_aov.png"),
             "Create a new AOV.",
             self,
-            triggered=ht.ui.aovs.dialogs.createNewAOV
+            triggered=ht.ui.aovs.dialogs.create_new_aov
         )
 
         new_aov_button.setDefaultAction(new_aov_action)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         # Button and action to edit an AOV.
         self.edit_aov_button = QtWidgets.QToolButton(self)
@@ -723,17 +715,17 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
             QtGui.QIcon(":ht/rsc/icons/aovs/edit_aov.png"),
             "Edit AOV.",
             self,
-            triggered=self.editAOVSignal.emit
+            triggered=self.edit_aov_signal.emit
         )
 
         self.edit_aov_button.setDefaultAction(edit_aov_action)
         self.edit_aov_button.setEnabled(False)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.addSeparator()
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         # Button and action to create a new AOVGroup.
         new_group_button = QtWidgets.QToolButton(self)
@@ -743,12 +735,12 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
             QtGui.QIcon(":ht/rsc/icons/aovs/create_group.png"),
             "Create a new AOV group.",
             self,
-            triggered=self.newGroupSignal.emit
+            triggered=self.new_group_signal.emit
         )
 
         new_group_button.setDefaultAction(new_group_action)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         # Button and action to edit an AOVGroup.
         self.edit_group_button = QtWidgets.QToolButton(self)
@@ -758,17 +750,17 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
             QtGui.QIcon(":ht/rsc/icons/aovs/edit_group.png"),
             "Edit an AOV group.",
             self,
-            triggered=self.editGroupSignal.emit
+            triggered=self.edit_group_signal.emit
         )
 
         self.edit_group_button.setDefaultAction(edit_group_action)
         self.edit_group_button.setEnabled(False)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.addSeparator()
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         # Button and action to load a .json file.
         load_file_button = QtWidgets.QToolButton(self)
@@ -783,14 +775,14 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
 
         load_file_button.setDefaultAction(load_file_action)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         spacer = QtWidgets.QWidget()
         spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
         self.addWidget(spacer)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         # Button and action to display information for selected items.
         self.info_button = QtWidgets.QToolButton(self)
@@ -800,25 +792,25 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
             hou.qt.createIcon("BUTTONS_info"),
             "Display information about the AOV or group.",
             self,
-            triggered=self.displayInfoSignal.emit
+            triggered=self.display_info_signal.emit
         )
 
         self.info_button.setDefaultAction(info_action)
         self.info_button.setEnabled(False)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
-    def enableEditAOV(self, enable):
+    def enable_edit_aov(self, enable):
         """Enable the Edit AOV button."""
         self.edit_aov_button.setEnabled(enable)
 
-    def enableEditAOVGroup(self, enable):
+    def enable_edit_aov_group(self, enable):
         """Enable the Edit AOV Group button."""
         self.edit_group_button.setEnabled(enable)
 
-    def enableInfoButton(self, enable):
+    def enable_info_button(self, enable):
         """Enable the View Info button."""
         self.info_button.setEnabled(enable)
 
@@ -827,13 +819,13 @@ class AOVSelectWidget(QtWidgets.QWidget):
     """This class represents the AOVs and Groups widget."""
 
     # Install and remove signals.
-    installSignal = QtCore.Signal(models.AOVBaseNode)
-    uninstallSignal = QtCore.Signal(models.AOVBaseNode)
+    install_signal = QtCore.Signal(models.AOVBaseNode)
+    uninstall_signal = QtCore.Signal(models.AOVBaseNode)
 
     # Button enabling signals.
-    enableEditAOVSignal = QtCore.Signal(bool)
-    enableEditAOVGroupSignal = QtCore.Signal(bool)
-    enableInfoButtonSignal = QtCore.Signal(bool)
+    enable_edit_aov_signal = QtCore.Signal(bool)
+    enable_edit_aov_group_signal = QtCore.Signal(bool)
+    enable_info_button_signal = QtCore.Signal(bool)
 
     def __init__(self, parent=None):
         super(AOVSelectWidget, self).__init__(parent)
@@ -844,7 +836,7 @@ class AOVSelectWidget(QtWidgets.QWidget):
         tree_layout = QtWidgets.QVBoxLayout()
         layout.addLayout(tree_layout)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         label = QtWidgets.QLabel("AOVs and Groups")
         tree_layout.addWidget(label)
@@ -853,106 +845,106 @@ class AOVSelectWidget(QtWidgets.QWidget):
         bold_font.setBold(True)
         label.setFont(bold_font)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.aov_tree = AOVSelectTreeWidget(parent=self)
         tree_layout.addWidget(self.aov_tree)
 
-        self.aov_tree.selectionChangedSignal.connect(self.updateToolButtons)
-        self.aov_tree.installItemsSignal.connect(self.installSignal.emit)
-        self.aov_tree.uninstallItemsSignal.connect(self.uninstallSignal.emit)
+        self.aov_tree.selection_changed_signal.connect(self.update_tool_buttons)
+        self.aov_tree.install_items_signal.connect(self.install_signal.emit)
+        self.aov_tree.uninstall_items_signal.connect(self.uninstall_signal.emit)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.filter = FilterWidget()
         tree_layout.addWidget(self.filter)
 
         self.filter.field.textChanged.connect(self.aov_tree.proxy_model.setFilterWildcard)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.toolbar = AvailableAOVsToolBar(parent=self)
         tree_layout.addWidget(self.toolbar)
 
-        self.toolbar.displayInfoSignal.connect(self.displayInfo)
-        self.toolbar.editAOVSignal.connect(self.editAOV)
-        self.toolbar.editGroupSignal.connect(self.editGroup)
-        self.toolbar.newGroupSignal.connect(self.createGroup)
+        self.toolbar.display_info_signal.connect(self.display_info)
+        self.toolbar.edit_aov_signal.connect(self.edit_aov)
+        self.toolbar.edit_group_signal.connect(self.edit_group)
+        self.toolbar.new_group_signal.connect(self.create_group)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.install_bar = AOVInstallBarWidget()
         layout.addWidget(self.install_bar)
 
-        self.install_bar.installSignal.connect(self.emitInstallSignal)
-        self.install_bar.uninstallSignal.connect(self.emitUninstallSignal)
+        self.install_bar.install_signal.connect(self.emit_install_signal)
+        self.install_bar.uninstall_signal.connect(self.emit_uninstall_signal)
         self.install_bar.reload.clicked.connect(self.reload)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         # Connect signals to update the toolbar.
-        self.enableEditAOVSignal.connect(self.toolbar.enableEditAOV)
-        self.enableEditAOVGroupSignal.connect(self.toolbar.enableEditAOVGroup)
-        self.enableInfoButtonSignal.connect(self.toolbar.enableInfoButton)
+        self.enable_edit_aov_signal.connect(self.toolbar.enable_edit_aov)
+        self.enable_edit_aov_group_signal.connect(self.toolbar.enable_edit_aov_group)
+        self.enable_info_button_signal.connect(self.toolbar.enable_info_button)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
-    def createGroup(self):
+    def create_group(self):
         """Create a new group using any selected AOVs."""
         import ht.ui.aovs.dialogs
 
-        aovs = [node.item for node in self.aov_tree.getSelectedNodes()
+        aovs = [node.item for node in self.aov_tree.get_selected_tree_nodes()
                 if isinstance(node.item, AOV)]
 
-        ht.ui.aovs.dialogs.createNewGroup(aovs)
+        ht.ui.aovs.dialogs.create_new_group(aovs)
 
-    def displayInfo(self):
+    def display_info(self):
         """Display information based on the tree selection."""
-        self.aov_tree.showInfo()
+        self.aov_tree.show_info()
 
-    def editAOV(self):
+    def edit_aov(self):
         """Edit selected AOVs."""
-        self.aov_tree.editSelectedAOVs()
+        self.aov_tree.edit_selected_aovs()
 
-    def editGroup(self):
+    def edit_group(self):
         """Edit selected AOVGroups."""
-        self.aov_tree.editSelectedGroups()
+        self.aov_tree.edit_selected_groups()
 
-    def emitInstallSignal(self):
+    def emit_install_signal(self):
         """Emit a signal to install selected nodes."""
-        nodes = self.getSelectedNodes()
+        nodes = self.get_selected_tree_nodes()
 
         if nodes:
-            self.installSignal.emit(nodes)
+            self.install_signal.emit(nodes)
 
-    def emitUninstallSignal(self):
+    def emit_uninstall_signal(self):
         """Emit a signal to removal selected nodes."""
-        nodes = self.getSelectedNodes()
+        nodes = self.get_selected_tree_nodes()
 
         if nodes:
-            self.uninstallSignal.emit(nodes)
+            self.uninstall_signal.emit(nodes)
 
-    def getSelectedNodes(self):
+    def get_selected_tree_nodes(self):
         """Get a list of selected nodes in the tree."""
-        return self.aov_tree.getSelectedNodes()
+        return self.aov_tree.get_selected_tree_nodes()
 
-    def markItemsInstalled(self, items):
+    def mark_items_installed(self, items):
         """Mark items as currently installed in the tree."""
-        self.aov_tree.markItemsInstalled(items)
+        self.aov_tree.mark_items_installed(items)
 
-    def markItemsUninstalled(self, items):
+    def mark_items_uninstalled(self, items):
         """Mark items as not currently installed in the tree."""
-        self.aov_tree.markItemsUninstalled(items)
+        self.aov_tree.mark_items_uninstalled(items)
 
     def reload(self):
         """Reinitialize the tree from the manager."""
         self.aov_tree.init_from_manager()
 
-    def updateToolButtons(self):
+    def update_tool_buttons(self):
         """Enable toolbar buttons based on node selection."""
-        nodes = self.getSelectedNodes()
+        nodes = self.get_selected_tree_nodes()
 
         enable_edit_aov = False
         enable_edit_group = False
@@ -972,13 +964,12 @@ class AOVSelectWidget(QtWidgets.QWidget):
                     enable_edit_group = True
                     enable_info = True
 
-        self.enableEditAOVSignal.emit(enable_edit_aov)
-        self.enableEditAOVGroupSignal.emit(enable_edit_group)
-        self.enableInfoButtonSignal.emit(enable_info)
+        self.enable_edit_aov_signal.emit(enable_edit_aov)
+        self.enable_edit_aov_group_signal.emit(enable_edit_group)
+        self.enable_info_button_signal.emit(enable_info)
 
-# =============================================================================
+
 # AOVs to Apply
-# =============================================================================
 
 class AOVsToAddTreeWidget(QtWidgets.QTreeView):
     """This class represents a tree with AOVs and AOVGroups that can be applied
@@ -1004,17 +995,17 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
         self.setAcceptDrops(True)
 
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self.openMenu)
+        self.customContextMenuRequested.connect(self.open_menu)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def clear_all(self):
         """Clear all items from the tree."""
         self.model().sourceModel().clear_all()
 
-    def collapseSelected(self):
+    def collapse_selected(self):
         """Collapse any selected indexes."""
         indexes = self.selectedIndexes()
 
@@ -1024,20 +1015,14 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
     def dragEnterEvent(self, event):
         """Event occurring when something is dragged into the widget."""
         # Dropping our items.
-        if event.mimeData().hasFormat("text/csv"):
-            data = pickle.loads(event.mimeData().data("text/csv").data())
+        if utils.has_aov_mime_data(event.mimeData()):
+            data = utils.decode_aov_mime_data(event.mimeData())
 
             if not data:
                 event.ignore()
 
             else:
                 event.acceptProposedAction()
-
-        # Dropping Houdini nodes.
-#        elif event.mimeData().hasFormat("text/plain"):
-#            event.setDropAction(QtCore.Qt.CopyAction)
-
-#            event.accept()
 
         else:
             event.ignore()
@@ -1051,16 +1036,16 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
         mime_data = event.mimeData()
 
         # Handle our own drop events.
-        if mime_data.hasFormat("text/csv"):
+        if utils.has_aov_mime_data(mime_data):
             # Extract the serialized json mime data from the event.
-            data = pickle.loads(mime_data.data("text/csv").data())
+            data = utils.decode_aov_mime_data(mime_data)
 
             # Flatten any data when moving with Ctrl.
             if event.keyboardModifiers() == QtCore.Qt.ControlModifier:
-                data = utils.flattenList(data)
+                data = utils.flatten_element_list(data)
 
                 # Repack the data with our flattened list.
-                mime_data.setData("text/csv", QtCore.QByteArray(pickle.dumps(data)))
+                utils.encode_aov_mime_data(mime_data, data)
 
         # Try to handle dropping nodes on the tree.
         elif mime_data.hasFormat("text/plain"):
@@ -1083,7 +1068,7 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
                     if aov_parm is not None:
                         value = aov_parm.eval()
 
-                    names = utils.getAOVNamesFromMultiparm(node)
+                    names = utils.get_aov_names_from_multiparms(node)
                     if names:
                         value = "{} {}".format(value, " ".join(names))
 
@@ -1095,7 +1080,7 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
 
             # Allow for Ctrl + Drop to extract groups.
             if event.keyboardModifiers() == QtCore.Qt.ControlModifier:
-                new_data = utils.flattenList(new_data)
+                new_data = utils.flatten_element_list(new_data)
 
             # If we've found any nodes we'll add the AOV data and remove the
             # old data.
@@ -1107,14 +1092,14 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
         # pass the work to the model dropMimeData() method.
         super(AOVsToAddTreeWidget, self).dropEvent(event)
 
-    def expandSelected(self):
+    def expand_selected(self):
         """Expand selected AOVGroups."""
         indexes = self.selectedIndexes()
 
         for index in indexes:
             self.expand(index)
 
-    def extractSelected(self):
+    def extract_selected(self):
         """Extract AOVs from selected AOVGroups."""
         indexes = self.selectedIndexes()
 
@@ -1142,11 +1127,11 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
             # position.
             model.sourceModel().insert_data(aovs, row)
 
-    def getElementsToAdd(self):
+    def get_elements_to_add(self):
         """Get a list of elements in the tree."""
         return self.model().sourceModel().items
 
-    def installItems(self, items):
+    def install_items(self, items):
         """Install items into the tree."""
         self.model().insert_data(items)
 
@@ -1159,12 +1144,12 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
             return
 
         elif key == QtCore.Qt.Key_E:
-            self.extractSelected()
+            self.extract_selected()
             return
 
         super(AOVsToAddTreeWidget, self).keyPressEvent(event)
 
-    def nodeIndexInModel(self, node):
+    def get_tree_node_model_index(self, node):
         """Given an tree node, attempt to find its index in the trees model."""
         model = self.model()
 
@@ -1180,11 +1165,11 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
 
         return None
 
-    def numItemsToAdd(self):
+    def num_items_to_add(self):
         """Get the number of items in the tree."""
         return self.model().sourceModel().rowCount(QtCore.QModelIndex())
 
-    def openMenu(self, position):
+    def open_menu(self, position):
         """Open the RMB context menu."""
         indexes = self.selectedIndexes()
 
@@ -1206,14 +1191,14 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
         if show_collapse:
             menu.addAction(
                 "Collapse",
-                self.collapseSelected,
+                self.collapse_selected,
                 QtGui.QKeySequence(QtCore.Qt.Key_Left)
             )
 
         if show_expand:
             menu.addAction(
                 "Expand",
-                self.expandSelected,
+                self.expand_selected,
                 QtGui.QKeySequence(QtCore.Qt.Key_Right)
             )
 
@@ -1257,7 +1242,7 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
         if show_extract:
             menu.addAction(
                 "Extract AOVs from group",
-                self.extractSelected,
+                self.extract_selected,
                 QtGui.QKeySequence(QtCore.Qt.Key_E),
             )
 
@@ -1275,17 +1260,17 @@ class AOVsToAddToolBar(AOVViewerToolBar):
     """This class represents the toolbar for the 'AOVs to Apply' tree."""
 
     # Signals for applying to nodes.
-    applyAtRenderTimeSignal = QtCore.Signal()
-    applyToParmsSignal = QtCore.Signal()
+    apply_at_render_time_signal = QtCore.Signal()
+    apply_to_parms_signal = QtCore.Signal()
 
     # Signal to create a group from selected things.
-    newGroupSignal = QtCore.Signal()
+    new_group_signal = QtCore.Signal()
 
     # Signal to install items to the tree.
-    installSignal = QtCore.Signal(list)
+    install_signal = QtCore.Signal(list)
 
     # Signal for clearing all items.
-    clearAOVsSignal = QtCore.Signal()
+    clear_aovs_signal = QtCore.Signal()
 
     def __init__(self, parent=None):
         super(AOVsToAddToolBar, self).__init__(parent)
@@ -1298,7 +1283,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
             hou.qt.createIcon("NETWORKS_rop"),
             "Apply",
             self,
-            triggered=self.applyAtRenderTimeSignal.emit
+            triggered=self.apply_at_render_time_signal.emit
 
         )
 
@@ -1307,7 +1292,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
         self.apply_button.setDefaultAction(apply_action)
         self.apply_button.setEnabled(False)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         # Button and action to apply AOVs are multi parms.
         self.apply_as_parms_button = QtWidgets.QToolButton(self)
@@ -1317,18 +1302,18 @@ class AOVsToAddToolBar(AOVViewerToolBar):
             hou.qt.createIcon("PANETYPES_parameters"),
             "Apply AOVs to selected nodes as parameters.",
             self,
-            triggered=self.applyToParmsSignal.emit
+            triggered=self.apply_to_parms_signal.emit
 
         )
 
         self.apply_as_parms_button.setDefaultAction(parms_action)
         self.apply_as_parms_button.setEnabled(False)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.addSeparator()
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         # Button and action to create a new AOVGroup from chosen items.
         self.new_group_button = QtWidgets.QToolButton(self)
@@ -1338,17 +1323,17 @@ class AOVsToAddToolBar(AOVViewerToolBar):
             QtGui.QIcon(":ht/rsc/icons/aovs/create_group.png"),
             "Create a new group from chosen AOVs.",
             self,
-            triggered=self.newGroupSignal.emit
+            triggered=self.new_group_signal.emit
         )
 
         self.new_group_button.setDefaultAction(new_group_action)
         self.new_group_button.setEnabled(False)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.addSeparator()
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         # Button and action to load from a node.
         load_button = QtWidgets.QToolButton(self)
@@ -1363,14 +1348,14 @@ class AOVsToAddToolBar(AOVViewerToolBar):
 
         load_button.setDefaultAction(load_action)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         spacer = QtWidgets.QWidget()
         self.addWidget(spacer)
 
         spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         # Button and action to clear all items from the tree.
         self.clear_button = QtWidgets.QToolButton(self)
@@ -1380,15 +1365,15 @@ class AOVsToAddToolBar(AOVViewerToolBar):
             hou.qt.createIcon("BUTTONS_clear"),
             "Clear all AOVs.",
             self,
-            triggered=self.clearAOVsSignal.emit
+            triggered=self.clear_aovs_signal.emit
         )
 
         self.clear_button.setDefaultAction(clear_action)
         self.clear_button.setEnabled(False)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def load_from_node(self, node=None):
         """Populate the tree with AOVs and AOVGroups assigned to selected
@@ -1399,7 +1384,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
             nodes = [node]
 
         else:
-            nodes = utils.findSelectedMantraNodes()
+            nodes = utils.get_selected_mantra_nodes()
 
         items = []
 
@@ -1409,7 +1394,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
             if node.parm("auto_aovs") is not None:
                 value = node.evalParm("auto_aovs")
 
-            names = utils.getAOVNamesFromMultiparm(node)
+            names = utils.get_aov_names_from_multiparms(node)
 
             if names:
                 value = "{} {}".format(value, " ".join(names))
@@ -1417,13 +1402,13 @@ class AOVsToAddToolBar(AOVViewerToolBar):
             items.extend(manager.MANAGER.get_aovs_from_string(value))
 
         if items:
-            self.installSignal.emit(items)
+            self.install_signal.emit(items)
 
 
 class AOVsToAddWidget(QtWidgets.QWidget):
     """This class represents the 'AOVs to Apply' widget."""
 
-    updateEnabledSignal = QtCore.Signal()
+    update_enabled_signal = QtCore.Signal()
 
     def __init__(self, node=None, parent=None):
         super(AOVsToAddWidget, self).__init__(parent)
@@ -1436,7 +1421,7 @@ class AOVsToAddWidget(QtWidgets.QWidget):
         top_layout = QtWidgets.QHBoxLayout()
         layout.addLayout(top_layout)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.label = QtWidgets.QLabel("AOVs to Apply")
         top_layout.addWidget(self.label)
@@ -1446,117 +1431,117 @@ class AOVsToAddWidget(QtWidgets.QWidget):
 
         self.label.setFont(bold_font)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         top_layout.addStretch(1)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         top_layout.addWidget(HelpButton("aov_manager"))
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         # Tree View
         self.tree = AOVsToAddTreeWidget(parent=self)
         layout.addWidget(self.tree)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         # Tool bar
         self.toolbar = AOVsToAddToolBar(parent=self)
         layout.addWidget(self.toolbar)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
-        self.toolbar.applyAtRenderTimeSignal.connect(self.applyAtRenderTime)
-        self.toolbar.applyToParmsSignal.connect(self.applyAsParms)
-        self.toolbar.newGroupSignal.connect(self.createGroup)
-        self.toolbar.clearAOVsSignal.connect(self.clearAOVs)
-        self.toolbar.installSignal.connect(self.installItems)
+        self.toolbar.apply_at_render_time_signal.connect(self.apply_at_render_time)
+        self.toolbar.apply_to_parms_signal.connect(self.apply_as_parms)
+        self.toolbar.new_group_signal.connect(self.create_group)
+        self.toolbar.clear_aovs_signal.connect(self.clear_aovs)
+        self.toolbar.install_signal.connect(self.install_items)
 
-        self.tree.model().sourceModel().rowsInserted.connect(self.dataUpdatedHandler)
-        self.tree.model().sourceModel().rowsRemoved.connect(self.dataUpdatedHandler)
-        self.tree.model().sourceModel().modelReset.connect(self.dataClearedHandler)
+        self.tree.model().sourceModel().rowsInserted.connect(self.data_updated_handler)
+        self.tree.model().sourceModel().rowsRemoved.connect(self.data_updated_handler)
+        self.tree.model().sourceModel().modelReset.connect(self.data_cleared_handler)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def node(self):
         """The node to apply to."""
         return self._node
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
-    def applyAsParms(self):
+    def apply_as_parms(self):
         """Apply AOVs and AOVGroups as multi parms."""
         if self.node is not None:
             nodes = [self.node]
 
         else:
-            nodes = utils.findSelectedMantraNodes()
+            nodes = utils.get_selected_mantra_nodes()
 
         if not nodes:
             return
 
-        elements = self.tree.getElementsToAdd()
+        elements = self.tree.get_elements_to_add()
 
-        utils.applyElementsAsParms(elements, nodes)
+        utils.apply_elements_as_parms(elements, nodes)
 
-    def applyAtRenderTime(self):
+    def apply_at_render_time(self):
         """Apply AOVs and AOVGroups at render time."""
         if self.node is not None:
             nodes = [self.node]
 
         else:
-            nodes = utils.findSelectedMantraNodes()
+            nodes = utils.get_selected_mantra_nodes()
 
         if not nodes:
             return
 
-        elements = self.tree.getElementsToAdd()
-        utils.applyElementsAsString(elements, nodes)
+        elements = self.tree.get_elements_to_add()
+        utils.apply_elements_as_string(elements, nodes)
 
-    def clearAOVs(self):
+    def clear_aovs(self):
         """Clear all AOVs and AOVGroups in the tree."""
         self.tree.clear_all()
 
-    def createGroup(self):
+    def create_group(self):
         """Create a new AOVGroup from items in the tree."""
         import ht.ui.aovs.dialogs
 
-        aovs = utils.flattenList(self.tree.getElementsToAdd())
+        aovs = utils.flatten_element_list(self.tree.get_elements_to_add())
 
-        ht.ui.aovs.dialogs.createNewGroup(aovs)
+        ht.ui.aovs.dialogs.create_new_group(aovs)
 
-    def dataClearedHandler(self):
+    def data_cleared_handler(self):
         """Handle the tree being cleared."""
         self.toolbar.apply_button.setEnabled(False)
         self.toolbar.apply_as_parms_button.setEnabled(False)
         self.toolbar.new_group_button.setEnabled(False)
         self.toolbar.clear_button.setEnabled(False)
 
-        self.updateEnabledSignal.emit()
+        self.update_enabled_signal.emit()
 
-    def dataUpdatedHandler(self, index, start, end):  # pylint: disable=unused-argument
+    def data_updated_handler(self, index, start, end):  # pylint: disable=unused-argument
         """Handle the tree being updated."""
-        enable = self.tree.numItemsToAdd() > 0
+        enable = self.tree.num_items_to_add() > 0
 
         self.toolbar.apply_button.setEnabled(enable)
         self.toolbar.apply_as_parms_button.setEnabled(enable)
         self.toolbar.new_group_button.setEnabled(enable)
         self.toolbar.clear_button.setEnabled(enable)
 
-        self.updateEnabledSignal.emit()
+        self.update_enabled_signal.emit()
 
-    def installItems(self, items):
+    def install_items(self, items):
         """Install items into the tree."""
-        self.tree.installItems(items)
+        self.tree.install_items(items)
 
-    def installListener(self, nodes):
+    def install_listener(self, nodes):
         """Listen for items to be installed."""
         items = []
 
@@ -1567,9 +1552,9 @@ class AOVsToAddWidget(QtWidgets.QWidget):
             else:
                 items.append(node.item)
 
-        self.installItems(items)
+        self.install_items(items)
 
-    def setNode(self, node):
+    def set_node(self, node):
         """Register a node as the target apply node."""
 
         if node is not None:
@@ -1582,22 +1567,20 @@ class AOVsToAddWidget(QtWidgets.QWidget):
             # Initialize the tree by loading the AOVs from the target node.
             self.toolbar.load_from_node(node)
 
-    def uninstallListener(self, nodes):
+    def uninstall_listener(self, nodes):
         """Listen for items to be removed."""
         model = self.tree.model()
 
         for node in nodes:
             # Look for the index of the node to remove.
-            index = self.tree.nodeIndexInModel(node)
+            index = self.tree.get_tree_node_model_index(node)
 
             # If the node exists, remove its index from the source model
             if index is not None:
                 model.remove_index(index)
 
 
-# =============================================================================
 # New Group Widgets
-# =============================================================================
 
 class NewGroupAOVListWidget(QtWidgets.QListView):
     """This widget allows editing of group AOV membership."""
@@ -1617,14 +1600,12 @@ class NewGroupAOVListWidget(QtWidgets.QListView):
 
         self.setAlternatingRowColors(True)
 
-    def getSelectedAOVs(self):
+    def get_selected_aovs(self):
         """Get a list of selected AOVs."""
         return self.proxy_model.sourceModel().checked_aovs()
 
 
-# =============================================================================
 # Info Widgets
-# =============================================================================
 
 class InfoTableView(QtWidgets.QTableView):
     """This class represents a generic table view for information."""
@@ -1639,6 +1620,14 @@ class InfoTableView(QtWidgets.QTableView):
         h_header.setVisible(False)
         h_header.setStretchLastSection(True)
         h_header.resizeSection(0, 250)
+
+    def _copy_table_cell(self, index):
+        """Copy the contents of a table cell to the clipboard."""
+        result = self.model().data(index)
+
+        if result is not None:
+            clipboard = QtGui.QApplication.clipboard()  # pylint: disable=c-extension-no-member
+            clipboard.setText(result)
 
     def contextMenuEvent(self, event):
         """Handle RMB menu clicks."""
@@ -1663,15 +1652,7 @@ class InfoTableView(QtWidgets.QTableView):
 
         # Copy the cell.
         if action == copy_action:
-            self.copyCell(index)
-
-    def copyCell(self, index):
-        """Copy the contents of a table cell to the clipboard."""
-        result = self.model().data(index)
-
-        if result is not None:
-            clipboard = QtGui.QApplication.clipboard()  # pylint: disable=c-extension-no-member
-            clipboard.setText(result)
+            self._copy_table_cell(index)
 
 
 class AOVInfoTableView(InfoTableView):
@@ -1712,9 +1693,7 @@ class GroupMemberListWidget(QtWidgets.QListView):
         model.init_data_from_group(group)
 
 
-# =============================================================================
 # Generic Widgets
-# =============================================================================
 
 class ComboBox(QtWidgets.QComboBox):
     """Custom ComboBox class."""
@@ -1736,12 +1715,12 @@ class FileChooser(QtWidgets.QWidget):
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.field = QtWidgets.QLineEdit()
         layout.addWidget(self.field)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.button = QtWidgets.QPushButton(
             hou.qt.createIcon("BUTTONS_chooser_file"),
@@ -1753,15 +1732,15 @@ class FileChooser(QtWidgets.QWidget):
         self.button.setIconSize(QtCore.QSize(16, 16))
         self.button.setMaximumSize(QtCore.QSize(24, 24))
 
-        self.button.clicked.connect(self.chooseFile)
+        self.button.clicked.connect(self._choose_file)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
-    def chooseFile(self):
+    def _choose_file(self):
         """Open the file chooser dialog."""
-        current = self.getPath()
+        current = self.get_path()
 
         start_directory = None
         default_value = None
@@ -1785,18 +1764,18 @@ class FileChooser(QtWidgets.QWidget):
         if not ext:
             path = "{}.json".format(path)
 
-        self.setPath(path)
+        self.set_path(path)
 
     def enable(self, enable):
         """Set the UI element's enabled state."""
         self.field.setEnabled(enable)
         self.button.setEnabled(enable)
 
-    def getPath(self):
+    def get_path(self):
         """Get the text."""
         return self.field.text()
 
-    def setPath(self, path):
+    def set_path(self, path):
         """Set the path."""
         self.field.setText(path)
 
@@ -1837,13 +1816,13 @@ class HelpButton(QtWidgets.QPushButton):
         self.setMaximumSize(QtCore.QSize(14, 14))
         self.setFlat(True)
 
-        self.clicked.connect(self.displayHelp)
+        self.clicked.connect(self.display_help)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
-    def displayHelp(self):
+    def display_help(self):
         """Display help page."""
         # Look for an existing, float help browser.
         for pane_tab in hou.ui.paneTabs():
@@ -1882,12 +1861,12 @@ class MenuField(QtWidgets.QWidget):
         layout.setSpacing(1)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.field = QtWidgets.QLineEdit()
         layout.addWidget(self.field)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         button = QtWidgets.QPushButton()
         layout.addWidget(button)
@@ -1913,9 +1892,9 @@ class MenuField(QtWidgets.QWidget):
 
         button.setMenu(menu)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def set(self, value):
         """Set the field to a value."""
@@ -1969,7 +1948,7 @@ class StatusMessageWidget(QtWidgets.QWidget):
         self.warning_pixmap = hou.qt.createIcon("DIALOG_warning").pixmap(24, 24)
         self.error_pixmap = hou.qt.createIcon("DIALOG_error").pixmap(24, 24)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.icon = QtWidgets.QLabel()
         layout.addWidget(self.icon)
@@ -1978,60 +1957,39 @@ class StatusMessageWidget(QtWidgets.QWidget):
         self.icon.setPixmap(self.info_pixmap)
         self.icon.hide()
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.display = QtWidgets.QLabel()
         layout.addWidget(self.display)
 
         self.setFixedHeight(24)
 
-    # =========================================================================
-    # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
+    # NON-PUBLIC METHODS
+    # -------------------------------------------------------------------------
 
-    def addError(self, level, msg):
-        """Add an error message at a specific level."""
-        self._error_mappings[level] = msg
-        self.updateDisplay()
-
-    def addInfo(self, level, msg):
-        """Add a display message at a specific level."""
-        self._info_mappings[level] = msg
-        self.updateDisplay()
-
-    def addWarning(self, level, msg):
-        """Add a warning message at a specific level."""
-        self._warning_mappings[level] = msg
-        self.updateDisplay()
-
-    def clear(self, level):
-        """Clear all notifications for a level."""
-        self.clearError(level)
-        self.clearWarning(level)
-        self.clearInfo(level)
-
-    def clearError(self, level):
+    def _clear_error(self, level):
         """Clear any error messages at a specific level."""
         if level in self._error_mappings:
             del self._error_mappings[level]
 
-        self.updateDisplay()
+        self._update_display()
 
-    def clearInfo(self, level):
+    def _clear_info(self, level):
         """Clear any info messages at a specific level."""
         if level in self._info_mappings:
             del self._info_mappings[level]
 
-        self.updateDisplay()
+        self._update_display()
 
-    def clearWarning(self, level):
+    def _clear_warning(self, level):
         """Clear any warning messages at a specific level."""
         if level in self._warning_mappings:
             del self._warning_mappings[level]
 
-        self.updateDisplay()
+        self._update_display()
 
-    def getMessage(self):
+    def _get_message(self):
         """Get the current error/warning/info value, if any."""
         if self._error_mappings:
             highest = sorted(self._error_mappings.keys())[0]
@@ -2053,9 +2011,9 @@ class StatusMessageWidget(QtWidgets.QWidget):
 
         return ""
 
-    def updateDisplay(self):
+    def _update_display(self):
         """Update the display items."""
-        error = self.getMessage()
+        error = self._get_message()
 
         # Ensure everything is shown and the message is correct.
         if error:
@@ -2069,3 +2027,27 @@ class StatusMessageWidget(QtWidgets.QWidget):
             self.display.hide()
             self.icon.hide()
 
+    # -------------------------------------------------------------------------
+    # METHODS
+    # -------------------------------------------------------------------------
+
+    def add_error(self, level, msg):
+        """Add an error message at a specific level."""
+        self._error_mappings[level] = msg
+        self._update_display()
+
+    def add_info(self, level, msg):
+        """Add a display message at a specific level."""
+        self._info_mappings[level] = msg
+        self._update_display()
+
+    def add_warning(self, level, msg):
+        """Add a warning message at a specific level."""
+        self._warning_mappings[level] = msg
+        self._update_display()
+
+    def clear(self, level):
+        """Clear all notifications for a level."""
+        self._clear_error(level)
+        self._clear_warning(level)
+        self._clear_info(level)

@@ -5,8 +5,9 @@
 # =============================================================================
 
 # Python Imports
-import os
 from PySide2 import QtCore, QtGui
+import os
+import pickle
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs.aov import ALLOWABLE_VALUES
@@ -15,6 +16,13 @@ from ht.ui.aovs import uidata
 
 # Houdini Imports
 import hou
+
+# =============================================================================
+# GLOBALS
+# =============================================================================
+
+# Mime data type name for AOV related data.
+_AOV_MIME_TYPE = "application/houdini-ht.aov"
 
 
 # =============================================================================
@@ -28,14 +36,14 @@ class AOVViewerInterface(QtCore.QObject):
     """
 
     # Signals for when AOVs are created or changed.
-    aovAddedSignal = QtCore.Signal(AOV)
-    aovRemovedSignal = QtCore.Signal(AOV)
-    aovUpdatedSignal = QtCore.Signal(AOV)
+    aov_added_signal = QtCore.Signal(AOV)
+    aov_removed_signal = QtCore.Signal(AOV)
+    aov_updated_signal = QtCore.Signal(AOV)
 
     # Signals for when AOVGroups are created or changed.
-    groupAddedSignal = QtCore.Signal(AOVGroup)
-    groupRemovedSignal = QtCore.Signal(AOVGroup)
-    groupUpdatedSignal = QtCore.Signal(AOVGroup)
+    group_added_signal = QtCore.Signal(AOVGroup)
+    group_removed_signal = QtCore.Signal(AOVGroup)
+    group_updated_signal = QtCore.Signal(AOVGroup)
 
 
 # =============================================================================
@@ -59,17 +67,17 @@ def _get_item_menu_index(items, item):
 # FUNCTIONS
 # =============================================================================
 
-def applyElementsAsParms(elements, nodes):
+def apply_elements_as_parms(elements, nodes):
     """Apply a list of elements are multiparms."""
-    aovs = flattenList(elements)
+    aovs = flatten_element_list(elements)
 
     for node in nodes:
-        applyToNodeAsParms(node, aovs)
+        apply_to_node_as_parms(node, aovs)
 
 
-def applyElementsAsString(elements, nodes):
+def apply_elements_as_string(elements, nodes):
     """Apply a list of elements at render time."""
-    value = listAsString(elements)
+    value = element_list_as_string(elements)
 
     for node in nodes:
         # Need to add the automatic aov parameters if they doesn't exist.
@@ -88,7 +96,7 @@ def applyElementsAsString(elements, nodes):
             node.parm("enable_auto_aovs").set(True)
 
 
-def applyToNodeAsParms(node, aovs):
+def apply_to_node_as_parms(node, aovs):
     """Apply a list of AOVs to a Mantra node using multiparm entries."""
     num_aovs = len(aovs)
 
@@ -124,7 +132,7 @@ def applyToNodeAsParms(node, aovs):
             node.parm("vm_lightexport_select{}".format(idx)).set(aov.lightexport_select)
 
 
-def buildAOVsFromMultiparm(node):
+def build_aovs_from_multiparm(node):
     """Build a list of AOVs from a Mantra node's multiparm."""
     aovs = []
 
@@ -164,24 +172,32 @@ def buildAOVsFromMultiparm(node):
     return aovs
 
 
-def filePathIsValid(path):
-    """Check if a file path is valid."""
-    if path:
-        dirname = os.path.dirname(path)
-        file_name = os.path.basename(path)
+def decode_aov_mime_data(mime_data):
+    """Decode AOV data from the mime data.
 
-        if not dirname or not file_name:
-            return False
+    :param mime_data: The mime data to decode from.
+    :type mime_data: QtCore.QMimeData
+    :return: A list of AOV related items.
+    :rtype: list
 
-        elif not os.path.splitext(file_name)[1]:
-            return False
-
-        return True
-
-    return False
+    """
+    return pickle.loads(mime_data.data(_AOV_MIME_TYPE).data())
 
 
-def findSelectedMantraNodes():
+def encode_aov_mime_data(mime_data, aov_data):
+    """Encode AOV data into the mime data.
+
+    :param mime_data: The mime data to decode from.
+    :type mime_data: QtCore.QMimeData
+    :param aov_data: A list of AOV related items.
+    :type aov_data: list
+    :return:
+
+    """
+    mime_data.setData(_AOV_MIME_TYPE, QtCore.QByteArray(pickle.dumps(aov_data)))
+
+
+def get_selected_mantra_nodes():
     """Find any currently selected Mantra (ifd) nodes."""
     nodes = hou.selectedNodes()
 
@@ -198,7 +214,7 @@ def findSelectedMantraNodes():
     return tuple(nodes)
 
 
-def flattenList(elements):
+def flatten_element_list(elements):
     """Flatten a list of elements into a list of AOVs."""
     aovs = set()
 
@@ -213,7 +229,7 @@ def flattenList(elements):
     return aovs
 
 
-def getAOVNamesFromMultiparm(node):
+def get_aov_names_from_multiparms(node):
     """Get a list of AOV names from a Mantra node's multiparm."""
     names = []
 
@@ -225,7 +241,7 @@ def getAOVNamesFromMultiparm(node):
     return names
 
 
-def getIconFromGroup(group):
+def get_icon_for_group(group):
     """Get the icon for an AOVGroup."""
     # Group has a custom icon path so use. it.
     if group.icon is not None:
@@ -237,7 +253,7 @@ def getIconFromGroup(group):
     return QtGui.QIcon(":ht/rsc/icons/aovs/group.png")
 
 
-def getIconFromVexType(vextype):
+def get_icon_for_vex_type(vextype):
     """Get the icon corresponding to a VEX type."""
     if vextype == "unitvector":
         vextype = "vector"
@@ -245,7 +261,7 @@ def getIconFromVexType(vextype):
     return hou.qt.createIcon("DATATYPES_{}".format(vextype))
 
 
-def getLightExportMenuIndex(lightexport):
+def get_light_export_menu_index(lightexport):
     """Find the menu index of the lightexport value."""
     return _get_item_menu_index(
         uidata.LIGHTEXPORT_MENU_ITEMS,
@@ -253,7 +269,7 @@ def getLightExportMenuIndex(lightexport):
     )
 
 
-def getQuantizeMenuIndex(quantize):
+def get_quantize_menu_index(quantize):
     """Find the menu index of the quantize value."""
     return _get_item_menu_index(
         uidata.QUANTIZE_MENU_ITEMS,
@@ -261,7 +277,7 @@ def getQuantizeMenuIndex(quantize):
     )
 
 
-def getSFilterMenuIndex(sfilter):
+def get_sfilter_menu_index(sfilter):
     """Find the menu index of the sfilter value."""
     return _get_item_menu_index(
         uidata.SFILTER_MENU_ITEMS,
@@ -269,7 +285,7 @@ def getSFilterMenuIndex(sfilter):
     )
 
 
-def getVexTypeMenuIndex(vextype):
+def get_vextype_menu_index(vextype):
     """Find the menu index of the vextype value."""
     return _get_item_menu_index(
         uidata.VEXTYPE_MENU_ITEMS,
@@ -277,12 +293,42 @@ def getVexTypeMenuIndex(vextype):
     )
 
 
-def isValueDefault(value, field):
+def has_aov_mime_data(mime_data):
+    """Check if the mime data contains AOV data.
+
+    :param mime_data: The mime data to check.
+    :type mime_data: QtCore.QMimeData
+    :return: Whether or not the mime data contains AOV data.
+    :rtype: bool
+
+    """
+    return mime_data.hasFormat(_AOV_MIME_TYPE)
+
+
+def is_file_path_valid(path):
+    """Check if a file path is valid."""
+    if not path:
+        return False
+
+    dirname = os.path.dirname(path)
+
+    file_name = os.path.basename(path)
+
+    if not all([dirname, file_name]):
+        return False
+
+    elif not os.path.splitext(file_name)[1]:
+        return False
+
+    return True
+
+
+def is_value_default(value, field):
     """Check if a value for a field is default."""
     return uidata.DEFAULT_VALUES[field] == value
 
 
-def listAsString(elements):
+def element_list_as_string(elements):
     """Flatten a list of elements into a space separated string."""
     names = []
 
@@ -296,7 +342,7 @@ def listAsString(elements):
     return " ".join(names)
 
 
-def openAOVEditor(node):
+def open_aov_editor(node):
     """Open the AOV Manager dialog based on a node."""
     interface = hou.pypanel.interfaceByName("aov_manager")
 
@@ -311,4 +357,4 @@ def openAOVEditor(node):
     tab.setActiveInterface(interface)
 
     widget = tab.activeInterfaceRootWidget()
-    widget.setNode(node)
+    widget.set_node(node)

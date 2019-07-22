@@ -3,10 +3,13 @@
   <interface name="aov_manager" label="AOV Manager" icon="PANETYPES_viewer_cop" help_url="">
     <script><![CDATA[import ht.ui.aovs.widgets
 
-def createInterface():
-    widget = ht.ui.aovs.widgets.AOVManagerWidget()
+manager_widget = None
+
+def onCreateInterface():
+    global manager_widget
+    manager_widget = ht.ui.aovs.widgets.AOVManagerWidget()
     
-    return widget
+    return manager_widget
 ]]></script>
     <help><![CDATA[ ]]></help>
     <includeInPaneTabMenu menu_position="600" create_separator="true"/>

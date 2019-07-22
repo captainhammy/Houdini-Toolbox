@@ -52,7 +52,7 @@
 	    range	{ 0 1 }
 	    export	none
 	    parmtag	{ "button_icon" "PANETYPES_viewer_cop" }
-	    parmtag	{ "script_callback" "import ht.ui.aovs.utils; ht.ui.aovs.utils.openAOVEditor(hou.pwd())" }
+	    parmtag	{ "script_callback" "import ht.ui.aovs.utils; ht.ui.aovs.utils.open_aov_editor(hou.pwd())" }
 	    parmtag	{ "script_callback_language" "python" }
 	}
     }

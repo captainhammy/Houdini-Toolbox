@@ -356,7 +356,7 @@ class Test_AOVManager(unittest.TestCase):
         mgr.add_aov(mock_aov)
 
         self.assertEqual(aovs, {mock_aov.variable: mock_aov})
-        interface.aovAddedSignal.emit.assert_called_with(mock_aov)
+        interface.aov_added_signal.emit.assert_called_with(mock_aov)
 
     # add_aovs_to_ifd
 
@@ -524,7 +524,7 @@ class Test_AOVManager(unittest.TestCase):
         mgr.add_group(mock_group)
 
         self.assertEqual(groups, {mock_group.name: mock_group})
-        interface.groupAddedSignal.emit.assert_called_with(mock_group)
+        interface.group_added_signal.emit.assert_called_with(mock_group)
 
     # clear
 
@@ -730,7 +730,7 @@ class Test_AOVManager(unittest.TestCase):
 
         self.assertEqual(aovs, {})
 
-        interface.aovRemovedSignal.emit.assert_called_with(mock_aov)
+        interface.aov_removed_signal.emit.assert_called_with(mock_aov)
 
     # remove_group
 
@@ -785,7 +785,7 @@ class Test_AOVManager(unittest.TestCase):
 
         self.assertEqual(groups, {})
 
-        interface.groupRemovedSignal.emit.assert_called_with(mock_group)
+        interface.group_removed_signal.emit.assert_called_with(mock_group)
 
 
 class Test_AOVFile(unittest.TestCase):

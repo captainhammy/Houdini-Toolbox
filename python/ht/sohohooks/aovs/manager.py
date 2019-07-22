@@ -197,7 +197,7 @@ class AOVManager(object):
         self.aovs[aov.variable] = aov
 
         if self.interface is not None:
-            self.interface.aovAddedSignal.emit(aov)
+            self.interface.aov_added_signal.emit(aov)
 
     def add_aovs_to_ifd(self, wrangler, cam, now):
         """Add auto_aovs to the ifd.
@@ -270,7 +270,7 @@ class AOVManager(object):
         self.groups[group.name] = group
 
         if self.interface is not None:
-            self.interface.groupAddedSignal.emit(group)
+            self.interface.group_added_signal.emit(group)
 
     def clear(self):
         """Clear all definitions.
@@ -350,7 +350,7 @@ class AOVManager(object):
             self.aovs.pop(aov.variable)
 
             if self.interface is not None:
-                self.interface.aovRemovedSignal.emit(aov)
+                self.interface.aov_removed_signal.emit(aov)
 
     def remove_group(self, group):
         """Remove the specified group from the manager.
@@ -364,7 +364,7 @@ class AOVManager(object):
             self.groups.pop(group.name)
 
             if self.interface is not None:
-                self.interface.groupRemovedSignal.emit(group)
+                self.interface.group_removed_signal.emit(group)
 
 
 class AOVFile(object):

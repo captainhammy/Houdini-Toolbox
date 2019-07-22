@@ -36,9 +36,9 @@ class TreeNode(object):
         if parent is not None:
             parent.add_child(self)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # SPECIAL METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def __eq__(self, other):
         return self.name == other.name
@@ -64,9 +64,9 @@ class TreeNode(object):
     def __repr__(self):
         return "<{} {}>".format(self.__class__.__name__, self.name)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def children(self):
@@ -83,6 +83,8 @@ class TreeNode(object):
         """Node name."""
         return "root"
 
+    # -------------------------------------------------------------------------
+
     @property
     def parent(self):
         """Parent node, if any."""
@@ -92,6 +94,8 @@ class TreeNode(object):
     def parent(self, parent):
         self._parent = parent
 
+    # -------------------------------------------------------------------------
+
     @property
     def row(self):
         """The child number of this node."""
@@ -100,9 +104,9 @@ class TreeNode(object):
 
         return None
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def add_child(self, node):
         """Add a node as a child of this node."""
@@ -137,8 +141,6 @@ class TreeNode(object):
         pass
 
 
-# =============================================================================
-
 class FolderNode(TreeNode):
     """Tree node representing a folder."""
 
@@ -147,9 +149,9 @@ class FolderNode(TreeNode):
 
         self._name = name
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def icon(self):
@@ -167,8 +169,6 @@ class FolderNode(TreeNode):
         return self._name
 
 
-# =============================================================================
-
 class AOVBaseNode(TreeNode):
     """Base node for AOV related items.
 
@@ -179,9 +179,9 @@ class AOVBaseNode(TreeNode):
 
         self._item = item
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def item(self):
@@ -192,30 +192,20 @@ class AOVBaseNode(TreeNode):
     def item(self, item):
         self._item = item
 
+    # -------------------------------------------------------------------------
+
     @property
     def path(self):
         """File path of this nodes item."""
         return self._item.filePath
 
 
-# =============================================================================
-
 class AOVNode(AOVBaseNode):
     """Node representing an AOV."""
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
-
-    @property
-    def icon(self):
-        """Icon for this AOV."""
-        return utils.getIconFromVexType(self.item.vextype)
-
-    @property
-    def name(self):
-        """The display name for this node."""
-        return self.item.variable
+    # -------------------------------------------------------------------------
 
     @property
     def aov(self):
@@ -226,9 +216,21 @@ class AOVNode(AOVBaseNode):
     def aov(self, aov):
         self.item = aov
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
+
+    @property
+    def icon(self):
+        """Icon for this AOV."""
+        return utils.get_icon_for_vex_type(self.item.vextype)
+
+    @property
+    def name(self):
+        """The display name for this node."""
+        return self.item.variable
+
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def tooltip(self):
         """Return a tooltip for the AOV."""
@@ -284,8 +286,6 @@ class AOVNode(AOVBaseNode):
         return '\n'.join(lines)
 
 
-# =============================================================================
-
 class AOVGroupNode(AOVBaseNode):
     """Node representing an AOVGroup."""
 
@@ -296,14 +296,16 @@ class AOVGroupNode(AOVBaseNode):
         for aov in group.aovs:
             AOVNode(aov, self)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def icon(self):
         """Icon for this AOV group."""
-        return utils.getIconFromGroup(self.group)
+        return utils.get_icon_for_group(self.group)
+
+    # -------------------------------------------------------------------------
 
     @property
     def group(self):
@@ -314,14 +316,16 @@ class AOVGroupNode(AOVBaseNode):
     def group(self, group):
         self.item = group
 
+    # -------------------------------------------------------------------------
+
     @property
     def name(self):
         """The group name for this node."""
         return self.group.name
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def tooltip(self):
         """Return a tooltip for the AOV group."""
@@ -344,12 +348,12 @@ class AOVGroupNode(AOVBaseNode):
         return '\n'.join(lines)
 
 
-# =============================================================================
-
 class IntrinsicAOVGroupNode(AOVGroupNode):
     """Node representing an IntrinsicAOVGroup."""
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
+    # PROPERTIES
+    # -------------------------------------------------------------------------
 
     @property
     def name(self):
@@ -376,9 +380,9 @@ class LeafFilterProxyModel(QtCore.QSortFilterProxyModel):
         self.setSortRole(BaseAOVTreeModel.sortRole)
         self.setDynamicSortFilter(True)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def filter_accepts_any_parent_parent(self, parent):
         """Traverse to the root node and check if any of the ancestors
@@ -453,7 +457,7 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
 
         self._root = root
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def items(self):
@@ -465,7 +469,7 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
         """The root node."""
         return self._root
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def columnCount(self, parent):  # pylint: disable=unused-argument
         """The number of columns in the view."""
@@ -587,8 +591,6 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
 
         return len(node.children)
 
-
-# =============================================================================
 
 class AOVSelectModel(BaseAOVTreeModel):
     """The model for the 'AOVs and Groups' tree."""
@@ -766,8 +768,7 @@ class AOVSelectModel(BaseAOVTreeModel):
                 items.append(node.item)
 
         mime_data = QtCore.QMimeData()
-
-        mime_data.setData("text/csv", QtCore.QByteArray(pickle.dumps(items)))
+        utils.encode_aov_mime_data(mime_data, items)
 
         return mime_data
 
@@ -835,20 +836,18 @@ class AOVSelectModel(BaseAOVTreeModel):
                 break
 
 
-# =============================================================================
-
 class AOVsToAddModel(BaseAOVTreeModel):
     """This class represents the available AOVs and AOVGroups that will be
     added.
 
     """
 
-    insertedItemsSignal = QtCore.Signal([AOVBaseNode])
-    removedItemsSignal = QtCore.Signal([AOVBaseNode])
+    inserted_items_signal = QtCore.Signal([AOVBaseNode])
+    removed_items_signal = QtCore.Signal([AOVBaseNode])
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def clear_all(self):
         """Clear the tree of any nodes."""
@@ -862,10 +861,10 @@ class AOVsToAddModel(BaseAOVTreeModel):
 
     def dropMimeData(self, data, action, row, column, parent):  # pylint: disable=unused-argument
         """Handle dropping mime data on the view."""
-        if not data.hasFormat("text/csv"):
+        if not utils.has_aov_mime_data(data):
             return False
 
-        self.insert_data(pickle.loads(data.data("text/csv").data()))
+        self.insert_data(utils.decode_aov_mime_data(data))
 
         return True
 
@@ -919,7 +918,7 @@ class AOVsToAddModel(BaseAOVTreeModel):
             parent_node.insert_child(position, child_node)
             added_items.append(child_node)
 
-        self.insertedItemsSignal.emit(added_items)
+        self.inserted_items_signal.emit(added_items)
 
         self.endInsertRows()
 
@@ -934,7 +933,7 @@ class AOVsToAddModel(BaseAOVTreeModel):
 
         self.beginRemoveRows(parent, row, row)
 
-        self.removedItemsSignal.emit([parent_node.children[row]])
+        self.removed_items_signal.emit([parent_node.children[row]])
         parent_node.remove_child(row)
 
         self.endRemoveRows()
@@ -948,8 +947,6 @@ class AOVsToAddModel(BaseAOVTreeModel):
         return QtCore.Qt.CopyAction
 
 
-# =============================================================================
-
 class AOVGroupEditListModel(QtCore.QAbstractListModel):
     """This class represents data defining AOVs belonging to an AOVGroup."""
 
@@ -962,9 +959,9 @@ class AOVGroupEditListModel(QtCore.QAbstractListModel):
         # List containing the checked state of each AOV
         self._checked = [False] * len(self._aovs)
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def aovs(self):
@@ -976,9 +973,9 @@ class AOVGroupEditListModel(QtCore.QAbstractListModel):
         """A mapping of whether or not things are checked."""
         return self._checked
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def checked_aovs(self):
         """Returns a list of AOVs which are checked."""
@@ -994,7 +991,7 @@ class AOVGroupEditListModel(QtCore.QAbstractListModel):
             return value.variable
 
         if role == QtCore.Qt.DecorationRole:
-            return utils.getIconFromVexType(value.vextype)
+            return utils.get_icon_for_vex_type(value.vextype)
 
         if role == QtCore.Qt.CheckStateRole:
             return self._checked[row]
@@ -1045,9 +1042,9 @@ class InfoTableModel(QtCore.QAbstractTableModel):
         self._titles = []
         self._values = []
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def columnCount(self, parent):  # pylint: disable=unused-argument
         """Number of columns."""
@@ -1082,14 +1079,12 @@ class InfoTableModel(QtCore.QAbstractTableModel):
         return len(self._titles)
 
 
-# =============================================================================
-
 class AOVInfoTableModel(InfoTableModel):
     """This class represents information data about an AOV."""
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def init_data_from_aov(self, aov):
         """Initialize data from an AOV."""
@@ -1157,14 +1152,12 @@ class AOVInfoTableModel(InfoTableModel):
             self._values.append(aov.path)
 
 
-# =============================================================================
-
 class AOVGroupInfoTableModel(InfoTableModel):
     """This class represents information data about an AOVGroup."""
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def init_data_from_group(self, group):
         """Initialize table data from an AOVGroup."""
@@ -1197,8 +1190,6 @@ class AOVGroupInfoTableModel(InfoTableModel):
         return len(self._titles)
 
 
-# =============================================================================
-
 class AOVGroupMemberListModel(QtCore.QAbstractListModel):
     """This class represents a list of AOVs belonging to an AOVGroup."""
 
@@ -1207,18 +1198,18 @@ class AOVGroupMemberListModel(QtCore.QAbstractListModel):
 
         self._aovs = []
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     @property
     def aovs(self):
         """AOVs contained in this group."""
         return self._aovs
 
-    # =========================================================================
+    # -------------------------------------------------------------------------
     # METHODS
-    # =========================================================================
+    # -------------------------------------------------------------------------
 
     def data(self, index, role):
         """Get item data."""
@@ -1229,7 +1220,7 @@ class AOVGroupMemberListModel(QtCore.QAbstractListModel):
             return value.variable
 
         if role == QtCore.Qt.DecorationRole:
-            return utils.getIconFromVexType(value.vextype)
+            return utils.get_icon_for_vex_type(value.vextype)
 
         return None
 
