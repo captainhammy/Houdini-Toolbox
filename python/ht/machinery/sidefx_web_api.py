@@ -6,7 +6,7 @@
 
 # Python Imports
 from __future__ import division
-import HTMLParser
+import HTMLParser  # pylint: disable=bad-python3-import
 import base64
 import datetime
 import hashlib
