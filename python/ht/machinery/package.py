@@ -282,20 +282,18 @@ class HoudiniBuildData(object):
 
         # Look for major.minor specific installer args.
         if major_minor is not None:
-            if major_minor not in self.versions:
-                raise ValueError("Invalid build number")
+            if major_minor in self.versions:
+                # Get the build information.
+                version_data = self.versions[major_minor]
 
-            # Get the build information.
-            version_data = self.versions[major_minor]
-
-            # Try to find any specific installer args for the current version
-            # and system.
-            if "installer_args" in version_data:
-                all_args.extend(
-                    _flatten_items(
-                        version_data["installer_args"].get(system, ())
+                # Try to find any specific installer args for the current version
+                # and system.
+                if "installer_args" in version_data:
+                    all_args.extend(
+                        _flatten_items(
+                            version_data["installer_args"].get(system, ())
+                        )
                     )
-                )
 
         return tuple(all_args)
 
@@ -420,7 +418,6 @@ class HoudiniBuildManager(object):
         :return:
 
         """
-
         # Download to the first available installation location.
         download_dir = os.path.expandvars(_SETTINGS_MANAGER.system.locations[0])
 
@@ -433,6 +430,32 @@ class HoudiniBuildManager(object):
             if downloaded_path is not None:
                 package = HoudiniInstallFile(downloaded_path)
                 package.install(create_symlink)
+
+    @staticmethod
+    def download_builds(build_numbers):
+        """Download and a list of builds.
+
+        Build numbers can be explicit numbers or major.minor versions.
+
+        :param build_numbers: A list of build numbers to process.
+        :type build_numbers: list(str)
+        :return:
+
+        """
+        # Download to the first available installation location.
+        download_dir = os.path.expandvars(_SETTINGS_MANAGER.system.locations[0])
+
+        archive_paths = []
+
+        for build_number in build_numbers:
+            # Get the build file name for the current day
+            version, build = _get_build_to_download(build_number)
+
+            downloaded_path = sidefx_web_api.download_build(download_dir, version, build)
+
+            archive_paths.append(downloaded_path)
+
+        return archive_paths
 
     # -------------------------------------------------------------------------
     # METHODS

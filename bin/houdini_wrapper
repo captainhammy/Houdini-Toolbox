@@ -16,7 +16,7 @@ from termcolor import colored, cprint
 # Houdini Toolbox Imports
 import ht.machinery.argparser
 import ht.machinery.package
-
+import ht.machinery.sidefx_web_api
 
 # =============================================================================
 # GLOBALS
@@ -30,22 +30,25 @@ _SIGNALS = {
     signal.SIGTERM: "TERM"
 }
 
+# Construct a HoudiniBuildManager to handle all our available Houdini options.
+_BUILD_MANAGER = ht.machinery.package.HoudiniBuildManager()
+
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-def _build_parser():
-    """Build an ArgumentParser for the wrapper.
+def _build_parsers():
+    """Build ArgumentParsers for the wrapper.
 
-    :return: The wrapper argument parser.
-    :rtype: ht.machinery.argparser.ArgumentParser
+    :return: The wrapper argument parsers.
+    :rtype: tuple(ht.machinery.argparser.ArgumentParser)
 
     """
     # Don't allow abbreviations since we don't want them to interfere with any
     # flags that might need to be passed through.
     parser = ht.machinery.argparser.ArgumentParser(
-        description="Run Houdini related applications.",
+        description="Run Houdini related applications.  Supports 'download', 'install' & 'uninstall' subcommands.",
         allow_abbrev=False
     )
 
@@ -78,143 +81,115 @@ def _build_parser():
         help="Set the package version."
     )
 
-    # Exclusive group to handle installs and uninstalls.
-    install_group = parser.add_mutually_exclusive_group()
-
-    install_group.add_argument(
-        "--install",
-        action="store_true",
-        default=False,
-        help="Install a Houdini build."
-    )
-
-    install_group.add_argument(
-        "--uninstall",
-        action="store_true",
-        default=False,
-        help="Uninstall a Houdini build."
-    )
-
-    install_group.add_argument(
-        "--dl-install",
-        nargs=1,
-        help="Download and install today's Houdini build.",
-        dest="dl_install"
-    )
-
     parser.add_argument(
-        "--create-symlink",
+        "--no-symlink",
         action="store_true",
-        default=True,
-        help="Create a major.minor symlink",
-        dest="create_symlink"
+        default=False,
+        help="Don't create a major.minor symlink when installing",
+        dest="no_symlink"
     )
 
-    return parser
+    extra_parser = ht.machinery.argparser.ArgumentParser()
+    subparsers = extra_parser.add_subparsers()
+
+    # Download sub parser
+    download = subparsers.add_parser("download", help="Download things")
+    download.set_defaults(func=_download_handler)
+
+    download.add_argument("--list", action="store_true", help="List available download options", dest="list_builds")
+    download.add_argument(
+        "--production", action="store_true", help="Only consider production builds", dest="only_production"
+    )
+    download.add_argument("--no-install", action="store_true", help="Download but don't install", dest="no_install")
+    download.add_argument("--remove", action="store_true", help="Remove archive after install", dest="remove")
+    download.add_argument("version", nargs="?", help="The version to download")
+
+    # Install sub parser
+    install = subparsers.add_parser("install", help="Install things")
+    install.set_defaults(func=_install_handler)
+    install.add_argument("--list", action="store_true", help="List builds available for install", dest="list_builds")
+    install.add_argument("version", nargs="?", help="The version to be installed")
+
+    # Uninstall sub parser
+    uninstall = subparsers.add_parser("uninstall", help="Uninstall things")
+    uninstall.set_defaults(func=_uninstall_handler)
+    uninstall.add_argument("--list", action="store_true", help="List builds available to uninstall", dest="list_builds")
+    uninstall.add_argument("versions", nargs="*", help="The versions to be uninstalled")
+
+    return parser, extra_parser
 
 
-def _display_versions(arguments):
+def _display_versions():
     """Display a list of Houdini versions that are available to install,
     run or uninstall.
 
-    :param arguments: The wrapper args.
-    :type arguments: argparse.Namespace
     :return:
 
     """
-    # Construct a HoudiniBuildManager to handle all our available Houdini
-    # options.
-    manager = ht.machinery.package.HoudiniBuildManager()
+    six.print_("Installed Houdini builds:")
 
-    # List builds that can be installed.
-    if arguments.install:
-        six.print_("Houdini builds to install:")
+    default_build = _BUILD_MANAGER.get_default_build()
 
-        six.print_(
-            '\t' + " ".join(
-                [str(build) for build in manager.installable]
-            )
-        )
+    output = []
 
-        six.print_()
+    for build in _BUILD_MANAGER.installed:
+        if build == default_build:
+            # Run the message through the style function.
+            msg = colored(str(build), "cyan")
 
-    # Builds that can be ran can also be uninstalled.
-    else:
-        if arguments.uninstall:
-            six.print_("Houdini builds to uninstall:")
+            output.append(msg)
 
         else:
-            six.print_("Installed Houdini builds:")
+            output.append(str(build))
 
-        default_build = manager.get_default_build()
+    six.print_('\t' + ' '.join(output))
 
-        output = []
-
-        for build in manager.installed:
-            if build == default_build:
-                # Run the message through the style function.
-                msg = colored(str(build), "cyan")
-
-                output.append(msg)
-
-            else:
-                output.append(str(build))
-
-        six.print_('\t' + ' '.join(output))
-
-        six.print_()
+    six.print_()
 
 
-def _download_and_install(arguments):
-    """Download and automatically install a build.
+def _download_handler(args):
+    """Handle operations for the download subcommand.
 
-    :param arguments: The wrapper args.
-    :type arguments: argparse.Namespace
+    :param args: The download args.
+    :type args: argparse.Namespace
     :return:
 
     """
-    ht.machinery.package.HoudiniBuildManager.download_and_install(
-        arguments.dl_install,
-        arguments.create_symlink
-    )
+    if args.list_builds:
+        six.print_("Houdini builds available to download:\n")
+
+        ht.machinery.sidefx_web_api.list_builds(version=args.version, only_production=args.only_production)
+
+        return
+
+    if not args.version:
+        six.print_("No version specified")
+
+        return
+
+    downloaded_archives = _BUILD_MANAGER.download_builds([args.version])
+
+    if not args.no_install:
+        for archive in downloaded_archives:
+            package = ht.machinery.package.HoudiniInstallFile(archive)
+            package.install(not args.no_symlink)
 
 
-def _find_build(arguments):
+def _find_build(args):
     """Search for the selected build.  If no valid build was selected print a message.
 
-    :param arguments: The wrapper args.
-    :type arguments: argparse.Namespace
+    :param args: The wrapper args.
+    :type args: argparse.Namespace
     :return:
 
     """
-    # Construct a HoudiniBuildManager to handle all our available Houdini
-    # options.
-    manager = ht.machinery.package.HoudiniBuildManager()
+    version = args.version
 
-    version = arguments.version
-
-    # If trying to install, get any builds that are installable.
-    if arguments.install:
-        search_builds = manager.installable
-
-        # If we are installing builds there is no default so remap to 'latest'.
-        if version == "default":
-            version = "latest"
-
-    # Get the installed builds.
-    else:
-        search_builds = manager.installed
+    search_builds = _BUILD_MANAGER.installed
 
     # Couldn't find any builds, so print the appropriate message.
     if not search_builds:
-        if arguments.install:
-            six.print_("No builds found to install.")
-
-        elif arguments.uninstall:
-            six.print_("No builds found to uninstall.")
-
-        else:
-            six.print_("No builds found.")
+        six.print_("No available builds found.")
 
         return None
 
@@ -226,14 +201,14 @@ def _find_build(arguments):
 
     # Support a 'default' build as defined in the config file.
     elif version == "default":
-        build = manager.get_default_build()
+        build = _BUILD_MANAGER.get_default_build()
 
     # Look for a build matching the string.
     else:
         result = ht.machinery.package.find_matching_builds(version, search_builds)
 
         if result is None:
-            six.print_("Could not find version: {ver}".format(ver=version))
+            six.print_("Could not find version: {}".format(version))
 
         else:
             build = result
@@ -241,7 +216,51 @@ def _find_build(arguments):
     return build
 
 
-def _handler(signal_num, current_frame):
+def _install_handler(args):
+    """Handle operations for the install subcommand.
+
+    :param args: The download args.
+    :type args: argparse.Namespace
+    :return:
+
+    """
+    # List builds that can be installed.
+    if args.list_builds:
+        _print_local_build_list(_BUILD_MANAGER.installable, "Houdini builds to install:")
+
+        return
+
+    if not args.version:
+        six.print_("No version specified")
+
+        return
+
+    result = ht.machinery.package.find_matching_builds(args.version, _BUILD_MANAGER.installable)
+
+    if not result:
+        six.print_("Could not find installable build {}".format(args.version))
+
+    result.install(not args.no_symlink)
+
+
+def _print_local_build_list(build_list, message):
+    """Print a list of local builds.
+
+    :param build_list: A list of builds on disk.
+    :type build_list: list(ht.machinery.package.HoudiniBase)
+    :param message: The title message.
+    :type message: str
+    :return:
+
+    """
+    six.print_(message)
+
+    six.print_('\t' + " ".join([str(build) for build in build_list]))
+
+    six.print_()
+
+
+def _signal_handler(signal_num, current_frame):
     """Signal handler to catch incoming signals and kill the process group.
 
     This allows things like the Render Scheduler to kill Mantra renders.
@@ -308,6 +327,36 @@ def _set_no_jemalloc(build_path, program_name):
     return run_args
 
 
+def _uninstall_handler(args):
+    """Handle operations for the uninstall subcommand.
+
+    :param args: The download args.
+    :type args: argparse.Namespace
+    :return:
+
+    """
+    # List builds that can be installed.
+    if args.list_builds:
+        _print_local_build_list(_BUILD_MANAGER.installed, "Houdini builds to uninstall:")
+
+        return
+
+    if not args.versions:
+        six.print_("No version specified")
+
+        return
+
+    for version in args.versions:
+        result = ht.machinery.package.find_matching_builds(version, _BUILD_MANAGER.installed)
+
+        if result is None:
+            six.print_("Could not find version: {}".format(version))
+
+            continue
+
+        result.uninstall()
+
+
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
@@ -320,53 +369,42 @@ def main():
     """
     # Handle specified signals.
     for sig in _SIGNALS:
-        signal.signal(sig, _handler)
+        signal.signal(sig, _signal_handler)
 
-    parser = _build_parser()
+    parser, subcommand_parser = _build_parsers()
 
     # Parse the arguments.
-    arguments, program_args = parser.parse_known_args()
+    args, extras = parser.parse_known_args()
+
+    # Check if any of the subcommand args are in the extra args.
+    if set(extras).intersection(["download", "install", "uninstall"]):
+        args = subcommand_parser.parse_args(extras, namespace=args)
+
+        # Call the extra parser function.
+        args.func(args)
+
+        return
 
     # Get the name of the executable we are trying to run.
     program_name = os.path.basename(sys.argv[0])
 
-    no_jemalloc = arguments.no_jemalloc
-    test_path = arguments.test_path
-    # log_level = arguments.log_level
+    no_jemalloc = args.no_jemalloc
+    test_path = args.test_path
 
     cprint("Houdini Wrapper:\n", "yellow")
 
     # If version is False (no argument), display any available versions and
     # exit.
-    if not arguments.version:
-        _display_versions(arguments)
-
-        return
-
-    # We are going to download and install a build so do this before
-    # anything else.
-    if arguments.dl_install:
-        _download_and_install(arguments)
+    if not args.version:
+        _display_versions()
 
         return
 
     # Try to find a build.
-    build = _find_build(arguments)
+    build = _find_build(args)
 
     # No build found, so abort.
     if build is None:
-        return
-
-    # Install the selected build.
-    if arguments.install:
-        build.install(arguments.create_symlink)
-
-        return
-
-    # Uninstall the selected build.
-    elif arguments.uninstall:
-        build.uninstall()
-
         return
 
     # Set the base environment for the build.
@@ -382,19 +420,16 @@ def main():
             os.environ["PLUGIN_BUILD_DIR"] = build.plugin_path
 
     # Dumping all the environment and Houdini settings.
-    if arguments.dump_env:
+    if args.dump_env:
         # To display the Houdini configuration, change the program to run
         # hconfig -a.
         program_name = "hconfig"
-        program_args = ["-a"]
+        extras = ["-a"]
 
         cprint("Dumping env settings\n", "yellow")
 
         # Dump the environment with 'printenv'.
-        proc = subprocess.Popen(
-            "printenv",
-            stdout=subprocess.PIPE
-        )
+        proc = subprocess.Popen("printenv", stdout=subprocess.PIPE)
 
         six.print_(proc.communicate()[0])
         six.print_()
@@ -412,22 +447,13 @@ def main():
     six.print_("\tHoudini {}: {}\n".format(build, build.path))
 
     # Print the command being run.
-    cprint(
-        "Launching {} {} ... ".format(
-            " ".join(run_args),
-            " ".join(program_args)
-        ),
-        "yellow"
-    )
+    cprint("Launching {} {} ... ".format(" ".join(run_args), " ".join(extras)), "yellow")
 
     # Run the application.
-    proc = subprocess.Popen(run_args + program_args)
+    proc = subprocess.Popen(run_args + extras)
 
     # Display the process id.
-    cprint(
-        "{} process id: {}".format(program_name, proc.pid+2),
-        "blue"
-    )
+    cprint("{} process id: {}".format(program_name, proc.pid+2), "blue")
 
     # Wait for the program to complete.
     proc.wait()
@@ -437,13 +463,7 @@ def main():
 
     # If the program didn't end clean, print a message.
     if return_code != 0:
-        cprint(
-            "{} exited with signal {}.".format(
-                program_name,
-                abs(return_code)
-            ),
-            "red"
-        )
+        cprint("{} exited with signal {}.".format(program_name, abs(return_code)), "red")
 
     # Exit with the program's return code.
     sys.exit(return_code)

@@ -6,21 +6,34 @@
 
 # Python Imports
 from __future__ import division
+import HTMLParser
 import base64
+import datetime
 import hashlib
 import humanfriendly
+from humanfriendly.tables import format_pretty_table
 import json
 import os
 import requests
 import sys
 import six
+from termcolor import colored, cprint
 import time
 
-try:
-    import html.parser as HTMLParser
 
-except ImportError:
-    import HTMLParser
+# =============================================================================
+# GLOBALS
+# =============================================================================
+
+_RELEASE_TYPE_MAP = {
+    "devel": ("Daily", "white"),
+    "gold": ("Production", "blue")
+}
+
+_STATUS_MAP = {
+    "good": "white",
+    "bad": "red"
+}
 
 
 # =============================================================================
@@ -69,6 +82,12 @@ class _Service(object):
             platform=platform,
             only_production=only_production
         )
+
+        # Sort the release list by integer version/build since it will be sorted by string
+        def sorter(data):
+            return [int(val) for val in data["version"].split(".")], int(data["build"])
+
+        releases_list.sort(reverse=True, key=sorter)
 
         return releases_list
 
@@ -423,3 +442,56 @@ def download_build(download_path, version, build=None, product="houdini", platfo
     _verify_file_checksum(target_path, release_info["hash"])
 
     return target_path
+
+
+def list_builds(version=None, product="houdini", platform="linux", only_production=False):
+    """Display a table of builds available to download.
+
+    Dates which care colored green indicate they are today's build.
+
+    :param version: The major.minor version to download.
+    :type version: str
+    :param product: The name of the product to download.
+    :type product: str
+    :param platform: The platform to download for.
+    :type platform: str
+    :param only_production: Only consider production builds.
+    :type only_production: bool
+    :return:
+
+    """
+    service = _Service()
+
+    # Get a list of builds which match the criteria.
+    releases_list = service.get_available_builds(
+        product,
+        version=version,
+        platform=platform,
+        only_production=only_production,
+    )
+
+    headers = ["Build", "Date", "Type"]
+
+    # A filtered list of builds.
+    rows = []
+
+    today = datetime.datetime.now().date()
+
+    # Filter the builds based on additional settings.
+    for release in releases_list:
+        release_type, release_color = _RELEASE_TYPE_MAP[release["release"]]
+
+        build_date = datetime.datetime.strptime(release["date"], "%Y/%m/%d").date()
+
+        if build_date == today:
+            build_date = colored(build_date, "green")
+
+        row = [
+            colored("{}.{}".format(release["version"], release["build"]), _STATUS_MAP[release["status"]]),
+            build_date,
+            colored(release_type, release_color),
+        ]
+
+        rows.append(row)
+
+    cprint(format_pretty_table(rows, headers))
