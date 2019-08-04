@@ -418,6 +418,17 @@ class AOV(object):
     # -------------------------------------------------------------------------
 
     @property
+    def source(self):
+        """ht.sohohooks.aovs.sources.BaseAOVSource: The path containing the AOV definition."""
+        return self._source
+
+    @source.setter
+    def source(self, source):
+        self._source = source
+
+    # =========================================================================
+
+    @property
     def variable(self):
         """str: The name of the vex variable."""
         return self._data[consts.VARIABLE_KEY]
