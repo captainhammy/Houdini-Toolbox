@@ -138,7 +138,7 @@
 
                 parm {
                     name    "enable_include_header#"
-                    label   "Enable Include Header#"
+                    label   "Enable Include Header"
                     type    toggle
                     nolabel
                     joinnext
@@ -194,7 +194,7 @@
 
                 parm {
                     name    "enable_struct#"
-                    label   "Enable Struct #"
+                    label   "Enable Struct"
                     type    toggle
                     nolabel
                     joinnext

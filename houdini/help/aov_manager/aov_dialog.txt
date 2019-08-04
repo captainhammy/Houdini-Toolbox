@@ -1,5 +1,5 @@
 
-#largeicon: /images/aov_manager/aov.png
+#icon: /images/aov_manager/aov.png
 
 = AOV Dialog =
 

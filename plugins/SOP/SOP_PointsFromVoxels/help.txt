@@ -1,7 +1,7 @@
 #type: node
 #context: sop
 #internal: com.houdinitoolbox::pointsfromvoxels::1
-#largeicon: /nodes/sop/{ICON_INSTALL_PATH}
+#icon: /nodes/sop/{ICON_INSTALL_PATH}
 
 = HT Points From Voxels = 
 

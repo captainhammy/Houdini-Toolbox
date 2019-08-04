@@ -1,5 +1,5 @@
 
-#largeicon: /images/aov_manager/group.png
+#icon: /images/aov_manager/group.png
 
 = AOV Group Dialog =
 

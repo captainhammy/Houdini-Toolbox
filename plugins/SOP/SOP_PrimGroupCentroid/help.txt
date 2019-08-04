@@ -24,60 +24,81 @@ attributes from the binding points will be copied as primitive attributes
 to the corresponding input geometry.
 
 @parameters
-
 Mode:
+    #id: mode
+
     The method used to partition the geometry for centroid calculations.
 
     Group:
         Use specified primitive groups.
+
     Name:
 	Use each group of named primitives.
+
     Class:
 	Use each group of primitive classes.
 
 Group:
+    #id: group
+
     When mode is set to *Group*, specify the group(s) to act on.
 
 Method:
+    #id: method
+
     The centroid calculation method.
 
     Barycenter:
         Use the average point position.
+
     Bounding Box:
         Use the center of the bounding box of the geometry.
+
     Center of Mass:
 	Use the calculated center of mass.
 
 Store Source Identifier:
+    #id: store
+
     Create an attribute on the points that indicates the source of each
     centroid.
 
 Attributes to Copy:
+    #id: attributes
+
     Attributes to copy from the primitives to the centroid points.  The
     attribute values are averages.
 
 Copy Local Variables:
+    #id: copyvariables
+
     All local variables referring to the copied attributes are also
     copied.
 
 Unmatched Behavior:
+    #id: behavior
+
     When transforming the geometry, determine what to do for groups that
     have no matching transform points.
 
     Keep:
         Keep the groups and apply no transforms.
+
     Destroy:
 	Destroy the geometry.
 
 Bind Attributes to Copy:
+    #id: bind_attributes
+
     Attributes to copy from the binding points to the matching geometry.
     The attributes are copied as Primitive attributes.
 
 @inputs
-Source:
-    Geometry to generate centroids for.
-Template:
-    (Optional) Transform the source geometry by matching points.
+Source Geometry:
+    The geometry to generate centroids for.
+
+Optional Transform Points:
+    Transform the source geometry by matching points.
 
 @related
     - [PrimitiveCentroid SOP|/nodes/sop/primcentroid]

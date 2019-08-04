@@ -1171,9 +1171,9 @@ SOP_PrimGroupCentroid::inputLabel(unsigned idx) const
     switch (idx)
     {
         case 0:
-            return "Geometry to generate centroids for.";
+            return "Source Geometry";
         case 1:
-            return "Optional transform points.";
+            return "Optional Transform Points";
         default:
             return "Input";
     }

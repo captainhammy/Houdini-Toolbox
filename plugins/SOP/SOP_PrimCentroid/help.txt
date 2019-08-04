@@ -1,7 +1,7 @@
 #type: node
 #context: sop
 #internal: com.houdinitoolbox::primcentroid::1
-#largeicon: /nodes/sop/{ICON_INSTALL_PATH}
+#icon: /nodes/sop/{ICON_INSTALL_PATH}
 
 = HT Primitive Centroid =
 
