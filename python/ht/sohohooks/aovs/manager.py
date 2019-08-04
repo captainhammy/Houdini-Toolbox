@@ -9,12 +9,10 @@ with AOVs.
 
 # Python Imports
 import glob
-import json
 import os
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
-from ht.sohohooks.aovs import constants as consts
 from ht.sohohooks.aovs import sources
 
 # Houdini Imports
@@ -77,8 +75,8 @@ class AOVManager(object):
                     # Add this AOV to the group.
                     group.aovs.append(aov)
 
-#                    if self.interface is not None:
- #                       self.interface.aovAddedSignal.emit(aov)
+                    # if self.interface is not None:
+                    #     self.interface.aovAddedSignal.emit(aov)
 
     def _init_from_files(self):
         """Initialize the manager from files on disk.
@@ -154,21 +152,21 @@ class AOVManager(object):
             else:
                 self.add_group(group)
 
-    def _merge_sources(self, sources):
+    def _merge_sources(self, sources_to_merge):
         """Merge the data of multiple AOVFile objects.
 
-        :param sources: A list of file readers.
-        :type sources: list(AOVFile)
+        :param sources_to_merge: A list of file readers.
+        :type sources_to_merge: list(ht.sohohooks.aovs.sources.BaseAOVSource)
         :return:
 
         """
         # We need to handle AOVs first since AOVs in other files may overwrite
         # AOVs in group definition files.
-        for source in sources:
+        for source in sources_to_merge:
             self._init_source_aovs(source)
 
         # Now that AOVs have been made available, add them to groups.
-        for source in sources:
+        for source in sources_to_merge:
             self._init_source_groups(source)
 
     # -------------------------------------------------------------------------
@@ -337,9 +335,9 @@ class AOVManager(object):
         :return:
 
         """
-        sources = [self.source_manager.get_file_source(path)]
+        file_sources = [self.source_manager.get_file_source(path)]
 
-        self._merge_sources(sources)
+        self._merge_sources(file_sources)
 
     def load_source(self, source):
         self._merge_sources([source])
@@ -421,7 +419,6 @@ class AOVManager(object):
 
         self.source_manager.unsaved_source.clear()
         self.load_source(self.source_manager.unsaved_source)
-
 
 
 # =============================================================================

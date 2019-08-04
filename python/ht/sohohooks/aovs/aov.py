@@ -386,7 +386,7 @@ class AOV(object):
 
     @property
     def source(self):
-        """ht.sohohooks.aovs.sources.BaseAOVSource: The path containing the AOV definition."""
+        """ht.sohohooks.aovs.sources.BaseAOVSource: The source containing the AOV definition."""
         return self._source
 
     @source.setter
@@ -394,39 +394,6 @@ class AOV(object):
         self._source = source
 
     # -------------------------------------------------------------------------
-
-    @property
-    def source(self):
-        """ht.sohohooks.aovs.sources.BaseAOVSource: The path containing the AOV definition."""
-        return self._source
-
-    @source.setter
-    def source(self, source):
-        self._source = source
-
-    # -------------------------------------------------------------------------
-
-    @property
-    def source(self):
-        """ht.sohohooks.aovs.sources.BaseAOVSource: The path containing the AOV definition."""
-        return self._source
-
-    @source.setter
-    def source(self, source):
-        self._source = source
-
-    # -------------------------------------------------------------------------
-
-    @property
-    def source(self):
-        """ht.sohohooks.aovs.sources.BaseAOVSource: The path containing the AOV definition."""
-        return self._source
-
-    @source.setter
-    def source(self, source):
-        self._source = source
-
-    # =========================================================================
 
     @property
     def variable(self):
@@ -646,7 +613,7 @@ class AOVGroup(object):
 
     def _update_data(self, data):
         """Update internal data with new data."""
-        for name, value in data.iteritems():
+        for name, value in data.items():
             # If the key corresponds to the data in this object we store the
             # data.
             if name in self._data:
