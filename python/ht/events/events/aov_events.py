@@ -4,15 +4,18 @@
 # IMPORTS
 # =============================================================================
 
+# Python Imports
+import logging
+
 # Houdini Toolbox Imports
 from ht.events.group import HoudiniEventGroup
 from ht.events.item import HoudiniEventItem
 from ht.events.types import HipFileEvents, NodeEvents
 
-from ht.logger import logger
-
 from ht.sohohooks.aovs.manager import MANAGER
 from ht.sohohooks.aovs.sources import AOVAssetSectionSource
+
+_logger = logging.getLogger(__name__)
 
 # =============================================================================
 # CLASSES
@@ -44,7 +47,7 @@ class AOVEvents(HoudiniEventGroup):
         section = _get_aov_section_from_node_type(node_type)
 
         if section is not None:
-            logger.info("load asset section aovs: {}/{}".format(node_type.name(), section.name()))
+            _logger.info("load asset section aovs: %s/%s", node_type.name(), section.name())
             MANAGER.load_section_source(section)
 
     def load_hip_aovs(self, scriptargs):
@@ -58,7 +61,7 @@ class AOVEvents(HoudiniEventGroup):
         section = _get_aov_section_from_node_type(node_type)
 
         if section is not None:
-            logger.info("unload asset section aovs: {}/{}".format(node_type.name(), section.name()))
+            _logger.info("unload asset section aovs: %s/%s", node_type.name(), section.name())
             MANAGER.remove_section_source(section)
 
     def unload_hip_aovs(self, scriptargs):
