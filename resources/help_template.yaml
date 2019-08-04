@@ -1,0 +1,47 @@
+# Templates for building help card sections.
+
+folder_template: |
+    == {{label}} ==
+        Enter a folder description here
+
+
+header_template: |
+    = {{label}} =
+
+    """Enter a quick node description here"""
+
+    Enter node description here
+
+
+input_template: |
+    {{label}}:
+        Enter an input description here
+
+
+internal_header_template: |
+    #type: node
+    #context: {{context}}
+    #internal: {{internal}}
+    #icon: {{icon}}
+
+
+menu_item_template: |
+    {{item}}:
+        Enter an item description here
+
+
+parameter_template: |
+    {{label}}:
+        #id: {{id}}
+
+        {{help|default("Enter a parameter description here", true)}}
+
+related_template: |
+    @related:
+    - [Node:obj/null]
+
+
+using_template: |
+    == Using {{label}} == (includeme)
+
+        # Click the [Icon:{{icon}}] {{label}} tool on the __{{tool_tab|default("Some Tab Name", true)}}__ tab.

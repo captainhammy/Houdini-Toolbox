@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shelfDocument>
+  <!-- This file contains definitions of shelves, toolbars, and tools.
+ It should not be hand-edited when it is being used by the application.
+ Note, that two definitions of the same element are not allowed in
+ a single file. -->
+
+  <tool name="generate_help_card" label="Generate Help Card" icon="PANETYPES_help_browser">
+    <script scriptType="python"><![CDATA[
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Python Imports
+import six
+
+# Houdini Toolbox Imports
+from ht.nodes import helpcard
+
+# Houdini Imports
+import hou
+
+# =============================================================================
+
+options = (
+    "Inputs block",
+    "Related nodes list",
+    "Create a 'Using xxx' block",
+ )
+
+node_path = hou.ui.selectNode()
+target_node = hou.node(node_path)
+    
+if target_node is not None:
+    choices = hou.ui.selectFromList(
+        options,
+        message="Choose help card options",
+        num_visible_rows=len(options),
+        clear_on_cancel=True
+    )
+    
+    inputs = 0 in choices
+    related = 1 in choices
+    using = 2 in choices
+
+    help_text = helpcard.generate_help_card(target_node, inputs=inputs, related=related, using=using)
+
+    type_definition = target_node.type().definition()
+
+    if type_definition is not None:
+        open_type_properties = False
+        
+        help_section = type_definition.sections().get("Help")
+        
+        if help_section is not None:
+            overwrite = hou.ui.displayMessage(
+                "Help card exists.  Overwrite?",
+                ("Yes", "No"),
+                severity=hou.severityType.Warning
+            )
+            
+            if overwrite == 0:
+                help_section.setContents(help_text)
+                open_type_properties = True
+                
+            else:
+                six.print_(help_text)
+
+        else:
+            help_section = type_definition.addSection("Help")
+            help_section.setContents(help_text)
+            
+            open_type_properties = True
+        
+        if open_type_properties:
+            hou.ui.openTypePropertiesDialog(target_node)
+    else:
+        six.print_(help_text)
+]]></script>
+  </tool>
+</shelfDocument>
