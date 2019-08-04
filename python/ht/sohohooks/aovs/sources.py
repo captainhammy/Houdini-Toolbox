@@ -19,6 +19,7 @@ from ht.sohohooks.aovs import constants as consts
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -32,7 +33,6 @@ class AOVSourceManager(object):
         self._asset_section_sources = {}
         self._hip_source = AOVHipSource()
         self._unsaved_source = AOVUnsavedSource()
-
 
     @property
     def asset_section_sources(self):
@@ -91,8 +91,6 @@ class AOVSourceManager(object):
     def unsaved_source(self):
         """Get the source representing unsaved items."""
         return self._unsaved_source
-
-
 
     def remove_source(self, source):
         if isinstance(source, AOVHipSource):
@@ -161,7 +159,7 @@ class BaseAOVSource(object):
 
     def _create_groups(self, definitions):
         """Create AOVGroups based on definitions."""
-        for name, group_data in definitions.iteritems():
+        for name, group_data in definitions.items():
             # A list of AOV definitions contained inside the group.
             definitions = []
 
@@ -533,11 +531,11 @@ class AOVHipSource(BaseAOVSource):
         """Write data to the hip file."""
         data = self._get_data()
 
-        self.node.setUserData(self.USER_DATA_NAME, json.dumps(data, indent=4))
+        self.root.setUserData(self.USER_DATA_NAME, json.dumps(data, indent=4))
 
         # TODO: Should we save the file?  If so, we need to adjust the read_only check.
         # Save the hip file to seal the changes.
-        #if save_hip:
+        # if save_hip:
         #    hou.hipFile.save()
 
 
@@ -582,6 +580,7 @@ class AOVUnsavedSource(BaseAOVSource):
     def write(self):
         """This is a noop as there is never any place to write to."""
         pass
+
 
 # TODO: Need to implement the add/remove/delete/etc methods on this source so that
 # they modify the underlying group's source? Maybe, but probably not?
