@@ -19,6 +19,35 @@ import inlinecpp
 
 _FUNCTION_SOURCES = [
 """
+FloatArray
+point_instance_transform(const GU_Detail *gdp, int ptnum)
+{
+    std::vector<double>         result;
+
+    GA_AttributeInstanceMatrix  instance_attribs;
+    GA_Offset                   pt_off;
+
+    UT_Matrix4D                 instance_transform;
+
+    instance_attribs.initialize(gdp->pointAttribs());
+
+    pt_off = gdp->pointOffset(ptnum);
+
+    instance_attribs.getMatrix(instance_transform, gdp->getPos3(pt_off), pt_off);
+
+    for (int i=0; i<4; ++i)
+    {
+        for (int j=0; j<4; ++j)
+        {
+            result.push_back(instance_transform.matx[i][j]);
+        }
+    }
+
+    return result;
+}
+""",
+
+"""
 bool
 isRendering()
 {
@@ -2134,6 +2163,7 @@ cpp_methods = inlinecpp.createLibrary(
 #include <CH/CH_Collection.h>
 #include <CH/CH_Manager.h>
 #include <GA/GA_AttributeRefMap.h>
+#include <GA/GA_AttributeInstanceMatrix.h>
 #include <GA/GA_Primitive.h>
 #include <GEO/GEO_Face.h>
 #include <GEO/GEO_PointTree.h>

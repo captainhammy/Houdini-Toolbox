@@ -2883,7 +2883,22 @@ def build_lookat_matrix(from_vec, to_vec, up_vector):
     return mat
 
 
-# TODO: create instance from point?
+def point_instance_transform(geometry, point_number):
+    """Get a point's instance transform based on existing attributes.
+
+    :param geometry: The source geometry.
+    :type geometry: hou.Geometry
+    :param point_number: The point number.
+    :type point_number: int
+    :return: A matrix representing the instance transform.
+    :rtype: hou.Matrix4
+
+    """
+    result = _cpp_methods.point_instance_transform(geometry, point_number)
+
+    return hou.Matrix4(result)
+
+
 def build_instance_matrix(position, direction=hou.Vector3(0, 0, 1), pscale=1,
                           scale=hou.Vector3(1, 1, 1), up_vector=hou.Vector3(0, 1, 0),
                           rot=hou.Quaternion(0, 0, 0, 1), trans=hou.Vector3(0, 0, 0),

@@ -4578,6 +4578,22 @@ class Test_build_lookat_matrix(unittest.TestCase):
         mock_build.assert_called_with(mock_mat3.return_value, mock_from_vec, mock_to_vec, mock_up_vec)
 
 
+class Test_point_instance_transform(unittest.TestCase):
+    """Test ht.inline.api.point_instance_transform."""
+
+    @patch("ht.inline.api._cpp_methods.point_instance_transform")
+    @patch("ht.inline.api.hou.Matrix4", autospec=True)
+    def test(self, mock_mat4, get_point_xform):
+        mock_geometry = MagicMock(spec=hou.Geometry)
+        mock_ptnum = MagicMock(spec=int)
+
+        result = api.point_instance_transform(mock_geometry, mock_ptnum)
+
+        self.assertEqual(result, mock_mat4.return_value)
+
+        mock_mat4.assert_called_with(get_point_xform.return_value)
+
+
 class Test_build_instance_matrix(unittest.TestCase):
     """Test ht.inline.api.build_instance_matrix."""
 
