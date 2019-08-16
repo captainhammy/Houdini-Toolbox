@@ -6,6 +6,8 @@ import six
 import sys
 import unittest
 
+import hou
+
 # Start the coverage reporting.
 cov = coverage.Coverage()
 cov.start()
@@ -26,5 +28,5 @@ html_path = os.path.join(os.path.realpath(os.path.curdir), "coverage_html_report
 six.print_("View coverage report at file://{}".format(html_path))
 
 if not result.wasSuccessful():
-    sys.exit(1)
+    hou.exit(1)
 
