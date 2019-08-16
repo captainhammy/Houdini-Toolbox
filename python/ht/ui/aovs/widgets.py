@@ -11,9 +11,11 @@ import pickle
 from PySide2 import QtCore, QtGui, QtWidgets
 
 # Houdini Toolbox Imports
-from ht.sohohooks.aovs import manager
+from ht.sohohooks.aovs import manager, sources
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.ui.aovs import models, uidata, utils
+
+from ht.ui import widgets as ht_widgets
 
 # Houdini Imports
 import hou
@@ -856,10 +858,10 @@ class AOVSelectWidget(QtWidgets.QWidget):
 
         # ---------------------------------------------------------------------
 
-        self.filter = FilterWidget()
+        self.filter = ht_widgets.FilterWidget(tooltip="Filter the list of AOVs by name.")
         tree_layout.addWidget(self.filter)
 
-        self.filter.field.textChanged.connect(self.aov_tree.proxy_model.setFilterWildcard)
+        self.filter.filter_changed.connect(self.aov_tree.proxy_model.setFilterWildcard)
 
         # ---------------------------------------------------------------------
 
@@ -1605,57 +1607,7 @@ class NewGroupAOVListWidget(QtWidgets.QListView):
         return self.proxy_model.sourceModel().checked_aovs()
 
 
-# Info Widgets
-
-class InfoTableView(QtWidgets.QTableView):
-    """This class represents a generic table view for information."""
-    def __init__(self, parent=None):
-        super(InfoTableView, self).__init__(parent)
-
-        self.setAlternatingRowColors(True)
-        self.verticalHeader().setVisible(False)
-        self.setWordWrap(False)
-
-        h_header = self.horizontalHeader()
-        h_header.setVisible(False)
-        h_header.setStretchLastSection(True)
-        h_header.resizeSection(0, 250)
-
-    def _copy_table_cell(self, index):
-        """Copy the contents of a table cell to the clipboard."""
-        result = self.model().data(index)
-
-        if result is not None:
-            clipboard = QtGui.QApplication.clipboard()  # pylint: disable=c-extension-no-member
-            clipboard.setText(result)
-
-    def contextMenuEvent(self, event):
-        """Handle RMB menu clicks."""
-        index = self.indexAt(event.pos())
-
-        if not index.isValid():
-            return
-
-        # Create a menu.
-        menu = QtWidgets.QMenu(self)
-
-        # Create an entry to copy cells.
-        copy_action = QtWidgets.QAction("Copy", self)
-        menu.addAction(copy_action)
-
-        copy_action.setShortcut(
-            QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_C)
-        )
-
-        # Display the menu and get the choice..
-        action = menu.exec_(event.globalPos())
-
-        # Copy the cell.
-        if action == copy_action:
-            self._copy_table_cell(index)
-
-
-class AOVInfoTableView(InfoTableView):
+class AOVInfoTableView(ht_widgets.GenericTableView):
     """This class represents the AOV information table."""
     def __init__(self, aov, parent=None):
         super(AOVInfoTableView, self).__init__(parent)
@@ -1665,7 +1617,7 @@ class AOVInfoTableView(InfoTableView):
         self.setModel(model)
 
 
-class AOVGroupInfoTableWidget(InfoTableView):
+class AOVGroupInfoTableWidget(ht_widgets.GenericTableView):
     """This class represents the AOVGroup information table."""
     def __init__(self, group, parent=None):
         super(AOVGroupInfoTableWidget, self).__init__(parent)
@@ -1691,99 +1643,6 @@ class GroupMemberListWidget(QtWidgets.QListView):
         self.setAlternatingRowColors(True)
 
         model.init_data_from_group(group)
-
-
-# Generic Widgets
-
-class ComboBox(QtWidgets.QComboBox):
-    """Custom ComboBox class."""
-    def __init__(self, parent=None):
-        super(ComboBox, self).__init__(parent)
-
-        self.setView(QtWidgets.QListView())
-        self.setFocusPolicy(QtCore.Qt.StrongFocus)
-
-
-    def wheelEvent(self, event):
-        event.ignore()
-
-
-class FileChooser(QtWidgets.QWidget):
-    """This class represents a file choosing widget."""
-
-    def __init__(self, parent=None):
-        super(FileChooser, self).__init__(parent)
-
-        layout = QtWidgets.QHBoxLayout()
-        self.setLayout(layout)
-
-        layout.setSpacing(0)
-        layout.setContentsMargins(0, 0, 0, 0)
-
-        # ---------------------------------------------------------------------
-
-        self.field = QtWidgets.QLineEdit()
-        layout.addWidget(self.field)
-
-        # ---------------------------------------------------------------------
-
-        self.button = QtWidgets.QPushButton(
-            hou.qt.createIcon("BUTTONS_chooser_file"),
-            ""
-        )
-        layout.addWidget(self.button)
-
-        self.button.setFlat(True)
-        icon_size = hou.ui.scaledSize(16)
-        self.button.setIcon(hou.qt.createIcon("BUTTONS_chooser_file", icon_size, icon_size))
-        self.button.setIconSize(QtCore.QSize(icon_size, icon_size))
-
-        self.button.clicked.connect(self._choose_file)
-
-    # -------------------------------------------------------------------------
-    # METHODS
-    # -------------------------------------------------------------------------
-
-    def _choose_file(self):
-        """Open the file chooser dialog."""
-        current = self.get_path()
-
-        start_directory = None
-        default_value = None
-
-        if current:
-            start_directory = os.path.dirname(current)
-            default_value = os.path.basename(current)
-
-        path = hou.ui.selectFile(
-            start_directory=start_directory,
-            pattern="*.json",
-            default_value=default_value,
-            chooser_mode=hou.fileChooserMode.Write
-        )
-
-        if not path:
-            return
-
-        ext = os.path.splitext(path)[1]
-
-        if not ext:
-            path = "{}.json".format(path)
-
-        self.set_path(path)
-
-    def enable(self, enable):
-        """Set the UI element's enabled state."""
-        self.field.setEnabled(enable)
-        self.button.setEnabled(enable)
-
-    def get_path(self):
-        """Get the text."""
-        return self.field.text()
-
-    def set_path(self, path):
-        """Set the path."""
-        self.field.setText(path)
 
 
 class AssetSectionChooser(QtWidgets.QWidget):
@@ -1818,10 +1677,31 @@ class AssetSectionChooser(QtWidgets.QWidget):
                 self.field.setText(node.path())
 
 
-class GroupSourceMenu(ComboBox):
+class SourceDisplayWidget(QtWidgets.QWidget):
 
-    def __init__(self, parent=None):
-        super(GroupSourceMenu, self).__init__(parent)
+    def __init__(self, source, parent=None):
+        super(SourceDisplayWidget, self).__init__(parent=parent)
+
+        layout = QtWidgets.QHBoxLayout()
+        self.setLayout(layout)
+
+        #if isinstance(source, sources.AOVFileSource):
+        icon = hou.qt.createIcon("DATATYPES_file")
+
+        #elif isinstance(source, sources.)
+
+        icon_label = QtWidgets.QLabel()
+        icon_label.setPixmap(icon.pixmap())
+
+        layout.addWidget(icon_label)
+
+        layout.addWidget(QtWidgets.QLabel(source.path))
+
+
+class GroupSourceMenu(hou.qt.ComboBox):
+
+    def __init__(self):
+        super(GroupSourceMenu, self).__init__()
 
         source_manager = manager.MANAGER.source_manager
 
@@ -1829,11 +1709,10 @@ class GroupSourceMenu(ComboBox):
             pass
 
 
+class SourceSelectComboBox(ht_widgets.DefaultComboBox):
 
-class SourceSelectComboBox(ComboBox):
-
-    def __init__(self, parent=None):
-        super(SourceSelectComboBox, self).__init__(parent)
+    def __init__(self):
+        super(SourceSelectComboBox, self).__init__()
 
         source_manager = manager.MANAGER.source_manager
 
@@ -1849,7 +1728,8 @@ class SourceSelectComboBox(ComboBox):
         self.addItem(hou.qt.createIcon("DESKTOP_hip"), "Current .hip File")
         self._current_hip_index = self.count() - 1
 
-        self.setCurrentIndex(self._current_hip_index)
+        # self.setCurrentIndex(self._current_hip_index)
+        self.set_and_assume_default(self._current_hip_index)
 
         self.addItem(hou.qt.createIcon("MISC_ui"), "Unsaved in session")
         self._unsaved_index = self.count() - 1
@@ -1866,6 +1746,13 @@ class SourceSelectComboBox(ComboBox):
         idx = self.count()
         self.model().item(idx - 1).setEnabled(False)
 
+    def init_from_source(self, source):
+        for i in range(self.count()):
+            if self.itemData(i) == source:
+                self.setCurrentIndex(i)
+
+                break
+
 
 class SourceStackedWidget(QtWidgets.QStackedWidget):
 
@@ -1873,7 +1760,7 @@ class SourceStackedWidget(QtWidgets.QStackedWidget):
         super(SourceStackedWidget, self).__init__(parent)
 
         self.addWidget(QtWidgets.QWidget())
-        self.addWidget(FileChooser())
+        self.addWidget(ht_widgets.FileChooser())
         self.addWidget(AssetSectionChooser())
 
 
@@ -1883,6 +1770,8 @@ class SourceChooserWidget(QtWidgets.QWidget):
         super(SourceChooserWidget, self).__init__(parent)
 
         layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+
         self.setLayout(layout)
 
         self.chooser = SourceSelectComboBox()
@@ -1896,40 +1785,36 @@ class SourceChooserWidget(QtWidgets.QWidget):
     def chooser_index_changed(self, index):
         if self.chooser.currentText() == "File":
             self.new_source_stack.setCurrentIndex(1)
+
         elif self.chooser.currentText() == "Digital Asset Section":
             self.new_source_stack.setCurrentIndex(2)
+
         else:
             self.new_source_stack.setCurrentIndex(0)
 
+    def enable(self, enabled):
+
+        self.setEnabled(enabled)
+
+    def set_and_assume_default(self, default_index):
+        self.chooser.set_and_assume_default(default_index)
 
 
+class SourceChooserFieldWidget(ht_widgets.BaseInputItemWidget):
+
+    def __init__(self):
+        chooser = SourceChooserWidget()
+
+        super(SourceChooserFieldWidget, self).__init__(chooser, "Source")
+
+    def set_value(self, source):
+        self.base_widget.chooser.init_from_source(source)
+
+    def set_and_assume_default(self, default_index):
+        self.base_widget.set_and_assume_default(default_index)
 
 
-
-
-
-
-
-
-class FilterWidget(QtWidgets.QWidget):
-    """This class represents a Filter widget."""
-
-    def __init__(self, parent=None):
-        super(FilterWidget, self).__init__(parent)
-
-        layout = QtWidgets.QHBoxLayout()
-        self.setLayout(layout)
-
-        layout.setContentsMargins(0, 0, 0, 0)
-
-        layout.addWidget(QtWidgets.QLabel("Filter"))
-
-        self.field = QtWidgets.QLineEdit()
-        layout.addWidget(self.field)
-
-        self.field.setToolTip("Filter the list of AOVs by name.")
-
-
+# TODO: Replace with hou.qt.HelpButton???
 class HelpButton(QtWidgets.QPushButton):
     """Generic Help button."""
 
@@ -1969,216 +1854,3 @@ class HelpButton(QtWidgets.QPushButton):
 
         browser.displayHelpPath("/aov_manager/{}".format(self._name))
 
-
-class MenuFieldMode(object):
-    """Mode settings for MenuFields."""
-
-    Replace = 0
-    Toggle = 1
-
-
-class MenuField(QtWidgets.QWidget):
-    """This class represents a crappy attempt at a Replace/Toggle style
-    string menu.
-
-    """
-
-    def __init__(self, menu_items, mode=MenuFieldMode.Replace, parent=None):
-        super(MenuField, self).__init__(parent)
-
-        layout = QtWidgets.QHBoxLayout()
-        self.setLayout(layout)
-
-        layout.setSpacing(1)
-        layout.setContentsMargins(0, 0, 0, 0)
-
-        # ---------------------------------------------------------------------
-
-        self.field = QtWidgets.QLineEdit()
-        layout.addWidget(self.field)
-
-        # ---------------------------------------------------------------------
-
-        button = QtWidgets.QPushButton()
-        layout.addWidget(button)
-
-        button.setProperty("menu", True)
-
-        menu = QtWidgets.QMenu(button)
-
-        for item in menu_items:
-            label, value = item
-
-            action = menu.addAction(label)
-
-            if mode == MenuFieldMode.Replace:
-                action.triggered.connect(
-                    lambda val=value: self.set(val)
-                )
-
-            elif mode == MenuFieldMode.Toggle:
-                action.triggered.connect(
-                    lambda val=value: self.toggle(val)
-                )
-
-        button.setMenu(menu)
-
-    # -------------------------------------------------------------------------
-    # METHODS
-    # -------------------------------------------------------------------------
-
-    def set(self, value):
-        """Set the field to a value."""
-        self.field.setText(value)
-
-    def toggle(self, value):
-        """Toggle a value in the field."""
-        text = self.value()
-
-        if value in text:
-            text = text.replace(value, "")
-
-            self.set(text.strip())
-
-        else:
-            if not text:
-                text = value
-
-            else:
-                text = "{} {}".format(text, value)
-
-            self.set(text)
-
-    def value(self):
-        """The field value."""
-        return self.field.text()
-
-
-class StatusMessageWidget(QtWidgets.QWidget):
-    """This class represents an status notification widget."""
-
-    Error = 0
-    Warning = 1
-    Info = 2
-
-    def __init__(self, parent=None):
-        super(StatusMessageWidget, self).__init__(parent)
-
-        self._error_mappings = {}
-        self._warning_mappings = {}
-        self._info_mappings = {}
-
-        self.setContentsMargins(0, 0, 0, 0)
-
-        layout = QtWidgets.QHBoxLayout()
-        self.setLayout(layout)
-
-        layout.setContentsMargins(0, 0, 0, 0)
-
-        self.info_pixmap = hou.qt.createIcon("DIALOG_info").pixmap(24, 24)
-        self.warning_pixmap = hou.qt.createIcon("DIALOG_warning").pixmap(24, 24)
-        self.error_pixmap = hou.qt.createIcon("DIALOG_error").pixmap(24, 24)
-
-        # ---------------------------------------------------------------------
-
-        self.icon = QtWidgets.QLabel()
-        layout.addWidget(self.icon)
-
-        self.icon.setFixedSize(24, 24)
-        self.icon.setPixmap(self.info_pixmap)
-        self.icon.hide()
-
-        # ---------------------------------------------------------------------
-
-        self.display = QtWidgets.QLabel()
-        layout.addWidget(self.display)
-
-        self.setFixedHeight(24)
-
-    # -------------------------------------------------------------------------
-    # NON-PUBLIC METHODS
-    # -------------------------------------------------------------------------
-
-    def _clear_error(self, level):
-        """Clear any error messages at a specific level."""
-        if level in self._error_mappings:
-            del self._error_mappings[level]
-
-        self._update_display()
-
-    def _clear_info(self, level):
-        """Clear any info messages at a specific level."""
-        if level in self._info_mappings:
-            del self._info_mappings[level]
-
-        self._update_display()
-
-    def _clear_warning(self, level):
-        """Clear any warning messages at a specific level."""
-        if level in self._warning_mappings:
-            del self._warning_mappings[level]
-
-        self._update_display()
-
-    def _get_message(self):
-        """Get the current error/warning/info value, if any."""
-        if self._error_mappings:
-            highest = sorted(self._error_mappings.keys())[0]
-
-            self.icon.setPixmap(self.error_pixmap)
-            return self._error_mappings[highest]
-
-        elif self._warning_mappings:
-            highest = sorted(self._warning_mappings.keys())[0]
-
-            self.icon.setPixmap(self.warning_pixmap)
-            return self._warning_mappings[highest]
-
-        elif self._info_mappings:
-            highest = sorted(self._info_mappings.keys())[0]
-
-            self.icon.setPixmap(self.info_pixmap)
-            return self._info_mappings[highest]
-
-        return ""
-
-    def _update_display(self):
-        """Update the display items."""
-        error = self._get_message()
-
-        # Ensure everything is shown and the message is correct.
-        if error:
-            self.display.setText(error)
-            self.display.show()
-            self.icon.show()
-
-        # Clear existing messages and hide the elements.
-        else:
-            self.display.clear()
-            self.display.hide()
-            self.icon.hide()
-
-    # -------------------------------------------------------------------------
-    # METHODS
-    # -------------------------------------------------------------------------
-
-    def add_error(self, level, msg):
-        """Add an error message at a specific level."""
-        self._error_mappings[level] = msg
-        self._update_display()
-
-    def add_info(self, level, msg):
-        """Add a display message at a specific level."""
-        self._info_mappings[level] = msg
-        self._update_display()
-
-    def add_warning(self, level, msg):
-        """Add a warning message at a specific level."""
-        self._warning_mappings[level] = msg
-        self._update_display()
-
-    def clear(self, level):
-        """Clear all notifications for a level."""
-        self._clear_error(level)
-        self._clear_warning(level)
-        self._clear_info(level)

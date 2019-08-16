@@ -12,6 +12,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 # Houdini Toolbox Imports
 import ht.ui.paste
 import ht.ui.paste.models
+import ht.ui.widgets as ht_widgets
 
 # Houdini Imports
 import hou
@@ -215,7 +216,8 @@ class CopyItemNameWidget(QtWidgets.QWidget):
 
         # =====================================================================
 
-        self.warning_widget = WarningWidget()
+        # self.warning_widget = WarningWidget()
+        self.warning_widget = ht_widgets.StatusMessageWidget(icon_size=14)
         layout.addWidget(self.warning_widget)
 
         # =====================================================================
@@ -245,10 +247,10 @@ class CopyItemNameWidget(QtWidgets.QWidget):
             warning_message = "'{}' already exists".format(value)
 
         if not valid and value:
-            self.warning_widget.set_warning(warning_message)
+            self.warning_widget.add_warning(0, warning_message)
 
         else:
-            self.warning_widget.clear_warning()
+            self.warning_widget.clear(0)
 
         # Emit changed signal.
         self.valid_source_signal.emit(valid)
@@ -308,35 +310,3 @@ class RepositoryWidget(QtWidgets.QWidget):
     def get_sources(self):
         """Get all the sources in the menu."""
         return [self.menu.itemData(i) for i in range(self.menu.count())]
-
-
-class WarningWidget(QtWidgets.QWidget):
-    """Widget to display warning messages."""
-
-    def __init__(self, parent=None):
-        super(WarningWidget, self).__init__(parent)
-
-        layout = QtWidgets.QHBoxLayout()
-        self.setLayout(layout)
-
-        self.icon = QtWidgets.QLabel()
-        layout.addWidget(self.icon)
-
-        warning_icon = hou.qt.createIcon("DIALOG_warning")
-        self.icon.setPixmap(warning_icon.pixmap(14, 14))
-        self.icon.setHidden(True)
-
-        self.label = QtWidgets.QLabel()
-        layout.addWidget(self.label)
-
-        layout.addStretch(1)
-
-    def clear_warning(self):
-        """Clear the warning text and icon."""
-        self.label.setText("")
-        self.icon.setHidden(True)
-
-    def set_warning(self, message):
-        """Set the warning text and icon."""
-        self.label.setText(message)
-        self.icon.setHidden(False)

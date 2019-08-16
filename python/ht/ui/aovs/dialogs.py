@@ -10,13 +10,14 @@ AOVGroups.
 # Python Imports
 import os
 import re
-from PySide2 import QtCore, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import constants as consts
 from ht.sohohooks.aovs import manager
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.ui.aovs import uidata, utils, widgets
+from ht.ui import widgets as ht_widgets
 
 # Houdini Imports
 import hou
@@ -71,284 +72,193 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # ---------------------------------------------------------------------
 
-        grid_layout = QtWidgets.QGridLayout()
-        layout.addLayout(grid_layout)
+        self.variable_name = ht_widgets.StringInputWidget("VEX Variable")
 
-        grid_layout.setSpacing(5)
-
-        row = 1
+        layout.addWidget(self.variable_name)
 
         # ---------------------------------------------------------------------
 
-        grid_layout.addWidget(QtWidgets.QLabel("VEX Variable"), row, 0)
+        vex_type_box = ht_widgets.DefaultComboBox()
 
-        self.variable_name = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.variable_name, row, 1)
-
-        row += 1
-
-        # ---------------------------------------------------------------------
-
-        grid_layout.addWidget(QtWidgets.QLabel("VEX Type"), row, 0)
-
-        self.type_box = widgets.ComboBox()
-        grid_layout.addWidget(self.type_box, row, 1)
-
-        for entry in uidata.VEXTYPE_MENU_ITEMS:
+        for i, entry in enumerate(uidata.VEXTYPE_MENU_ITEMS):
             icon = utils.get_icon_for_vex_type(entry[0])
 
-            self.type_box.addItem(
+            vex_type_box.addItem(
                 icon,
                 entry[1],
                 entry[0]
             )
 
-        row += 1
+        vex_type_box.set_and_assume_default(1)
+
+        self.vex_type = ht_widgets.InputMenuWidget(vex_type_box, "VEX Type")
+
+        layout.addWidget(self.vex_type)
 
         # ---------------------------------------------------------------------
 
-        grid_layout.addWidget(QtWidgets.QLabel("Channel Name"), row, 0)
+        self.channel_name = ht_widgets.StringInputWidget("Channel Name")
 
-        self.channel_name = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.channel_name, row, 1)
-
-        self.channel_name.setToolTip(
-            "Optional channel name Mantra will rename the AOV to."
-        )
-
-        row += 1
+        layout.addWidget(self.channel_name)
 
         # ---------------------------------------------------------------------
 
-        grid_layout.addWidget(QtWidgets.QLabel("Quantize"), row, 0)
-
-        self.quantize_box = widgets.ComboBox()
-        grid_layout.addWidget(self.quantize_box, row, 1)
+        quantize_menu = ht_widgets.DefaultComboBox()
 
         for entry in uidata.QUANTIZE_MENU_ITEMS:
-            self.quantize_box.addItem(entry[1], entry[0])
+            quantize_menu.addItem(entry[1], entry[0])
 
-        self.quantize_box.setCurrentIndex(2)
+        quantize_menu.set_and_assume_default(2)
 
-        row += 1
+        self.quantize = ht_widgets.InputMenuWidget(quantize_menu, "Quantize")
+        layout.addWidget(self.quantize)
 
         # ---------------------------------------------------------------------
 
-        grid_layout.addWidget(QtWidgets.QLabel("Sample Filter"), row, 0)
+        sfilter_menu = ht_widgets.DefaultComboBox()
 
-        self.sfilter_box = widgets.ComboBox()
-        grid_layout.addWidget(self.sfilter_box, row, 1)
+        # sfilter_menu = hou.qt.ComboBox()  # widgets.ComboBox()
 
         for entry in uidata.SFILTER_MENU_ITEMS:
-            self.sfilter_box.addItem(entry[1], entry[0])
+            sfilter_menu.addItem(entry[1], entry[0])
 
-        row += 1
+        self.sfilter = ht_widgets.InputMenuWidget(sfilter_menu, "Sample Filter")
+        layout.addWidget(self.sfilter)
 
         # ---------------------------------------------------------------------
 
-        grid_layout.addWidget(QtWidgets.QLabel("Pixel Filter"), row, 0)
-
-        self.pfilter_widget = widgets.MenuField(
+        pfilter_menu = ht_widgets.MenuField(
             uidata.PFILTER_MENU_ITEMS
         )
-        grid_layout.addWidget(self.pfilter_widget, row, 1)
 
-        row += 1
-
-        # ---------------------------------------------------------------------
-
-        grid_layout.setRowMinimumHeight(row, 15)
-
-        row += 1
+        self.pfilter = ht_widgets.InputMenuFieldWidget(pfilter_menu, "Pixel Filter")
+        layout.addWidget(self.pfilter)
 
         # ---------------------------------------------------------------------
 
-        grid_layout.addWidget(
-            QtWidgets.QLabel("Exclude from DCM"),
-            row,
-            0
-        )
-
-        self.exclude_from_dcm = hou.qt.createCheckBox()
-        grid_layout.addWidget(self.exclude_from_dcm, row, 1)
-
-        row += 1
+        layout.addWidget(ht_widgets.EmptySeparator())
 
         # ---------------------------------------------------------------------
 
-        grid_layout.setRowMinimumHeight(row, 15)
-
-        row += 1
-
-        # ---------------------------------------------------------------------
-
-        self.export_label = QtWidgets.QLabel("Export variable \nfor each component")
-
-        grid_layout.addWidget(self.export_label, row, 0, 2, 1)
-
-        self.componentexport = hou.qt.createCheckBox()
-        grid_layout.addWidget(self.componentexport, row, 1, 2, 1)
-
-        row += 2
+        self.exclude_from_dcm = ht_widgets.InputToggleWidget("Exclude from DCM")
+        layout.addWidget(self.exclude_from_dcm)
 
         # ---------------------------------------------------------------------
 
-        self.component_mode_label = QtWidgets.QLabel("Set Components")
-        grid_layout.addWidget(self.component_mode_label, row, 0)
+        layout.addWidget(ht_widgets.EmptySeparator())
 
-        self.component_mode = widgets.ComboBox()
-        grid_layout.addWidget(self.component_mode, row, 1)
+        # ---------------------------------------------------------------------
 
-        self.component_mode.addItem("From ROP", "rop")
-        self.component_mode.addItem("In AOV", "aov")
+        self.componentexport = ht_widgets.InputToggleWidget("Export variable for each component")
+        layout.addWidget(self.componentexport)
 
-        self.component_mode_label.setDisabled(True)
+        # ---------------------------------------------------------------------
+
+        component_mode_menu = ht_widgets.DefaultComboBox()
+
+        component_mode_menu.addItem("From ROP", "rop")
+        component_mode_menu.addItem("In AOV", "aov")
+
+        self.component_mode = ht_widgets.InputMenuWidget(component_mode_menu, "Set Components")
+        layout.addWidget(self.component_mode)
+
         self.component_mode.setDisabled(True)
 
-        #        self.component_mode.currentIndexChanged.connect(self.enable_exports)
-
-        row += 1
-
         # ---------------------------------------------------------------------
 
-        self.components_label = QtWidgets.QLabel("Export Components")
-        grid_layout.addWidget(self.components_label, row, 0)
+        self.componentexport.state_changed.connect(self.enable_component_mode)
+        self.component_mode.current_index_changed.connect(self.enable_components)
 
-        self.components_label.setDisabled(True)
-
-        self.components = QtWidgets.QLineEdit()
-        self.components.setText("diffuse reflect coat refract volume sss")
-        grid_layout.addWidget(self.components, row, 1)
+        self.components = ht_widgets.StringInputWidget(
+            "Export Components",
+            "diffuse reflect coat refract volume sss"
+        )
 
         self.components.setDisabled(True)
-        self.components.setToolTip(
-            "Shading component names.  Leaving this field empty will use the components"
-            " selected on the Mantra ROP."
-        )
 
-        self.componentexport.stateChanged.connect(self.enable_component_mode)
-        self.component_mode.currentIndexChanged.connect(self.enable_components)
+        layout.addWidget(self.components)
 
-        row += 1
+        # ---------------------------------------------------------------------
+        layout.addWidget(ht_widgets.EmptySeparator())
 
         # ---------------------------------------------------------------------
 
-        grid_layout.setRowMinimumHeight(row, 15)
-
-        row += 1
-
-        # ---------------------------------------------------------------------
-
-        grid_layout.addWidget(QtWidgets.QLabel("Light Exports"), row, 0)
-
-        self.lightexport = widgets.ComboBox()
-        grid_layout.addWidget(self.lightexport, row, 1)
+        lightexport_menu = ht_widgets.DefaultComboBox()
 
         for entry in uidata.LIGHTEXPORT_MENU_ITEMS:
-            self.lightexport.addItem(entry[1], entry[0])
+            lightexport_menu.addItem(entry[1], entry[0])
 
-        self.lightexport.currentIndexChanged.connect(self.enable_exports)
+        self.lightexport = ht_widgets.InputMenuWidget(lightexport_menu, "Light Exports")
+        layout.addWidget(self.lightexport)
 
-        row += 1
+        self.lightexport.current_index_changed.connect(self.enable_exports)
 
         # ---------------------------------------------------------------------
 
-        self.light_mask_label = QtWidgets.QLabel("Light Mask")
-        grid_layout.addWidget(self.light_mask_label, row, 0)
+        self.light_mask = ht_widgets.StringInputWidget("Light Mask", "*")
 
-        self.light_mask_label.setDisabled(True)
+        layout.addWidget(self.light_mask)
 
-        self.light_mask = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.light_mask, row, 1)
-
-        self.light_mask.setText("*")
         self.light_mask.setDisabled(True)
 
-        row += 1
-
         # ---------------------------------------------------------------------
 
-        self.light_select_label = QtWidgets.QLabel("Light Selection")
-        grid_layout.addWidget(self.light_select_label, row, 0)
+        self.light_select = ht_widgets.StringInputWidget("Light Selection", "*")
+        layout.addWidget(self.light_select)
 
-        self.light_select_label.setDisabled(True)
-
-        self.light_select = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.light_select, row, 1)
-
-        self.light_select.setText("*")
         self.light_select.setDisabled(True)
 
-        row += 1
+        # ---------------------------------------------------------------------
+
+        layout.addWidget(ht_widgets.EmptySeparator())
 
         # ---------------------------------------------------------------------
 
-        grid_layout.setRowMinimumHeight(row, 15)
+        self.priority = ht_widgets.InputSpinboxWidget("Priority", min_value=-1, default_value=-1)
+        self.priority.set_value(-1)
 
-        row += 1
-
-        # ---------------------------------------------------------------------
-
-        grid_layout.addWidget(QtWidgets.QLabel("Priority"), row, 0)
-
-        self.priority = QtWidgets.QSpinBox()
-        grid_layout.addWidget(self.priority, row, 1)
-
-        self.priority.setMinimum(-1)
-        self.priority.setValue(-1)
-
-        row += 1
+        layout.addWidget(self.priority)
 
         # ---------------------------------------------------------------------
 
-        grid_layout.addWidget(QtWidgets.QLabel("Intrinsics"), row, 0)
+        items = []
 
-        self.intrinsics = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.intrinsics, row, 1)
+        for group in manager.MANAGER.groups.values():
+            if not isinstance(group, IntrinsicAOVGroup):
+                continue
 
-        self.intrinsics.setToolTip(
-            "Optional intrinsic groups for automatic group addition, eg. Diagnostic"
-        )
+            group_name = group.name.lstrip("i:")
 
-        row += 1
+            items.append((group_name, group_name))
 
-        # ---------------------------------------------------------------------
+        intrinsic_menu = ht_widgets.MenuField(items, mode=ht_widgets.MenuFieldMode.Toggle)
 
-        grid_layout.setRowMinimumHeight(row, 15)
+        self.intrinsics = ht_widgets.InputMenuFieldWidget(intrinsic_menu, "Intrinsics")
 
-        row += 1
-
-        # ---------------------------------------------------------------------
-
-        grid_layout.addWidget(QtWidgets.QLabel("Comment"), row, 0)
-
-        self.comment = QtWidgets.QLineEdit()
-        grid_layout.addWidget(self.comment, row, 1)
-
-        self.comment.setToolTip(
-            "Optional comment, eg. 'This AOV represents X'."
-        )
-
-        row += 1
+        layout.addWidget(self.intrinsics)
 
         # ---------------------------------------------------------------------
 
-        grid_layout.setRowMinimumHeight(row, 15)
-
-        row += 1
+        layout.addWidget(ht_widgets.EmptySeparator())
 
         # ---------------------------------------------------------------------
 
-        grid_layout.addWidget(QtWidgets.QLabel("File Path"), row, 0)
+        self.comment = ht_widgets.StringInputWidget("Comment")
 
-        self.file_widget = widgets.FileChooser()
-        grid_layout.addWidget(self.file_widget, row, 1)
-
-        row += 1
+        layout.addWidget(self.comment)
 
         # ---------------------------------------------------------------------
 
-        self.status_widget = widgets.StatusMessageWidget()
+        layout.addWidget(ht_widgets.EmptySeparator())
+
+        # ---------------------------------------------------------------------
+
+        self.source_widget = widgets.SourceChooserFieldWidget()
+        layout.addWidget(self.source_widget)
+
+        # ---------------------------------------------------------------------
+
+        self.status_widget = ht_widgets.StatusMessageWidget()
         layout.addWidget(self.status_widget)
 
         # ---------------------------------------------------------------------
@@ -458,7 +368,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # ---------------------------------------------------------------------
 
-        aov_data[consts.PATH_KEY] = os.path.expandvars(self.file_widget.get_path())
+        # aov_data[consts.PATH_KEY] = os.path.expandvars(self.source_widget.get_path())
 
         # ---------------------------------------------------------------------
 
@@ -468,26 +378,22 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
     def enable_component_mode(self, enable):
         """Enable the Export Components field."""
-        self.component_mode_label.setEnabled(enable)
         self.component_mode.setEnabled(enable)
 
         if not enable:
-            self.components_label.setDisabled(True)
             self.components.setDisabled(True)
 
         else:
-            if self.component_mode.currentIndex() == 1:
-                self.components_label.setDisabled(False)
+            if self.component_mode.menu_widget.currentIndex() == 1:
                 self.components.setDisabled(False)
 
     def enable_components(self, value):
         """Enable the components list."""
-        if value == 1:
-            self.components_label.setDisabled(False)
-            self.components.setDisabled(False)
-        else:
-            self.components_label.setDisabled(True)
-            self.components.setDisabled(True)
+        self.components.setDisabled(value != 1)
+        # if value == 1:
+        #     self.components.setDisabled(False)
+        # else:
+        #     self.components.setDisabled(True)
 
     def enable_creation(self, enable):
         """Enable the Ok button."""
@@ -498,56 +404,65 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         # Current index must be 2 or 3 to enable the fields.
         enable = value in (2, 3)
 
-        self.light_mask_label.setEnabled(enable)
+        # self.light_mask_label.setEnabled(enable)
         self.light_mask.setEnabled(enable)
 
-        self.light_select_label.setEnabled(enable)
+        # self.light_select_label.setEnabled(enable)
         self.light_select.setEnabled(enable)
 
     def initialize_from_aov(self, aov):
         """Initialize the dialog from an AOV."""
 
-        self.variable_name.setText(aov.variable)
+        self.variable_name.set_value(aov.variable)
 
-        self.type_box.setCurrentIndex(utils.get_vextype_menu_index(aov.vextype))
+        # self.vex_type.menu_widget.setCurrentIndex(utils.get_vextype_menu_index(aov.vextype))
+        self.vex_type.set_and_assume_default(utils.get_vextype_menu_index(aov.vextype))
 
         if aov.channel:
-            self.channel_name.setText(aov.channel)
+            self.channel_name.set_and_assume_default(aov.channel)
 
         if aov.quantize is not None:
-            self.quantize_box.setCurrentIndex(utils.get_quantize_menu_index(aov.quantize))
+            self.quantize.set_and_assume_default(utils.get_quantize_menu_index(aov.quantize))
+            # self.quantize_box.setCurrentIndex(utils.get_quantize_menu_index(aov.quantize))
 
         if aov.sfilter is not None:
-            self.sfilter_box.setCurrentIndex(utils.get_sfilter_menu_index(aov.sfilter))
+            self.sfilter.set_and_assume_default(utils.get_sfilter_menu_index(aov.sfilter))
+            # self.sfilter_box.setCurrentIndex(utils.get_sfilter_menu_index(aov.sfilter))
 
         if aov.pfilter:
-            self.pfilter_widget.set(aov.pfilter)
+            # self.pfilter_widget.set(aov.pfilter)
+            self.pfilter.set_and_assume_default(aov.pfilter)
 
         if aov.exclude_from_dcm is not None:
-            self.exclude_from_dcm.setChecked(aov.exclude_from_dcm)
+            # self.exclude_from_dcm.setChecked(aov.exclude_from_dcm)
+            self.exclude_from_dcm.set_and_assume_default(aov.exclude_from_dcm)
 
         if aov.componentexport:
-            self.componentexport.setChecked(True)
+            # self.componentexport.setChecked(True)
+            self.componentexport.set_and_assume_default(True)
 
             if aov.components:
-                self.components.setText(" ".join(aov.components))
+                self.components.set_and_assume_default(" ".join(aov.components))
 
         if aov.lightexport is not None:
-            self.lightexport.setCurrentIndex(utils.get_light_export_menu_index(aov.lightexport))
+            # self.lightexport.setCurrentIndex(utils.get_light_export_menu_index(aov.lightexport))
+            self.lightexport.set_and_assume_default(utils.get_light_export_menu_index(aov.lightexport))
 
-            self.light_mask.setText(aov.lightexport_scope)
-            self.light_select.setText(aov.lightexport_select)
+            self.light_mask.set_and_assume_default(aov.lightexport_scope)
+            self.light_select.set_and_assume_default(aov.lightexport_select)
 
         if aov.priority != -1:
-            self.priority.setValue(aov.priority)
+            self.priority.set_and_assume_default(aov.priority)
 
         if aov.intrinsics:
-            self.intrinsics.setText(", ".join(aov.intrinsics))
+            self.intrinsics.set_and_assume_default(", ".join(aov.intrinsics))
 
         if aov.comment:
-            self.comment.setText(aov.comment)
+            self.comment.set_and_assume_default(aov.comment)
 
-        self.file_widget.set_path(aov.path)
+        self.source_widget.base_widget.chooser.init_from_source(aov.source)
+        # self.source_widget.set_and_assume_default(aov.source)
+        # self.source_widget.set_and_assume_default()
 
     # -------------------------------------------------------------------------
 
@@ -569,12 +484,12 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         """Check that the file path is valid."""
         self.status_widget.clear(1)
 
-        path = self.file_widget.get_path()
-
-        self._file_valid = utils.is_file_path_valid(path)
-
-        if not self._file_valid:
-            self.status_widget.add_error(1, "Invalid file path")
+        # path = self.source_widget.get_path()
+        #
+        # self._file_valid = utils.is_file_path_valid(path)
+        #
+        # if not self._file_valid:
+        #     self.status_widget.add_error(1, "Invalid file path")
 
         self.validate_all_values()
 
@@ -586,7 +501,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         self._variable_valid = True
 
-        variable_name = self.variable_name.text()
+        variable_name = self.variable_name.value()
 
         # Only allow letters, numbers and underscores.
         result = re.match("^\\w+$", variable_name)
@@ -609,14 +524,14 @@ class NewAOVDialog(_BaseAOVDialog):
     def __init__(self, parent=None):
         super(NewAOVDialog, self).__init__(parent)
 
-        self.variable_name.setFocus()
-        self.variable_name.textChanged.connect(self.validate_variable_name)
+        # self.variable_name.setFocus()
+        # self.variable_name.valueChanged.connect(self.validate_variable_name)
 
-        self.type_box.setCurrentIndex(1)
+        # self.vex_type.menu_widget.set_and_assume_default(1)
 
-        self.priority.valueChanged.connect(self.validate_variable_name)
+        self.priority.value_changed.connect(self.validate_variable_name)
 
-        self.file_widget.field.textChanged.connect(self.validate_filepath)
+        # self.source_widget.field.textChanged.connect(self.validate_filepath)
 
         self.status_widget.add_info(0, "Enter a variable name")
         self.status_widget.add_info(1, "Choose a file")
@@ -659,7 +574,7 @@ class NewAOVDialog(_BaseAOVDialog):
         """Accept the operation."""
         aov_data = self.build_aov_data_from_ui()
 
-        aov_data["variable"] = self.variable_name.text()
+        aov_data["variable"] = self.variable_name.value()
         aov_data["vextype"] = self.type_box.itemData(self.type_box.currentIndex())
 
         aov = AOV(aov_data)
@@ -710,9 +625,9 @@ class EditAOVDialog(_BaseAOVDialog):
 
         self.variable_name.setEnabled(False)
 
-        self.type_box.setEnabled(False)
+        self.vex_type.setEnabled(False)
 
-        self.file_widget.setEnabled(False)
+        self.source_widget.setEnabled(False)
 
         self.enable_creation(True)
 
@@ -812,8 +727,8 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(QtWidgets.QLabel("Source"), 2, 0)
 
-        self.file_widget = widgets.SourceChooserWidget()
-        grid_layout.addWidget(self.file_widget, 2, 1)
+        self.source_widget = widgets.SourceChooserWidget()
+        grid_layout.addWidget(self.source_widget, 2, 1)
 
 
         self.file_widget.field.textChanged.connect(self.validate_filepath)
@@ -858,7 +773,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
 
         # ---------------------------------------------------------------------
 
-        self.status_widget = widgets.StatusMessageWidget()
+        self.status_widget = ht_widgets.StatusMessageWidget()
         layout.addWidget(self.status_widget)
 
         # ---------------------------------------------------------------------
@@ -903,7 +818,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
             group.priority = priority
 
         # Find the AOVs to be in this group.
-        aovs = self.aov_list.getSelectedAOVs()
+        aovs = self.aov_list.get_selected_aovs()
 
         group.aovs.extend(aovs)
 
@@ -936,7 +851,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
         """Check that one or more AOVs is selected."""
         self.status_widget.clear(2)
 
-        num_checked = len(self.aov_list.getSelectedAOVs())
+        num_checked = len(self.aov_list.get_selected_aovs())
 
         self._aovs_valid = num_checked > 0
 
@@ -964,7 +879,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
         """Check that the file path is valid."""
         self.status_widget.clear(1)
 
-        path = self.file_widget.get_path()
+        path = self.source_widget.get_path()
         self._file_valid = utils.is_file_path_valid (path)
 
         if not self._file_valid:
@@ -1050,7 +965,7 @@ class NewGroupDialog(_BaseGroupDialog):
         group_name = str(self.group_name.text())
 
         group = AOVGroup(group_name)
-        group.path = os.path.expandvars(self.file_widget.get_path())
+        group.path = os.path.expandvars(self.source_widget.get_path())
 
         self.build_group_from_ui(group)
 
@@ -1074,7 +989,7 @@ class EditGroupDialog(_BaseGroupDialog):
         super(EditGroupDialog, self).__init__(parent)
 
         self.group_name.setEnabled(False)
-        self.file_widget.enable(False)
+        self.source_widget.enable(False)
 
         # Add a Reset button.
         self.button_box.addButton(QtWidgets.QDialogButtonBox.Reset)
@@ -1123,7 +1038,7 @@ class EditGroupDialog(_BaseGroupDialog):
     def initialize_from_group(self):
         """Initialize the UI values from the group."""
         self.group_name.setText(self.group.name)
-        self.file_widget.set_path(self.group.path)
+        self.source_widget.chooser.init_from_source(self.group.source)
 
         if self.group.comment:
             self.comment.setText(self.group.comment)
@@ -1159,7 +1074,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
-        self.aov_chooser = widgets.ComboBox()
+        self.aov_chooser = hou.qt.ComboBox()#widgets.ComboBox()
         layout.addWidget(self.aov_chooser)
 
         # Start menu index.
@@ -1320,7 +1235,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         # ---------------------------------------------------------------------
 
-        self.group_chooser = widgets.ComboBox()
+        self.group_chooser = hou.qt.ComboBox()#widgets.ComboBox()
         layout.addWidget(self.group_chooser)
 
         # Start menu index.
