@@ -5,11 +5,11 @@
 # =============================================================================
 
 # Python Imports
-import StringIO
 from collections import OrderedDict
 import jinja2
 import os
 import re
+import six.moves
 import yaml
 
 # Houdini Imports
@@ -47,7 +47,7 @@ def _add_inputs(string_buf, node):
     """Create the INPUTS section.
 
     :param string_buf: The output buffer.
-    :type string_buf: StringIO.StringIO
+    :type string_buf: six.moves.StringIO
     :param node: The source node.
     :type node: hou.Node
     :return:
@@ -72,7 +72,7 @@ def _add_using_section(string_buf, node_type):
     """Create the 'Using' section.
 
     :param string_buf: The output buffer.
-    :type string_buf: StringIO.StringIO
+    :type string_buf: six.moves.StringIO
     :param node_type: The source node type.
     :type node_type: hou.NodeType
     :return:
@@ -185,7 +185,7 @@ def _add_parameters_section(string_buf, node_type):
     """Add a parameters section to the buffer.
 
     :param string_buf: The output buffer.
-    :type string_buf: StringIO.StringIO
+    :type string_buf: six.moves.StringIO
     :param node_type: The source node type.
     :type node_type: hou.NodeType
     :return:
@@ -205,7 +205,7 @@ def _create_header(string_buf, node_type):
     """Create the header sections.
 
     :param string_buf: The output buffer.
-    :type string_buf: StringIO.StringIO
+    :type string_buf: six.moves.StringIO
     :param node_type: The source node type.
     :type node_type: hou.NodeType
     :return:
@@ -266,7 +266,7 @@ def _get_help_text(string_buf, items, indent):
     """Add items to the output.
 
     :param string_buf: The output buffer.
-    :type string_buf: StringIO.StringIO
+    :type string_buf: six.moves.StringIO
     :param items: Help items or strings.
     :type items: list or OrderedDict or str
     :param indent: The indentation level.
@@ -369,7 +369,7 @@ def generate_help_card(node, inputs=False, related=False, using=False):
     node_type = node.type()
 
     # Use a StringIO object for generating all the text.
-    string_buf = StringIO.StringIO()
+    string_buf = six.moves.StringIO()
 
     # Construct the internal and main header.
     _create_header(string_buf, node_type)
