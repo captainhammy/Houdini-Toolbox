@@ -4,12 +4,14 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 from collections import OrderedDict
 from contextlib import contextmanager
 import logging
-import six
 import time
+
+# Third Party Imports
+import six
 
 _logger = logging.getLogger(__name__)
 

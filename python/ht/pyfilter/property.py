@@ -4,9 +4,11 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 from collections import Iterable
 import json
+
+# Third Party Imports
 import six
 
 

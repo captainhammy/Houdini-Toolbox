@@ -4,22 +4,22 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 from __future__ import division
-import HTMLParser  # pylint: disable=bad-python3-import
 import base64
 import datetime
 import hashlib
-import humanfriendly
-from humanfriendly.tables import format_pretty_table
 import json
 import os
-import requests
 import sys
-import six
-from termcolor import colored, cprint
 import time
 
+# Third Party Imports
+import humanfriendly
+from humanfriendly.tables import format_pretty_table
+import six
+import requests
+from termcolor import colored, cprint
 
 # =============================================================================
 # GLOBALS
@@ -84,7 +84,7 @@ class _Service(object):
         )
 
         # Sort the release list by integer version/build since it will be sorted by string
-        def sorter(data):
+        def sorter(data):  # pylint: disable=missing-docstring
             return [int(val) for val in data["version"].split(".")], int(data["build"])
 
         releases_list.sort(reverse=True, key=sorter)
@@ -263,7 +263,7 @@ def _extract_traceback_from_response(response):
     if not traceback:
         traceback = error_message
 
-    return str(HTMLParser.HTMLParser().unescape(traceback))
+    return str(six.moves.html_parser.HTMLParser().unescape(traceback))
 
 
 def _get_build_to_download(version, build=None, product="houdini", platform="linux", only_production=False,
@@ -400,7 +400,7 @@ def download_build(download_path, version, build=None, product="houdini", platfo
 
         six.print_("No such build {}".format(build_str))
 
-        return
+        return None
 
     file_size = release_info["size"]
     chunk_size = file_size // 10

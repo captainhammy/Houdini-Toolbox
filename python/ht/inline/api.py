@@ -11,7 +11,7 @@ and modules they are meant to extend.
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import ast
 import math
 

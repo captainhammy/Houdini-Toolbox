@@ -4,13 +4,15 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 from collections import OrderedDict
-import jinja2
 import os
 import re
-import six.moves
 import yaml
+
+# Third Party Imports
+import jinja2
+import six.moves
 
 # Houdini Imports
 import hou

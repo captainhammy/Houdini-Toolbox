@@ -1,11 +1,11 @@
 """This module contains classes to define AOVs and groups of AOVs."""
 
-# Python Imports
-import copy
+# =============================================================================
+# IMPORTS
+# =============================================================================
 
-# =============================================================================
-# GLOBALS
-# =============================================================================
+# Standard Library Imports
+import copy
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import constants as consts

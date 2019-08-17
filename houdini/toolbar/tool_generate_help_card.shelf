@@ -11,7 +11,7 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Third Party Imports
 import six
 
 # Houdini Toolbox Imports

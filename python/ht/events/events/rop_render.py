@@ -7,7 +7,7 @@ scripts.
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import logging
 import time
 

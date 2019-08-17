@@ -4,7 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 from __future__ import absolute_import
 import contextlib
 import logging
@@ -42,7 +42,7 @@ def timer(label=None):
         duration = time.time() - t
 
         if label is not None:
-            _logger.info("{} - {}".format(label, duration))
+            _logger.info("%s - %s", label, duration)
         else:
             _logger.info(duration)
 

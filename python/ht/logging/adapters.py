@@ -4,9 +4,8 @@
 # IMPORTS
 # ==============================================================================
 
-# Python Imports
+# Standard Library Imports
 from __future__ import absolute_import
-
 from functools import wraps
 import logging
 
@@ -61,7 +60,8 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
     # SPECIAL METHODS
     # --------------------------------------------------------------------------
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args, **kwargs):  # pylint: disable=unused-argument
+        """Overridden __new__ that will wrap logging methods with custom function."""
         inst = super(HoudiniLoggerAdapter, cls).__new__(cls)
 
         # We want to wrap various log calls to process args and set severities.
@@ -185,7 +185,7 @@ def _wrap_logger(func, severity):
     """Function which wraps a logger method with custom code."""
 
     @wraps(func)
-    def func_wrapper(*args, **kwargs):
+    def func_wrapper(*args, **kwargs):  # pylint: disable=missing-docstring
         # Get the extra dictionary or an empty one if it doesn't exist.
         extra = kwargs.setdefault("extra", {})
 

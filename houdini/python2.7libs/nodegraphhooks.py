@@ -23,7 +23,7 @@ KEY_HIT_TYPES = ('keyhit', 'menukeyhit', 'parentkeyhit')
 # FUNCTIONS
 # ==============================================================================
 
-def createEventHandler(uievent, pending_actions):
+def createEventHandler(uievent, pending_actions):  # pylint: disable=unused-argument
     """Create an event handler for Houdini's network editor.
 
     :param uievent: The occurring event.

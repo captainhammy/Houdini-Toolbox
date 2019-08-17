@@ -7,7 +7,7 @@ file path.
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 from collections import Iterable
 import json
 import logging

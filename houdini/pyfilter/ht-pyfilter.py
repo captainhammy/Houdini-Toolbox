@@ -10,7 +10,7 @@ For more information, please see:
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import logging
 
 # Houdini Toolbox Imports

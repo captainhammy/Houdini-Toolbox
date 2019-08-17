@@ -7,7 +7,7 @@ colors in Houdini.
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import glob
 import json
 import os

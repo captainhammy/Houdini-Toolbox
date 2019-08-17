@@ -4,7 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import json
 import logging.config
 import os

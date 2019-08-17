@@ -4,7 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 from __future__ import division
 import glob
 import json
@@ -13,10 +13,12 @@ import os
 import platform
 import re
 import shutil
-import six
 import subprocess
 import tarfile
 import tempfile
+
+# Third Party Imports
+import six
 
 # Houdini Toolbox Imports
 from ht.machinery import sidefx_web_api
@@ -1054,7 +1056,8 @@ class InstalledHoudiniBuild(HoudiniBase):
         # If there are plugins, remove them.
         if self.plugin_path is not None:
             if os.path.isdir(self.plugin_path):
-                six.print_("Removing compiled operators in {}".format(
+                six.print_(
+                    "Removing compiled operators in {}".format(
                         self.plugin_path
                     )
                 )

@@ -7,7 +7,7 @@ events in Houdini.
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import collections
 from contextlib import contextmanager
 

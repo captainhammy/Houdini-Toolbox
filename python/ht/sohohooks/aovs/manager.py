@@ -7,7 +7,7 @@ with AOVs.
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import glob
 import json
 import os

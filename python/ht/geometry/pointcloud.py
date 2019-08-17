@@ -4,7 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Third Party Imports
 import numpy
 from scipy.spatial import KDTree
 
