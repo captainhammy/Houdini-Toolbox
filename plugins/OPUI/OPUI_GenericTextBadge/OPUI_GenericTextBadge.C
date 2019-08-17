@@ -1,18 +1,20 @@
 
+#include <HOM/HOM_Module.h>
+
 #include <OP/OP_Node.h>
+
 #include <OPUI/OPUI_GraphTextBadge.h>
 #include <OPUI/OPUI_GraphDisplayOptions.h>
 #include <OPUI/OPUI_GraphProxyDescriptor.h>
-#include <SOP/SOP_Node.h>
-#include <UT/UT_DSOVersion.h>
-#include <UT/UT_Color.h>
 
-#include <HOM/HOM_Module.h>
 #include <PY/PY_CPythonAPI.h>
 #include <PY/PY_Python.h>
 #include <PY/PY_InterpreterAutoLock.h>
 
-static const UT_StringHolder theIcon("SOP_font");
+#include <UT/UT_DSOVersion.h>
+#include <UT/UT_Color.h>
+
+static const UT_StringHolder icon_name("SOP_font");
 
 static const UT_StringHolder data_name("ht_generic_text");
 static const UT_StringHolder color_data_name("ht_generic_text_color");
@@ -59,12 +61,15 @@ opuiGenericTextBadgeTest(const OPUI_GraphProxyDescriptor &desc,
 void
 OPUIaddTextBadges(OPUI_GraphTextBadgeArray *add_textbadges)
 {
-    add_textbadges->append(OPUI_GraphTextBadge(
-	"generictextbadge", OPUI_GraphTextBadge::theMainTextBadgeCategory,
-	"HT Generic Text Badge", theIcon, 0.0,
-	TEXTBADGEVIS_TRUNCATED,
-	opuiGenericTextBadgeTest,
-	TEXTBADGE_MULTI_THREADED));
+    add_textbadges->append(
+        OPUI_GraphTextBadge(
+            "generictextbadge", OPUI_GraphTextBadge::theMainTextBadgeCategory,
+            "HT Generic Text Badge", icon_name, 0.0,
+            TEXTBADGEVIS_TRUNCATED,
+            opuiGenericTextBadgeTest,
+            TEXTBADGE_MULTI_THREADED
+        )
+    );
 }
 
 

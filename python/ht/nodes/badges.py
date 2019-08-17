@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
+import _ht_generic_image_badge
 import _ht_generic_text_badge
 
 # Houdini Imports
@@ -14,6 +15,24 @@ import hou
 # ==============================================================================
 # FUNCTIONS
 # ==============================================================================
+
+def clear_generic_image_badge(node):
+    """Clear the generic image badge from the node.
+
+    :param node: The node to clear the badge from.
+    :type node: hou.Node
+    :return:
+
+    """
+    with hou.undos.disabler():
+        # Try to remove the user data from the node.
+        try:
+            node.destroyUserData(_ht_generic_image_badge.get_generic_image_key())
+
+        # Will fail if it doesn't exist, so just ignore.
+        except hou.OperationFailed:
+            pass
+
 
 def clear_generic_text_badge(node):
     """Clear the generic text badge from the node.
@@ -52,6 +71,24 @@ def clear_generic_text_badge_color(node):
         # Will fail if it doesn't exist, so just ignore.
         except hou.OperationFailed:
             pass
+
+
+def set_generic_image_badge(node, image):
+    """Set the node's generic image badge.
+
+    :param node: The node to set the badge for.
+    :type node: hou.Node
+    :param image: The image to set.
+    :type image: str
+    :return:
+
+    """
+    with hou.undos.disabler():
+        # Set the user data.
+        node.setUserData(
+            _ht_generic_image_badge.get_generic_image_key(),
+            image
+        )
 
 
 def set_generic_text_badge(node, value, color=None):

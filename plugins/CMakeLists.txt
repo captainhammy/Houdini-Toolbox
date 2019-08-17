@@ -110,6 +110,7 @@ function ( add_secondary_files )
 
 endfunction ()
 
+add_subdirectory( OPUI/OPUI_GenericImageBadge )
 add_subdirectory( OPUI/OPUI_GenericTextBadge )
 add_subdirectory( ROP/ROP_Script )
 add_subdirectory( SOP/SOP_DopImpactPoints )

@@ -1,11 +1,11 @@
 
-project( OPUI_GenericTextBadge )
+project( OPUI_GenericImageBadge )
 
-set( library_name OPUI_GenericTextBadge )
+set( library_name OPUI_GenericImageBadge )
 
 # Add a library and its source files.
 add_library( ${library_name} SHARED
-    OPUI_GenericTextBadge.C
+    OPUI_GenericImageBadge.C
 )
 
 # Link against the Houdini libraries, and add required include directories and
