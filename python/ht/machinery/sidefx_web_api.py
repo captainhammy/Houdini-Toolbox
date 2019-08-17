@@ -17,8 +17,8 @@ import time
 # Third Party Imports
 import humanfriendly
 from humanfriendly.tables import format_pretty_table
-import six
 import requests
+import six
 from termcolor import colored, cprint
 
 # =============================================================================

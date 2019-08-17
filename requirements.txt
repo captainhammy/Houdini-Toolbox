@@ -1,8 +1,10 @@
 coverage
 enum34
 humanfriendly
+jinja2
 mock
 numpy
+requets
 scipy
 six
 termcolor
