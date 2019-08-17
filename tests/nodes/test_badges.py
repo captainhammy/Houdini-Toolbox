@@ -197,6 +197,7 @@ class Test_set_generic_text_badge_color(unittest.TestCase):
             "rgb 0.1 0.2 0.3"
         )
 
+
 # =============================================================================
 
 if __name__ == '__main__':
