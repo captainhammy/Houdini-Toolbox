@@ -81,7 +81,4 @@ def _get_aov_section_from_node_type(node_type):
             section = sections[AOVAssetSectionSource.SECTION_NAME]
 
     return section
-<<<<<<< HEAD
 
-=======
->>>>>>> 36eb20120fb6453d96ccd1b9d5cc6016f82fc6f2
