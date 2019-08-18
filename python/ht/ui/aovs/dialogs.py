@@ -730,9 +730,6 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
         self.source_widget = widgets.SourceChooserWidget()
         grid_layout.addWidget(self.source_widget, 2, 1)
 
-
-        self.file_widget.field.textChanged.connect(self.validate_filepath)
-
         # ---------------------------------------------------------------------
 
         grid_layout.addWidget(QtWidgets.QLabel("Comment"), 3, 0)
