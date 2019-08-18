@@ -767,6 +767,8 @@ class IntrinsicAOVGroup(AOVGroup):
     def __init__(self, name):
         data = {consts.GROUP_NAME_KEY: name}
 
+        super(IntrinsicAOVGroup, self).__init__(data)
+
         self._comment = consts.INTRINSIC_COMMENT_KEY
 
 # =============================================================================
