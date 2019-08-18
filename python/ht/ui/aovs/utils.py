@@ -4,10 +4,12 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
-from PySide2 import QtCore, QtGui
+# Standard Library Imports
 import os
 import pickle
+
+# Third Party Imports
+from PySide2 import QtCore, QtGui
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs.aov import ALLOWABLE_VALUES

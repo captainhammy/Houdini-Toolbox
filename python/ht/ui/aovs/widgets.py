@@ -4,17 +4,17 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import os
 import pickle
 
+# Third Party Imports
 from PySide2 import QtCore, QtGui, QtWidgets
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import manager, sources
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.ui.aovs import models, uidata, utils
-
 from ht.ui import widgets as ht_widgets
 
 # Houdini Imports

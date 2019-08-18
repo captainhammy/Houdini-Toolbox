@@ -4,18 +4,20 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
-from PySide2 import QtCore, QtGui, QtWidgets
+# Standard Library Imports
 import enum
 import os
+
+# Third Party Imports
+from PySide2 import QtCore, QtGui, QtWidgets
 
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
-
 
 class BaseInputItemWidget(QtWidgets.QWidget):
 
@@ -331,9 +333,9 @@ class ClickableLabel(QtWidgets.QLabel):
         self.setObjectName("DefaultLabel")
 
         self.setStyleSheet(
-"""ClickableLabel#DefaultLabel[nondefault=true] {
-    font-weight: bold;
-}"""
+            """ClickableLabel#DefaultLabel[nondefault=true] {
+                font-weight: bold;
+            }"""
         )
 
     def adjust_styling(self, is_default):

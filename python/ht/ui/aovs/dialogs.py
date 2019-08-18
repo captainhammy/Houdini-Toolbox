@@ -7,10 +7,12 @@ AOVGroups.
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import os
 import re
-from PySide2 import QtCore, QtGui, QtWidgets
+
+# Third Party Imports
+from PySide2 import QtCore, QtWidgets
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import constants as consts
@@ -26,7 +28,6 @@ import hou
 # =============================================================================
 # CLASSES
 # =============================================================================
-
 
 # Create/Edit Dialogs
 
@@ -80,7 +81,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         vex_type_box = ht_widgets.DefaultComboBox()
 
-        for i, entry in enumerate(uidata.VEXTYPE_MENU_ITEMS):
+        for entry in uidata.VEXTYPE_MENU_ITEMS:
             icon = utils.get_icon_for_vex_type(entry[0])
 
             vex_type_box.addItem(
@@ -877,7 +878,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
         self.status_widget.clear(1)
 
         path = self.source_widget.get_path()
-        self._file_valid = utils.is_file_path_valid (path)
+        self._file_valid = utils.is_file_path_valid(path)
 
         if not self._file_valid:
             self.status_widget.add_error(1, "Invalid file path")

@@ -12,7 +12,7 @@ import glob
 import os
 
 # Houdini Toolbox Imports
-from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
+from ht.sohohooks.aovs.aov import AOVGroup, IntrinsicAOVGroup
 from ht.sohohooks.aovs import sources
 
 # Houdini Imports
@@ -190,6 +190,7 @@ class AOVManager(object):
 
     @property
     def source_manager(self):
+        """ht.sohohooks.aovs.sources.AOVSourceManager: The source manager."""
         return self._source_manager
 
     # -------------------------------------------------------------------------

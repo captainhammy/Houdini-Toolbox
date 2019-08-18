@@ -4,9 +4,10 @@
 # IMPORTS
 # ==============================================================================
 
-# Python Imports
+# Standard Library Imports
 from operator import attrgetter
 
+# Third Party Imports
 from PySide2 import QtCore
 
 # Houdini Toolbox Imports
@@ -62,7 +63,7 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def flags(self, index):  # pylint: disable=unused-argument
+    def flags(self, index):  # pylint: disable=no-self-use,unused-argument
         """Item flags.
 
         We want items to be enabled and selectable.

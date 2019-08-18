@@ -4,13 +4,15 @@
 # IMPORTS
 # ==============================================================================
 
-# Python Imports
+# Standard Library Imports
 import abc
 import datetime
 import getpass
 import json
 import os
 from pwd import getpwuid
+
+# Third Party Imports
 import six
 
 # Houdini Toolbox Imports

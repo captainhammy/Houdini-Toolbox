@@ -7,7 +7,7 @@ with AOVs.
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import abc
 import json
 import os
@@ -100,13 +100,13 @@ class AOVSourceManager(object):
             pass
 
         elif isinstance(source, AOVAssetSectionSource):
-            del(self.asset_section_sources[source.section])
+            del self.asset_section_sources[source.section]
 
         elif isinstance(source, AOVGroupSource):
-            del(self._group_sources[source.group])
+            del self._group_sources[source.group]
 
         elif isinstance(source, AOVFileSource):
-            del(self._file_sources[source.path])
+            del self._file_sources[source.path]
 
 
 class BaseAOVSource(object):
@@ -393,8 +393,7 @@ class AOVAssetSectionSource(BaseAOVSource):
             return False
 
         # Check the write permissions of the file on disk.
-        else:
-            return not os.access(self.path, os.W_OK)
+        return not os.access(self.path, os.W_OK)
 
     @property
     def exists(self):
@@ -471,7 +470,7 @@ class AOVFileSource(BaseAOVSource):
         """The path to the source file."""
         return self._path
 
-    def write(self, path=None):
+    def write(self, path=None):  # pylint: disable=parameters-differ
         """Write the data to file."""
         data = self._get_data()
 
@@ -486,9 +485,6 @@ class AOVHipSource(BaseAOVSource):
     """This class represents AOVs and groups stored in the current hip file."""
 
     USER_DATA_NAME = "aovs.json"
-
-    def __init__(self):
-        super(AOVHipSource, self).__init__()
 
     @property
     def name(self):
@@ -525,9 +521,10 @@ class AOVHipSource(BaseAOVSource):
         return hou.node("/")
 
     def reload(self):
+        """Reload the source."""
         self._init_from_source()
 
-    def write(self, save_hip=True):
+    def write(self): #, save_hip=True):
         """Write data to the hip file."""
         data = self._get_data()
 
@@ -546,9 +543,6 @@ class AOVUnsavedSource(BaseAOVSource):
     when that session quits.
 
     """
-
-    def __init__(self):
-        super(AOVUnsavedSource, self).__init__()
 
     @property
     def name(self):

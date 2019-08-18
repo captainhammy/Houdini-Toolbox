@@ -531,7 +531,15 @@ class AOV(object):
 
 
 class GroupBasedAOV(AOV):
+    """This class represents an AOV which exists only inside a group.
 
+    :param data: Group data
+    :type data: dict
+    :param group: The source group.
+    :type group: AOVGroup
+    :return:
+
+    """
     def __init__(self, data, group):
         super(GroupBasedAOV, self).__init__(data)
 
@@ -735,6 +743,13 @@ class AOVGroup(object):
         self._data[consts.GROUP_AOVS_KEY] = []
 
     def init_members_from_manager(self, manager):
+        """Initialize AOV membership using the manager.
+
+        :param manager: The source manager.
+        :type manager: ht.sohohooks.aovs.manager.AOVManager
+        :return:
+
+        """
         for include in self._data[consts.GROUP_INCLUDE_KEY]:
             if include in manager.aovs:
                 self.aovs.append(manager.aovs[include])
