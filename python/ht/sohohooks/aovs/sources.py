@@ -270,6 +270,10 @@ class BaseAOVSource(object):
 
         group.source = self
 
+    # TODO: Is this a good idea?
+    def can_create_source(self):
+        return NotImplemented
+
     def clear(self):
         self._aovs = []
         self._data.clear()
@@ -428,6 +432,11 @@ class AOVAssetSectionSource(BaseAOVSource):
         definition = node.type().definition()
         return AOVAssetSectionSource.SECTION_NAME in definition.sections().keys()
 
+    # def can_create_source(self):
+    #     dir_path = os.path.dirname(self.path)
+    #
+    #     return os.access(dir_path, os.W_OK)
+
     def write(self):
         """Write data to the source section."""
         data = self._get_data()
@@ -469,6 +478,11 @@ class AOVFileSource(BaseAOVSource):
     def path(self):
         """The path to the source file."""
         return self._path
+
+    def can_create_source(self):
+        dir_path = os.path.dirname(self.path)
+
+        return os.access(dir_path, os.W_OK)
 
     def write(self, path=None):  # pylint: disable=parameters-differ
         """Write the data to file."""

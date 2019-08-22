@@ -1755,16 +1755,23 @@ class SourceSelectComboBox(ht_widgets.DefaultComboBox):
 
 
 class SourceStackedWidget(QtWidgets.QStackedWidget):
+    target_source_valid = QtCore.Signal(bool, str)
 
     def __init__(self, parent=None):
         super(SourceStackedWidget, self).__init__(parent)
 
+        self.file_chooser = ht_widgets.FileChooser(file_pattern="*.json")
+        self.node_chooser = AssetSectionChooser()
+
         self.addWidget(QtWidgets.QWidget())
-        self.addWidget(ht_widgets.FileChooser())
-        self.addWidget(AssetSectionChooser())
+        self.addWidget(self.file_chooser)
+        self.addWidget(self.node_chooser)
 
 
 class SourceChooserWidget(QtWidgets.QWidget):
+
+    source_changed = QtCore.Signal()
+    source_valid = QtCore.Signal(bool, str)
 
     def __init__(self, parent=None):
         super(SourceChooserWidget, self).__init__(parent)
@@ -1782,6 +1789,34 @@ class SourceChooserWidget(QtWidgets.QWidget):
 
         self.chooser.currentIndexChanged.connect(self.chooser_index_changed)
 
+        self.new_source_stack.file_chooser.selected_path_valid.connect(self._new_source_changed)
+
+    def _new_source_changed(self, valid, message):
+        self.source_valid.emit(valid, message)
+       # print valid, message
+
+    def _validate_source(self):
+        valid = True
+        message = ""
+
+        index = self.chooser.currentIndex()
+
+        # TODO: Still need to validate new file sources on change to them
+        if self.chooser.currentText() == "File":
+            #self.new_source_stack.setCurrentIndex(1)
+            # self.new_source_stack.file_chooser.get_path()
+            return
+
+        elif self.chooser.currentText() == "Digital Asset Section":
+            return
+        #    self.new_source_stack.setCurrentIndex(2)
+
+        else:
+         #   self.new_source_stack.setCurrentIndex(0)
+            pass
+
+        self.source_valid.emit(valid, message)
+
     def chooser_index_changed(self, index):
         if self.chooser.currentText() == "File":
             self.new_source_stack.setCurrentIndex(1)
@@ -1792,8 +1827,10 @@ class SourceChooserWidget(QtWidgets.QWidget):
         else:
             self.new_source_stack.setCurrentIndex(0)
 
-    def enable(self, enabled):
+        self._validate_source()
+        self.source_changed.emit()
 
+    def enable(self, enabled):
         self.setEnabled(enabled)
 
     def set_and_assume_default(self, default_index):
@@ -1802,16 +1839,34 @@ class SourceChooserWidget(QtWidgets.QWidget):
 
 class SourceChooserFieldWidget(ht_widgets.BaseInputItemWidget):
 
+    source_changed = QtCore.Signal()
+    source_valid = QtCore.Signal(bool, str)
+
     def __init__(self):
         chooser = SourceChooserWidget()
 
         super(SourceChooserFieldWidget, self).__init__(chooser, "Source")
+
+        self.label_widget.setAlignment(QtCore.Qt.AlignTop)
+
+        self.base_widget.source_changed.connect(self._emit_changed)
+        self.base_widget.source_valid.connect(self._source_valid)
+
+    def _emit_changed(self):
+        self.source_changed.emit()
+
+    def _source_valid(self, valid, message):
+        self.source_valid.emit(valid, message)
 
     def set_value(self, source):
         self.base_widget.chooser.init_from_source(source)
 
     def set_and_assume_default(self, default_index):
         self.base_widget.set_and_assume_default(default_index)
+
+    def get_source(self):
+        """Get the target source."""
+        #return self.base_widget.
 
 
 # TODO: Replace with hou.qt.HelpButton???

@@ -57,7 +57,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # UI elements are valid.
         self._variable_valid = False
-        self._file_valid = False
+        self._source_valid = False
 
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
@@ -257,6 +257,8 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         self.source_widget = widgets.SourceChooserFieldWidget()
         layout.addWidget(self.source_widget)
 
+        self.source_widget.source_valid.connect(self._source_validity_changed)
+
         # ---------------------------------------------------------------------
 
         self.status_widget = ht_widgets.StatusMessageWidget()
@@ -286,6 +288,15 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         """Perform additional validation against a variable name."""
         pass
 
+    def _source_validity_changed(self, valid, message):
+        self._source_valid = valid
+
+        if valid:
+            self.status_widget.clear(1)
+
+        else:
+            self.status_widget.add_error(1, message)
+
     # -------------------------------------------------------------------------
     # METHODS
     # -------------------------------------------------------------------------
@@ -294,13 +305,14 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         """Set AOV data from UI values."""
         aov_data = {}
 
-        channel_name = self.channel_name.text()
+        channel_name = self.channel_name.value()
 
         aov_data[consts.CHANNEL_KEY] = channel_name
 
         # ---------------------------------------------------------------------
 
-        quantize = self.quantize_box.itemData(self.quantize_box.currentIndex())
+        quantize = self.quantize.value()
+        # quantize = self.quantize_box.itemData(self.quantize_box.currentIndex())
 
         aov_data[consts.QUANTIZE_KEY] = None
 
@@ -309,7 +321,8 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # ---------------------------------------------------------------------
 
-        sfilter = self.sfilter_box.itemData(self.sfilter_box.currentIndex())
+        # sfilter = self.sfilter_box.itemData(self.sfilter_box.currentIndex())
+        sfilter = self.sfilter.value()
 
         aov_data[consts.SFILTER_KEY] = None
 
@@ -318,7 +331,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # ---------------------------------------------------------------------
 
-        pfilter = self.pfilter_widget.value()
+        pfilter = self.pfilter.value()
 
         if not utils.is_value_default(pfilter, "pfilter"):
             aov_data[consts.PFILTER_KEY] = pfilter
@@ -328,25 +341,25 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # ---------------------------------------------------------------------
 
-        if self.exclude_from_dcm.isChecked():
+        if self.exclude_from_dcm.value():
             aov_data[consts.EXCLUDE_DCM_KEY] = True
 
         # ---------------------------------------------------------------------
 
-        if self.componentexport.isChecked():
+        if self.componentexport.value():
             aov_data[consts.COMPONENTEXPORT_KEY] = True
-            aov_data[consts.COMPONENTS_KEY] = self.components.text().split()
+            aov_data[consts.COMPONENTS_KEY] = self.components.value().split()
 
         # ---------------------------------------------------------------------
 
-        lightexport = self.lightexport.itemData(self.lightexport.currentIndex())
+        lightexport = self.lightexport.value()
 
         if lightexport:
             aov_data[consts.LIGHTEXPORT_KEY] = lightexport
 
             if lightexport != consts.LIGHTEXPORT_PER_CATEGORY_KEY:
-                aov_data[consts.LIGHTEXPORT_SCOPE_KEY] = self.light_mask.text()
-                aov_data[consts.LIGHTEXPORT_SELECT_KEY] = self.light_select.text()
+                aov_data[consts.LIGHTEXPORT_SCOPE_KEY] = self.light_mask.value()
+                aov_data[consts.LIGHTEXPORT_SELECT_KEY] = self.light_select.value()
 
         # ---------------------------------------------------------------------
 
@@ -357,13 +370,13 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # ---------------------------------------------------------------------
 
-        intrinsics = self.intrinsics.text()
+        intrinsics = self.intrinsics.value()
 
         aov_data[consts.INTRINSICS_KEY] = intrinsics.replace(',', ' ').split()
 
         # ---------------------------------------------------------------------
 
-        comment = self.comment.text()
+        comment = self.comment.value()
 
         aov_data[consts.COMMENT_KEY] = comment
 
@@ -474,22 +487,25 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         if not self._variable_valid:
             valid = False
 
-        if not self._file_valid:
+        if not self._source_valid:
             valid = False
 
         self.valid_input_signal.emit(valid)
 
     # -------------------------------------------------------------------------
 
+#    def validate_source(self):
+
     def validate_filepath(self):
         """Check that the file path is valid."""
         self.status_widget.clear(1)
 
+        self._source_valid = True
         # path = self.source_widget.get_path()
         #
-        # self._file_valid = utils.is_file_path_valid(path)
+        # self._source_valid = utils.is_file_path_valid(path)
         #
-        # if not self._file_valid:
+        # if not self._source_valid:
         #     self.status_widget.add_error(1, "Invalid file path")
 
         self.validate_all_values()
@@ -525,6 +541,8 @@ class NewAOVDialog(_BaseAOVDialog):
     def __init__(self, parent=None):
         super(NewAOVDialog, self).__init__(parent)
 
+        self.variable_name.setFocus()
+        self.variable_name.value_changed.connect(self.validate_variable_name)
         # self.variable_name.setFocus()
         # self.variable_name.valueChanged.connect(self.validate_variable_name)
 
@@ -532,10 +550,11 @@ class NewAOVDialog(_BaseAOVDialog):
 
         self.priority.value_changed.connect(self.validate_variable_name)
 
+        self.source_widget.source_changed.connect(self.validate_filepath)
         # self.source_widget.field.textChanged.connect(self.validate_filepath)
 
         self.status_widget.add_info(0, "Enter a variable name")
-        self.status_widget.add_info(1, "Choose a file")
+        #self.status_widget.add_info(1, "Choose a source")
 
         self.enable_creation(False)
 
@@ -576,7 +595,10 @@ class NewAOVDialog(_BaseAOVDialog):
         aov_data = self.build_aov_data_from_ui()
 
         aov_data["variable"] = self.variable_name.value()
-        aov_data["vextype"] = self.type_box.itemData(self.type_box.currentIndex())
+        aov_data["vextype"] = self.vex_type.value()
+
+        print aov_data
+        return super(NewAOVDialog, self).accept()
 
         aov = AOV(aov_data)
 
@@ -662,7 +684,7 @@ class EditAOVDialog(_BaseAOVDialog):
         """Accept the operation."""
         aov_data = self.build_aov_data_from_ui()
 
-        self.aov._updateData(aov_data)
+        self.aov._update_data(aov_data)
 
         # Open file for writing.
         aov_file = manager.AOVFile(self.aov.path)
@@ -691,7 +713,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
         super(_BaseGroupDialog, self).__init__(parent)
 
         self._group_name_valid = False
-        self._file_valid = False
+        self._source_valid = False
         self._aovs_valid = False
 
         # Initialize UI
@@ -865,7 +887,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
         if not self._group_name_valid:
             valid = False
 
-        if not self._file_valid:
+        if not self._source_valid:
             valid = False
 
         if not self._aovs_valid:
@@ -878,9 +900,9 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
         self.status_widget.clear(1)
 
         path = self.source_widget.get_path()
-        self._file_valid = utils.is_file_path_valid(path)
+        self._source_valid = True #utils.is_file_path_valid(path)
 
-        if not self._file_valid:
+        if not self._source_valid:
             self.status_widget.add_error(1, "Invalid file path")
 
         self.validate_all_values()

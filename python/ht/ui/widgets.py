@@ -71,14 +71,19 @@ class DefaultComboBox(QtWidgets.QComboBox):
 
         self.setStyle(self.style())
 
+    def revert_to_default(self):
+        self.setCurrentIndex(self._default_index)
+
     def set_and_assume_default(self, default_index=0):
         self._default_index = default_index
 
         self.setCurrentIndex(default_index)
 
+    def value(self):
+        return self.itemData(self.currentIndex())
+
     def wheelEvent(self, event):
         event.ignore()
-
 
 
 class EmptySeparator(QtWidgets.QWidget):
@@ -92,7 +97,9 @@ class EmptySeparator(QtWidgets.QWidget):
 class FileChooser(QtWidgets.QWidget):
     """This class represents a file choosing widget."""
 
-    def __init__(self, parent=None, file_pattern=None):
+    selected_path_valid = QtCore.Signal(bool, str)
+
+    def __init__(self, file_pattern=None, chooser_mode=hou.fileChooserMode.Write, parent=None):
         super(FileChooser, self).__init__(parent)
 
         layout = QtWidgets.QHBoxLayout()
@@ -103,7 +110,7 @@ class FileChooser(QtWidgets.QWidget):
 
         # ---------------------------------------------------------------------
 
-        self.field = QtWidgets.QLineEdit()
+        self.field = DefaultedLineEdit()
         layout.addWidget(self.field)
 
         # ---------------------------------------------------------------------
@@ -122,7 +129,9 @@ class FileChooser(QtWidgets.QWidget):
             self.button.default_value = os.path.basename(current)
 
         self.button.file_pattern = file_pattern
-        self.button.chooser_mode = hou.fileChooserMode.Write
+        self.button.chooser_mode = chooser_mode
+
+        self.field.textChanged.connect(self._validate_path)
 
         self.button.fileSelected.connect(self.handle_selection)
 
@@ -158,9 +167,52 @@ class FileChooser(QtWidgets.QWidget):
             self.button.start_directory = os.path.dirname(current)
             self.button.default_value = os.path.basename(current)
 
+    def validate(self):
+        path = self.get_path()
+
+        self._validate_path(path)
+
+    def _validate_path(self, path):
+        current = hou.expandString(path)
+        exists = os.path.exists(current)
+
+        if not path:
+            self.selected_path_valid.emit(False, "Enter a path")
+
+            return
+
+        valid = True
+        message = ""
+
+        if self.button.chooser_mode in (hou.fileChooserMode.Write, hou.fileChooserMode.ReadAndWrite):
+            if exists:
+                if not os.access(current, os.W_OK):
+                    valid = False
+                    message = "Existing file is not writable"
+
+            else:
+                dir_path = os.path.dirname(current)
+
+                if not os.access(dir_path, os.W_OK):
+                    valid = False
+                    message = "Directory is not writable"
+
+        elif self.button.chooser_mode in (hou.fileChooserMode.Read, hou.fileChooserMode.ReadAndWrite):
+            if exists:
+                if not os.access(current, os.R_OK):
+                    valid = False
+                    message = "Existing file is not readable"
+
+            else:
+                valid = False
+                message = "File does not exist"
+
+        self.selected_path_valid.emit(valid, message)
+
 
 class FilterWidget(QtWidgets.QWidget):
     """This class represents a Filter widget."""
+
     filter_changed = QtCore.Signal(str)
 
     def __init__(self, label="Filter", tooltip=None, parent=None):
@@ -247,11 +299,14 @@ class InputMenuFieldWidget(BaseInputItemWidget):
     # def _emit_index_changed(self, index):
     #     self.current_index_changed.emit(index)
 
+    def revert_to_default(self):
+        self.menu_field_widget.revert_to_default()
+
     def set_and_assume_default(self, default_value):
         self.menu_field_widget.set_and_assume_default(default_value)
 
     def value(self):
-        self.menu_field_widget.value()
+        return self.menu_field_widget.value()
 
 
 class InputMenuWidget(BaseInputItemWidget):
@@ -267,11 +322,14 @@ class InputMenuWidget(BaseInputItemWidget):
     def _emit_index_changed(self, index):
         self.current_index_changed.emit(index)
 
+    def revert_to_default(self):
+        self.menu_widget.revert_to_default()
+
     def set_and_assume_default(self, default_value):
         self.menu_widget.set_and_assume_default(default_value)
 
     def value(self):
-        self.menu_widget.value()
+        return self.menu_widget.value()
 
 
 class InputSpinboxWidget(BaseInputItemWidget):
@@ -310,6 +368,9 @@ class InputSpinboxWidget(BaseInputItemWidget):
         self._adjust_styling(value == self._default_value)
 
         self.value_changed.emit(value)
+
+    def revert_to_default(self):
+        self.set_value(self._default_value)
 
     def set_and_assume_default(self, default_value):
         self._default_value = default_value
@@ -381,6 +442,9 @@ class LabeledToggleWidget(QtWidgets.QWidget):
     def _label_click(self):
         self.check_box.toggle()
 
+    def revert_to_default(self):
+        self.set_checked(self._default_state)
+
     def set_and_assume_default(self, default_state):
         self.set_default(default_state)
 
@@ -423,6 +487,9 @@ class InputToggleWidget(QtWidgets.QWidget):
     def _emit_state_change(self, state):
         self.state_changed.emit(state)
 
+    def revert_to_default(self):
+        self.set_checked(self._default_state)
+
     def set_and_assume_default(self, default_state):
         self.toggle.set_and_assume_default(default_state)
 
@@ -441,7 +508,7 @@ class MenuFieldMode(enum.Enum):
 
 
 class MenuField(QtWidgets.QWidget):
-    """This class represents a crappy attempt at a Replace/Toggle style
+    """This class represents an attempt at a Replace/Toggle style
     string menu.
 
     """
@@ -496,6 +563,9 @@ class MenuField(QtWidgets.QWidget):
     def set_and_assume_default(self, default_value):
         self.field.set_and_assume_default(default_value)
 
+    def revert_to_default(self):
+        self.field.revert_to_default()
+
     def set_value(self, value):
         """Set the field to a value."""
         self.field.setText(value)
@@ -507,7 +577,7 @@ class MenuField(QtWidgets.QWidget):
         if value in text:
             text = text.replace(value, "")
 
-            self.set(text.strip())
+            self.set_value(text.strip())
 
         else:
             if not text:
@@ -676,6 +746,9 @@ class DefaultedLineEdit(QtWidgets.QLineEdit):
 
         self.setStyle(self.style())
 
+    def revert_to_default(self):
+        self.set_value(self._default_value)
+
     def set_and_assume_default(self, default_value):
         self._default_value = default_value
 
@@ -719,6 +792,9 @@ class StringInputWidget(BaseInputItemWidget):
         # self._adjust_styling(value == self._default_value)
 
         self.value_changed.emit(value)
+
+    def revert_to_default(self):
+        self.field.revert_to_default()
 
     def set_and_assume_default(self, default_value):
         self.field.set_and_assume_default(default_value)
