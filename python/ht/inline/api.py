@@ -2883,18 +2883,53 @@ def build_lookat_matrix(from_vec, to_vec, up_vector):
     return mat
 
 
-def point_instance_transform(geometry, point_number):
+def get_oriented_point_transform(point):
+    """Get a transform matrix from a point.
+
+    This matrix may be the result of standard point instance attributes or if the
+    point has any non-raw geometry primitives bound to it (PackedPrim, Quadric, VDB, Volume)
+    then the transform from the first primitive will be returned.
+
+    :param point: The point.
+    :type point: hou.Point
+    :return: A matrix representing the point transform.
+    :rtype: hou.Matrix4
+
+    """
+    # Check for connected primitives.
+    prims = connected_prims(point)
+
+    if prims:
+        # Get the first one.  This is probably the only one unless you're doing
+        # something strange.
+        prim = prims[0]
+
+        # If the primitive is a Face of Surface we can't do anything.
+        if isinstance(prim, (hou.Face, hou.Surface)):
+            raise hou.OperationFailed("Point {} is bound to raw geometry".format(point.number()))
+
+        # Get the primitive's rotation matrix.
+        rot_matrix = prim.transform()
+
+        # Create a full transform matrix using the point position as well.
+        return hou.Matrix4(rot_matrix) * hou.hmath.buildTranslate(point.position())
+
+    # Just a simple unattached point so we can return the standard point instance
+    # matrix.
+    else:
+        return point_instance_transform(point)
+
+
+def point_instance_transform(point):
     """Get a point's instance transform based on existing attributes.
 
-    :param geometry: The source geometry.
-    :type geometry: hou.Geometry
-    :param point_number: The point number.
-    :type point_number: int
+    :param point: The point.
+    :type point: hou.Point
     :return: A matrix representing the instance transform.
     :rtype: hou.Matrix4
 
     """
-    result = _cpp_methods.point_instance_transform(geometry, point_number)
+    result = _cpp_methods.point_instance_transform(point.geometry(), point.number())
 
     return hou.Matrix4(result)
 

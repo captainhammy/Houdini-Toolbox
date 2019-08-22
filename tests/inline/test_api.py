@@ -4578,20 +4578,94 @@ class Test_build_lookat_matrix(unittest.TestCase):
         mock_build.assert_called_with(mock_mat3.return_value, mock_from_vec, mock_to_vec, mock_up_vec)
 
 
+class Test_get_oriented_point_transform(unittest.TestCase):
+    """Test ht.inline.api.get_oriented_point_transform."""
+
+    @patch("ht.inline.api.hou.Matrix4", autospec=True)
+    @patch("ht.inline.api._cpp_methods.point_instance_transform")
+    @patch("ht.inline.api.connected_prims")
+    def test_face(self, mock_connected, mock_get_point_xform, mock_mat4):
+        """Test where the bound prim is a hou.Face"""
+        mock_face = MagicMock(spec=hou.Face)
+
+        mock_connected.return_value = (mock_face, )
+
+        mock_point = MagicMock(spec=hou.Point)
+
+        with self.assertRaises(hou.OperationFailed):
+            api.get_oriented_point_transform(mock_point)
+
+        mock_connected.assert_called_with(mock_point)
+
+    @patch("ht.inline.api.hou.Matrix4", autospec=True)
+    @patch("ht.inline.api._cpp_methods.point_instance_transform")
+    @patch("ht.inline.api.connected_prims")
+    def test_surface(self, mock_connected, mock_get_point_xform, mock_mat4):
+        """Test where the bound prim is a hou.Surface"""
+        mock_surface = MagicMock(spec=hou.Surface)
+
+        mock_connected.return_value = (mock_surface, )
+
+        mock_point = MagicMock(spec=hou.Point)
+
+        with self.assertRaises(hou.OperationFailed):
+            api.get_oriented_point_transform(mock_point)
+
+        mock_connected.assert_called_with(mock_point)
+
+    @patch("ht.inline.api.hou.Matrix4", autospec=True)
+    @patch("hou.hmath.buildTranslate")
+    @patch("ht.inline.api._cpp_methods.point_instance_transform")
+    @patch("ht.inline.api.connected_prims")
+    def test_valid_prim(self, mock_connected, mock_get_point_xform, mock_build, mock_mat4):
+        """Test where the bound prim is a not a hou.Face of hou.Surface"""
+        mock_valid_prim = MagicMock(spec=hou.PackedPrim)
+        mock_face = MagicMock(spec=hou.Surface)
+
+        mock_connected.return_value = (mock_valid_prim, mock_face)
+
+        mock_point = MagicMock(spec=hou.Point)
+
+        result = api.get_oriented_point_transform(mock_point)
+
+        self.assertEqual(result, mock_mat4.return_value * mock_build.return_value)
+
+        mock_mat4.assert_called_with(mock_valid_prim.transform.return_value)
+        mock_build.assert_called_with(mock_point.position.return_value)
+
+        mock_connected.assert_called_with(mock_point)
+
+    @patch("ht.inline.api.point_instance_transform")
+    @patch("ht.inline.api.connected_prims")
+    def test_unattached_point(self, mock_connected, mock_point_instance_transform):
+        """Test where the point is not attached."""
+        mock_connected.return_value = ()
+
+        mock_point = MagicMock(spec=hou.Point)
+
+        result = api.get_oriented_point_transform(mock_point)
+
+        self.assertEqual(result, mock_point_instance_transform.return_value)
+
+        mock_connected.assert_called_with(mock_point)
+        mock_point_instance_transform.assert_called_with(mock_point)
+
+
 class Test_point_instance_transform(unittest.TestCase):
     """Test ht.inline.api.point_instance_transform."""
 
-    @patch("ht.inline.api._cpp_methods.point_instance_transform")
     @patch("ht.inline.api.hou.Matrix4", autospec=True)
-    def test(self, mock_mat4, get_point_xform):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_ptnum = MagicMock(spec=int)
+    @patch("ht.inline.api._cpp_methods.point_instance_transform")
+    def test(self, mock_get_point_xform, mock_mat4):
+        mock_point = MagicMock(spec=hou.Point)
 
-        result = api.point_instance_transform(mock_geometry, mock_ptnum)
+        result = api.point_instance_transform(mock_point)
 
         self.assertEqual(result, mock_mat4.return_value)
 
-        mock_mat4.assert_called_with(get_point_xform.return_value)
+        mock_get_point_xform.assert_called_with(mock_point.geometry.return_value, mock_point.number.return_value)
+
+        mock_mat4.assert_called_with(mock_get_point_xform.return_value)
 
 
 class Test_build_instance_matrix(unittest.TestCase):
