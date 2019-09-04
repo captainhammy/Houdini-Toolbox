@@ -7,7 +7,10 @@
 
             <scriptItem id="ht.menurefresh">
                 <label>Reload Menus</label>
-                <scriptCode><![CDATA[hou.hscript("menurefresh")]]></scriptCode>
+                <scriptCode><![CDATA[import hou
+
+hou.hscript("menurefresh")
+]]></scriptCode>
             </scriptItem>
         </subMenu>
     </menuBar>

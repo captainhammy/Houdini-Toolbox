@@ -164,7 +164,7 @@ def convert_relative_to_absolute_path(scriptargs):
             parm.set(target_node.path())
 
 
-def promote_parameter_to_node(scriptargs):
+def promote_parameter_to_node(scriptargs):  # pylint: disable=too-many-locals
     """Promote a parameter to a target node.
 
     :param scriptargs: kwargs dict from PARMmenu entry.

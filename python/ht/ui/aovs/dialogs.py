@@ -964,7 +964,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
         self.status_widget.clear(1)
 
         path = self.file_widget.get_path()
-        self._file_valid = utils.is_file_path_valid (path)
+        self._file_valid = utils.is_file_path_valid(path)
 
         if not self._file_valid:
             self.status_widget.add_error(1, "Invalid file path")

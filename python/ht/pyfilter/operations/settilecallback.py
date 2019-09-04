@@ -74,7 +74,7 @@ class SetTileCallback(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @log_filter_call
-    def filterCamera(self):
+    def filter_camera(self):
         """Apply camera properties.
 
         :return:

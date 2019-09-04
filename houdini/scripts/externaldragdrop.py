@@ -15,7 +15,7 @@ from ht.events import SceneEvents, run_event
 # FUNCTIONS
 # =============================================================================
 
-def dropAccept(file_paths):
+def dropAccept(file_paths):  # pylint: disable=invalid-name
     """Accept a list of files.
 
     This function is called by Houdini when files are dropped onto the UI.
@@ -36,4 +36,3 @@ def dropAccept(file_paths):
 
     # Return whether or not the drop was accepted by the handler.
     return scriptargs.get("drop_accepted", False)
-

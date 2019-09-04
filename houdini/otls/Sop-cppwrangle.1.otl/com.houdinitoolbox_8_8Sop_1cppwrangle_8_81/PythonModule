@@ -256,7 +256,7 @@ def build_library(node):
     if not function_sources:
         raise NoFunctionSourcesError()
 
-    config = inlinecpp._create_cppinline_config()
+    config = inlinecpp._create_cppinline_config()  # pylint: disable=protected-access
 
     compile_target = _get_compile_target_folder(node)
 
@@ -298,12 +298,11 @@ def view_c_file(node):
     """
     lib = build_library(node)
 
-    cpp_file_name = lib._cpp_file_name()
-    shared_object_path = lib._shared_object_path()
+    cpp_file_name = lib._cpp_file_name()  # pylint: disable=protected-access
+    shared_object_path = lib._shared_object_path()  # pylint: disable=protected-access
 
     cpp_file_path = os.path.join(os.path.dirname(shared_object_path), cpp_file_name)
 
     if os.path.exists(cpp_file_path):
         args = os.environ.get("EDITOR", "gvim").split() + [cpp_file_path]
         subprocess.Popen(args)
-

@@ -139,4 +139,3 @@ class PasteItemsDialog(QtWidgets.QDialog):
         to_load = self.source_chooser.currentWidget().get_sources()
 
         utils.paste_items_from_sources(to_load, self.editor, self.pos, self.mousepos)
-

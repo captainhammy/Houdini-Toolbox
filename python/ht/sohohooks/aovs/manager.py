@@ -255,7 +255,7 @@ class AOVManager(object):
             for aov in flatten_aov_items(aov_items):
                 if aov.variable == "Op_Id":
                     IFDapi.ray_comment("Forcing object id generation")
-                    IFDsettings._GenerateOpId = True
+                    IFDsettings._GenerateOpId = True  # pylint: disable=protected-access
 
                     break
 

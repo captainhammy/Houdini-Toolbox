@@ -200,6 +200,7 @@ def geo_details_match(geometry1, geometry2):
     :rtype: bool
 
     """
+    # pylint: disable=protected-access
     handle1 = geometry1._guDetailHandle()
     handle2 = geometry2._guDetailHandle()
 
@@ -377,4 +378,3 @@ def get_prims_from_list(geometry, prim_list):
 
     # Glob for the specified prims.
     return geometry.globPrims(prim_str)
-

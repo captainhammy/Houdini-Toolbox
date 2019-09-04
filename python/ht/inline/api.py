@@ -212,7 +212,7 @@ def is_geometry_read_only(geometry):
 
     """
     # Get a GU Detail Handle for the geometry.
-    handle = geometry._guDetailHandle()
+    handle = geometry._guDetailHandle()  # pylint: disable=protected-access
 
     # Check if the handle is read only.
     result = handle.isReadOnly()
@@ -2934,7 +2934,7 @@ def point_instance_transform(point):
     return hou.Matrix4(result)
 
 
-def build_instance_matrix(position, direction=hou.Vector3(0, 0, 1), pscale=1,
+def build_instance_matrix(position, direction=hou.Vector3(0, 0, 1), pscale=1,  # pylint: disable=too-many-arguments
                           scale=hou.Vector3(1, 1, 1), up_vector=hou.Vector3(0, 1, 0),
                           rot=hou.Quaternion(0, 0, 0, 1), trans=hou.Vector3(0, 0, 0),
                           pivot=hou.Vector3(0, 0, 0), orient=None):

@@ -5,6 +5,7 @@ For more information, please see:
     http://www.sidefx.com/docs/houdini/rendering/python
 
 """
+# pylint: disable=invalid-name,wrong-import-position
 
 # =============================================================================
 # IMPORTS
@@ -16,6 +17,7 @@ import logging
 # Houdini Toolbox Imports
 import ht.logging
 
+# Initialize logging config.
 ht.logging.init_config()
 
 from ht.pyfilter.manager import PyFilterManager
@@ -50,7 +52,7 @@ def filterCamera():
     """
     _logger.debug("filterCamera")
 
-    _PYFILTER_MANAGER.run_operations_for_stage("filterCamera")
+    _PYFILTER_MANAGER.run_operations_for_stage("filter_camera")
 
 
 def filterCameraSegment():
@@ -62,14 +64,14 @@ def filterCameraSegment():
     """
     _logger.debug("filterCameraSegment")
 
-    _PYFILTER_MANAGER.run_operations_for_stage("filterCameraSegment")
+    _PYFILTER_MANAGER.run_operations_for_stage("filter_camera_segment")
 
 
 def filterEndRender():
     """Perform actions just after the image has been rendered."""
     _logger.debug("filterEndRender")
 
-    _PYFILTER_MANAGER.run_operations_for_stage("filterEndRender")
+    _PYFILTER_MANAGER.run_operations_for_stage("filter_end_render")
 
 
 def filterError(level, message, prefix):
@@ -78,7 +80,7 @@ def filterError(level, message, prefix):
     This function allows you to disable the printing of messages.
 
     """
-    result = _PYFILTER_MANAGER.run_operations_for_stage("filterError", level, message, prefix)
+    result = _PYFILTER_MANAGER.run_operations_for_stage("filter_error", level, message, prefix)
 
     return result
 
@@ -92,7 +94,7 @@ def filterFog():
     """
     _logger.debug("filterFog (%s)", get_property("object:name"))
 
-    _PYFILTER_MANAGER.run_operations_for_stage("filterFog")
+    _PYFILTER_MANAGER.run_operations_for_stage("filter_fog")
 
 
 def filterGeometry():
@@ -105,7 +107,7 @@ def filterGeometry():
     """
     _logger.debug("filterGeometry")
 
-    _PYFILTER_MANAGER.run_operations_for_stage("filterGeometry")
+    _PYFILTER_MANAGER.run_operations_for_stage("filter_geometry")
 
 
 def filterInstance():
@@ -117,7 +119,7 @@ def filterInstance():
 
     """
     _logger.debug("filterInstance (%s)", get_property("object:name"))
-    _PYFILTER_MANAGER.run_operations_for_stage("filterInstance")
+    _PYFILTER_MANAGER.run_operations_for_stage("filter_instance")
 
 
 def filterLight():
@@ -130,7 +132,7 @@ def filterLight():
     """
     _logger.debug("filterLight (%s)", get_property("object:name"))
 
-    _PYFILTER_MANAGER.run_operations_for_stage("filterLight")
+    _PYFILTER_MANAGER.run_operations_for_stage("filter_light")
 
 
 def filterMaterial():
@@ -143,7 +145,7 @@ def filterMaterial():
     """
     _logger.debug("filterMaterial")
 
-    _PYFILTER_MANAGER.run_operations_for_stage("filterMaterial")
+    _PYFILTER_MANAGER.run_operations_for_stage("filter_material")
 
 
 def filterOutputAssets(assets):  # pylint: disable=unused-argument
@@ -155,7 +157,7 @@ def filterOutputAssets(assets):  # pylint: disable=unused-argument
     """
     _logger.debug("filterOutputAssets")
 
-    _PYFILTER_MANAGER.run_operations_for_stage("filterOutputAssets")
+    _PYFILTER_MANAGER.run_operations_for_stage("filter_output_assets")
 
 
 def filterPlane():
@@ -168,14 +170,14 @@ def filterPlane():
     else:
         _logger.debug("filterPlane (%s -> %s)", variable, channel)
 
-    _PYFILTER_MANAGER.run_operations_for_stage("filterPlane")
+    _PYFILTER_MANAGER.run_operations_for_stage("filter_plane")
 
 
 def filterQuit():
     """Perform actions just before Mantra quits."""
     _logger.debug("filterQuit")
 
-    _PYFILTER_MANAGER.run_operations_for_stage("filterQuit")
+    _PYFILTER_MANAGER.run_operations_for_stage("filter_quit")
 
 
 def filterRender():
@@ -188,12 +190,12 @@ def filterRender():
     """
     _logger.debug("filterRender")
 
-    _PYFILTER_MANAGER.run_operations_for_stage("filterRender")
+    _PYFILTER_MANAGER.run_operations_for_stage("filter_render")
 
 
 def main():
     """Build the manager."""
-    global _PYFILTER_MANAGER
+    global _PYFILTER_MANAGER  # pylint: disable=global-statement
 
     _PYFILTER_MANAGER = PyFilterManager()
 

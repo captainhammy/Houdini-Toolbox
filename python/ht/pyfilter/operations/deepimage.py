@@ -225,7 +225,7 @@ class SetDeepImage(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def build_arg_string(disable_deep_image=None, deep_all_passes=None,  # pylint: disable=arguments-differ
+    def build_arg_string(disable_deep_image=None, deep_all_passes=None,  # pylint: disable=arguments-differ,too-many-arguments
                          deep_image_path=None, resolver=None, compositing=None,
                          compression=None, depth_planes=None, mipmaps=None,
                          ofsize=None, ofstorage=None, pzstorage=None, zbias=None):
@@ -349,7 +349,7 @@ class SetDeepImage(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @log_filter_call
-    def filterCamera(self):
+    def filter_camera(self):
         """Apply camera properties.
 
         :return:

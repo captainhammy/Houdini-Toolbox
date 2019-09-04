@@ -17,4 +17,3 @@ import ht.nodes.styles.manager
 
 # Register our event to handle automatic color setting.
 register_event_group(StyleNodeEvent())
-

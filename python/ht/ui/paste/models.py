@@ -32,7 +32,7 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
 
         self.refresh()
 
-    def columnCount(self, parent):  # pylint: disable=unused-argument
+    def columnCount(self, parent):  # pylint: disable=invalid-name,unused-argument
         """The number of columns."""
         return len(self.header_labels)
 
@@ -62,14 +62,14 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def flags(self, index):  # pylint: disable=unused-argument
+    def flags(self, index):  # pylint: disable=no-self-use,unused-argument
         """Item flags.
 
         We want items to be enabled and selectable.
         """
         return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
-    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
+    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):  # pylint: disable=invalid-name,
         """Populate column headers with our labels."""
         if role == QtCore.Qt.DisplayRole and orientation == QtCore.Qt.Horizontal:
             return self.header_labels[section]
@@ -86,7 +86,7 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
         self.items.sort(key=attrgetter("name"))
         self.modelReset.emit()
 
-    def rowCount(self, parent):  # pylint: disable=unused-argument
+    def rowCount(self, parent):  # pylint: disable=invalid-name,unused-argument
         """The number of rows.
 
         Equal to the number of files we can paste.

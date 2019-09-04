@@ -86,8 +86,8 @@ class PropertySetterManager(object):
         _logger.debug("Reading properties from %s", file_path)
 
         # Load json data from the file.
-        with open(file_path) as f:
-            data = json.load(f)
+        with open(file_path) as handle:
+            data = json.load(handle)
 
         self._load_from_data(data)
 
@@ -368,7 +368,7 @@ class SetProperties(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @log_filter_call
-    def filterCamera(self):
+    def filter_camera(self):
         """Apply camera properties.
 
         :return:
@@ -377,7 +377,7 @@ class SetProperties(PyFilterOperation):
         self.property_manager.set_properties("camera")
 
     @log_filter_call("object:name")
-    def filterInstance(self):
+    def filter_instance(self):
         """Apply object properties.
 
         :return:
@@ -386,7 +386,7 @@ class SetProperties(PyFilterOperation):
         self.property_manager.set_properties("instance")
 
     @log_filter_call("object:name")
-    def filterLight(self):
+    def filter_light(self):
         """Apply light properties.
 
         :return:

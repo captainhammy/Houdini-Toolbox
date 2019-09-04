@@ -59,9 +59,9 @@ class SohoHookManager(object):
                 result = hook(*args, **kwargs)
 
             # Catch any exceptions and 'log' them to the ifd via comments.
-            except Exception as e:
+            except Exception as inst:  # pylint: disable=broad-except
                 ray_comment(
-                    "Hook Error[{}]: {}".format(name, str(e))
+                    "Hook Error[{}]: {}".format(name, inst)
                 )
 
                 ray_comment(

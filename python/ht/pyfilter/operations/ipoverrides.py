@@ -168,7 +168,7 @@ class IpOverrides(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def build_arg_string(res_scale=None, sample_scale=None, disable_blur=False,  # pylint: disable=arguments-differ
+    def build_arg_string(res_scale=None, sample_scale=None, disable_blur=False,  # pylint: disable=arguments-differ,too-many-arguments
                          disable_aovs=False, disable_deep=False,
                          disable_displacement=False, disable_subd=False,
                          disable_tilecallback=False, bucket_size=None,
@@ -274,7 +274,7 @@ class IpOverrides(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @log_filter_call
-    def filterCamera(self):
+    def filter_camera(self):
         """Apply camera properties.
 
         :return:
@@ -313,7 +313,7 @@ class IpOverrides(PyFilterOperation):
             set_property("image:transparentsamples", self.transparent_samples)
 
     @log_filter_call
-    def filterInstance(self):
+    def filter_instance(self):
         """Modify object properties.
 
         :return:
@@ -333,7 +333,7 @@ class IpOverrides(PyFilterOperation):
                 set_property("object:renderable", False)
 
     @log_filter_call
-    def filterMaterial(self):
+    def filter_material(self):
         """Modify material properties.
 
         :return:
@@ -343,7 +343,7 @@ class IpOverrides(PyFilterOperation):
             set_property("object:displace", [])
 
     @log_filter_call
-    def filterPlane(self):
+    def filter_plane(self):
         """Modify aov properties.
 
         :return:
@@ -493,9 +493,9 @@ def build_pixel_sample_scale_display(node):
 
     sample_scale = node.evalParm("ip_sample_scale")
 
-    sx, sy = _scale_samples(samples, sample_scale)
+    scale_x, scale_y = _scale_samples(samples, sample_scale)
 
-    return "{}x{}".format(sx, sy)
+    return "{}x{}".format(scale_x, scale_y)
 
 
 def build_resolution_scale_display(node):

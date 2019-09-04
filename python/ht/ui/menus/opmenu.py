@@ -34,4 +34,3 @@ def save_item_to_file(scriptargs):
 
     """
     copy_item(scriptargs['node'])
-

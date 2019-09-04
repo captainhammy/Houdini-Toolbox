@@ -356,8 +356,8 @@ def _verify_file_checksum(file_path, hash_value):
     # Verify the file checksum is matching
     file_hash = hashlib.md5()
 
-    with open(file_path, 'rb') as f:
-        for chunk in iter(lambda: f.read(4096), b''):
+    with open(file_path, 'rb') as handle:
+        for chunk in iter(lambda: handle.read(4096), b''):
             file_hash.update(chunk)
 
     if file_hash.hexdigest() != hash_value:
@@ -368,8 +368,8 @@ def _verify_file_checksum(file_path, hash_value):
 # FUNCTIONS
 # =============================================================================
 
-def download_build(download_path, version, build=None, product="houdini", platform="linux", only_production=False,
-                   allow_bad=False):
+def download_build(download_path, version, build=None, product="houdini",  # pylint: disable=too-many-locals
+                   platform="linux", only_production=False, allow_bad=False):
     """Download a build to target path.
 
     :param download_path: The path to download the build to.
@@ -410,9 +410,9 @@ def download_build(download_path, version, build=None, product="houdini", platfo
 
     target_path = os.path.join(download_path, release_info['filename'])
 
-    r = requests.get(release_info['download_url'], stream=True)
+    request = requests.get(release_info['download_url'], stream=True)
 
-    if r.status_code == 200:
+    if request.status_code == 200:
         six.print_("Downloading to {}".format(target_path))
         six.print_("\tFile size: {}".format(humanfriendly.format_size(file_size, binary=True)))
         six.print_("\tDownload chunk size: {}\n".format(humanfriendly.format_size(chunk_size, binary=True)))
@@ -423,7 +423,7 @@ def download_build(download_path, version, build=None, product="houdini", platfo
             sys.stdout.write("0% complete")
             sys.stdout.flush()
 
-            for chunk in r.iter_content(chunk_size=chunk_size):
+            for chunk in request.iter_content(chunk_size=chunk_size):
                 total += chunk_size
 
                 sys.stdout.write(

@@ -35,6 +35,7 @@ class _StatsMeta(type):
     # -------------------------------------------------------------------------
 
     def __call__(cls, *args, **kwargs):
+        # pylint: disable=protected-access
         # Key off the name.
         key = args[0]
 
@@ -314,7 +315,7 @@ def get_event_stats(matching_tags=None):
     :rtype: tuple(HoudiniEventStats)
 
     """
-    all_stats = _StatsMeta._instances.get(HoudiniEventStats, {}).values()
+    all_stats = _StatsMeta._instances.get(HoudiniEventStats, {}).values()  # pylint: disable=protected-access
 
     if matching_tags is None:
         return tuple(all_stats)
@@ -331,7 +332,7 @@ def get_item_stats(matching_tags=None):
     :rtype: tuple(HoudiniEventItemStats)
 
     """
-    all_stats = _StatsMeta._instances.get(HoudiniEventItemStats, {}).values()
+    all_stats = _StatsMeta._instances.get(HoudiniEventItemStats, {}).values()  # pylint: disable=protected-access
 
     if matching_tags is None:
         return tuple(all_stats)

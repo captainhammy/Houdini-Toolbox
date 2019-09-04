@@ -6,7 +6,8 @@
  a single file. -->
 
   <tool name="generate_help_card" label="Generate Help Card" icon="PANETYPES_help_browser">
-    <script scriptType="python"><![CDATA[
+    <script scriptType="python"><![CDATA["""Generate a help card."""
+
 # =============================================================================
 # IMPORTS
 # =============================================================================
@@ -26,11 +27,11 @@ options = (
     "Inputs block",
     "Related nodes list",
     "Create a 'Using xxx' block",
- )
+)
 
 node_path = hou.ui.selectNode()
 target_node = hou.node(node_path)
-    
+
 if target_node is not None:
     choices = hou.ui.selectFromList(
         options,
@@ -38,7 +39,7 @@ if target_node is not None:
         num_visible_rows=len(options),
         clear_on_cancel=True
     )
-    
+
     inputs = 0 in choices
     related = 1 in choices
     using = 2 in choices
@@ -49,29 +50,29 @@ if target_node is not None:
 
     if type_definition is not None:
         open_type_properties = False
-        
+
         help_section = type_definition.sections().get("Help")
-        
+
         if help_section is not None:
             overwrite = hou.ui.displayMessage(
                 "Help card exists.  Overwrite?",
                 ("Yes", "No"),
                 severity=hou.severityType.Warning
             )
-            
+
             if overwrite == 0:
                 help_section.setContents(help_text)
                 open_type_properties = True
-                
+
             else:
                 six.print_(help_text)
 
         else:
             help_section = type_definition.addSection("Help")
             help_section.setContents(help_text)
-            
+
             open_type_properties = True
-        
+
         if open_type_properties:
             hou.ui.openTypePropertiesDialog(target_node)
     else:

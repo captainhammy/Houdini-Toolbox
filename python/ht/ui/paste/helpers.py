@@ -133,4 +133,3 @@ class HomeToolDirItemsPasteHelperWidget(_BasePasteHelperWidget):
     def get_sources(self):
         """Get a list of selected sources to operate on."""
         return self.table.get_selected_sources()
-

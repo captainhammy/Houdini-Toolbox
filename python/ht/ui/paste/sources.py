@@ -201,10 +201,9 @@ class HomeToolDirSource(CopyPasteSource):
 
         files = os.listdir(self._base_path)
 
-        for p in files:
-
-            if os.path.splitext(p)[1] == self._extension:
-                path = os.path.join(self._base_path, p)
+        for file_name in files:
+            if os.path.splitext(file_name)[1] == self._extension:
+                path = os.path.join(self._base_path, file_name)
 
                 item = CPIOContextCopyPasteItemFile.from_path(path)
 

@@ -8,8 +8,7 @@
                 <insertAfter>opmenu.refcopy</insertAfter>
                 <scriptCode><![CDATA[import ht.ui.menus.opmenu
 
-ht.ui.menus.opmenu.create_absolute_reference_copy(kwargs)
-
+ht.ui.menus.opmenu.create_absolute_reference_copy(kwargs)  # pylint: disable=undefined-variable
 ]]></scriptCode>
             </scriptItem>
         </subMenu>
@@ -19,8 +18,7 @@ ht.ui.menus.opmenu.create_absolute_reference_copy(kwargs)
                 <label>To File...</label>
                 <scriptCode><![CDATA[import ht.ui.menus.opmenu
 
-ht.ui.menus.opmenu.save_item_to_file(kwargs)
-
+ht.ui.menus.opmenu.save_item_to_file(kwargs)  # pylint: disable=undefined-variable
 ]]></scriptCode>
             </scriptItem>
         </subMenu>

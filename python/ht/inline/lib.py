@@ -2247,5 +2247,3 @@ void addDependencyOnParm(OP_Node *node, const UT_StringRef &name, int instance_i
     ],
     function_sources=_FUNCTION_SOURCES
 )
-
-

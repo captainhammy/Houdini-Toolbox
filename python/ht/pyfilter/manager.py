@@ -232,8 +232,8 @@ def _get_operation_data(file_path):
 
     """
     try:
-        with open(file_path) as fp:
-            data = json.load(fp)
+        with open(file_path) as handle:
+            data = json.load(handle)
 
     except (IOError, ValueError) as inst:
         _logger.error("Error loading operation data from %s", file_path)

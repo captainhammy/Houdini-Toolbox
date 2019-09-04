@@ -88,7 +88,7 @@ class ZDepthPass(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @log_filter_call("object:name")
-    def filterInstance(self):
+    def filter_instance(self):
         """Apply constant black shader to objects.
 
         :return:
@@ -108,7 +108,7 @@ class ZDepthPass(PyFilterOperation):
             set_property("object:displace", None)
 
     @log_filter_call("plane:variable")
-    def filterPlane(self):
+    def filter_plane(self):
         """Modify image planes to ensure one will output Pz.
 
         This will disable all planes that are not C and Pz.

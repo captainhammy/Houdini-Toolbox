@@ -7,8 +7,7 @@
             <insertAfter>export_parm_type_props</insertAfter>
             <scriptCode><![CDATA[import ht.ui.menus.parmmenu
 
-ht.ui.menus.parmmenu.promote_parameter_to_node(kwargs)
-
+ht.ui.menus.parmmenu.promote_parameter_to_node(kwargs)  # pylint: disable=undefined-variable
 ]]></scriptCode>
         </scriptItem>
 
@@ -18,14 +17,12 @@ ht.ui.menus.parmmenu.promote_parameter_to_node(kwargs)
             <context>
                 <expression><![CDATA[import ht.ui.menus.parmmenu
 
-return ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context(kwargs)
-
+return ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context(kwargs)  # pylint: disable=undefined-variable
 ]]></expression>
             </context>
             <scriptCode><![CDATA[import ht.ui.menus.parmmenu
 
-ht.ui.menus.parmmenu.convert_relative_to_absolute_path(kwargs)
-
+ht.ui.menus.parmmenu.convert_relative_to_absolute_path(kwargs)  # pylint: disable=undefined-variable
 ]]></scriptCode>
         </scriptItem>
 
@@ -35,14 +32,12 @@ ht.ui.menus.parmmenu.convert_relative_to_absolute_path(kwargs)
             <context>
                 <expression><![CDATA[import ht.ui.menus.parmmenu
 
-return ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context(kwargs)
-
+return ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context(kwargs)  # pylint: disable=undefined-variable
 ]]></expression>
             </context>
             <scriptCode><![CDATA[import ht.ui.menus.parmmenu
 
-ht.ui.menus.parmmenu.convert_absolute_to_relative_path(kwargs)
-
+ht.ui.menus.parmmenu.convert_absolute_to_relative_path(kwargs)  # pylint: disable=undefined-variable
 ]]></scriptCode>
         </scriptItem>
     </menu>

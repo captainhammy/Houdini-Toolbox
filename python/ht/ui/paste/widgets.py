@@ -137,7 +137,7 @@ class BasicSourceItemTable(QtWidgets.QTableView):
         """Quick check if the table has anything selected"""
         return bool(self.selection_model.selectedRows())
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event):  # pylint: disable=invalid-name
         """Handle keystrokes."""
         key = event.key()
 

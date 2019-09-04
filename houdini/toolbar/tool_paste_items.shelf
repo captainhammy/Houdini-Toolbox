@@ -5,9 +5,11 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
   <tool name="paste_items" label="Paste Items from File" icon="BUTTONS_paste">
-    <script scriptType="python"><![CDATA[from ht.ui.paste import paste_items
+    <script scriptType="python"><![CDATA["""Paste items from a file."""
 
-paste_items(kwargs)
+from ht.ui.paste import paste_items
+
+paste_items(kwargs)  # pylint: disable=undefined-variable
 ]]></script>
     <toolMenuContext name="network">
       <contextNetType>OBJ</contextNetType>
