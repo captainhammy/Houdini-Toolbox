@@ -504,37 +504,37 @@ class Test_SetProperties(unittest.TestCase):
 
     @patch.object(setproperties.SetProperties, "property_manager", new_callable=PropertyMock)
     @patch.object(setproperties.SetProperties, "__init__", lambda x, y: None)
-    def test_filterCamera(self, mock_set):
+    def test_filter_camera(self, mock_set):
         mock_manager = MagicMock(spec=setproperties.PropertySetterManager)
         mock_set.return_value = mock_manager
 
         op = setproperties.SetProperties(None)
 
-        op.filterCamera()
+        op.filter_camera()
 
         mock_manager.set_properties.assert_called_with("camera")
 
     @patch.object(setproperties.SetProperties, "property_manager", new_callable=PropertyMock)
     @patch.object(setproperties.SetProperties, "__init__", lambda x, y: None)
-    def test_filterInstance(self, mock_set):
+    def test_filter_instance(self, mock_set):
         mock_manager = MagicMock(spec=setproperties.PropertySetterManager)
         mock_set.return_value = mock_manager
 
         op = setproperties.SetProperties(None)
 
-        op.filterInstance()
+        op.filter_instance()
 
         mock_manager.set_properties.assert_called_with("instance")
 
     @patch.object(setproperties.SetProperties, "property_manager", new_callable=PropertyMock)
     @patch.object(setproperties.SetProperties, "__init__", lambda x, y: None)
-    def test_filterLight(self, mock_set):
+    def test_filter_light(self, mock_set):
         mock_manager = MagicMock(spec=setproperties.PropertySetterManager)
         mock_set.return_value = mock_manager
 
         op = setproperties.SetProperties(None)
 
-        op.filterLight()
+        op.filter_light()
 
         mock_manager.set_properties.assert_called_with("light")
 

@@ -18,6 +18,7 @@ import hou
 
 reload(ipoverrides)
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -287,7 +288,7 @@ class Test_IpOverrides(unittest.TestCase):
         )
 
     def test_register_parser_args(self):
-        """Test resistering all the argument parser args."""
+        """Test registering all the argument parser args."""
         parser = argparse.ArgumentParser()
 
         ipoverrides.IpOverrides.register_parser_args(parser)
@@ -327,7 +328,7 @@ class Test_IpOverrides(unittest.TestCase):
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch("ht.pyfilter.operations.ipoverrides.get_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterCamera_res_scale(self, mock_get, mock_set, mock_scale):
+    def test_filter_camera_res_scale(self, mock_get, mock_set, mock_scale):
         op = ipoverrides.IpOverrides(None)
         op._res_scale = 0.5
         op._sample_scale = None
@@ -343,7 +344,7 @@ class Test_IpOverrides(unittest.TestCase):
         mock_get.return_value = source_res
         mock_scale.return_value = target_res
 
-        op.filterCamera()
+        op.filter_camera()
 
         mock_get.assert_called_with("image:resolution")
         mock_scale.assert_called_with(source_res, 0.5)
@@ -353,7 +354,7 @@ class Test_IpOverrides(unittest.TestCase):
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch("ht.pyfilter.operations.ipoverrides.get_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterCamera_sample_scale(self, mock_get, mock_set, mock_scale):
+    def test_filter_camera_sample_scale(self, mock_get, mock_set, mock_scale):
         op = ipoverrides.IpOverrides(None)
         op._res_scale = None
         op._sample_scale = 0.5
@@ -369,7 +370,7 @@ class Test_IpOverrides(unittest.TestCase):
         mock_get.return_value = source_samples
         mock_scale.return_value = target_samples
 
-        op.filterCamera()
+        op.filter_camera()
 
         mock_get.assert_called_with("image:samples")
         mock_scale.assert_called_with(source_samples, 0.5)
@@ -377,7 +378,7 @@ class Test_IpOverrides(unittest.TestCase):
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterCamera_bucket_size(self, mock_set):
+    def test_filter_camera_bucket_size(self, mock_set):
         op = ipoverrides.IpOverrides(None)
         op._res_scale = None
         op._sample_scale = None
@@ -387,13 +388,13 @@ class Test_IpOverrides(unittest.TestCase):
         op._disable_tilecallback = False
         op._transparent_samples = None
 
-        op.filterCamera()
+        op.filter_camera()
 
         mock_set.assert_called_with("image:bucket", 16)
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterCamera_disable_blur(self, mock_set):
+    def test_filter_camera_disable_blur(self, mock_set):
         op = ipoverrides.IpOverrides(None)
         op._res_scale = None
         op._sample_scale = None
@@ -403,13 +404,13 @@ class Test_IpOverrides(unittest.TestCase):
         op._disable_tilecallback = False
         op._transparent_samples = None
 
-        op.filterCamera()
+        op.filter_camera()
 
         mock_set.has_calls([call("renderer:blurquality", 0), call("renderer:rayblurquality", 0)])
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterCamera_disable_deep(self, mock_set):
+    def test_filter_camera_disable_deep(self, mock_set):
         op = ipoverrides.IpOverrides(None)
         op._res_scale = None
         op._sample_scale = None
@@ -419,13 +420,13 @@ class Test_IpOverrides(unittest.TestCase):
         op._disable_tilecallback = False
         op._transparent_samples = None
 
-        op.filterCamera()
+        op.filter_camera()
 
         mock_set.assert_called_with("image:deepresolver", [])
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterCamera_disable_tilecallback(self, mock_set):
+    def test_filter_camera_disable_tilecallback(self, mock_set):
         op = ipoverrides.IpOverrides(None)
         op._res_scale = None
         op._sample_scale = None
@@ -435,13 +436,13 @@ class Test_IpOverrides(unittest.TestCase):
         op._disable_tilecallback = True
         op._transparent_samples = None
 
-        op.filterCamera()
+        op.filter_camera()
 
         mock_set.assert_called_with("render:tilecallback", "")
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterCamera_transparent_samples(self, mock_set):
+    def test_filter_camera_transparent_samples(self, mock_set):
         op = ipoverrides.IpOverrides(None)
         op._res_scale = None
         op._sample_scale = None
@@ -451,50 +452,50 @@ class Test_IpOverrides(unittest.TestCase):
         op._disable_tilecallback = False
         op._transparent_samples = 3
 
-        op.filterCamera()
+        op.filter_camera()
 
         mock_set.assert_any_call("image:transparentsamples", 3)
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterInstance_noop(self, mock_set):
+    def test_filter_instance_noop(self, mock_set):
         op = ipoverrides.IpOverrides(None)
         op._disable_displacement = False
         op._disable_subd = False
         op._disable_matte = False
 
-        op.filterInstance()
+        op.filter_instance()
 
         mock_set.assert_not_called()
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterInstance_disable_displacement(self, mock_set):
+    def test_filter_instance_disable_displacement(self, mock_set):
         op = ipoverrides.IpOverrides(None)
         op._disable_displacement = True
         op._disable_subd = False
         op._disable_matte = False
 
-        op.filterInstance()
+        op.filter_instance()
 
         mock_set.assert_called_with("object:displace", [])
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterInstance_disable_subd(self, mock_set):
+    def test_filter_instance_disable_subd(self, mock_set):
         op = ipoverrides.IpOverrides(None)
         op._disable_displacement = False
         op._disable_subd = True
         op._disable_matte = False
 
-        op.filterInstance()
+        op.filter_instance()
 
         mock_set.assert_called_with("object:rendersubd", 0)
 
     @patch("ht.pyfilter.operations.ipoverrides.get_property")
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterInstance_disable_matte_matte_object(self, mock_set, mock_get):
+    def test_filter_instance_disable_matte_matte_object(self, mock_set, mock_get):
         op = ipoverrides.IpOverrides(None)
         op._disable_displacement = False
         op._disable_subd = False
@@ -507,7 +508,7 @@ class Test_IpOverrides(unittest.TestCase):
 
         mock_get.side_effect = lambda name: values.get(name)
 
-        op.filterInstance()
+        op.filter_instance()
 
         mock_get.assert_called_with("object:matte")
 
@@ -516,7 +517,7 @@ class Test_IpOverrides(unittest.TestCase):
     @patch("ht.pyfilter.operations.ipoverrides.get_property")
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterInstance_disable_matte_phantom_object(self, mock_set, mock_get):
+    def test_filter_instance_disable_matte_phantom_object(self, mock_set, mock_get):
         op = ipoverrides.IpOverrides(None)
         op._disable_displacement = False
         op._disable_subd = False
@@ -529,7 +530,7 @@ class Test_IpOverrides(unittest.TestCase):
 
         mock_get.side_effect = lambda name: values.get(name)
 
-        op.filterInstance()
+        op.filter_instance()
 
         mock_get.assert_has_calls([call("object:matte"), call("object:phantom")])
         mock_set.assert_called_with("object:renderable", False)
@@ -537,7 +538,7 @@ class Test_IpOverrides(unittest.TestCase):
     @patch("ht.pyfilter.operations.ipoverrides.get_property")
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterInstance_disable_matte_surface_matte(self, mock_set, mock_get):
+    def test_filter_instance_disable_matte_surface_matte(self, mock_set, mock_get):
         op = ipoverrides.IpOverrides(None)
         op._disable_displacement = False
         op._disable_subd = False
@@ -551,7 +552,7 @@ class Test_IpOverrides(unittest.TestCase):
 
         mock_get.side_effect = lambda name: values.get(name)
 
-        op.filterInstance()
+        op.filter_instance()
 
         mock_get.assert_has_calls([call("object:matte"), call("object:phantom"), call("object:surface")])
         mock_set.assert_called_with("object:renderable", False)
@@ -559,7 +560,7 @@ class Test_IpOverrides(unittest.TestCase):
     @patch("ht.pyfilter.operations.ipoverrides.get_property")
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterInstance_disable_matte_noop(self, mock_set, mock_get):
+    def test_filter_instance_disable_matte_noop(self, mock_set, mock_get):
         op = ipoverrides.IpOverrides(None)
         op._disable_displacement = False
         op._disable_subd = False
@@ -573,38 +574,38 @@ class Test_IpOverrides(unittest.TestCase):
 
         mock_get.side_effect = lambda name: values.get(name)
 
-        op.filterInstance()
+        op.filter_instance()
 
         mock_get.assert_has_calls([call("object:matte"), call("object:phantom"), call("object:surface")])
         mock_set.assert_not_called()
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterMaterial_disable_displacement(self, mock_set):
+    def test_filter_material_disable_displacement(self, mock_set):
         op = ipoverrides.IpOverrides(None)
         op._disable_displacement = True
 
-        op.filterMaterial()
+        op.filter_material()
 
         mock_set.assert_called_with("object:displace", [])
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterMaterial_no_disable(self, mock_set):
+    def test_filter_material_no_disable(self, mock_set):
         op = ipoverrides.IpOverrides(None)
         op._disable_displacement = False
 
-        op.filterMaterial()
+        op.filter_material()
 
         mock_set.assert_not_called()
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch("ht.pyfilter.operations.ipoverrides.get_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterPlane_noop(self, mock_get, mock_set):
+    def test_filter_plane_noop(self, mock_get, mock_set):
         op = ipoverrides.IpOverrides(None)
         op._disable_aovs = False
-        op.filterPlane()
+        op.filter_plane()
 
         mock_get.assert_not_called()
         mock_set.assert_not_called()
@@ -612,39 +613,39 @@ class Test_IpOverrides(unittest.TestCase):
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch("ht.pyfilter.operations.ipoverrides.get_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterPlane_disable_aovs(self, mock_get, mock_set):
+    def test_filter_plane_disable_aovs(self, mock_get, mock_set):
         mock_get.return_value = "channel1"
 
         op = ipoverrides.IpOverrides(None)
         op._disable_aovs = True
 
-        op.filterPlane()
+        op.filter_plane()
 
         mock_set.assert_called_with("plane:disable", 1)
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch("ht.pyfilter.operations.ipoverrides.get_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterPlane_disable_aovs_Cf(self, mock_get, mock_set):
+    def test_filter_plane_disable_aovs_Cf(self, mock_get, mock_set):
         mock_get.return_value = "Cf"
 
         op = ipoverrides.IpOverrides(None)
         op._disable_aovs = True
 
-        op.filterPlane()
+        op.filter_plane()
 
         mock_set.assert_called_with("plane:disable", 1)
 
     @patch("ht.pyfilter.operations.ipoverrides.set_property")
     @patch("ht.pyfilter.operations.ipoverrides.get_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
-    def test_filterPlane_disable_aovs_Cf_Af(self, mock_get, mock_set):
+    def test_filter_plane_disable_aovs_Cf_Af(self, mock_get, mock_set):
         mock_get.return_value = "Cf+Af"
 
         op = ipoverrides.IpOverrides(None)
         op._disable_aovs = True
 
-        op.filterPlane()
+        op.filter_plane()
 
         mock_set.assert_not_called()
 

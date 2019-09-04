@@ -15,6 +15,7 @@ from ht.pyfilter.operations import primaryimage
 
 reload(primaryimage)
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -103,42 +104,44 @@ class Test_SetPrimaryImage(unittest.TestCase):
 
     # Methods
 
+    # filter_camera
+
     @patch("ht.pyfilter.operations.primaryimage._logger")
     @patch("ht.pyfilter.operations.primaryimage.set_property")
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
-    def test_filterCamera__disable(self, mock_set, mock_logger):
+    def test_filter_camera__disable(self, mock_set, mock_logger):
         op = primaryimage.SetPrimaryImage(None)
         op._disable_primary_image = True
 
-        op.filterCamera()
+        op.filter_camera()
 
         mock_set.assert_called_with("image:filename", "null:")
 
     @patch("ht.pyfilter.operations.primaryimage._logger")
     @patch("ht.pyfilter.operations.primaryimage.set_property")
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
-    def test_filterCamera__path(self, mock_set, mock_logger):
+    def test_filter_camera__path(self, mock_set, mock_logger):
         path = "/path/to/images.exr"
 
         op = primaryimage.SetPrimaryImage(None)
         op._disable_primary_image = False
         op._primary_image_path = path
 
-        op.filterCamera()
+        op.filter_camera()
 
         mock_set.assert_called_with("image:filename", path)
 
     @patch("ht.pyfilter.operations.primaryimage._logger")
     @patch("ht.pyfilter.operations.primaryimage.set_property")
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
-    def test_filterCamera__no_op(self, mock_set, mock_logger):
+    def test_filter_camera__no_op(self, mock_set, mock_logger):
         path = "/path/to/images.exr"
 
         op = primaryimage.SetPrimaryImage(None)
         op._disable_primary_image = False
         op._primary_image_path = None
 
-        op.filterCamera()
+        op.filter_camera()
 
         mock_set.assert_not_called()
 

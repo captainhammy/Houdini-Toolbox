@@ -28,7 +28,7 @@ class Test_LogOutput(unittest.TestCase):
 
     @patch("ht.pyfilter.operations.logoutput._logger", autospec=True)
     @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
-    def test_filterError__level_0(self, mock_logger):
+    def test_filter_error__level_0(self, mock_logger):
 
         level = 0
 
@@ -42,7 +42,7 @@ class Test_LogOutput(unittest.TestCase):
 
         op = logoutput.LogOutput(None)
 
-        result = op.filterError(level, mock_message, mock_prefix)
+        result = op.filter_error(level, mock_message, mock_prefix)
 
         self.assertTrue(result)
 
@@ -54,7 +54,7 @@ class Test_LogOutput(unittest.TestCase):
 
     @patch("ht.pyfilter.operations.logoutput._logger", autospec=True)
     @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
-    def test_filterError__prefix(self, mock_logger):
+    def test_filter_error__prefix(self, mock_logger):
         level = 1
 
         mock_message = MagicMock(spec=str)
@@ -65,7 +65,7 @@ class Test_LogOutput(unittest.TestCase):
 
         op = logoutput.LogOutput(None)
 
-        result = op.filterError(level, mock_message, mock_prefix)
+        result = op.filter_error(level, mock_message, mock_prefix)
 
         self.assertTrue(result)
 
@@ -75,7 +75,7 @@ class Test_LogOutput(unittest.TestCase):
 
     @patch("ht.pyfilter.operations.logoutput._logger", autospec=True)
     @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
-    def test_filterError__level_1(self, mock_logger):
+    def test_filter_error__level_1(self, mock_logger):
         level = 1
 
         mock_message = MagicMock(spec=str)
@@ -85,7 +85,7 @@ class Test_LogOutput(unittest.TestCase):
 
         op = logoutput.LogOutput(None)
 
-        result = op.filterError(level, mock_message, mock_prefix)
+        result = op.filter_error(level, mock_message, mock_prefix)
 
         self.assertTrue(result)
 
@@ -95,7 +95,7 @@ class Test_LogOutput(unittest.TestCase):
 
     @patch("ht.pyfilter.operations.logoutput._logger", autospec=True)
     @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
-    def test_filterError__debug(self, mock_logger):
+    def test_filter_error__debug(self, mock_logger):
         level = MagicMock(spec=int)
 
         mock_message = MagicMock(spec=str)
@@ -105,7 +105,7 @@ class Test_LogOutput(unittest.TestCase):
 
         op = logoutput.LogOutput(None)
 
-        result = op.filterError(level, mock_message, mock_prefix)
+        result = op.filter_error(level, mock_message, mock_prefix)
 
         self.assertTrue(result)
 

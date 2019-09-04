@@ -15,6 +15,7 @@ from ht.pyfilter.operations import settilecallback
 
 reload(settilecallback)
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -87,16 +88,16 @@ class Test_SetTileCallback(unittest.TestCase):
 
     # Methods
 
-    # filterCamera
+    # filter_camera
 
     @patch("ht.pyfilter.operations.settilecallback.set_property")
     @patch.object(settilecallback.SetTileCallback, "tilecallback", new_callable=PropertyMock)
     @patch.object(settilecallback.SetTileCallback, "__init__", lambda x, y: None)
-    def test_filterCamera(self, mock_tilecallback, mock_set):
-        """Test filterCamera."""
+    def test_filter_camera(self, mock_tilecallback, mock_set):
+        """Test filter_camera."""
         op = settilecallback.SetTileCallback(None)
 
-        op.filterCamera()
+        op.filter_camera()
 
         mock_set.assert_called_with("render:tilecallback", mock_tilecallback.return_value)
 
@@ -149,6 +150,7 @@ class Test_SetTileCallback(unittest.TestCase):
         op._tilecallback = mock_path
 
         self.assertTrue(op.should_run())
+
 
 # =============================================================================
 
