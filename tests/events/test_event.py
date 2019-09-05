@@ -15,6 +15,7 @@ import ht.events.stats
 
 reload(ht.events.event)
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -161,7 +162,9 @@ class Test_HoudiniEvent(unittest.TestCase):
         mock_map = {}
         mock_item_map.return_value = mock_map
 
-        mock_item = MagicMock(spec=ht.events.item.HoudiniEventItem)
+        # Mock the item via the reference in the module so that the isinstance()
+        # test is more reliable vs mocking ht.events.item.HoudiniEventItem
+        mock_item = MagicMock(spec=ht.events.event.HoudiniEventItem)
 
         event = ht.events.event.HoudiniEvent(None)
         event.register_item(mock_item)
