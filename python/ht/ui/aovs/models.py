@@ -4,9 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
-import pickle
-
+# Third Party Imports
 from PySide2 import QtCore, QtGui
 
 # Houdini Toolbox Imports

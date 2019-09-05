@@ -7,9 +7,11 @@ AOVGroups.
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import os
 import re
+
+# Third Party Imports
 from PySide2 import QtCore, QtWidgets
 
 # Houdini Toolbox Imports

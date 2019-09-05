@@ -1,11 +1,19 @@
 """Discover and run unittests, with coverage."""
 
-import coverage
+
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Standard Library Imports
 import os
-import six
-import sys
 import unittest
 
+# Third Party Imports
+import coverage
+import six
+
+# Houdini Imports
 import hou
 
 # Start the coverage reporting.
@@ -29,4 +37,3 @@ six.print_("View coverage report at file://{}".format(html_path))
 
 if not result.wasSuccessful():
     hou.exit(1)
-

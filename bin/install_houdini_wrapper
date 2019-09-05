@@ -5,10 +5,13 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import argparse
 import os
 import stat
+
+# Third Party Imports
+import six
 
 # =============================================================================
 # GLOBALS
@@ -37,6 +40,7 @@ _DEFAULT_WRAPPERS = [
     "mplay",
     "vcc",
 ]
+
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
@@ -85,6 +89,7 @@ def _build_parser():
 
     return parser
 
+
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
@@ -100,7 +105,7 @@ def main():
 
     # If neither install or uninstall was specified we can't do anything.
     if not any([arguments.install, arguments.uninstall]):
-        print "Nothing to do: Please specify --install or --uninstall."
+        six.print_("Nothing to do: Please specify --install or --uninstall.")
         return
 
     # Verify the target directory exists.
@@ -121,10 +126,7 @@ def main():
 
         # Create the link.
         if arguments.install:
-            print "Creating {link} -> {target}".format(
-                link=link_path,
-                target=wrapper
-            )
+            six.print_("Creating {link} -> {target}".format(link=link_path, target=wrapper))
 
             os.symlink(wrapper, link_path)
 
@@ -137,22 +139,22 @@ def main():
             # If the link isn't pointing to the specified wrapper we can't
             # remove it.
             if os.path.realpath(link_path) != wrapper:
-                print "Warning: Cannot remove {}.  Not linked to {}".format(
-                    link_path,
-                    wrapper
+                six.print_(
+                    "Warning: Cannot remove {}.  Not linked to {}".format(
+                        link_path,
+                        wrapper
+                    )
                 )
 
                 continue
 
-            print "Removing {link} -> {target}".format(
-                link=link_path,
-                target=wrapper
-            )
+            six.print_("Removing {link} -> {target}".format(link=link_path, target=wrapper))
+
             # Remove the link.
             os.unlink(link_path)
+
 
 # =============================================================================
 
 if __name__ == "__main__":
     main()
-

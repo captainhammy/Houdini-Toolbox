@@ -4,9 +4,10 @@
 # IMPORTS
 # ==============================================================================
 
-# Python Imports
+# Standard Library Imports
 from operator import attrgetter
 
+# Third Party Imports
 from PySide2 import QtCore
 
 # Houdini Toolbox Imports

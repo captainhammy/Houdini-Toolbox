@@ -5,12 +5,14 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import os
 import signal
-import six
 import subprocess
 import sys
+
+# Third Party Imports
+import six
 from termcolor import colored, cprint
 
 # Houdini Toolbox Imports
@@ -260,7 +262,7 @@ def _print_local_build_list(build_list, message):
     six.print_()
 
 
-def _signal_handler(signal_num, current_frame):
+def _signal_handler(signal_num, current_frame):  # pylint: disable=unused-argument
     """Signal handler to catch incoming signals and kill the process group.
 
     This allows things like the Render Scheduler to kill Mantra renders.
