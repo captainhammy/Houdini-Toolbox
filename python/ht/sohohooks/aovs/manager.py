@@ -394,7 +394,7 @@ class AOVFile(object):
         """Create AOVs based on definitions.
 
         :param definitions: AOV definition data.
-        :type definitions: dict
+        :type definitions: list(dict)
         :return:
 
         """
