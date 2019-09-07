@@ -151,7 +151,7 @@ def set_variable(name, value, local=False):
     :param name: The variable name.
     :type name: str
     :param value: The variable value.
-    :type value: type
+    :type value: object
     :param local: Whether or not to set the variable as local.
     :type local: bool
     :return:
