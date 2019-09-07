@@ -61,14 +61,12 @@ class Test__assert_prim_vertex_index(object):
 
 # Functions
 
-class Test_is_rendering(object):
+@patch("ht.inline.api._cpp_methods.isRendering")
+def test_is_rendering(mock_rendering):
     """Test ht.inline.api.is_rendering."""
+    result = api.is_rendering()
 
-    @patch("ht.inline.api._cpp_methods.isRendering")
-    def test(self, mock_rendering):
-        result = api.is_rendering()
-
-        assert result == mock_rendering.return_value
+    assert result == mock_rendering.return_value
 
 
 class Test_get_global_variable_names(object):
@@ -210,104 +208,88 @@ class Test_set_variable(object):
         mock_set.assert_called_with(mock_name, str(mock_value), mock_global)
 
 
-class Test_unset_variable(object):
+@patch("ht.inline.api._cpp_methods.unsetVariable")
+def test_unset_variable(mock_unset):
     """Test ht.inline.api.unset_variable."""
+    mock_name = MagicMock(spec=str)
 
-    @patch("ht.inline.api._cpp_methods.unsetVariable")
-    def test(self, mock_unset):
-        mock_name = MagicMock(spec=str)
+    api.unset_variable(mock_name)
 
-        api.unset_variable(mock_name)
-
-        mock_unset.assert_called_with(mock_name)
+    mock_unset.assert_called_with(mock_name)
 
 
-class Test_emit_var_change(object):
+@patch("ht.inline.api._cpp_methods.emitVarChange")
+def test_emit_var_change(mock_varchange):
     """Test ht.inline.api.emit_var_change."""
+    api.emit_var_change()
 
-    @patch("ht.inline.api._cpp_methods.emitVarChange")
-    def test(self, mock_varchange):
-        api.emit_var_change()
-
-        mock_varchange.assert_called()
+    mock_varchange.assert_called()
 
 
-class Test_expand_range(object):
+@patch("ht.inline.api._cpp_methods.expandRange")
+def test_expand_range(mock_expand):
     """Test ht.inline.api.expand_range."""
+    mock_pattern = MagicMock(spec=str)
 
-    @patch("ht.inline.api._cpp_methods.expandRange")
-    def test(self, mock_expand):
-        mock_pattern = MagicMock(spec=str)
+    result = api.expand_range(mock_pattern)
 
-        result = api.expand_range(mock_pattern)
+    assert result == tuple(mock_expand.return_value)
 
-        assert result == tuple(mock_expand.return_value)
-
-        mock_expand.assert_called_with(mock_pattern)
+    mock_expand.assert_called_with(mock_pattern)
 
 
-class Test_is_geometry_read_only(object):
+def test_is_geometry_read_only():
     """Test ht.inline.api.is_geometry_read_only."""
+    mock_handle = MagicMock(spec=hou._GUDetailHandle)
 
-    def test(self):
-        mock_handle = MagicMock(spec=hou._GUDetailHandle)
+    mock_geometry = MagicMock(spec=hou.Geometry)
+    mock_geometry._guDetailHandle.return_value = mock_handle
 
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_geometry._guDetailHandle.return_value = mock_handle
+    result = api.is_geometry_read_only(mock_geometry)
 
-        result = api.is_geometry_read_only(mock_geometry)
+    assert result == mock_handle.isReadOnly.return_value
 
-        assert result == mock_handle.isReadOnly.return_value
-
-        mock_handle.destroy.assert_called()
+    mock_handle.destroy.assert_called()
 
 
-class Test_num_points(object):
+def test_num_points():
     """Test ht.inline.api.num_points."""
+    mock_geometry = MagicMock(spec=hou.Geometry)
 
-    def test(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
+    result = api.num_points(mock_geometry)
 
-        result = api.num_points(mock_geometry)
-
-        assert result == mock_geometry.intrinsicValue.return_value
-        mock_geometry.intrinsicValue.assert_called_with("pointcount")
+    assert result == mock_geometry.intrinsicValue.return_value
+    mock_geometry.intrinsicValue.assert_called_with("pointcount")
 
 
-class Test_num_prims(object):
+def test_num_prims():
     """Test ht.inline.api.num_prims."""
+    mock_geometry = MagicMock(spec=hou.Geometry)
 
-    def test(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
+    result = api.num_prims(mock_geometry)
 
-        result = api.num_prims(mock_geometry)
-
-        assert result == mock_geometry.intrinsicValue.return_value
-        mock_geometry.intrinsicValue.assert_called_with("primitivecount")
+    assert result == mock_geometry.intrinsicValue.return_value
+    mock_geometry.intrinsicValue.assert_called_with("primitivecount")
 
 
-class Test_num_vertices(object):
+def test_num_vertices():
     """Test ht.inline.api.num_vertices."""
+    mock_geometry = MagicMock(spec=hou.Geometry)
 
-    def test(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
+    result = api.num_vertices(mock_geometry)
 
-        result = api.num_vertices(mock_geometry)
-
-        assert result == mock_geometry.intrinsicValue.return_value
-        mock_geometry.intrinsicValue.assert_called_with("vertexcount")
+    assert result == mock_geometry.intrinsicValue.return_value
+    mock_geometry.intrinsicValue.assert_called_with("vertexcount")
 
 
-class Test_num_prim_vertices(object):
+def test_num_prim_vertices():
     """Test ht.inline.api.num_prim_vertices."""
+    mock_prim = MagicMock(spec=hou.Prim)
 
-    def test(self):
-        mock_prim = MagicMock(spec=hou.Prim)
+    result = api.num_prim_vertices(mock_prim)
 
-        result = api.num_prim_vertices(mock_prim)
-
-        assert result == mock_prim.intrinsicValue.return_value
-        mock_prim.intrinsicValue.assert_called_with("vertexcount")
+    assert result == mock_prim.intrinsicValue.return_value
+    mock_prim.intrinsicValue.assert_called_with("vertexcount")
 
 
 class Test_pack_geometry(object):
@@ -3476,30 +3458,28 @@ class Test_eval_parm_as_strip(object):
         assert result == (False, False, False, True, False)
 
 
-class Test_eval_parm_strip_as_string(object):
+@patch("ht.inline.api.eval_parm_as_strip")
+def test_eval_parm_strip_as_string(mock_eval):
     """Test ht.inline.api.eval_parm_strip_as_string."""
+    mock_eval.return_value = (False, True, True, False, True)
 
-    @patch("ht.inline.api.eval_parm_as_strip")
-    def test(self, mock_eval):
-        mock_eval.return_value = (False, True, True, False, True)
+    mock_item1 = MagicMock(spec=str)
+    mock_item2 = MagicMock(spec=str)
+    mock_item3 = MagicMock(spec=str)
+    mock_item4 = MagicMock(spec=str)
+    mock_item5 = MagicMock(spec=str)
 
-        mock_item1 = MagicMock(spec=str)
-        mock_item2 = MagicMock(spec=str)
-        mock_item3 = MagicMock(spec=str)
-        mock_item4 = MagicMock(spec=str)
-        mock_item5 = MagicMock(spec=str)
+    mock_template = MagicMock(spec=hou.MenuParmTemplate)
+    mock_template.menuItems.return_value = (mock_item1, mock_item2, mock_item3, mock_item4, mock_item5)
 
-        mock_template = MagicMock(spec=hou.MenuParmTemplate)
-        mock_template.menuItems.return_value = (mock_item1, mock_item2, mock_item3, mock_item4, mock_item5)
+    mock_parm = MagicMock(spec=hou.Parm)
+    mock_parm.parmTemplate.return_value = mock_template
 
-        mock_parm = MagicMock(spec=hou.Parm)
-        mock_parm.parmTemplate.return_value = mock_template
+    result = api.eval_parm_strip_as_string(mock_parm)
 
-        result = api.eval_parm_strip_as_string(mock_parm)
+    assert result == (mock_item2, mock_item3, mock_item5)
 
-        assert result == (mock_item2, mock_item3, mock_item5)
-
-        mock_eval.assert_called_with(mock_parm)
+    mock_eval.assert_called_with(mock_parm)
 
 
 class Test_is_parm_multiparm(object):
