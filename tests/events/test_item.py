@@ -4,22 +4,27 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import copy
+import imp
+
+# Python Imports
 from mock import MagicMock, PropertyMock, patch
-import unittest
 
 # Houdini Toolbox Imports
 import ht.events.item
 import ht.events.stats
 
-reload(ht.events.item)
+# Reload the module to test to capture load evaluation since it has already
+# been loaded.
+imp.reload(ht.events.item)
+
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_HoudiniEventItem(unittest.TestCase):
+class Test_HoudiniEventItem(object):
     """Test ht.events.item.HoudiniEventItem class."""
 
     @patch("ht.events.item.HoudiniEventItemStats", autospec=True)
@@ -34,11 +39,11 @@ class Test_HoudiniEventItem(unittest.TestCase):
 
         mock_stats.assert_called_with(mock_name, tags=mock_tags)
 
-        self.assertEqual(item._callables, list(callables))
-        self.assertEqual(item._name, mock_name)
-        self.assertEqual(item._priority, mock_priority)
-        self.assertEqual(item._data, {})
-        self.assertEqual(item._stats, mock_stats.return_value)
+        assert item._callables == list(callables)
+        assert item._name == mock_name
+        assert item._priority == mock_priority
+        assert item._data == {}
+        assert item._stats == mock_stats.return_value
 
     @patch.object(ht.events.item.HoudiniEventItem, "priority", new_callable=PropertyMock)
     @patch.object(ht.events.item.HoudiniEventItem, "callables", new_callable=PropertyMock)
@@ -60,25 +65,25 @@ class Test_HoudiniEventItem(unittest.TestCase):
         item2.priority = 4
 
         # Names differ
-        self.assertFalse(item1.__eq__(item2))
+        assert not item1.__eq__(item2)
 
         mock_name.return_value = "name"
         item2.name = "name"
 
         # Names the same, callables differ
-        self.assertFalse(item1.__eq__(item2))
+        assert not item1.__eq__(item2)
 
         item2.callables = callables
 
         # Names and callables equal, priority differs
-        self.assertFalse(item1.__eq__(item2))
+        assert not item1.__eq__(item2)
 
         item2.priority = 3
 
         # Should be equal now
-        self.assertEqual(item1, item2)
+        assert item1 == item2
 
-        self.assertEqual(item1.__eq__(MagicMock()), NotImplemented)
+        assert item1.__eq__(MagicMock()) == NotImplemented
 
     @patch.object(ht.events.item.HoudiniEventItem, "__eq__")
     @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
@@ -87,7 +92,7 @@ class Test_HoudiniEventItem(unittest.TestCase):
         item = ht.events.item.HoudiniEventItem(None, None, None, None)
         mock_item = MagicMock(spec=ht.events.item.HoudiniEventItem)
 
-        self.assertEqual(item.__ne__(mock_item), not mock_eq.return_value)
+        assert item.__ne__(mock_item) != mock_eq.return_value
         mock_eq.assert_called_with(mock_item)
 
     @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
@@ -101,7 +106,7 @@ class Test_HoudiniEventItem(unittest.TestCase):
         item._name = mock_name
         item._priority = mock_priority
 
-        self.assertEqual(item.__hash__(), hash((mock_name, mock_priority)))
+        assert item.__hash__() == hash((mock_name, mock_priority))
 
     # Properties
 
@@ -113,7 +118,7 @@ class Test_HoudiniEventItem(unittest.TestCase):
         item = ht.events.item.HoudiniEventItem(None, None, None, None)
 
         item._callables = mock_value
-        self.assertEqual(item.callables, mock_value)
+        assert item.callables == mock_value
 
     @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
     def test_data(self):
@@ -123,7 +128,7 @@ class Test_HoudiniEventItem(unittest.TestCase):
         item = ht.events.item.HoudiniEventItem(None, None, None, None)
 
         item._data = mock_value
-        self.assertEqual(item.data, mock_value)
+        assert item.data == mock_value
 
     @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
     def test_name(self):
@@ -133,7 +138,7 @@ class Test_HoudiniEventItem(unittest.TestCase):
         item = ht.events.item.HoudiniEventItem(None, None, None, None)
 
         item._name = mock_value
-        self.assertEqual(item.name, mock_value)
+        assert item.name == mock_value
 
     @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
     def test_priority(self):
@@ -143,7 +148,7 @@ class Test_HoudiniEventItem(unittest.TestCase):
         item = ht.events.item.HoudiniEventItem(None, None, None, None)
 
         item._priority = mock_value
-        self.assertEqual(item.priority, mock_value)
+        assert item.priority == mock_value
 
     @patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, u, v: None)
     def test_stats(self):
@@ -152,7 +157,7 @@ class Test_HoudiniEventItem(unittest.TestCase):
 
         mock_stats = MagicMock(spec=ht.events.stats.HoudiniEventItemStats)
         item._stats = mock_stats
-        self.assertEqual(item.stats, mock_stats)
+        assert item.stats == mock_stats
 
     # Methods
 
@@ -196,14 +201,14 @@ class Test_HoudiniEventItem(unittest.TestCase):
         stats.time_function.assert_any_call(mock_func2)
 
         # Ensure the functions were called with the real args.
-        self.assertEqual(real_call_args[0], run_args)
-        self.assertEqual(real_call_args[1], run_args)
+        assert real_call_args[0] == run_args
+        assert real_call_args[1] ==run_args
 
         # Ensure we removed the item.
-        self.assertEqual(scriptargs, {"key": "value"})
+        assert scriptargs == {"key": "value"}
 
 
-class Test_ExclusiveHoudiniEventItem(unittest.TestCase):
+class Test_ExclusiveHoudiniEventItem(object):
     """Test ht.events.item.ExclusiveHoudiniEventItem class."""
 
     @patch.object(ht.events.item.ExclusiveHoudiniEventItem, "_exclusive_map", new_callable=PropertyMock)
@@ -224,7 +229,7 @@ class Test_ExclusiveHoudiniEventItem(unittest.TestCase):
 
         mock_super_init.assert_called_with(mock_callables, mock_name, priority, mock_stat_tags)
 
-        self.assertEqual(ht.events.item.ExclusiveHoudiniEventItem._exclusive_map, {mock_name: item})
+        assert ht.events.item.ExclusiveHoudiniEventItem._exclusive_map == {mock_name: item}
 
     @patch.object(ht.events.item.ExclusiveHoudiniEventItem, "_exclusive_map", new_callable=PropertyMock)
     @patch.object(ht.events.item.HoudiniEventItem, "__init__")
@@ -248,7 +253,7 @@ class Test_ExclusiveHoudiniEventItem(unittest.TestCase):
 
         mock_super_init.assert_called_with(mock_callables, mock_name, priority, mock_stat_tags)
 
-        self.assertEqual(mapping, {mock_name: item})
+        assert mapping == {mock_name: item}
 
     @patch.object(ht.events.item.ExclusiveHoudiniEventItem, "name", new_callable=PropertyMock)
     @patch.object(ht.events.item.ExclusiveHoudiniEventItem, "_exclusive_map", new_callable=PropertyMock)
@@ -284,10 +289,3 @@ class Test_ExclusiveHoudiniEventItem(unittest.TestCase):
         item.run(mock_scriptargs)
 
         mock_super_run.assert_called_with(mock_scriptargs)
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()
-
-

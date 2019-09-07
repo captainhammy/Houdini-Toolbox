@@ -1,9 +1,10 @@
-coverage
 enum34
 humanfriendly
 jinja2
 mock
 numpy
+pytest
+pytest-cov
 requets
 scipy
 six

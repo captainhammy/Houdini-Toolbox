@@ -4,9 +4,11 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
+import imp
+
+# Third Party Imports
 from mock import MagicMock, patch
-import unittest
 
 # Houdini Toolbox Imports
 import ht.events.events.rop_render
@@ -17,21 +19,23 @@ from ht.events.types import RopEvents
 # Houdini Imports
 import hou
 
-reload(ht.events.events.rop_render)
+# Reload the module to test to capture load evaluation since it has already
+# been loaded.
+imp.reload(ht.events.events.rop_render)
 
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_RopRenderEvent(unittest.TestCase):
+class Test_RopRenderEvent(object):
     """Test ht.events.events.rop_render.RopRenderEvent class."""
 
     def test___init__(self):
         event = ht.events.events.rop_render.RopRenderEvent()
 
-        self.assertIsNone(event._frame_start)
-        self.assertIsNone(event._render_start)
+        assert event._frame_start is None
+        assert event._render_start is None
 
         expected_map = {
             RopEvents.PreRender: HoudiniEventItem((event.pre_render,)),
@@ -41,7 +45,7 @@ class Test_RopRenderEvent(unittest.TestCase):
             RopEvents.PostWrite: HoudiniEventItem((event.post_write,)),
         }
 
-        self.assertEqual(event.event_map, expected_map)
+        assert event.event_map == expected_map
 
     # Methods
 
@@ -57,7 +61,7 @@ class Test_RopRenderEvent(unittest.TestCase):
 
         event.pre_frame(scriptargs)
 
-        self.assertEqual(event._frame_start, 123)
+        assert event._frame_start == 123
 
         mock_logger.info.assert_called()
 
@@ -73,7 +77,7 @@ class Test_RopRenderEvent(unittest.TestCase):
 
         event.pre_render(scriptargs)
 
-        self.assertEqual(event._render_start, 123)
+        assert event._render_start == 123
 
         mock_logger.info.assert_called()
 
@@ -87,7 +91,7 @@ class Test_RopRenderEvent(unittest.TestCase):
 
         event.pre_render(scriptargs)
 
-        self.assertEqual(event._render_start, 123)
+        assert event._render_start == 123
 
         mock_logger.info.assert_called()
 
@@ -172,7 +176,7 @@ class Test_RopRenderEvent(unittest.TestCase):
         mock_logger.info.assert_called()
 
 
-class Test__get_target_file(unittest.TestCase):
+class Test__get_target_file(object):
     """Test ht.events.events.rop_render._get_target_file."""
 
     def test_geometry(self):
@@ -186,7 +190,7 @@ class Test__get_target_file(unittest.TestCase):
 
         result = ht.events.events.rop_render._get_target_file(mock_node)
 
-        self.assertEqual(result, "/var/tmp/test.bgeo")
+        assert result == "/var/tmp/test.bgeo"
         mock_node.evalParm.assert_called_with("sopoutput")
 
         # Try again but with rop_geometry.
@@ -194,7 +198,7 @@ class Test__get_target_file(unittest.TestCase):
 
         result = ht.events.events.rop_render._get_target_file(mock_node)
 
-        self.assertEqual(result, "/var/tmp/test.bgeo")
+        assert result == "/var/tmp/test.bgeo"
         mock_node.evalParm.assert_called_with("sopoutput")
 
     def test_alembic(self):
@@ -208,7 +212,7 @@ class Test__get_target_file(unittest.TestCase):
 
         result = ht.events.events.rop_render._get_target_file(mock_node)
 
-        self.assertEqual(result, "/var/tmp/test.abc")
+        assert result == "/var/tmp/test.abc"
         mock_node.evalParm.assert_called_with("filename")
 
         # Try again but with rop_alembic.
@@ -216,7 +220,7 @@ class Test__get_target_file(unittest.TestCase):
 
         result = ht.events.events.rop_render._get_target_file(mock_node)
 
-        self.assertEqual(result, "/var/tmp/test.abc")
+        assert result == "/var/tmp/test.abc"
         mock_node.evalParm.assert_called_with("filename")
 
     def test_ifd(self):
@@ -231,7 +235,7 @@ class Test__get_target_file(unittest.TestCase):
 
         result = ht.events.events.rop_render._get_target_file(mock_node)
 
-        self.assertEqual(result, "/var/tmp/test.ifd")
+        assert result == "/var/tmp/test.ifd"
         mock_node.evalParm.assert_any_call("soho_outputmode")
         mock_node.evalParm.assert_any_call("soho_diskfile")
 
@@ -242,7 +246,7 @@ class Test__get_target_file(unittest.TestCase):
 
         result = ht.events.events.rop_render._get_target_file(mock_node)
 
-        self.assertEqual(result, "/var/tmp/test.exr")
+        assert result == "/var/tmp/test.exr"
         mock_node.evalParm.assert_any_call("soho_outputmode")
         mock_node.evalParm.assert_any_call("vm_picture")
 
@@ -255,10 +259,10 @@ class Test__get_target_file(unittest.TestCase):
 
         result = ht.events.events.rop_render._get_target_file(mock_node)
 
-        self.assertIsNone(result)
+        assert result is None
 
 
-class Test__print_frame_write(unittest.TestCase):
+class Test__print_frame_write(object):
     """Test ht.events.events.rop_render._print_frame_write."""
 
     def test_no_path(self):
@@ -298,7 +302,7 @@ class Test__print_frame_write(unittest.TestCase):
         mock_logger.info.assert_called()
 
 
-class Test_build_scriptargs(unittest.TestCase):
+class Test_build_scriptargs(object):
     """Test ht.events.events.rop_render.build_scriptargs."""
 
     @patch("ht.events.events.rop_render._get_target_file")
@@ -318,7 +322,7 @@ class Test_build_scriptargs(unittest.TestCase):
             "time": 123,
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
         mock_get.assert_not_called()
 
@@ -345,7 +349,7 @@ class Test_build_scriptargs(unittest.TestCase):
             "path": "/var/tmp/test.bgeo",
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
         mock_get.assert_called_with(mock_node)
 
@@ -375,7 +379,7 @@ class Test_build_scriptargs(unittest.TestCase):
             "path": "/var/tmp/test.bgeo"
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
         mock_get.assert_called_with(mock_node)
 
@@ -406,7 +410,7 @@ class Test_build_scriptargs(unittest.TestCase):
             "path": "/var/tmp/test.bgeo"
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
         mock_get.assert_called_with(mock_node)
 
@@ -437,11 +441,6 @@ class Test_build_scriptargs(unittest.TestCase):
             "time": 123
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
         mock_get.assert_called_with(mock_node)
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()

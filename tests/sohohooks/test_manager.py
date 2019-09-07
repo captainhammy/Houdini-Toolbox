@@ -4,44 +4,54 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
+import imp
+
+# Third Party Imports
 from mock import MagicMock, PropertyMock, patch
-import unittest
+import pytest
 
 # Houdini Toolbox Imports
 from ht.sohohooks import manager
 
-reload(manager)
+# Reload the module to test to capture load evaluation since it has already
+# been loaded.
+imp.reload(manager)
+
+
+# =============================================================================
+# FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def patch_ifdapi():
+    """Mock importing of IFDapi."""
+    mock_api = MagicMock()
+
+    modules = {
+        "IFDapi": mock_api,
+    }
+
+    patcher = patch.dict("sys.modules", modules)
+    patcher.start()
+
+    yield mock_api
+
+    patcher.stop()
+
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_SohoHookManager(unittest.TestCase):
+class Test_SohoHookManager(object):
     """Test ht.sohohooks.manager.SohoHookManager object."""
-
-    def setUp(self):
-        super(Test_SohoHookManager, self).setUp()
-
-        self.mock_api = MagicMock()
-
-        modules = {
-            "IFDapi": self.mock_api,
-        }
-
-        self.patcher = patch.dict("sys.modules", modules)
-        self.patcher.start()
-
-    def tearDown(self):
-        super(Test_SohoHookManager, self).tearDown()
-
-        self.patcher.stop()
 
     def test___init__(self):
         """Test the __init__ method."""
         mgr = manager.SohoHookManager()
 
-        self.assertEqual(mgr._hooks, {})
+        assert mgr._hooks == {}
 
     # Properties
 
@@ -55,7 +65,7 @@ class Test_SohoHookManager(unittest.TestCase):
         mgr = manager.SohoHookManager()
         mgr._hooks = mock_hooks
 
-        self.assertEqual(mgr.hooks, mock_hooks)
+        assert mgr.hooks == mock_hooks
 
     # Methods
 
@@ -63,7 +73,7 @@ class Test_SohoHookManager(unittest.TestCase):
 
     @patch.object(manager.SohoHookManager, "hooks", new_callable=PropertyMock)
     @patch.object(manager.SohoHookManager, "__init__", lambda x: None)
-    def test_call_hook__func_result_true(self, mock_hooks):
+    def test_call_hook__func_result_true(self, mock_hooks, patch_ifdapi):
         """Test when a function returns a value that is equivalent to bool(value) == True."""
         mock_hook_name = MagicMock(spec=str)
         mock_hook = MagicMock()
@@ -78,13 +88,13 @@ class Test_SohoHookManager(unittest.TestCase):
 
         result = mgr.call_hook(mock_hook_name, mock_arg, foo=mock_kwarg)
 
-        self.assertTrue(result)
+        assert result
 
         mock_hook.assert_called_with(mock_arg, foo=mock_kwarg)
 
     @patch.object(manager.SohoHookManager, "hooks", new_callable=PropertyMock)
     @patch.object(manager.SohoHookManager, "__init__", lambda x: None)
-    def test_call_hook__func_no_result(self, mock_hooks):
+    def test_call_hook__func_no_result(self, mock_hooks, patch_ifdapi):
         """Test when a function returns no value."""
         mock_hook_name = MagicMock(spec=str)
         mock_hook = MagicMock()
@@ -99,13 +109,13 @@ class Test_SohoHookManager(unittest.TestCase):
 
         result = mgr.call_hook(mock_hook_name, mock_arg, foo=mock_kwarg)
 
-        self.assertFalse(result)
+        assert not result
 
         mock_hook.assert_called_with(mock_arg, foo=mock_kwarg)
 
     @patch.object(manager.SohoHookManager, "hooks", new_callable=PropertyMock)
     @patch.object(manager.SohoHookManager, "__init__", lambda x: None)
-    def test_call_hook__error(self, mock_hooks):
+    def test_call_hook__error(self, mock_hooks, patch_ifdapi):
         """Test when calling a hook generates an exception."""
         mock_hook_name = MagicMock(spec=str)
         mock_hook = MagicMock()
@@ -120,11 +130,11 @@ class Test_SohoHookManager(unittest.TestCase):
 
         result = mgr.call_hook(mock_hook_name, mock_arg, foo=mock_kwarg)
 
-        self.assertFalse(result)
+        assert not result
 
         mock_hook.assert_called_with(mock_arg, foo=mock_kwarg)
 
-        self.assertEqual(self.mock_api.ray_comment.call_count, 2)
+        assert patch_ifdapi.ray_comment.call_count == 2
 
     # register_hook
 
@@ -153,10 +163,4 @@ class Test_SohoHookManager(unittest.TestCase):
             mock_hook_name3: [mock_hook3]
         }
 
-        self.assertEqual(hooks, expected)
-
-# =============================================================================
-
-if __name__ == '__main__':
-    # Run the tests.
-    unittest.main()
+        assert hooks == expected

@@ -4,9 +4,11 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
+import imp
+
+# Third Party Imports
 from mock import MagicMock, patch
-import unittest
 
 # Houdini Toolbox Imports
 import ht.nodes.styles.event
@@ -17,13 +19,16 @@ from ht.events.types import NodeEvents
 # Houdini Imports
 import hou
 
-reload(ht.nodes.styles.event)
+# Reload the module to test to capture load evaluation since it has already
+# been loaded.
+imp.reload(ht.nodes.styles.event)
+
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_StyleNodeEvent(unittest.TestCase):
+class Test_StyleNodeEvent(object):
     """Test ht.nodes.styles.event.StyleNodeEvent class."""
 
     def test___init__(self):
@@ -34,7 +39,7 @@ class Test_StyleNodeEvent(unittest.TestCase):
             NodeEvents.OnNameChanged: HoudiniEventItem((event.style_node_by_name,)),
         }
 
-        self.assertEqual(event.event_map, expected_map)
+        assert event.event_map == expected_map
 
     # Methods
 
@@ -67,8 +72,3 @@ class Test_StyleNodeEvent(unittest.TestCase):
         event.style_node_on_creation(scriptargs)
 
         mock_manager.style_node.assert_called_with(mock_node)
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()

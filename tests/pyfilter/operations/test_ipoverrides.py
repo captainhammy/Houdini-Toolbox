@@ -4,10 +4,11 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import argparse
+
+# Third Party Imports
 from mock import MagicMock, call, patch
-import unittest
 
 # Houdini Toolbox Imports
 from ht.pyfilter.manager import PyFilterManager
@@ -16,46 +17,31 @@ from ht.pyfilter.operations import ipoverrides
 # Houdini Imports
 import hou
 
-reload(ipoverrides)
-
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_IpOverrides(unittest.TestCase):
-    """Test the ht.pyfilter.operations.ipoverrides.IpOverride
-    class.
-
-    """
-
-    def setUp(self):
-        super(Test_IpOverrides, self).setUp()
-
-        self.patcher = patch("ht.pyfilter.operations.operation._logger", autospec=True)
-        self.patcher.start()
-
-    def tearDown(self):
-        super(Test_IpOverrides, self).tearDown()
-        self.patcher.stop()
+class Test_IpOverrides(object):
+    """Test the ht.pyfilter.operations.ipoverrides.IpOverride class.    """
 
     def test___init__(self):
         mock_manager = MagicMock(spec=PyFilterManager)
         op = ipoverrides.IpOverrides(mock_manager)
 
-        self.assertEqual(op._data, {})
-        self.assertEqual(op._manager, mock_manager)
+        assert op._data == {}
+        assert op._manager == mock_manager
 
-        self.assertIsNone(op._bucket_size)
-        self.assertFalse(op._disable_aovs)
-        self.assertFalse(op._disable_blur)
-        self.assertFalse(op._disable_deep)
-        self.assertFalse(op._disable_displacement)
-        self.assertFalse(op._disable_matte)
-        self.assertFalse(op._disable_subd)
-        self.assertIsNone(op._res_scale)
-        self.assertIsNone(op._sample_scale)
-        self.assertIsNone(op._transparent_samples)
+        assert op._bucket_size is None
+        assert not op._disable_aovs
+        assert not op._disable_blur
+        assert not op._disable_deep
+        assert not op._disable_displacement
+        assert not op._disable_matte
+        assert not op._disable_subd
+        assert op._res_scale is None
+        assert op._sample_scale is None
+        assert op._transparent_samples is None
 
     # Properties
 
@@ -63,111 +49,111 @@ class Test_IpOverrides(unittest.TestCase):
     def test_bucket_size(self):
         op = ipoverrides.IpOverrides(None)
         op._bucket_size = 16
-        self.assertEqual(op.bucket_size, 16)
+        assert op.bucket_size == 16
 
         op = ipoverrides.IpOverrides(None)
         op._bucket_size = 8
         op.bucket_size = 16
-        self.assertEqual(op._bucket_size, 16)
+        assert op._bucket_size == 16
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
     def test_disable_aovs(self):
         op = ipoverrides.IpOverrides(None)
         op._disable_aovs = True
-        self.assertTrue(op.disable_aovs)
+        assert op.disable_aovs
 
         op = ipoverrides.IpOverrides(None)
         op._disable_aovs = False
         op.disable_aovs = True
-        self.assertTrue(op._disable_aovs)
+        assert op._disable_aovs
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
     def test_disable_blur(self):
         op = ipoverrides.IpOverrides(None)
         op._disable_blur = True
-        self.assertTrue(op.disable_blur)
+        assert op.disable_blur
 
         op = ipoverrides.IpOverrides(None)
         op._disable_blur = False
         op.disable_blur = True
-        self.assertTrue(op._disable_blur)
+        assert op._disable_blur
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
     def test_disable_deep(self):
         op = ipoverrides.IpOverrides(None)
         op._disable_deep = True
-        self.assertTrue(op.disable_deep)
+        assert op.disable_deep
 
         op = ipoverrides.IpOverrides(None)
         op._disable_deep = False
         op.disable_deep = True
-        self.assertTrue(op._disable_deep)
+        assert op._disable_deep
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
     def test_disable_displacement(self):
         op = ipoverrides.IpOverrides(None)
         op._disable_displacement = True
-        self.assertTrue(op.disable_displacement)
+        assert op.disable_displacement
 
         op = ipoverrides.IpOverrides(None)
         op._disable_displacement = False
         op.disable_displacement = True
-        self.assertTrue(op._disable_displacement)
+        assert op._disable_displacement
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
     def test_disable_matte(self):
         op = ipoverrides.IpOverrides(None)
         op._disable_matte = True
-        self.assertTrue(op.disable_matte)
+        assert op.disable_matte
 
         op = ipoverrides.IpOverrides(None)
         op._disable_matte = False
         op.disable_matte = True
-        self.assertTrue(op._disable_matte)
+        assert op._disable_matte
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
     def test_disable_subd(self):
         op = ipoverrides.IpOverrides(None)
         op._disable_subd = True
-        self.assertTrue(op.disable_subd)
+        assert op.disable_subd
 
         op = ipoverrides.IpOverrides(None)
         op._disable_subd = False
         op.disable_subd = True
-        self.assertTrue(op._disable_subd)
+        assert op._disable_subd
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
     def test_res_scale(self):
         op = ipoverrides.IpOverrides(None)
         op._res_scale = 0.5
-        self.assertEqual(op.res_scale, 0.5)
+        assert op.res_scale == 0.5
 
         op = ipoverrides.IpOverrides(None)
         op._res_scale = 1
         op.res_scale = 0.5
-        self.assertEqual(op._res_scale, 0.5)
+        assert op._res_scale == 0.5
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
     def test_sample_scale(self):
         op = ipoverrides.IpOverrides(None)
         op._sample_scale = 0.5
-        self.assertEqual(op.sample_scale, 0.5)
+        assert op.sample_scale == 0.5
 
         op = ipoverrides.IpOverrides(None)
         op._sample_scale = 1
         op.sample_scale = 0.5
-        self.assertEqual(op._sample_scale, 0.5)
+        assert op._sample_scale == 0.5
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
     def test_transparent_samples(self):
         op = ipoverrides.IpOverrides(None)
         op._transparent_samples = 4
-        self.assertEqual(op.transparent_samples, 4)
+        assert op.transparent_samples == 4
 
         op = ipoverrides.IpOverrides(None)
         op._transparent_samples = 1
         op.transparent_samples = 4
-        self.assertEqual(op._transparent_samples, 4)
+        assert op._transparent_samples == 4
 
     # Static Methods
 
@@ -175,152 +161,84 @@ class Test_IpOverrides(unittest.TestCase):
         """Test arg string construction."""
         result = ipoverrides.IpOverrides.build_arg_string()
 
-        self.assertEquals(result, "")
+        assert result == ""
 
         # Res scale
-        result = ipoverrides.IpOverrides.build_arg_string(
-            res_scale=0.5
-        )
+        result = ipoverrides.IpOverrides.build_arg_string(res_scale=0.5)
 
-        self.assertEquals(
-            result,
-            "--ip-res-scale=0.5"
-        )
+        assert result == "--ip-res-scale=0.5"
 
         # Sample scale
-        result = ipoverrides.IpOverrides.build_arg_string(
-            sample_scale=0.5
-        )
+        result = ipoverrides.IpOverrides.build_arg_string(sample_scale=0.5)
 
-        self.assertEquals(
-            result,
-            "--ip-sample-scale=0.5"
-        )
+        assert result  == "--ip-sample-scale=0.5"
 
         # Disable blur
-        result = ipoverrides.IpOverrides.build_arg_string(
-            disable_blur=True
-        )
+        result = ipoverrides.IpOverrides.build_arg_string(disable_blur=True)
 
-        self.assertEquals(
-            result,
-            "--ip-disable-blur"
-        )
+        assert result == "--ip-disable-blur"
 
         # Disable aovs
-        result = ipoverrides.IpOverrides.build_arg_string(
-            disable_aovs=True
-        )
+        result = ipoverrides.IpOverrides.build_arg_string(disable_aovs=True)
 
-        self.assertEquals(
-            result,
-            "--ip-disable-aovs"
-        )
+        assert result == "--ip-disable-aovs"
 
         # Disable deeps
-        result = ipoverrides.IpOverrides.build_arg_string(
-            disable_deep=True
-        )
+        result = ipoverrides.IpOverrides.build_arg_string(disable_deep=True)
 
-        self.assertEquals(
-            result,
-            "--ip-disable-deep"
-        )
+        assert result == "--ip-disable-deep"
 
         # Disable displacements
-        result = ipoverrides.IpOverrides.build_arg_string(
-            disable_displacement=True
-        )
+        result = ipoverrides.IpOverrides.build_arg_string(disable_displacement=True)
 
-        self.assertEquals(
-            result,
-            "--ip-disable-displacement"
-        )
+        assert result == "--ip-disable-displacement"
 
         # Disable matte and phantom objects
-        result = ipoverrides.IpOverrides.build_arg_string(
-            disable_matte=True
-        )
+        result = ipoverrides.IpOverrides.build_arg_string(disable_matte=True)
 
-        self.assertEquals(
-            result,
-            "--ip-disable-matte"
-        )
+        assert result == "--ip-disable-matte"
 
         # Disable subdivision surfaces
-        result = ipoverrides.IpOverrides.build_arg_string(
-            disable_subd=True
-        )
+        result = ipoverrides.IpOverrides.build_arg_string(disable_subd=True)
 
-        self.assertEquals(
-            result,
-            "--ip-disable-subd"
-        )
+        assert result == "--ip-disable-subd"
 
         # Disable tilecallback
-        result = ipoverrides.IpOverrides.build_arg_string(
-            disable_tilecallback=True
-        )
+        result = ipoverrides.IpOverrides.build_arg_string(disable_tilecallback=True)
 
-        self.assertEquals(
-            result,
-            "--ip-disable-tilecallback"
-        )
+        assert result == "--ip-disable-tilecallback"
 
         # Set the bucket size
-        result = ipoverrides.IpOverrides.build_arg_string(
-            bucket_size=16
-        )
+        result = ipoverrides.IpOverrides.build_arg_string(bucket_size=16)
 
-        self.assertEquals(
-            result,
-            "--ip-bucket-size=16"
-        )
+        assert result == "--ip-bucket-size=16"
 
         # Set the stochastic samples
-        result = ipoverrides.IpOverrides.build_arg_string(
-            transparent_samples=3
-        )
+        result = ipoverrides.IpOverrides.build_arg_string(transparent_samples=3)
 
-        self.assertEquals(
-            result,
-            "--ip-transparent-samples=3"
-        )
+        assert result == "--ip-transparent-samples=3"
 
     def test_register_parser_args(self):
         """Test registering all the argument parser args."""
-        parser = argparse.ArgumentParser()
 
-        ipoverrides.IpOverrides.register_parser_args(parser)
+        mock_parser = MagicMock(spec=argparse.ArgumentParser)
 
-        arg_names = {
-            "--ip-res-scale",
-            "--ip-sample-scale",
-            "--ip-disable-blur",
-            "--ip-disable-aovs",
-            "--ip-disable-deep",
-            "--ip-disable-displacement",
-            "--ip-disable-matte",
-            "--ip-disable-subd",
-            "--ip-bucket-size",
-            "--ip-transparent-samples",
-        }
+        ipoverrides.IpOverrides.register_parser_args(mock_parser)
 
-        registered_args = []
-
-        for action in parser._optionals._actions:
-            registered_args.extend(action.option_strings)
-
-        registered_args = set(registered_args)
-
-        msg = "Expected args not registered: {}".format(
-            ", ".join(arg_names - registered_args)
-        )
-
-        self.assertTrue(
-            arg_names.issubset(registered_args),
-            msg=msg
-        )
+        calls = [
+            call("--ip-res-scale", default=None, type=float, dest="ip_res_scale"),
+            call("--ip-sample-scale", default=None, type=float, dest="ip_sample_scale"),
+            call("--ip-disable-blur", action="store_true", dest="ip_disable_blur"),
+            call("--ip-disable-aovs", action="store_true", dest="ip_disable_aovs"),
+            call("--ip-disable-deep", action="store_true", dest="ip_disable_deep"),
+            call("--ip-disable-displacement", action="store_true", dest="ip_disable_displacement"),
+            call("--ip-disable-subd", action="store_true", dest="ip_disable_subd"),
+            call("--ip-disable-tilecallback", action="store_true", dest="ip_disable_tilecallback"),
+            call("--ip-disable-matte", action="store_true", dest="ip_disable_matte"),
+            call("--ip-bucket-size", nargs="?", default=None, type=int, dest="ip_bucket_size", action="store"),
+            call("--ip-transparent-samples", nargs="?", default=None, type=int, action="store", dest="ip_transparent_samples")
+        ]
+        mock_parser.add_argument.assert_has_calls(calls)
 
     # Methods
 
@@ -680,17 +598,17 @@ class Test_IpOverrides(unittest.TestCase):
 
         op.process_parsed_args(namespace)
 
-        self.assertEquals(op.res_scale, 0.5)
-        self.assertEquals(op.sample_scale, 0.75)
-        self.assertTrue(op.disable_aovs)
-        self.assertTrue(op.disable_blur)
-        self.assertTrue(op.disable_deep)
-        self.assertTrue(op.disable_displacement)
-        self.assertTrue(op.disable_matte)
-        self.assertTrue(op.disable_subd)
-        self.assertTrue(op.disable_tilecallback)
-        self.assertEquals(op.bucket_size, 16)
-        self.assertEquals(op.transparent_samples, 3)
+        assert op.res_scale == 0.5
+        assert op.sample_scale == 0.75
+        assert op.disable_aovs
+        assert op.disable_blur
+        assert op.disable_deep
+        assert op.disable_displacement
+        assert op.disable_matte
+        assert op.disable_subd
+        assert op.disable_tilecallback
+        assert op.bucket_size == 16
+        assert op.transparent_samples == 3
 
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
     def test_process_parsed_args_None(self):
@@ -723,10 +641,10 @@ class Test_IpOverrides(unittest.TestCase):
 
         op.process_parsed_args(namespace)
 
-        self.assertEquals(op.res_scale, 0.5)
-        self.assertEquals(op.sample_scale, 0.75)
-        self.assertEquals(op.bucket_size, 16)
-        self.assertEquals(op.transparent_samples, 3)
+        assert op.res_scale == 0.5
+        assert op.sample_scale == 0.75
+        assert op.bucket_size == 16
+        assert op.transparent_samples == 3
 
     @patch("ht.pyfilter.operations.ipoverrides.get_property")
     @patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
@@ -745,113 +663,112 @@ class Test_IpOverrides(unittest.TestCase):
         op._disable_subd = False
         op._disable_tilecallback = False
 
-        self.assertFalse(op.should_run())
+        assert not op.should_run()
 
         # Can't run if something is set but not ip.
         op.res_scale = 0.5
-        self.assertFalse(op.should_run())
+        assert not op.should_run()
         op.res_scale = None
 
         # Can't run if ip but nothing else is set.
         mock_get.return_value = "ip"
-        self.assertFalse(op.should_run())
+        assert not op.should_run()
 
         op.res_scale = 0.5
-        self.assertTrue(op.should_run())
+        assert op.should_run()
         op.res_scale = None
 
         op.sample_scale = 0.5
-        self.assertTrue(op.should_run())
+        assert op.should_run()
         op.sample_scale = None
 
         op.disable_blur = True
-        self.assertTrue(op.should_run())
+        assert op.should_run()
         op.disable_blur = False
 
         op.disable_aovs = True
-        self.assertTrue(op.should_run())
+        assert op.should_run()
         op.disable_aovs = False
 
         op.disable_displacement = True
-        self.assertTrue(op.should_run())
+        assert op.should_run()
         op.disable_displacement = False
 
         op.disable_matte = True
-        self.assertTrue(op.should_run())
+        assert op.should_run()
         op.disable_matte = False
 
         op.disable_subd = True
-        self.assertTrue(op.should_run())
+        assert op.should_run()
         op.disable_subd = False
 
         op.disable_tilecallback = True
-        self.assertTrue(op.should_run())
+        assert op.should_run()
         op.disable_tilecallback = False
 
         op.bucket_size = 16
-        self.assertTrue(op.should_run())
+        assert op.should_run()
         op.bucket_size = None
 
         op.transparent_samples = 2
-        self.assertTrue(op.should_run())
+        assert op.should_run()
         op.transparent_samples = None
 
 
-class Test__scale_resolution(unittest.TestCase):
+# class Test__scale_resolution(object):
+#     """Test the ht.pyfilter.operations.ipoverrides._scale_resolution."""
+
+def test__scale_resolution():
     """Test the ht.pyfilter.operations.ipoverrides._scale_resolution."""
 
-    def test(self):
-        """Test resolution scaling."""
-        source = [1920, 1080]
-        target = [1920, 1080]
-        scale = 1.0
+    source = [1920, 1080]
+    target = [1920, 1080]
+    scale = 1.0
 
-        result = ipoverrides._scale_resolution(source, scale)
-        self.assertEquals(result, target)
+    result = ipoverrides._scale_resolution(source, scale)
+    assert result == target
 
-        source = [1920, 1080]
-        target = [960, 540]
-        scale = 0.5
+    source = [1920, 1080]
+    target = [960, 540]
+    scale = 0.5
 
-        result = ipoverrides._scale_resolution(source, scale)
-        self.assertEquals(result, target)
+    result = ipoverrides._scale_resolution(source, scale)
+    assert result == target
 
-        source = [1920, 1080]
-        target = [639, 360]
-        scale = 0.333
+    source = [1920, 1080]
+    target = [639, 360]
+    scale = 0.333
 
-        result = ipoverrides._scale_resolution(source, scale)
-        self.assertEquals(result, target)
+    result = ipoverrides._scale_resolution(source, scale)
+    assert result == target
 
 
-class Test___scale_sample_value(unittest.TestCase):
+def test__scale_sample_value():
     """Test the ht.pyfilter.operations.ipoverrides._scale_sample_value."""
 
-    def test(self):
-        """Test sample scaling."""
-        source = [10, 10]
-        target = [10, 10]
-        scale = 1.0
+    source = [10, 10]
+    target = [10, 10]
+    scale = 1.0
 
-        result = ipoverrides._scale_samples(source, scale)
-        self.assertEquals(result, target)
+    result = ipoverrides._scale_samples(source, scale)
+    assert result == target
 
-        source = [10, 10]
-        target = [5, 5]
-        scale = 0.5
+    source = [10, 10]
+    target = [5, 5]
+    scale = 0.5
 
-        result = ipoverrides._scale_samples(source, scale)
-        self.assertEquals(result, target)
+    result = ipoverrides._scale_samples(source, scale)
+    assert result == target
 
-        source = [10, 10]
-        target = [4, 4]
-        scale = 0.333
+    source = [10, 10]
+    target = [4, 4]
+    scale = 0.333
 
-        result = ipoverrides._scale_samples(source, scale)
-        self.assertEquals(result, target)
+    result = ipoverrides._scale_samples(source, scale)
+    assert result == target
 
 
-class Test_build_arg_string_from_node(unittest.TestCase):
+class Test_build_arg_string_from_node(object):
     """Test the ht.pyfilter.operations.ipoverrides.build_arg_string_from_node."""
 
     @patch("ht.pyfilter.operations.ipoverrides.IpOverrides.build_arg_string")
@@ -860,7 +777,7 @@ class Test_build_arg_string_from_node(unittest.TestCase):
         mock_node.evalParm.return_value = 0
 
         result = ipoverrides.build_arg_string_from_node(mock_node)
-        self.assertEquals(result, "")
+        assert result == ""
 
         parm_data = {
             "enable_ip_override": 1,
@@ -883,7 +800,7 @@ class Test_build_arg_string_from_node(unittest.TestCase):
 
         result = ipoverrides.build_arg_string_from_node(mock_node)
 
-        self.assertEquals(result,  mock_build.return_value)
+        assert result ==  mock_build.return_value
 
         mock_build.assert_called_with(
             res_scale=parm_data["ip_res_fraction"],
@@ -905,7 +822,7 @@ class Test_build_arg_string_from_node(unittest.TestCase):
         mock_node.evalParm.return_value = 0
 
         result = ipoverrides.build_arg_string_from_node(mock_node)
-        self.assertEquals(result, "")
+        assert result == ""
 
         parm_data = {
             "enable_ip_override": 1,
@@ -926,7 +843,7 @@ class Test_build_arg_string_from_node(unittest.TestCase):
 
         result = ipoverrides.build_arg_string_from_node(mock_node)
 
-        self.assertEquals(result, mock_build.return_value)
+        assert result == mock_build.return_value
 
         mock_build.assert_called_with(
             res_scale=None,
@@ -943,30 +860,28 @@ class Test_build_arg_string_from_node(unittest.TestCase):
         )
 
 
-class Test_build_pixel_sample_scale_display(unittest.TestCase):
+@patch("ht.pyfilter.operations.ipoverrides._scale_samples")
+def test_build_pixel_sample_scale_display(mock_scale):
     """Test the ht.pyfilter.operations.ipoverrides.build_pixel_sample_scale_display."""
+    source_samples = (6, 6)
+    target_samples = (3, 3)
+    scale = 0.5
 
-    @patch("ht.pyfilter.operations.ipoverrides._scale_samples")
-    def test(self, mock_scale):
-        source_samples = (6, 6)
-        target_samples = (3, 3)
-        scale = 0.5
+    mock_node = MagicMock()
+    mock_node.evalParmTuple.return_value = source_samples
+    mock_node.evalParm.return_value = scale
 
-        mock_node = MagicMock()
-        mock_node.evalParmTuple.return_value = source_samples
-        mock_node.evalParm.return_value = scale
+    mock_scale.return_value = target_samples
 
-        mock_scale.return_value = target_samples
+    result = ipoverrides.build_pixel_sample_scale_display(mock_node)
 
-        result = ipoverrides.build_pixel_sample_scale_display(mock_node)
-
-        mock_node.evalParmTuple.assert_called_with("vm_samples")
-        mock_node.evalParm.assert_called_with("ip_sample_scale")
-        mock_scale.assert_called_with(source_samples, scale)
-        self.assertEquals(result, "{}x{}".format(target_samples[0], target_samples[1]))
+    mock_node.evalParmTuple.assert_called_with("vm_samples")
+    mock_node.evalParm.assert_called_with("ip_sample_scale")
+    mock_scale.assert_called_with(source_samples, scale)
+    assert result == "{}x{}".format(target_samples[0], target_samples[1])
 
 
-class Test_build_resolution_scale_display(unittest.TestCase):
+class Test_build_resolution_scale_display(object):
     """Test the ht.pyfilter.operations.ipoverrides.build_resolution_scale_display."""
 
     def test_no_camera(self):
@@ -975,7 +890,7 @@ class Test_build_resolution_scale_display(unittest.TestCase):
 
         result = ipoverrides.build_resolution_scale_display(mock_node)
 
-        self.assertEqual(result, "")
+        assert result == ""
 
         mock_node.parm.assert_called_with("camera")
 
@@ -998,7 +913,7 @@ class Test_build_resolution_scale_display(unittest.TestCase):
 
         result = ipoverrides.build_resolution_scale_display(mock_node)
 
-        self.assertEqual(result, "960x540")
+        assert result == "960x540"
 
         mock_node.parm.assert_called_with("camera")
 
@@ -1024,7 +939,7 @@ class Test_build_resolution_scale_display(unittest.TestCase):
 
         result = ipoverrides.build_resolution_scale_display(mock_node)
 
-        self.assertEqual(result, "250x250")
+        assert result == "250x250"
 
         mock_node.parm.assert_called_with("camera")
 
@@ -1050,7 +965,7 @@ class Test_build_resolution_scale_display(unittest.TestCase):
 
         result = ipoverrides.build_resolution_scale_display(mock_node)
 
-        self.assertEqual(result, "480x270")
+        assert result == "480x270"
 
         mock_node.parm.assert_called_with("camera")
 
@@ -1062,38 +977,29 @@ class Test_build_resolution_scale_display(unittest.TestCase):
         mock_scale.assert_has_calls(calls)
 
 
-class Test_build_pyfilter_command_from_node(unittest.TestCase):
+@patch("ht.pyfilter.operations.ipoverrides.build_pyfilter_command")
+@patch("ht.pyfilter.operations.ipoverrides.build_arg_string_from_node")
+def test_build_pyfilter_command_from_node(mock_build_arg, mock_build_command):
     """Test the ht.pyfilter.operations.ipoverrides.build_pyfilter_command_from_node."""
+    mock_node = MagicMock(spec=hou.RopNode)
 
-    @patch("ht.pyfilter.operations.ipoverrides.build_pyfilter_command")
-    @patch("ht.pyfilter.operations.ipoverrides.build_arg_string_from_node")
-    def test(self, mock_build_arg, mock_build_command):
-        mock_node = MagicMock(spec=hou.RopNode)
+    result = ipoverrides.build_pyfilter_command_from_node(mock_node)
 
-        result = ipoverrides.build_pyfilter_command_from_node(mock_node)
+    assert result == mock_build_command.return_value
 
-        self.assertEqual(result, mock_build_command.return_value)
-
-        mock_build_arg.assert_called_with(mock_node)
-        mock_build_command.assert_called_with(mock_build_arg.return_value.split.return_value)
+    mock_build_arg.assert_called_with(mock_node)
+    mock_build_command.assert_called_with(mock_build_arg.return_value.split.return_value)
 
 
-class Test_set_mantra_command(unittest.TestCase):
+def test_set_mantra_command():
     """Test the ht.pyfilter.operations.ipoverrides.set_mantra_command."""
 
-    def test(self):
-        mock_node = MagicMock(spec=hou.RopNode)
+    mock_node = MagicMock(spec=hou.RopNode)
 
-        ipoverrides.set_mantra_command(mock_node)
+    ipoverrides.set_mantra_command(mock_node)
 
-        mock_node.parm.return_value.set.assert_called_with(
-            "mantra `pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.build_pyfilter_command_from_node(hou.pwd())\")`"
-        )
+    mock_node.parm.return_value.set.assert_called_with(
+        "mantra `pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.build_pyfilter_command_from_node(hou.pwd())\")`"
+    )
 
-        mock_node.parm.assert_called_with("soho_pipecmd")
-
-# =============================================================================
-
-if __name__ == '__main__':
-    # Run the tests.
-    unittest.main()
+    mock_node.parm.assert_called_with("soho_pipecmd")

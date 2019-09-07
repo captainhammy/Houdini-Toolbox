@@ -4,59 +4,78 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import json
+
+# Third Party Imports
 from mock import MagicMock, patch
-import unittest
+import pytest
 
 # Houdini Toolbox Imports
 from ht.pyfilter import property as prop
 
-reload(prop)
+
+# =============================================================================
+# FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def patch_mantra():
+    """Mock importing mantra module."""
+    mock_mantra = MagicMock()
+
+    modules = {
+        "mantra": mock_mantra,
+    }
+
+    patcher = patch.dict("sys.modules", modules)
+    patcher.start()
+
+    yield mock_mantra
+
+    patcher.stop()
+
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test__parse_string_for_bool(unittest.TestCase):
+class Test__parse_string_for_bool(object):
     """Test ht.pyfilter.property._parse_string_for_bool."""
 
     def test_false(self):
-        self.assertFalse(prop._parse_string_for_bool("False"))
-        self.assertFalse(prop._parse_string_for_bool("false"))
+        assert not prop._parse_string_for_bool("False")
+        assert not prop._parse_string_for_bool("false")
 
     def test_true(self):
-        self.assertTrue(prop._parse_string_for_bool("True"))
-        self.assertTrue(prop._parse_string_for_bool("true"))
+        assert prop._parse_string_for_bool("True")
+        assert prop._parse_string_for_bool("true")
 
     def test_passthrough(self):
-        self.assertEqual(
-            prop._parse_string_for_bool("test"),
-            "test"
-        )
+        assert prop._parse_string_for_bool("test") == "test"
 
 
-class Test__prep_value_to_set(unittest.TestCase):
+class Test__prep_value_to_set(object):
     """Test ht.pyfilter.property._prep_value_to_set."""
 
     def test_None(self):
         result = prop._prep_value_to_set(None)
 
-        self.assertEqual(result, [])
+        assert result == []
 
     def test_str(self):
         value = "value"
 
         result = prop._prep_value_to_set(value)
 
-        self.assertEqual(result, [value])
+        assert result == [value]
 
     def test_unicode(self):
         value = u"value"
 
         result = prop._prep_value_to_set(value)
 
-        self.assertEqual(result, [value])
+        assert result == [value]
 
     def test_dict(self):
         value = {
@@ -68,14 +87,14 @@ class Test__prep_value_to_set(unittest.TestCase):
 
         expected = json.dumps(value)
 
-        self.assertEqual(result, [expected])
+        assert result == [expected]
 
     def test_non_iterable(self):
         value = 123
 
         result = prop._prep_value_to_set(value)
 
-        self.assertEqual(result, [value])
+        assert result == [value]
 
     def test_list_of_dicts(self):
         dict1 = {
@@ -89,7 +108,7 @@ class Test__prep_value_to_set(unittest.TestCase):
 
         expected = json.dumps(dict1)
 
-        self.assertEqual(result, [expected])
+        assert result == [expected]
 
     @patch("ht.pyfilter.property.json.dumps")
     def test_list_of_dicts_TypeError(self, mock_dumps):
@@ -103,7 +122,7 @@ class Test__prep_value_to_set(unittest.TestCase):
 
         result = prop._prep_value_to_set(value)
 
-        self.assertEqual(result, value)
+        assert result == value
 
     @patch("ht.pyfilter.property.json.dumps")
     def test_list_of_dicts_ValueError(self, mock_dumps):
@@ -117,7 +136,7 @@ class Test__prep_value_to_set(unittest.TestCase):
 
         result = prop._prep_value_to_set(value)
 
-        self.assertEqual(result, value)
+        assert result == value
 
     def test_list_of_non_dicts(self):
         dict1 = {
@@ -129,15 +148,16 @@ class Test__prep_value_to_set(unittest.TestCase):
 
         result = prop._prep_value_to_set(value)
 
-        self.assertEqual(result, value)
+        assert result == value
 
 
-class Test__transform_values(unittest.TestCase):
+class Test__transform_values(object):
+    """Test ht.pyfilter.property._transform_values."""
 
     def test_None(self):
         result = prop._transform_values(None)
 
-        self.assertIsNone(result)
+        assert result is None
 
     def test_single_json_string(self):
         expected = 123
@@ -146,7 +166,7 @@ class Test__transform_values(unittest.TestCase):
 
         result = prop._transform_values([value])
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_single_string_json(self):
         expected = 123
@@ -155,14 +175,14 @@ class Test__transform_values(unittest.TestCase):
 
         result = prop._transform_values([value])
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_single_string_non_json_dict(self):
         expected = {"comp1": "comp2", "comp3": "comp4"}
 
         result = prop._transform_values(["comp1 comp2 comp3 comp4"])
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     @patch("ht.pyfilter.property._parse_string_for_bool")
     def test_single_string_value(self, mock_parse):
@@ -170,7 +190,7 @@ class Test__transform_values(unittest.TestCase):
 
         result = prop._transform_values([expected])
 
-        self.assertEqual(result, mock_parse.return_value)
+        assert result == mock_parse.return_value
 
         mock_parse.assert_called_with(expected)
 
@@ -179,84 +199,46 @@ class Test__transform_values(unittest.TestCase):
 
         result = prop._transform_values([value])
 
-        self.assertEqual(result, value)
+        assert result == value
 
     def test_multiple_json_values(self):
         values = [1, 2]
 
         result = prop._transform_values([str(val) for val in values])
 
-        self.assertEqual(result, values)
+        assert result == values
 
     def test_multiple_non_json_values(self):
         values = [1, "2"]
 
         result = prop._transform_values(values)
 
-        self.assertEqual(result, values)
+        assert result == values
 
 
-class Test_get_property(unittest.TestCase):
+class Test_get_property(object):
     """Test ht.pyfilter.property.get_property."""
 
-    def setUp(self):
-        super(Test_get_property, self).setUp()
-
-        self.mock_mantra = MagicMock()
-
-        modules = {
-            "mantra": self.mock_mantra,
-        }
-
-        self.module_patcher = patch.dict("sys.modules", modules)
-        self.module_patcher.start()
-
-    def tearDown(self):
-        self.module_patcher.stop()
-
     @patch("ht.pyfilter.property._transform_values")
-    def test(self, mock_transform):
+    def test(self, mock_transform, patch_mantra):
         mock_name = MagicMock(spec=str)
 
         result = prop.get_property(mock_name)
 
-        self.assertEqual(
-            result,
-            mock_transform.return_value
-        )
+        assert result == mock_transform.return_value
 
-        mock_transform.assert_called_with(self.mock_mantra.property.return_value)
+        mock_transform.assert_called_with(patch_mantra.property.return_value)
 
 
-class Test_set_property(unittest.TestCase):
+class Test_set_property(object):
     """Test ht.pyfilter.property.set_property."""
 
-    def setUp(self):
-        super(Test_set_property, self).setUp()
-
-        self.mock_mantra = MagicMock()
-
-        modules = {
-            "mantra": self.mock_mantra,
-        }
-
-        self.module_patcher = patch.dict("sys.modules", modules)
-        self.module_patcher.start()
-
-    def tearDown(self):
-        self.module_patcher.stop()
-
     @patch("ht.pyfilter.property._prep_value_to_set")
-    def test(self, mock_prep):
+    def test(self, mock_prep, patch_mantra):
         mock_name = MagicMock(spec=str)
         mock_value = MagicMock(spec=int)
 
         prop.set_property(mock_name, mock_value)
 
         mock_prep.assert_called_with(mock_value)
-        self.mock_mantra.setproperty.assert_called_with(mock_name, mock_prep.return_value)
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()
+        patch_mantra.setproperty.assert_called_with(mock_name, mock_prep.return_value)

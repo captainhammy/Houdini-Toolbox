@@ -4,10 +4,13 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
-from mock import MagicMock, PropertyMock, call, mock_open, patch
+# Standard Library Imports
+import imp
 import os
-import unittest
+
+# Third Party Imports
+from mock import MagicMock, PropertyMock, call, mock_open, patch
+import pytest
 
 # Houdini Toolbox Imports
 from ht.nodes.styles import constants as consts
@@ -16,13 +19,16 @@ from ht.nodes.styles import manager
 # Houdini Imports
 import hou
 
-reload(manager)
+# Reload the module to test to capture load evaluation since it has already
+# been loaded.
+imp.reload(manager)
+
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_StyleManager(unittest.TestCase):
+class Test_StyleManager(object):
     """Test ht.nodes.styles.manager.StyleManager."""
 
     @patch.object(manager.StyleManager, "_build")
@@ -30,10 +36,10 @@ class Test_StyleManager(unittest.TestCase):
         """Test the constructor."""
         mgr = manager.StyleManager()
 
-        self.assertEqual(mgr._constants, {})
-        self.assertEqual(mgr._name_rules, {})
-        self.assertEqual(mgr._node_type_rules, {})
-        self.assertEqual(mgr._tool_rules, {})
+        assert mgr._constants == {}
+        assert mgr._name_rules == {}
+        assert mgr._node_type_rules == {}
+        assert mgr._tool_rules == {}
 
         mock_build.assert_called()
 
@@ -46,7 +52,7 @@ class Test_StyleManager(unittest.TestCase):
         mgr = manager.StyleManager()
 
         mgr._constants = data
-        self.assertEqual(mgr.constants, data)
+        assert mgr.constants == data
 
     @patch.object(manager.StyleManager, "__init__", lambda x: None)
     def test_name_rules(self):
@@ -55,7 +61,7 @@ class Test_StyleManager(unittest.TestCase):
         mgr = manager.StyleManager()
 
         mgr._name_rules = data
-        self.assertEqual(mgr.name_rules, data)
+        assert mgr.name_rules == data
 
     @patch.object(manager.StyleManager, "__init__", lambda x: None)
     def test_node_type_rules(self):
@@ -64,7 +70,7 @@ class Test_StyleManager(unittest.TestCase):
         mgr = manager.StyleManager()
 
         mgr._node_type_rules = data
-        self.assertEqual(mgr.node_type_rules, data)
+        assert mgr.node_type_rules == data
 
     @patch.object(manager.StyleManager, "__init__", lambda x: None)
     def test_tool_rules(self):
@@ -73,7 +79,7 @@ class Test_StyleManager(unittest.TestCase):
         mgr = manager.StyleManager()
 
         mgr._tool_rules = data
-        self.assertEqual(mgr.tool_rules, data)
+        assert mgr.tool_rules == data
 
     # Non-Public Methods
 
@@ -182,8 +188,8 @@ class Test_StyleManager(unittest.TestCase):
 
         mock_constant.assert_has_calls(calls, any_order=True)
 
-        self.assertEqual(constants[name1], mock_constant.return_value)
-        self.assertEqual(constants[name2], mock_constant.return_value)
+        assert constants[name1] == mock_constant.return_value
+        assert constants[name2] == mock_constant.return_value
 
     @patch("ht.nodes.styles.manager.StyleConstant", autospec=True)
     @patch("ht.nodes.styles.manager._build_shape")
@@ -236,7 +242,7 @@ class Test_StyleManager(unittest.TestCase):
 
         mgr._build_rules_from_data(all_data)
 
-        self.assertEqual(mgr.name_rules["Sop"], {})
+        assert mgr.name_rules["Sop"] == {}
 
         mock_build.assert_called_with([mock_rule1, mock_rule2], {}, path, mock_constants.return_value)
 
@@ -262,7 +268,7 @@ class Test_StyleManager(unittest.TestCase):
 
         mgr._build_rules_from_data(all_data)
 
-        self.assertEqual(mgr.node_type_rules["Sop"], {})
+        assert mgr.node_type_rules["Sop"] == {}
 
         mock_build.assert_called_with([mock_rule1, mock_rule2], {}, path, mock_constants.return_value)
 
@@ -286,7 +292,7 @@ class Test_StyleManager(unittest.TestCase):
 
         mgr._build_rules_from_data(all_data)
 
-        self.assertEqual(mgr.tool_rules["Sop"], {})
+        assert mgr.tool_rules["Sop"] == {}
 
         mock_build.assert_called_with([mock_rule1, mock_rule2], {}, path, mock_constants.return_value)
 
@@ -310,7 +316,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._get_manager_generator_style(mock_type)
 
-        self.assertIsNone(result)
+        assert result is None
 
         mock_resolve.assert_not_called()
 
@@ -335,7 +341,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._get_manager_generator_style(mock_type)
 
-        self.assertEqual(result, mock_resolve.return_value)
+        assert result == mock_resolve.return_value
 
         mock_resolve.assert_called_with(mock_rule)
 
@@ -360,7 +366,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._get_manager_generator_style(mock_type)
 
-        self.assertEqual(result, mock_resolve.return_value)
+        assert result == mock_resolve.return_value
 
         mock_resolve.assert_called_with(mock_rule)
 
@@ -383,7 +389,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._get_manager_generator_style(mock_type)
 
-        self.assertIsNone(result)
+        assert result is None
 
         mock_resolve.assert_not_called()
 
@@ -408,7 +414,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._get_manager_generator_style(mock_type)
 
-        self.assertEqual(result, mock_resolve.return_value)
+        assert result == mock_resolve.return_value
 
         mock_resolve.assert_called_with(mock_rule)
 
@@ -433,7 +439,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._get_manager_generator_style(mock_type)
 
-        self.assertEqual(result, mock_resolve.return_value)
+        assert result == mock_resolve.return_value
 
         mock_resolve.assert_called_with(mock_rule)
 
@@ -455,7 +461,7 @@ class Test_StyleManager(unittest.TestCase):
 
         mgr = manager.StyleManager()
 
-        with self.assertRaises(hou.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             mgr._get_manager_generator_style(mock_type)
 
     # _get_name_style
@@ -489,7 +495,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._get_name_style(mock_node)
 
-        self.assertEqual(result, mock_resolve.return_value)
+        assert result == mock_resolve.return_value
         mock_match.assert_called_with(style_name, node_name)
 
         mock_resolve.assert_called_with(mock_rule)
@@ -523,7 +529,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._get_name_style(mock_node)
 
-        self.assertEqual(result, mock_resolve.return_value)
+        assert result == mock_resolve.return_value
         mock_match.assert_called_with(style_name, node_name)
 
         mock_resolve.assert_called_with(mock_rule)
@@ -557,7 +563,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._get_name_style(mock_node)
 
-        self.assertIsNone(result)
+        assert result is None
         mock_match.assert_called_with(style_name, node_name)
 
         mock_resolve.assert_not_called()
@@ -590,7 +596,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._get_node_type_style(mock_type)
 
-        self.assertEqual(result, mock_resolve.return_value)
+        assert result == mock_resolve.return_value
         mock_match.assert_called_with(style_name, node_type_name)
 
         mock_resolve.assert_called_with(mock_rule)
@@ -621,7 +627,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._get_node_type_style(mock_type)
 
-        self.assertEqual(result, mock_resolve.return_value)
+        assert result == mock_resolve.return_value
         mock_match.assert_called_with(style_name, node_type_name)
 
         mock_resolve.assert_called_with(mock_rule)
@@ -652,7 +658,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._get_node_type_style(mock_type)
 
-        self.assertEqual(result, None)
+        assert result == None
 
         mock_match.assert_called_with(style_name, node_type_name)
 
@@ -689,7 +695,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._get_tool_style(mock_type)
 
-        self.assertEqual(result, mock_resolve.return_value)
+        assert result == mock_resolve.return_value
 
         mock_get_locations.assert_called_with(mock_type)
 
@@ -726,7 +732,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._get_tool_style(mock_type)
 
-        self.assertEqual(result, mock_resolve.return_value)
+        assert result == mock_resolve.return_value
 
         mock_get_locations.assert_called_with(mock_type)
 
@@ -762,7 +768,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._get_tool_style(mock_type)
 
-        self.assertIsNone(result)
+        assert result is None
 
         mock_get_locations.assert_called_with(mock_type)
 
@@ -781,7 +787,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._resolve_rule(mock_rule)
 
-        self.assertEqual(result, mock_rule)
+        assert result == mock_rule
 
     @patch.object(manager.StyleManager, "constants", new_callable=PropertyMock)
     @patch.object(manager.StyleManager, "__init__", lambda x: None)
@@ -799,7 +805,7 @@ class Test_StyleManager(unittest.TestCase):
 
         result = mgr._resolve_rule(mock_rule)
 
-        self.assertEqual(result, mock_constant)
+        assert result == mock_constant
 
     # style_node
 
@@ -993,7 +999,7 @@ class Test_StyleManager(unittest.TestCase):
         mock_build.assert_called()
 
 
-class Test__build_category_rules(unittest.TestCase):
+class Test__build_category_rules(object):
     """Test ht.nodes.styles.manager._build_category_rules."""
 
     def test_invalid_constant(self):
@@ -1008,7 +1014,7 @@ class Test__build_category_rules(unittest.TestCase):
             }
         ]
 
-        with self.assertRaises(manager.ConstantDoesNotExistError):
+        with pytest.raises(manager.ConstantDoesNotExistError):
             manager._build_category_rules(rules, {}, path, constants)
 
     @patch("ht.nodes.styles.manager.ConstantRule", autospec=True)
@@ -1033,7 +1039,7 @@ class Test__build_category_rules(unittest.TestCase):
 
         manager._build_category_rules(rules, category_map, path, constants)
 
-        self.assertEqual(category_map, {rule_name: mock_const_rule.return_value})
+        assert category_map == {rule_name: mock_const_rule.return_value}
 
         mock_const_rule.assert_called_with(rule_name, constant_name, path)
 
@@ -1063,21 +1069,21 @@ class Test__build_category_rules(unittest.TestCase):
 
         manager._build_category_rules(rules, category_map, path, {})
 
-        self.assertEqual(category_map, {rule_name: mock_style_rule.return_value})
+        assert category_map == {rule_name: mock_style_rule.return_value}
 
         mock_style_rule.assert_called_with(rule_name, mock_color, color_type, shape, path)
 
         mock_const_rule.assert_not_called()
 
 
-class Test__build_color(unittest.TestCase):
+class Test__build_color(object):
     """Test ht.nodes.styles.manager._build_color."""
 
     def test_no_data(self):
         """Test building a color when there is no data."""
         result = manager._build_color({})
 
-        self.assertEqual(result, (None, None))
+        assert result == (None, None)
 
     @patch("hou.colorType")
     def test_invalid_color_type(self, mock_type):
@@ -1086,7 +1092,7 @@ class Test__build_color(unittest.TestCase):
 
         data = {consts.RULE_COLOR_KEY: {consts.RULE_COLOR_TYPE_KEY: "foo"}}
 
-        with self.assertRaises(manager.InvalidColorTypeError):
+        with pytest.raises(manager.InvalidColorTypeError):
             manager._build_color(data)
 
     @patch("hou.Color", autospec=True)
@@ -1098,7 +1104,7 @@ class Test__build_color(unittest.TestCase):
 
         result = manager._build_color(data)
 
-        self.assertEqual(result, (mock_color(), color_type))
+        assert result == (mock_color(), color_type)
 
         mock_color().setRGB.assert_called_with([value] * 3)
 
@@ -1111,7 +1117,7 @@ class Test__build_color(unittest.TestCase):
 
         result = manager._build_color(data)
 
-        self.assertEqual(result, (mock_color(), color_type))
+        assert result == (mock_color(), color_type)
 
         mock_color().setRGB.assert_called_with(value)
 
@@ -1124,7 +1130,7 @@ class Test__build_color(unittest.TestCase):
 
         result = manager._build_color(data)
 
-        self.assertEqual(result, (mock_color(), color_type))
+        assert result == (mock_color(), color_type)
 
         mock_color().setHSL.assert_called_with(value)
 
@@ -1137,7 +1143,7 @@ class Test__build_color(unittest.TestCase):
 
         result = manager._build_color(data)
 
-        self.assertEqual(result, (mock_color(), color_type))
+        assert result == (mock_color(), color_type)
 
         mock_color().setHSV.assert_called_with(value)
 
@@ -1150,7 +1156,7 @@ class Test__build_color(unittest.TestCase):
 
         result = manager._build_color(data)
 
-        self.assertEqual(result, (mock_color(), color_type))
+        assert result == (mock_color(), color_type)
 
         mock_color().setLAB.assert_called_with(value)
 
@@ -1163,12 +1169,12 @@ class Test__build_color(unittest.TestCase):
 
         result = manager._build_color(data)
 
-        self.assertEqual(result, (mock_color(), color_type))
+        assert result == (mock_color(), color_type)
 
         mock_color().setXYZ.assert_called_with(value)
 
 
-class Test__build_shape(unittest.TestCase):
+class Test__build_shape(object):
     """Test ht.nodes.styles.manager._build_shape."""
 
     def test(self):
@@ -1178,16 +1184,16 @@ class Test__build_shape(unittest.TestCase):
 
         result = manager._build_shape(mock_rule)
 
-        self.assertEqual(result, shape)
+        assert result == shape
 
     def test_no_rule(self):
         """Test building a shape where there is not a shape key."""
         result = manager._build_shape({})
 
-        self.assertIsNone(result)
+        assert result == None
 
 
-class Test__find_files(unittest.TestCase):
+class Test__find_files(object):
     """Test ht.nodes.styles.manager._find_files."""
 
     @patch("ht.nodes.styles.manager.glob.glob")
@@ -1201,7 +1207,7 @@ class Test__find_files(unittest.TestCase):
 
         result = manager._find_files()
 
-        self.assertEqual(result, ())
+        assert result == ()
 
         mock_glob.assert_not_called()
 
@@ -1223,14 +1229,14 @@ class Test__find_files(unittest.TestCase):
         expected = (file1, file2, file3)
         result = manager._find_files()
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
         calls = [call(os.path.join(dir1, "*.json")), call(os.path.join(dir2, "*.json"))]
 
         mock_glob.assert_has_calls(calls)
 
 
-class Test__get_tool_menu_locations(unittest.TestCase):
+class Test__get_tool_menu_locations(object):
     """Test ht.nodes.styles.manager._get_tool_menu_locations."""
 
     @patch("hou.shelves.defaultToolName")
@@ -1244,7 +1250,7 @@ class Test__get_tool_menu_locations(unittest.TestCase):
 
         result = manager._get_tool_menu_locations(mock_type)
 
-        self.assertEqual(result, ())
+        assert result == ()
 
         mock_default_name.assert_called_with(
             mock_category.name.return_value,
@@ -1266,14 +1272,9 @@ class Test__get_tool_menu_locations(unittest.TestCase):
 
         result = manager._get_tool_menu_locations(mock_type)
 
-        self.assertEqual(result, mock_tool.toolMenuLocations.return_value)
+        assert result == mock_tool.toolMenuLocations.return_value
 
         mock_default_name.assert_called_with(
             mock_category.name.return_value,
             mock_type.name.return_value
         )
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()

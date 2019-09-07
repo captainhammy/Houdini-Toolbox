@@ -4,127 +4,132 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 from collections import OrderedDict
+import imp
+
+# Third Party Imports
 from mock import MagicMock, PropertyMock, patch
-import unittest
+import pytest
 
 # Houdini Toolbox Imports
 import ht.events.stats
 
-reload(ht.events.stats)
+# Reload the module to test to capture load evaluation since it has already
+# been loaded.
+imp.reload(ht.events.stats)
+
+
+# =============================================================================
+# FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def init_tester():
+    """Create a tester class object for StatsMeta"""
+    class _Tester(object):
+        __metaclass__ = ht.events.stats._StatsMeta
+
+        def __init__(self, name, tags=None, post_report=False):
+            self._post_report = post_report
+
+            if tags is None:
+                tags = []
+
+            self._tags = tags
+
+    yield _Tester
+
+    # Reset the instances.
+    ht.events.stats._StatsMeta._instances.clear()
+
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test__StatsMeta(unittest.TestCase):
+class Test__StatsMeta(object):
     """Test ht.events.stats._StatsMeta metaclass."""
 
-    def tearDown(self):
-        super(Test__StatsMeta, self).tearDown()
-
-        ht.events.stats._StatsMeta._instances.clear()
-
-        del self._Tester
-
-    def setUp(self):
-        super(Test__StatsMeta, self).setUp()
-
-        class _Tester(object):
-            __metaclass__ = ht.events.stats._StatsMeta
-
-            def __init__(self, name, tags=None, post_report=False):
-                self._post_report = post_report
-
-                if tags is None:
-                    tags = []
-
-                self._tags = tags
-
-        self._Tester = _Tester
-
-    def test_new(self):
+    def test_new(self, init_tester):
         mock_name = MagicMock(spec=str)
-        inst = self._Tester(mock_name)
+        # inst =  init_tester(mock_name)
+        inst = init_tester(mock_name)
 
-        self.assertEqual(
-            ht.events.stats._StatsMeta._instances,
-            {self._Tester: {mock_name: inst}}
-        )
+        assert ht.events.stats._StatsMeta._instances == {init_tester: {mock_name: inst}}
 
-    def test_existing_default_args(self):
+    def test_existing_default_args(self, init_tester):
         mock_name = MagicMock(spec=str)
 
-        inst1 = self._Tester(mock_name)
-        inst2 = self._Tester(mock_name)
+        inst1 = init_tester(mock_name)
+        inst2 = init_tester(mock_name)
 
-        self.assertTrue(inst1 is inst2)
+        assert inst1 is inst2
 
-    def test_existing_tags_positional(self):
+    def test_existing_tags_positional(self, init_tester):
         mock_name = MagicMock(spec=str)
 
         mock_tag1 = MagicMock(spec=str)
         mock_tag2 = MagicMock(spec=str)
 
-        inst1 = self._Tester(mock_name, [mock_tag1])
-        inst2 = self._Tester(mock_name, [mock_tag2])
+        inst1 = init_tester(mock_name, [mock_tag1])
+        inst2 = init_tester(mock_name, [mock_tag2])
 
-        self.assertEqual(inst1._tags, [mock_tag1, mock_tag2])
-        self.assertTrue(inst1 is inst2)
+        assert inst1._tags == [mock_tag1, mock_tag2]
+        assert inst1 is inst2
 
-    def test_existing_tags_passed(self):
+    def test_existing_tags_passed(self, init_tester):
         mock_name = MagicMock(spec=str)
 
         mock_tag1 = MagicMock(spec=str)
         mock_tag2 = MagicMock(spec=str)
 
-        inst1 = self._Tester(mock_name, tags=[mock_tag1])
-        inst2 = self._Tester(mock_name, tags=[mock_tag2])
+        inst1 = init_tester(mock_name, tags=[mock_tag1])
+        inst2 = init_tester(mock_name, tags=[mock_tag2])
 
-        self.assertEqual(inst1._tags, [mock_tag1, mock_tag2])
-        self.assertTrue(inst1 is inst2)
+        assert inst1._tags == [mock_tag1, mock_tag2]
+        assert inst1 is inst2
 
-    def test_existing_tags_avoid_duplicates(self):
+    def test_existing_tags_avoid_duplicates(self, init_tester):
         mock_name = MagicMock(spec=str)
 
         mock_tag = MagicMock(spec=str)
 
-        inst1 = self._Tester(mock_name, tags=[mock_tag])
-        inst2 = self._Tester(mock_name, tags=[mock_tag])
+        inst1 = init_tester(mock_name, tags=[mock_tag])
+        inst2 = init_tester(mock_name, tags=[mock_tag])
 
-        self.assertEqual(inst1._tags, [mock_tag])
-        self.assertTrue(inst1 is inst2)
+        assert inst1._tags == [mock_tag]
+        assert inst1 is inst2
 
-    def test_existing_post_report_positional(self):
+    def test_existing_post_report_positional(self, init_tester):
         mock_name = MagicMock(spec=str)
 
-        inst1 = self._Tester(mock_name, None, False)
-        inst2 = self._Tester(mock_name, None, True)
+        inst1 = init_tester(mock_name, None, False)
+        inst2 = init_tester(mock_name, None, True)
 
-        self.assertTrue(inst1._post_report)
-        self.assertTrue(inst1 is inst2)
+        assert inst1._post_report
+        assert inst1 is inst2
 
-    def test_existing_post_report_passed(self):
+    def test_existing_post_report_passed(self, init_tester):
         mock_name = MagicMock(spec=str)
 
-        inst1 = self._Tester(mock_name, post_report=False)
-        inst2 = self._Tester(mock_name, post_report=True)
+        inst1 = init_tester(mock_name, post_report=False)
+        inst2 = init_tester(mock_name, post_report=True)
 
-        self.assertTrue(inst1._post_report)
-        self.assertTrue(inst1 is inst2)
+        assert inst1._post_report
+        assert inst1 is inst2
 
-    def test_existing_post_report_passed_keep_existing(self):
+    def test_existing_post_report_passed_keep_existing(self, init_tester):
         mock_name = MagicMock(spec=str)
 
-        inst1 = self._Tester(mock_name, post_report=True)
-        inst2 = self._Tester(mock_name, post_report=False)
+        inst1 = init_tester(mock_name, post_report=True)
+        inst2 = init_tester(mock_name, post_report=False)
 
-        self.assertTrue(inst1._post_report)
-        self.assertTrue(inst1 is inst2)
+        assert inst1._post_report
+        assert inst1 is inst2
 
 
-class Test_HoudiniEventStats(unittest.TestCase):
+class Test_HoudiniEventStats(object):
     """Test ht.events.stats.HoudiniEventStats class."""
 
     def test___init___no_tags(self):
@@ -132,27 +137,27 @@ class Test_HoudiniEventStats(unittest.TestCase):
 
         stats = ht.events.stats.HoudiniEventStats(mock_name, post_report=True)
 
-        self.assertEqual(stats._last_run_time, 0)
-        self.assertEqual(stats._last_started, 0)
-        self.assertEqual(stats._name, mock_name)
-        self.assertTrue(stats._post_report)
-        self.assertEqual(stats._run_count, 0)
-        self.assertEqual(stats._total_time, 0)
+        assert stats._last_run_time == 0
+        assert stats._last_started == 0
+        assert stats._name == mock_name
+        assert stats._post_report
+        assert stats._run_count == 0
+        assert stats._total_time == 0
 
-        self.assertEqual(stats._tags, [])
+        assert stats._tags == []
 
     def test___init___tags(self):
         mock_name = MagicMock(spec=str)
         mock_tags = MagicMock(spec=list)
         stats = ht.events.stats.HoudiniEventStats(mock_name, tags=mock_tags, post_report=True)
 
-        self.assertEqual(stats._last_run_time, 0)
-        self.assertEqual(stats._last_started, 0)
-        self.assertEqual(stats._name, mock_name)
-        self.assertTrue(stats._post_report)
-        self.assertEqual(stats._run_count, 0)
-        self.assertEqual(stats._total_time, 0)
-        self.assertEqual(stats._tags, mock_tags)
+        assert stats._last_run_time == 0
+        assert stats._last_started == 0
+        assert stats._name == mock_name
+        assert stats._post_report
+        assert stats._run_count == 0
+        assert stats._total_time == 0
+        assert stats._tags == mock_tags
 
     @patch.object(ht.events.stats.HoudiniEventStats, "total_time", new_callable=PropertyMock(return_value=22.123456))
     @patch.object(ht.events.stats.HoudiniEventStats, "run_count", new_callable=PropertyMock(return_value=3))
@@ -163,7 +168,7 @@ class Test_HoudiniEventStats(unittest.TestCase):
 
         result = stats.__repr__()
 
-        self.assertEqual(result, "<HoudiniEventStats: name run_count=3 total_time=22.123>")
+        assert result == "<HoudiniEventStats: name run_count=3 total_time=22.123>"
 
     # Properties
 
@@ -174,9 +179,9 @@ class Test_HoudiniEventStats(unittest.TestCase):
         stats = ht.events.stats.HoudiniEventStats(None)
 
         stats._last_run_time = mock_value
-        self.assertEqual(stats.last_run_time, mock_value)
+        assert stats.last_run_time == mock_value
 
-        with self.assertRaises(AttributeError):
+        with pytest.raises(AttributeError):
             stats.last_run_time = mock_value
 
     @patch.object(ht.events.stats.HoudiniEventStats, "__init__", lambda x, y: None)
@@ -186,9 +191,9 @@ class Test_HoudiniEventStats(unittest.TestCase):
         stats = ht.events.stats.HoudiniEventStats(None)
 
         stats._name = mock_value
-        self.assertEqual(stats.name, mock_value)
+        assert stats.name == mock_value
 
-        with self.assertRaises(AttributeError):
+        with pytest.raises(AttributeError):
             stats.name = mock_value
 
     @patch.object(ht.events.stats.HoudiniEventStats, "__init__", lambda x, y: None)
@@ -198,9 +203,9 @@ class Test_HoudiniEventStats(unittest.TestCase):
         stats = ht.events.stats.HoudiniEventStats(None)
 
         stats._post_report = mock_value
-        self.assertEqual(stats.post_report, mock_value)
+        assert stats.post_report == mock_value
 
-        with self.assertRaises(AttributeError):
+        with pytest.raises(AttributeError):
             stats.post_report = mock_value
 
     @patch.object(ht.events.stats.HoudiniEventStats, "__init__", lambda x, y: None)
@@ -210,9 +215,9 @@ class Test_HoudiniEventStats(unittest.TestCase):
         stats = ht.events.stats.HoudiniEventStats(None)
 
         stats._run_count = mock_value
-        self.assertEqual(stats.run_count, mock_value)
+        assert stats.run_count == mock_value
 
-        with self.assertRaises(AttributeError):
+        with pytest.raises(AttributeError):
             stats.run_count = mock_value
 
     @patch.object(ht.events.stats.HoudiniEventStats, "__init__", lambda x, y: None)
@@ -222,9 +227,9 @@ class Test_HoudiniEventStats(unittest.TestCase):
         stats = ht.events.stats.HoudiniEventStats(None)
 
         stats._tags = mock_value
-        self.assertEqual(stats.tags, mock_value)
+        assert stats.tags == mock_value
 
-        with self.assertRaises(AttributeError):
+        with pytest.raises(AttributeError):
             stats.tags = mock_value
 
     @patch.object(ht.events.stats.HoudiniEventStats, "__init__", lambda x, y: None)
@@ -234,9 +239,9 @@ class Test_HoudiniEventStats(unittest.TestCase):
         stats = ht.events.stats.HoudiniEventStats(None)
 
         stats._total_time = mock_value
-        self.assertEqual(stats.total_time, mock_value)
+        assert stats.total_time == mock_value
 
-        with self.assertRaises(AttributeError):
+        with pytest.raises(AttributeError):
             stats.total_time = mock_value
 
     # Methods
@@ -248,7 +253,7 @@ class Test_HoudiniEventStats(unittest.TestCase):
 
         stats.__enter__()
 
-        self.assertEqual(stats._last_started, mock_time.return_value)
+        assert stats._last_started == mock_time.return_value
 
     @patch.object(ht.events.stats.HoudiniEventStats, "print_report")
     @patch("time.time")
@@ -273,9 +278,9 @@ class Test_HoudiniEventStats(unittest.TestCase):
 
         run_time = 456-123
 
-        self.assertEqual(stats.last_run_time, run_time)
-        self.assertEqual(stats.total_time, run_time)
-        self.assertEqual(stats.run_count, 1)
+        assert stats.last_run_time == run_time
+        assert stats.total_time == run_time
+        assert stats.run_count == 1
 
         mock_print.assert_called_once()
 
@@ -302,9 +307,9 @@ class Test_HoudiniEventStats(unittest.TestCase):
 
         run_time = 456-123
 
-        self.assertEqual(stats.last_run_time, run_time)
-        self.assertEqual(stats.total_time, run_time)
-        self.assertEqual(stats.run_count, 1)
+        assert stats.last_run_time == run_time
+        assert stats.total_time == run_time
+        assert stats.run_count == 1
 
         mock_print.assert_not_called()
 
@@ -319,7 +324,7 @@ class Test_HoudiniEventStats(unittest.TestCase):
 
         stats.print_report()
 
-        self.assertEqual(mock_logger.info.call_count, 3)
+        assert mock_logger.info.call_count == 3
 
     @patch.object(ht.events.stats.HoudiniEventStats, "__init__", lambda x, y: None)
     def test_reset(self):
@@ -331,13 +336,14 @@ class Test_HoudiniEventStats(unittest.TestCase):
 
         stats.reset()
 
-        self.assertEqual(stats._last_run_time, 0)
-        self.assertEqual(stats._run_count, 0)
-        self.assertEqual(stats._total_time, 0)
+        assert stats._last_run_time == 0
+        assert stats._run_count == 0
+        assert stats._total_time == 0
+
 
 # =============================================================================
 
-class Test_HoudiniEventItemStats(unittest.TestCase):
+class Test_HoudiniEventItemStats(object):
     """Test ht.events.stats.HoudiniEventItemStats class."""
 
     @patch.object(ht.events.stats.HoudiniEventStats, "__init__")
@@ -348,7 +354,7 @@ class Test_HoudiniEventItemStats(unittest.TestCase):
         stats = ht.events.stats.HoudiniEventItemStats(mock_name, mock_tags, True)
 
         mock_super_init.assert_called_with(mock_name, tags=mock_tags, post_report=True)
-        self.assertTrue(isinstance(stats._item_stats, OrderedDict))
+        assert isinstance(stats._item_stats, OrderedDict)
 
     # Properties
 
@@ -359,7 +365,7 @@ class Test_HoudiniEventItemStats(unittest.TestCase):
         stats = ht.events.stats.HoudiniEventItemStats(None)
 
         stats._item_stats = mock_value
-        self.assertEqual(stats.item_stats, mock_value)
+        assert stats.item_stats == mock_value
 
     # Methods
 
@@ -378,7 +384,7 @@ class Test_HoudiniEventItemStats(unittest.TestCase):
 
         stats.print_report()
 
-        self.assertEqual(mock_logger.info.call_count, 5)
+        assert mock_logger.info.call_count == 5
 
     @patch.object(ht.events.stats.HoudiniEventItemStats, "item_stats", new_callable=PropertyMock)
     @patch.object(ht.events.stats.HoudiniEventStats, "reset")
@@ -416,7 +422,7 @@ class Test_HoudiniEventItemStats(unittest.TestCase):
         expected[mock_func1.__name__] = 1
         expected[mock_func2.__name__] = 3
 
-        self.assertEqual(stats.item_stats, expected)
+        assert stats.item_stats == expected
 
     @patch.object(ht.events.stats.HoudiniEventItemStats, "item_stats", new_callable=PropertyMock)
     @patch("time.time")
@@ -446,10 +452,10 @@ class Test_HoudiniEventItemStats(unittest.TestCase):
         expected[mock_func1.__name__] = 2
         expected[mock_func2.__name__] = 3
 
-        self.assertEqual(stats.item_stats, expected)
+        assert stats.item_stats == expected
 
 
-class Test__get_matching_stats(unittest.TestCase):
+class Test__get_matching_stats(object):
     """Test ht.events.stats._get_matching_stats."""
 
     def test(self):
@@ -464,10 +470,10 @@ class Test__get_matching_stats(unittest.TestCase):
 
         result = ht.events.stats._get_matching_stats([mock_stats1, mock_stats2], [mock_tag2])
 
-        self.assertEqual(result, (mock_stats1,))
+        assert result == (mock_stats1, )
 
 
-class Test_get_event_stats(unittest.TestCase):
+class Test_get_event_stats(object):
     """Test ht.events.stats.get_event_stats."""
 
     @patch("ht.events.stats._get_matching_stats")
@@ -477,7 +483,7 @@ class Test_get_event_stats(unittest.TestCase):
 
         result = ht.events.stats.get_event_stats()
 
-        self.assertEqual(result, ())
+        assert result == ()
 
         mock_matching.assert_not_called()
 
@@ -492,7 +498,7 @@ class Test_get_event_stats(unittest.TestCase):
 
         result = ht.events.stats.get_event_stats()
 
-        self.assertEqual(result, (mock_stats, ))
+        assert result == (mock_stats, )
 
         mock_matching.assert_not_called()
 
@@ -507,12 +513,12 @@ class Test_get_event_stats(unittest.TestCase):
 
         result = ht.events.stats.get_event_stats([mock_tag])
 
-        self.assertEqual(result, mock_matching.return_value)
+        assert result == mock_matching.return_value
 
         mock_matching.assert_called_with([mock_stats], [mock_tag])
 
 
-class Test_get_item_stats(unittest.TestCase):
+class Test_get_item_stats(object):
     """Test ht.events.stats.get_item_stats."""
 
     @patch("ht.events.stats._get_matching_stats")
@@ -522,7 +528,7 @@ class Test_get_item_stats(unittest.TestCase):
 
         result = ht.events.stats.get_item_stats()
 
-        self.assertEqual(result, ())
+        assert result == ()
 
         mock_matching.assert_not_called()
 
@@ -537,7 +543,7 @@ class Test_get_item_stats(unittest.TestCase):
 
         result = ht.events.stats.get_item_stats()
 
-        self.assertEqual(result, (mock_stats, ))
+        assert result == (mock_stats, )
 
         mock_matching.assert_not_called()
 
@@ -551,11 +557,6 @@ class Test_get_item_stats(unittest.TestCase):
 
         result = ht.events.stats.get_item_stats([mock_tag])
 
-        self.assertEqual(result, mock_matching.return_value)
+        assert result == mock_matching.return_value
 
         mock_matching.assert_called_with([mock_stats], [mock_tag])
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()

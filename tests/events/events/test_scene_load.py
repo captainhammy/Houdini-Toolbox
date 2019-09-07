@@ -4,9 +4,11 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
+import imp
+
+# Third Party Imports
 from mock import patch
-import unittest
 
 # Houdini Toolbox Imports
 import ht.events.events.scene_load
@@ -14,13 +16,16 @@ import ht.events.events.scene_load
 from ht.events.item import HoudiniEventItem
 from ht.events.types import SceneEvents
 
-reload(ht.events.events.scene_load)
+# Reload the module to test to capture load evaluation since it has already
+# been loaded.
+imp.reload(ht.events.events.scene_load)
+
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_SceneLoadEvent(unittest.TestCase):
+class Test_SceneLoadEvent(object):
     """Test ht.events.events.scene_load.SceneLoadEvent class."""
 
     def test___init__(self):
@@ -30,7 +35,7 @@ class Test_SceneLoadEvent(unittest.TestCase):
             SceneEvents.Load: HoudiniEventItem((event.clear_session_settings,)),
         }
 
-        self.assertEqual(event.event_map, expected_map)
+        assert event.event_map == expected_map
 
     # Methods
 
@@ -42,8 +47,3 @@ class Test_SceneLoadEvent(unittest.TestCase):
         event.clear_session_settings({})
 
         mock_hscript.assert_called_with("set -u HOUDINI_ICON_CACHE_DIR")
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()

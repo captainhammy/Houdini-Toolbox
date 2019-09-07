@@ -4,9 +4,12 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
+import imp
+
+# Third Party Imports
 from mock import MagicMock, PropertyMock, call, patch
-import unittest
+import pytest
 
 # Houdini Toolbox Imports
 from ht.events.item import HoudiniEventItem
@@ -14,21 +17,24 @@ from ht.events.event import HoudiniEvent
 from ht.events.group import HoudiniEventGroup
 import ht.events.manager
 
-reload(ht.events.manager)
+# Reload the module to test to capture load evaluation since it has already
+# been loaded.
+imp.reload(ht.events.manager)
+
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_HoudiniEventManager(unittest.TestCase):
+class Test_HoudiniEventManager(object):
     """Test ht.events.manager.HoudiniEventManager class."""
 
     def test___init__(self):
         manager = ht.events.manager.HoudiniEventManager()
 
-        self.assertEqual(manager._data, {})
-        self.assertEqual(manager._events, {})
-        self.assertEqual(manager._event_states, {})
+        assert manager._data == {}
+        assert manager._events == {}
+        assert manager._event_states == {}
 
     # Properties
 
@@ -39,7 +45,7 @@ class Test_HoudiniEventManager(unittest.TestCase):
         manager = ht.events.manager.HoudiniEventManager()
 
         manager._data = mock_value
-        self.assertEqual(manager.data, mock_value)
+        assert manager.data == mock_value
 
     @patch.object(ht.events.manager.HoudiniEventManager, "__init__", lambda x: None)
     def test_events(self):
@@ -49,7 +55,7 @@ class Test_HoudiniEventManager(unittest.TestCase):
         events = {MagicMock(spec=str): mock_event}
 
         manager._events = events
-        self.assertEqual(manager.events, events)
+        assert manager.events == events
 
     # Methods
 
@@ -84,8 +90,8 @@ class Test_HoudiniEventManager(unittest.TestCase):
         mock_enabled1.assert_has_calls([call(), call(False)])
         mock_enabled2.assert_has_calls([call(), call(False)])
 
-        self.assertFalse(manager._event_states[mock_event1.name])
-        self.assertTrue(manager._event_states[mock_event2.name])
+        assert not manager._event_states[mock_event1.name]
+        assert manager._event_states[mock_event2.name]
 
     @patch.object(ht.events.manager.HoudiniEventManager, "events", new_callable=PropertyMock)
     @patch.object(ht.events.manager.HoudiniEventManager, "__init__", lambda x: None)
@@ -118,8 +124,8 @@ class Test_HoudiniEventManager(unittest.TestCase):
         # and once to disable it.
         mock_enabled2.assert_has_calls([call(), call(False)])
 
-        self.assertTrue(manager._event_states[mock_event2.name])
-        self.assertEqual(len(manager._event_states), 1)
+        assert manager._event_states[mock_event2.name]
+        assert len(manager._event_states) == 1
 
     # _restore_events
 
@@ -176,8 +182,8 @@ class Test_HoudiniEventManager(unittest.TestCase):
 
         result = manager.create_event(mock_name)
 
-        self.assertEqual(result, mock_event)
-        self.assertTrue(mock_event in events.values())
+        assert result == mock_event
+        assert mock_event in events.values()
         mock_factory.get_event_type.assert_called_with(mock_name)
 
     # event_disabler
@@ -207,7 +213,7 @@ class Test_HoudiniEventManager(unittest.TestCase):
 
         manager = ht.events.manager.HoudiniEventManager()
 
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             manager.register_event_group(mock_group)
 
     @patch.object(ht.events.manager.HoudiniEventManager, "create_event")
@@ -293,7 +299,7 @@ class Test_HoudiniEventManager(unittest.TestCase):
         # Don't spec so it will fail isinstance(HoudiniEventItem)
         manager = ht.events.manager.HoudiniEventManager()
 
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             manager.register_item(None, MagicMock(spec=str))
 
     @patch.object(ht.events.manager.HoudiniEventManager, "create_event")
@@ -354,7 +360,7 @@ class Test_HoudiniEventManager(unittest.TestCase):
 
         manager.run_event(mock_event_name, scriptargs)
 
-        self.assertEqual(scriptargs, {})
+        assert scriptargs == {}
 
     @patch.object(ht.events.manager.HoudiniEventManager, "events", new_callable=PropertyMock)
     @patch.object(ht.events.manager.HoudiniEventManager, "__init__", lambda x: None)
@@ -399,10 +405,10 @@ class Test_HoudiniEventManager(unittest.TestCase):
 
         mock_event.run.assert_called_with(expected_scriptargs)
 
-        self.assertEqual(scriptargs, expected_scriptargs)
+        assert scriptargs == expected_scriptargs
 
 
-class Test_register_event_group(unittest.TestCase):
+class Test_register_event_group(object):
     """Test ht.events.manager.register_event_group."""
 
     @patch("ht.events.manager.MANAGER")
@@ -414,7 +420,7 @@ class Test_register_event_group(unittest.TestCase):
         mock_manager.register_event_group.assert_called_with(mock_group)
 
 
-class Test_register_function(unittest.TestCase):
+class Test_register_function(object):
     """Test ht.events.manager.register_function."""
 
     def test_not_callable(self):
@@ -423,7 +429,7 @@ class Test_register_function(unittest.TestCase):
         mock_priority = MagicMock(spec=int)
         mock_tags = MagicMock(spec=list)
 
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             ht.events.manager.register_function(None, mock_event_name, mock_item_name, mock_priority, mock_tags)
 
     @patch("ht.events.manager.register_item")
@@ -442,13 +448,13 @@ class Test_register_function(unittest.TestCase):
         mock_register_item.assert_called_with(mock_cls.return_value, mock_event_name)
 
 
-class Test_register_item(unittest.TestCase):
+class Test_register_item(object):
     """Test ht.events.manager.register_item."""
 
     def test_not_item(self):
         mock_event_name = MagicMock(spec=str)
 
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             ht.events.manager.register_item(None, mock_event_name)
 
     @patch("ht.events.manager.MANAGER")
@@ -462,7 +468,7 @@ class Test_register_item(unittest.TestCase):
         mock_manager.register_item.assert_called_with(mock_item, mock_event_name)
 
 
-class Test_run_event(unittest.TestCase):
+class Test_run_event(object):
     """Test ht.events.manager.run_event."""
 
     @patch("ht.events.manager.MANAGER")
@@ -474,8 +480,3 @@ class Test_run_event(unittest.TestCase):
         ht.events.manager.run_event(mock_event_name, mock_scriptargs)
 
         mock_manager.run_event.assert_called_with(mock_event_name, mock_scriptargs)
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()

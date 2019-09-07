@@ -4,10 +4,11 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import argparse
+
+# Third Party Imports
 from mock import MagicMock, PropertyMock, mock_open, patch
-import unittest
 
 # Houdini Toolbox Imports
 from ht.pyfilter import manager
@@ -16,13 +17,12 @@ from ht.pyfilter.operations.operation import PyFilterOperation
 # Houdini Imports
 import hou
 
-reload(manager)
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class TestManager(unittest.TestCase):
+class TestManager(object):
     """Test ht.pyfilter.manager.PyFilterManager object."""
 
     @patch("ht.pyfilter.manager.PyFilterManager._process_parsed_args")
@@ -31,8 +31,8 @@ class TestManager(unittest.TestCase):
     def test___init__(self, mock_register, mock_parse, mock_process):
         mgr = manager.PyFilterManager()
 
-        self.assertEqual(mgr._data, {})
-        self.assertEqual(mgr._operations, [])
+        assert mgr._data == {}
+        assert mgr._operations == []
 
         mock_register.assert_called()
         mock_parse.assert_called()
@@ -48,7 +48,7 @@ class TestManager(unittest.TestCase):
 
         mgr._data = value
 
-        self.assertEqual(mgr.data, value)
+        assert mgr.data == value
 
     @patch.object(manager.PyFilterManager, "__init__", lambda x: None)
     def test_operations(self):
@@ -58,7 +58,7 @@ class TestManager(unittest.TestCase):
 
         mgr._operations = value
 
-        self.assertEqual(mgr.operations, value)
+        assert mgr.operations == value
 
     # Methods
 
@@ -76,7 +76,7 @@ class TestManager(unittest.TestCase):
 
         result = mgr._get_parsed_args()
 
-        self.assertEqual(result, mock_parser.parse_known_args.return_value[0])
+        assert result == mock_parser.parse_known_args.return_value[0]
 
         mock_register_args.assert_called_with(mock_parser)
 
@@ -148,7 +148,7 @@ class TestManager(unittest.TestCase):
         mock_get_data.assert_called_with(mock_file_path)
         mock_get_class.assert_called_with(mock_module_name, mock_class_name)
 
-        self.assertEqual(operations, [])
+        assert operations == []
         mock_logger.warning.assert_called()
 
     @patch("ht.pyfilter.manager._logger")
@@ -181,7 +181,7 @@ class TestManager(unittest.TestCase):
         mock_get_data.assert_called_with(mock_file_path)
         mock_get_class.assert_called_with(mock_module_name, mock_class_name)
 
-        self.assertTrue(mock_get_class.return_value.return_value in operations)
+        assert mock_get_class.return_value.return_value in operations
         mock_get_class.return_value.assert_called_with(mgr)
 
     # _register_parser_args
@@ -212,7 +212,7 @@ class TestManager(unittest.TestCase):
 
         result = mgr.run_operations_for_stage(mock_stage_name)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch.object(manager.PyFilterManager, "operations", new_callable=PropertyMock)
     @patch.object(manager.PyFilterManager, "__init__", lambda x: None)
@@ -228,7 +228,7 @@ class TestManager(unittest.TestCase):
 
         result = mgr.run_operations_for_stage(mock_stage_name)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch.object(manager.PyFilterManager, "operations", new_callable=PropertyMock)
     @patch.object(manager.PyFilterManager, "__init__", lambda x: None)
@@ -244,7 +244,7 @@ class TestManager(unittest.TestCase):
 
         result = mgr.run_operations_for_stage(stage_name)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch.object(manager.PyFilterManager, "operations", new_callable=PropertyMock)
     @patch.object(manager.PyFilterManager, "__init__", lambda x: None)
@@ -264,21 +264,21 @@ class TestManager(unittest.TestCase):
 
         result = mgr.run_operations_for_stage(stage_name, "value", bar="value")
 
-        self.assertTrue(result)
+        assert result
 
         mock_func.assert_called_with("value", bar="value")
 
 
-class Test__build_parser(unittest.TestCase):
+class Test__build_parser(object):
     """Test ht.pyfilter.manager._build_parser."""
 
     def test_build_parser(self):
         result = manager._build_parser()
 
-        self.assertTrue(isinstance(result, argparse.ArgumentParser))
+        assert (isinstance(result, argparse.ArgumentParser))
 
 
-class Test__find_operation_files(unittest.TestCase):
+class Test__find_operation_files(object):
     """Test ht.pyfilter.manager._find_operation_files."""
 
     @patch("ht.pyfilter.manager._logger")
@@ -291,16 +291,16 @@ class Test__find_operation_files(unittest.TestCase):
 
         result = manager._find_operation_files()
 
-        self.assertEqual(result, ())
+        assert result == ()
 
     @patch("hou.findFiles")
     def test(self, mock_find_files):
         result = manager._find_operation_files()
 
-        self.assertEqual(result, mock_find_files.return_value)
+        assert result == mock_find_files.return_value
 
 
-class Test__get_class(unittest.TestCase):
+class Test__get_class(object):
     """Test ht.pyfilter.manager._get_class."""
 
     @patch("ht.pyfilter.manager.importlib.import_module")
@@ -312,7 +312,7 @@ class Test__get_class(unittest.TestCase):
 
         result = manager._get_class(mock_module_name, mock_class_name)
 
-        self.assertIsNone(result)
+        assert result is None
 
         mock_import.assert_called_with(mock_module_name)
 
@@ -330,12 +330,12 @@ class Test__get_class(unittest.TestCase):
 
         result = manager._get_class(mock_module_name, class_name)
 
-        self.assertEqual(result, mock_cls)
+        assert result == mock_cls
 
         mock_import.assert_called_with(mock_module_name)
 
 
-class Test__get_operation_data(unittest.TestCase):
+class Test__get_operation_data(object):
     """Test ht.pyfilter.manager._get_operation_data."""
 
     @patch("ht.pyfilter.manager._logger")
@@ -346,7 +346,7 @@ class Test__get_operation_data(unittest.TestCase):
         mock_open.side_effect = IOError
 
         result = manager._get_operation_data(mock_file_path)
-        self.assertEqual(result, {})
+        assert result == {}
 
     @patch("ht.pyfilter.manager._logger")
     @patch("json.load")
@@ -357,7 +357,7 @@ class Test__get_operation_data(unittest.TestCase):
         mock_load.side_effect = ValueError
 
         result = manager._get_operation_data(mock_file_path)
-        self.assertEqual(result, {})
+        assert result == {}
 
     @patch("json.load")
     @patch("__builtin__.open", new_callable=mock_open)
@@ -366,12 +366,6 @@ class Test__get_operation_data(unittest.TestCase):
 
         result = manager._get_operation_data(mock_file_path)
 
-        self.assertEqual(result, mock_load.return_value)
+        assert result == mock_load.return_value
 
         mock_open_file.assert_called_with(mock_file_path)
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()
-

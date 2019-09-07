@@ -4,28 +4,33 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
+import imp
+
+# Third Party Imports
 from mock import MagicMock, patch
-import unittest
 
 # Houdini Toolbox Imports
 import ht.events.group
 
-reload(ht.events.group)
+# Reload the module to test to capture load evaluation since it has already
+# been loaded.
+imp.reload(ht.events.group)
+
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_HoudiniEventGroup(unittest.TestCase):
+class Test_HoudiniEventGroup(object):
     """Test ht.events.group.HoudiniEventGroup class."""
 
     def test___init__(self):
         """Test the constructor."""
         group = ht.events.group.HoudiniEventGroup()
 
-        self.assertEqual(group._data, {})
-        self.assertEqual(group._event_map, {})
+        assert group._data == {}
+        assert group._event_map == {}
 
     # Properties
 
@@ -36,7 +41,7 @@ class Test_HoudiniEventGroup(unittest.TestCase):
 
         group = ht.events.group.HoudiniEventGroup()
         group._data = mock_value
-        self.assertEqual(group.data, mock_value)
+        assert group.data == mock_value
 
     @patch.object(ht.events.group.HoudiniEventGroup, "__init__", lambda x: None)
     def test_event_map(self):
@@ -46,9 +51,4 @@ class Test_HoudiniEventGroup(unittest.TestCase):
         group = ht.events.group.HoudiniEventGroup()
         group._event_map = mock_value
 
-        self.assertEqual(group.event_map, mock_value)
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()
+        assert group.event_map == mock_value

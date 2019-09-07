@@ -4,34 +4,39 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import argparse
+
+# Third Party Imports
 from mock import MagicMock, PropertyMock, call, patch
-import unittest
+import pytest
 
 # Houdini Toolbox Imports
 from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.operations import settilecallback
 
-reload(settilecallback)
+
+# =============================================================================
+# FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def patch_logger():
+    """Mock the log_filter_call logger."""
+
+    patcher = patch("ht.pyfilter.operations.operation._logger", autospec=True)
+
+    yield
+
+    patcher.stop()
 
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_SetTileCallback(unittest.TestCase):
+class Test_SetTileCallback(object):
     """Test the ht.pyfilter.operations.settilecallback.SetTileCallback object."""
-
-    def setUp(self):
-        super(Test_SetTileCallback, self).setUp()
-
-        self.patcher = patch("ht.pyfilter.operations.operation._logger", autospec=True)
-        self.patcher.start()
-
-    def tearDown(self):
-        super(Test_SetTileCallback, self).tearDown()
-        self.patcher.stop()
 
     # =========================================================================
 
@@ -44,7 +49,7 @@ class Test_SetTileCallback(unittest.TestCase):
 
         mock_super_init.assert_called_with(mock_manager)
 
-        self.assertIsNone(op._tilecallback)
+        assert op._tilecallback is None
 
     # Properties
 
@@ -55,7 +60,7 @@ class Test_SetTileCallback(unittest.TestCase):
 
         mock_value = MagicMock(spec=str)
         op._tilecallback = mock_value
-        self.assertEqual(op.tilecallback, mock_value)
+        assert op.tilecallback == mock_value
 
     # Static Methods
 
@@ -65,7 +70,7 @@ class Test_SetTileCallback(unittest.TestCase):
         """Test passing no path."""
         result = settilecallback.SetTileCallback.build_arg_string()
 
-        self.assertEqual(result, "")
+        assert result == ""
 
     def test_build_arg_string__path(self):
         """Test passing a tile callback path."""
@@ -73,7 +78,7 @@ class Test_SetTileCallback(unittest.TestCase):
 
         result = settilecallback.SetTileCallback.build_arg_string(path=mock_path)
 
-        self.assertEqual(result, "--tile-callback={}".format(mock_path))
+        assert result == "--tile-callback={}".format(mock_path)
 
     # register_parser_args
 
@@ -93,7 +98,7 @@ class Test_SetTileCallback(unittest.TestCase):
     @patch("ht.pyfilter.operations.settilecallback.set_property")
     @patch.object(settilecallback.SetTileCallback, "tilecallback", new_callable=PropertyMock)
     @patch.object(settilecallback.SetTileCallback, "__init__", lambda x, y: None)
-    def test_filter_camera(self, mock_tilecallback, mock_set):
+    def test_filter_camera(self, mock_tilecallback, mock_set, patch_logger):
         """Test filter_camera."""
         op = settilecallback.SetTileCallback(None)
 
@@ -114,7 +119,7 @@ class Test_SetTileCallback(unittest.TestCase):
 
         op.process_parsed_args(mock_namespace)
 
-        self.assertIsNone(op._tilecallback)
+        assert op._tilecallback is None
 
     @patch.object(settilecallback.SetTileCallback, "__init__", lambda x, y: None)
     def test_process_parsed_args(self):
@@ -129,7 +134,7 @@ class Test_SetTileCallback(unittest.TestCase):
 
         op.process_parsed_args(mock_namespace)
 
-        self.assertEqual(op._tilecallback, mock_path)
+        assert op._tilecallback == mock_path
 
     # should_run
 
@@ -139,7 +144,7 @@ class Test_SetTileCallback(unittest.TestCase):
         op = settilecallback.SetTileCallback(None)
         op._tilecallback = None
 
-        self.assertFalse(op.should_run())
+        assert not op.should_run()
 
     @patch.object(settilecallback.SetTileCallback, "__init__", lambda x, y: None)
     def test_should_run(self):
@@ -149,10 +154,4 @@ class Test_SetTileCallback(unittest.TestCase):
         op = settilecallback.SetTileCallback(None)
         op._tilecallback = mock_path
 
-        self.assertTrue(op.should_run())
-
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()
+        assert op.should_run()

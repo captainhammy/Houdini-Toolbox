@@ -4,9 +4,12 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
+import imp
+
+# Third Party Imports
 from mock import MagicMock, PropertyMock, call, patch
-import unittest
+import pytest
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import aov
@@ -14,31 +17,42 @@ from ht.sohohooks.aovs import aov
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import constants as consts
 
-reload(aov)
+# Reload the module to test to capture load evaluation since it has already
+# been loaded.
+imp.reload(aov)
+
+
+# =============================================================================
+# FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def patch_soho():
+    """Mock importing of soho modules."""
+    mock_IFDhooks = MagicMock()
+    mock_api = MagicMock()
+    mock_soho = MagicMock()
+
+    modules = {
+        "IFDapi": mock_api,
+        "IFDhooks": mock_IFDhooks,
+        "soho": mock_soho,
+    }
+
+    patcher = patch.dict("sys.modules", modules)
+    patcher.start()
+
+    yield mock_soho, mock_api, mock_IFDhooks
+
+    patcher.stop()
+
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_AOV(unittest.TestCase):
+class Test_AOV(object):
     """Test ht.sohohooks.aovs.AOV object."""
-
-    def setUp(self):
-        super(Test_AOV, self).setUp()
-
-        self.mock_soho = MagicMock()
-
-        modules = {
-            "soho": self.mock_soho
-        }
-
-        self.patcher = patch.dict("sys.modules", modules)
-        self.patcher.start()
-
-    def tearDown(self):
-        super(Test_AOV, self).tearDown()
-
-        self.patcher.stop()
 
     # __init__
 
@@ -64,7 +78,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__eq__(inst2)
 
-        self.assertTrue(result)
+        assert result
 
     @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="N"))
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
@@ -76,7 +90,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__eq__(inst2)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test___eq___non_aov(self):
@@ -85,7 +99,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__eq__(inst2)
 
-        self.assertEqual(result, NotImplemented)
+        assert result == NotImplemented
 
     # __ge__
 
@@ -99,7 +113,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__ge__(inst2)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="P"))
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
@@ -111,7 +125,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__ge__(inst2)
 
-        self.assertTrue(result)
+        assert result
 
     @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="Q"))
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
@@ -123,7 +137,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__ge__(inst2)
 
-        self.assertTrue(result)
+        assert result
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test___ge___non_aov(self):
@@ -132,7 +146,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__ge__(inst2)
 
-        self.assertEqual(result, NotImplemented)
+        assert result == NotImplemented
 
     # __gt__
 
@@ -146,7 +160,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__gt__(inst2)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="P"))
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
@@ -158,7 +172,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__gt__(inst2)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="Q"))
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
@@ -170,7 +184,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__gt__(inst2)
 
-        self.assertTrue(result)
+        assert result
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test___gt___non_aov(self):
@@ -179,7 +193,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__gt__(inst2)
 
-        self.assertEqual(result, NotImplemented)
+        assert result == NotImplemented
 
     # __le__
 
@@ -193,7 +207,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__le__(inst2)
 
-        self.assertTrue(result)
+        assert result
 
     @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="P"))
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
@@ -205,7 +219,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__le__(inst2)
 
-        self.assertTrue(result)
+        assert result
 
     @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="Q"))
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
@@ -217,7 +231,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__le__(inst2)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test___le___non_aov(self):
@@ -226,7 +240,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__le__(inst2)
 
-        self.assertEqual(result, NotImplemented)
+        assert result == NotImplemented
 
     # __lt__
 
@@ -240,7 +254,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__lt__(inst2)
 
-        self.assertTrue(result)
+        assert result
 
     @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="P"))
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
@@ -252,7 +266,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__lt__(inst2)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch("ht.sohohooks.aovs.aov.AOV.variable", new_callable=PropertyMock(return_value="Q"))
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
@@ -264,7 +278,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__lt__(inst2)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test___lt___non_aov(self):
@@ -273,7 +287,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__lt__(inst2)
 
-        self.assertEqual(result, NotImplemented)
+        assert result == NotImplemented
 
     # __hash__
 
@@ -284,9 +298,9 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__hash__()
 
-        self.assertEqual(result, hash("N"))
+        assert result == hash("N")
 
-        self.assertEqual(hash(inst1), hash("N"))
+        assert hash(inst1) == hash("N")
 
     # __ne__
 
@@ -299,7 +313,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__ne__(inst2)
 
-        self.assertEqual(result, not mock_eq.return_value)
+        assert result != mock_eq.return_value
         mock_eq.assert_called_with(inst2)
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
@@ -309,7 +323,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__ne__(inst2)
 
-        self.assertEqual(result, NotImplemented)
+        assert result == NotImplemented
 
     # __str__
 
@@ -320,9 +334,9 @@ class Test_AOV(unittest.TestCase):
 
         result = inst1.__str__()
 
-        self.assertEqual(str(inst1), "N")
+        assert str(inst1) == "N"
 
-        self.assertEqual(result, "N")
+        assert result == "N"
 
     # _light_export_planes
 
@@ -447,7 +461,7 @@ class Test_AOV(unittest.TestCase):
         mock_cam.objectList.return_value = lights
         mock_now = MagicMock(spec=float)
 
-        with self.assertRaises(aov.InvalidAOVValueError):
+        with pytest.raises(aov.InvalidAOVValueError):
             inst._light_export_planes(data, mock_wrangler, mock_cam, mock_now)
 
         mock_cam.objectList.assert_called_with("objlist:light", mock_now, mock_scope.return_value, mock_select.return_value)
@@ -465,7 +479,7 @@ class Test_AOV(unittest.TestCase):
 
         inst._update_data(data)
 
-        self.assertEqual(inst._data, {})
+        assert inst._data == {}
 
         mock_verify.assert_called()
 
@@ -480,7 +494,7 @@ class Test_AOV(unittest.TestCase):
 
         inst._update_data(data)
 
-        self.assertEqual(inst._data, {"key": "value"})
+        assert inst._data == {"key": "value"}
 
         mock_verify.assert_called()
 
@@ -499,7 +513,7 @@ class Test_AOV(unittest.TestCase):
         with patch.dict(aov.ALLOWABLE_VALUES, allowable, clear=True):
             inst._update_data(data)
 
-        self.assertEqual(inst._data, {"key": "value1"})
+        assert inst._data == {"key": "value1"}
 
         mock_verify.assert_called()
 
@@ -516,7 +530,7 @@ class Test_AOV(unittest.TestCase):
         }
 
         with patch.dict(aov.ALLOWABLE_VALUES, allowable, clear=True):
-            with self.assertRaises(aov.InvalidAOVValueError):
+            with pytest.raises(aov.InvalidAOVValueError):
                 inst._update_data(data)
 
     # _verify_internal_data
@@ -528,7 +542,7 @@ class Test_AOV(unittest.TestCase):
 
         inst = aov.AOV(None)
 
-        with self.assertRaises(aov.MissingVariableError):
+        with pytest.raises(aov.MissingVariableError):
             inst._verify_internal_data()
 
     @patch("ht.sohohooks.aovs.aov.AOV.vextype", new_callable=PropertyMock)
@@ -540,7 +554,7 @@ class Test_AOV(unittest.TestCase):
 
         inst = aov.AOV(None)
 
-        with self.assertRaises(aov.MissingVexTypeError):
+        with pytest.raises(aov.MissingVexTypeError):
             inst._verify_internal_data()
 
     @patch("ht.sohohooks.aovs.aov.AOV.vextype", new_callable=PropertyMock)
@@ -563,11 +577,11 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.CHANNEL_KEY: mock_value}
 
-        self.assertEqual(inst.channel, mock_value)
+        assert inst.channel == mock_value
 
         inst.channel = None
 
-        self.assertIsNone(inst._data[consts.CHANNEL_KEY])
+        assert inst._data[consts.CHANNEL_KEY] is None
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_comment(self):
@@ -576,11 +590,11 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.COMMENT_KEY: mock_value}
 
-        self.assertEqual(inst.comment, mock_value)
+        assert inst.comment == mock_value
 
         inst.comment = None
 
-        self.assertIsNone(inst._data[consts.COMMENT_KEY])
+        assert inst._data[consts.COMMENT_KEY] is None
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_componentexport(self):
@@ -589,12 +603,12 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.COMPONENTEXPORT_KEY: mock_value1}
 
-        self.assertEqual(inst.componentexport, mock_value1)
+        assert inst.componentexport == mock_value1
 
         mock_value2 = MagicMock(spec=bool)
         inst.componentexport = mock_value2
 
-        self.assertEqual(inst._data[consts.COMPONENTEXPORT_KEY], mock_value2)
+        assert inst._data[consts.COMPONENTEXPORT_KEY] == mock_value2
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_components(self):
@@ -603,12 +617,12 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.COMPONENTS_KEY: mock_value1}
 
-        self.assertEqual(inst.components, mock_value1)
+        assert inst.components == mock_value1
 
         mock_value2 = MagicMock(spec=list)
         inst.components = mock_value2
 
-        self.assertEqual(inst._data[consts.COMPONENTS_KEY], mock_value2)
+        assert inst._data[consts.COMPONENTS_KEY] == mock_value2
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_exclude_from_dcm(self):
@@ -617,12 +631,12 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.EXCLUDE_DCM_KEY: mock_value1}
 
-        self.assertEqual(inst.exclude_from_dcm, mock_value1)
+        assert inst.exclude_from_dcm == mock_value1
 
         mock_value2 = MagicMock(spec=bool)
         inst.exclude_from_dcm = mock_value2
 
-        self.assertEqual(inst._data[consts.EXCLUDE_DCM_KEY], mock_value2)
+        assert inst._data[consts.EXCLUDE_DCM_KEY] == mock_value2
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_intrinsics(self):
@@ -631,12 +645,12 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.INTRINSICS_KEY: mock_value1}
 
-        self.assertEqual(inst.intrinsics, mock_value1)
+        assert inst.intrinsics == mock_value1
 
         mock_value2 = MagicMock(spec=list)
         inst.intrinsics = mock_value2
 
-        self.assertEqual(inst._data[consts.INTRINSICS_KEY], mock_value2)
+        assert inst._data[consts.INTRINSICS_KEY] == mock_value2
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_lightexport(self):
@@ -645,12 +659,12 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.LIGHTEXPORT_KEY: mock_value1}
 
-        self.assertEqual(inst.lightexport, mock_value1)
+        assert inst.lightexport == mock_value1
 
         mock_value2 = MagicMock(spec=str)
         inst.lightexport = mock_value2
 
-        self.assertEqual(inst._data[consts.LIGHTEXPORT_KEY], mock_value2)
+        assert inst._data[consts.LIGHTEXPORT_KEY] == mock_value2
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_lightexport_select(self):
@@ -659,12 +673,12 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.LIGHTEXPORT_SELECT_KEY: mock_value1}
 
-        self.assertEqual(inst.lightexport_select, mock_value1)
+        assert inst.lightexport_select == mock_value1
 
         mock_value2 = MagicMock(spec=str)
         inst.lightexport_select = mock_value2
 
-        self.assertEqual(inst._data[consts.LIGHTEXPORT_SELECT_KEY], mock_value2)
+        assert inst._data[consts.LIGHTEXPORT_SELECT_KEY] == mock_value2
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_lightexport_scope(self):
@@ -673,12 +687,12 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.LIGHTEXPORT_SCOPE_KEY: mock_value1}
 
-        self.assertEqual(inst.lightexport_scope, mock_value1)
+        assert inst.lightexport_scope == mock_value1
 
         mock_value2 = MagicMock(spec=str)
         inst.lightexport_scope = mock_value2
 
-        self.assertEqual(inst._data[consts.LIGHTEXPORT_SCOPE_KEY], mock_value2)
+        assert inst._data[consts.LIGHTEXPORT_SCOPE_KEY] == mock_value2
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_path(self):
@@ -687,12 +701,12 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.PATH_KEY: mock_value1}
 
-        self.assertEqual(inst.path, mock_value1)
+        assert inst.path == mock_value1
 
         mock_value2 = MagicMock(spec=str)
         inst.path = mock_value2
 
-        self.assertEqual(inst._data[consts.PATH_KEY], mock_value2)
+        assert inst._data[consts.PATH_KEY] == mock_value2
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_pfilter(self):
@@ -701,12 +715,12 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.PFILTER_KEY: mock_value1}
 
-        self.assertEqual(inst.pfilter, mock_value1)
+        assert inst.pfilter == mock_value1
 
         mock_value2 = MagicMock(spec=str)
         inst.pfilter = mock_value2
 
-        self.assertEqual(inst._data[consts.PFILTER_KEY], mock_value2)
+        assert inst._data[consts.PFILTER_KEY] == mock_value2
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_planefile(self):
@@ -715,12 +729,12 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.PLANEFILE_KEY: mock_value1}
 
-        self.assertEqual(inst.planefile, mock_value1)
+        assert inst.planefile == mock_value1
 
         mock_value2 = MagicMock(spec=str)
         inst.planefile = mock_value2
 
-        self.assertEqual(inst._data[consts.PLANEFILE_KEY], mock_value2)
+        assert inst._data[consts.PLANEFILE_KEY] == mock_value2
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_priority(self):
@@ -729,12 +743,12 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.PRIORITY_KEY: mock_value1}
 
-        self.assertEqual(inst.priority, mock_value1)
+        assert inst.priority == mock_value1
 
         mock_value2 = MagicMock(spec=int)
         inst.priority = mock_value2
 
-        self.assertEqual(inst._data[consts.PRIORITY_KEY], mock_value2)
+        assert inst._data[consts.PRIORITY_KEY] == mock_value2
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_quantize(self):
@@ -743,12 +757,12 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.QUANTIZE_KEY: mock_value1}
 
-        self.assertEqual(inst.quantize, mock_value1)
+        assert inst.quantize == mock_value1
 
         mock_value2 = MagicMock(spec=str)
         inst.quantize = mock_value2
 
-        self.assertEqual(inst._data[consts.QUANTIZE_KEY], mock_value2)
+        assert inst._data[consts.QUANTIZE_KEY] == mock_value2
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_sfilter(self):
@@ -757,12 +771,12 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.SFILTER_KEY: mock_value1}
 
-        self.assertEqual(inst.sfilter, mock_value1)
+        assert inst.sfilter == mock_value1
 
         mock_value2 = MagicMock(spec=str)
         inst.sfilter = mock_value2
 
-        self.assertEqual(inst._data[consts.SFILTER_KEY], mock_value2)
+        assert inst._data[consts.SFILTER_KEY] == mock_value2
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_variable(self):
@@ -771,12 +785,12 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.VARIABLE_KEY: mock_value1}
 
-        self.assertEqual(inst.variable, mock_value1)
+        assert inst.variable == mock_value1
 
         mock_value2 = MagicMock(spec=str)
         inst.variable = mock_value2
 
-        self.assertEqual(inst._data[consts.VARIABLE_KEY], mock_value2)
+        assert inst._data[consts.VARIABLE_KEY] == mock_value2
 
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
     def test_vextype(self):
@@ -785,12 +799,12 @@ class Test_AOV(unittest.TestCase):
         inst = aov.AOV(None)
         inst._data = {consts.VEXTYPE_KEY: mock_value1}
 
-        self.assertEqual(inst.vextype, mock_value1)
+        assert inst.vextype == mock_value1
 
         mock_value2 = MagicMock(spec=str)
         inst.vextype = mock_value2
 
-        self.assertEqual(inst._data[consts.VEXTYPE_KEY], mock_value2)
+        assert inst._data[consts.VEXTYPE_KEY] == mock_value2
 
     # _as_data
 
@@ -812,7 +826,7 @@ class Test_AOV(unittest.TestCase):
 
         result = inst.as_data()
 
-        self.assertEqual(result, {consts.VARIABLE_KEY: inst.variable, consts.VEXTYPE_KEY: inst.vextype})
+        assert result == {consts.VARIABLE_KEY: inst.variable, consts.VEXTYPE_KEY: inst.vextype}
 
     @patch.object(aov.AOV, "priority", new_callable=PropertyMock)
     @patch.object(aov.AOV, "comment", new_callable=PropertyMock)
@@ -846,7 +860,7 @@ class Test_AOV(unittest.TestCase):
             consts.COMMENT_KEY: inst.comment,
             consts.PRIORITY_KEY: inst.priority
         }
-        self.assertEqual(result, expected)
+        assert result == expected
 
     @patch.object(aov.AOV, "priority", new_callable=PropertyMock)
     @patch.object(aov.AOV, "comment", new_callable=PropertyMock)
@@ -887,7 +901,7 @@ class Test_AOV(unittest.TestCase):
             consts.PRIORITY_KEY: inst.priority
         }
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     # write_to_ifd
 
@@ -897,7 +911,7 @@ class Test_AOV(unittest.TestCase):
     @patch.object(aov.AOV, "channel", new_callable=PropertyMock(return_value=None))
     @patch.object(aov.AOV, "as_data")
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
-    def test_write_to_ifd__no_channel_no_comp(self, mock_as_data, mock_channel, mock_variable, mock_component, mock_export):
+    def test_write_to_ifd__no_channel_no_comp(self, mock_as_data, mock_channel, mock_variable, mock_component, mock_export, patch_soho):
         mock_as_data.return_value = {"key": "value"}
 
         inst = aov.AOV(None)
@@ -920,7 +934,7 @@ class Test_AOV(unittest.TestCase):
     @patch.object(aov.AOV, "channel", new_callable=PropertyMock)
     @patch.object(aov.AOV, "as_data")
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
-    def test_write_to_ifd__channel_no_comp(self, mock_as_data, mock_channel, mock_component, mock_export):
+    def test_write_to_ifd__channel_no_comp(self, mock_as_data, mock_channel, mock_component, mock_export, patch_soho):
         mock_as_data.return_value = {"key": "value"}
 
         inst = aov.AOV(None)
@@ -944,7 +958,7 @@ class Test_AOV(unittest.TestCase):
     @patch.object(aov.AOV, "channel", new_callable=PropertyMock)
     @patch.object(aov.AOV, "as_data")
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
-    def test_write_to_ifd__export_no_comp(self, mock_as_data, mock_channel, mock_compexport, mock_components, mock_export):
+    def test_write_to_ifd__export_no_comp(self, mock_as_data, mock_channel, mock_compexport, mock_components, mock_export, patch_soho):
         mock_as_data.return_value = {"key": "value"}
 
         inst = aov.AOV(None)
@@ -954,13 +968,13 @@ class Test_AOV(unittest.TestCase):
         mock_now = MagicMock(spec=float)
 
         mock_parm = MagicMock()
-        self.mock_soho.SohoParm.return_value = mock_parm
+        patch_soho[0].SohoParm.return_value = mock_parm
 
         mock_cam.wrangle.return_value = {}
 
         inst.write_to_ifd(mock_wrangler, mock_cam, mock_now)
 
-        self.mock_soho.SohoParm.assert_called_with("vm_exportcomponents", "str", [''], skipdefault=False)
+        patch_soho[0].SohoParm.assert_called_with("vm_exportcomponents", "str", [''], skipdefault=False)
 
         mock_export.assert_not_called()
 
@@ -970,7 +984,7 @@ class Test_AOV(unittest.TestCase):
     @patch.object(aov.AOV, "channel", new_callable=PropertyMock(return_value="Pworld"))
     @patch.object(aov.AOV, "as_data")
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
-    def test_write_to_ifd__export_components_from_node(self, mock_as_data, mock_channel, mock_compexport, mock_components, mock_export):
+    def test_write_to_ifd__export_components_from_node(self, mock_as_data, mock_channel, mock_compexport, mock_components, mock_export, patch_soho):
         mock_as_data.return_value = {"key": "value"}
 
         inst = aov.AOV(None)
@@ -980,7 +994,7 @@ class Test_AOV(unittest.TestCase):
         mock_now = MagicMock(spec=float)
 
         mock_parm = MagicMock()
-        self.mock_soho.SohoParm.return_value = mock_parm
+        patch_soho[0].SohoParm.return_value = mock_parm
 
         mock_result = MagicMock()
         mock_result.Value = ["comp1 comp2"]
@@ -991,7 +1005,7 @@ class Test_AOV(unittest.TestCase):
 
         inst.write_to_ifd(mock_wrangler, mock_cam, mock_now)
 
-        self.mock_soho.SohoParm.assert_called_with("vm_exportcomponents", "str", [''], skipdefault=False)
+        patch_soho[0].SohoParm.assert_called_with("vm_exportcomponents", "str", [''], skipdefault=False)
 
         calls = [
             call({"key": "value", consts.CHANNEL_KEY: "Pworld_comp1", consts.COMPONENT_KEY: "comp1"}, mock_wrangler, mock_cam, mock_now),
@@ -1006,7 +1020,7 @@ class Test_AOV(unittest.TestCase):
     @patch.object(aov.AOV, "channel", new_callable=PropertyMock(return_value="Pworld"))
     @patch.object(aov.AOV, "as_data")
     @patch.object(aov.AOV, "__init__", lambda x, y: None)
-    def test_write_to_ifd__export_components(self, mock_as_data, mock_channel, mock_compexport, mock_components, mock_export):
+    def test_write_to_ifd__export_components(self, mock_as_data, mock_channel, mock_compexport, mock_components, mock_export, patch_soho):
         mock_as_data.return_value = {"key": "value"}
 
         inst = aov.AOV(None)
@@ -1025,7 +1039,7 @@ class Test_AOV(unittest.TestCase):
         mock_export.assert_has_calls(calls)
 
 
-class Test_AOVGroup(unittest.TestCase):
+class Test_AOVGroup(object):
     """Test ht.sohohooks.aovs.AOVGroup object."""
 
     # __init__
@@ -1035,13 +1049,13 @@ class Test_AOVGroup(unittest.TestCase):
 
         group = aov.AOVGroup(mock_name)
 
-        self.assertEqual(group._aovs, [])
-        self.assertEqual(group._comment, "")
-        self.assertEqual(group._icon, None)
-        self.assertEqual(group._includes, [])
-        self.assertEqual(group._name, mock_name)
-        self.assertEqual(group._path, None)
-        self.assertEqual(group._priority, -1)
+        assert group._aovs == []
+        assert group._comment == ""
+        assert group._icon is None
+        assert group._includes == []
+        assert group._name == mock_name
+        assert group._path is None
+        assert group._priority == -1
 
     # __eq__
 
@@ -1055,7 +1069,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__eq__(group2)
 
-        self.assertTrue(result)
+        assert result
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1067,7 +1081,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__eq__(group2)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1078,7 +1092,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__eq__(group2)
 
-        self.assertEqual(result, NotImplemented)
+        assert result == NotImplemented
 
     # ge
 
@@ -1092,7 +1106,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__ge__(group2)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1104,7 +1118,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__ge__(group2)
 
-        self.assertTrue(result)
+        assert result
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name3"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1116,7 +1130,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__ge__(group2)
 
-        self.assertTrue(result)
+        assert result
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1126,7 +1140,7 @@ class Test_AOVGroup(unittest.TestCase):
         group2 = MagicMock()
 
         result = group1.__ge__(group2)
-        self.assertEqual(result, NotImplemented)
+        assert result == NotImplemented
 
     # gt
 
@@ -1140,7 +1154,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__gt__(group2)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1152,7 +1166,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__gt__(group2)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name3"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1164,7 +1178,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__gt__(group2)
 
-        self.assertTrue(result)
+        assert result
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1174,7 +1188,7 @@ class Test_AOVGroup(unittest.TestCase):
         group2 = MagicMock()
 
         result = group1.__gt__(group2)
-        self.assertEqual(result, NotImplemented)
+        assert result == NotImplemented
 
     # __hash__
 
@@ -1185,9 +1199,9 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__hash__()
 
-        self.assertEqual(result, hash("name1"))
+        assert result == hash("name1")
 
-        self.assertEqual(hash(group1), hash("name1"))
+        assert hash(group1) == hash("name1")
 
     # le
 
@@ -1201,7 +1215,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__le__(group2)
 
-        self.assertTrue(result)
+        assert result
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1213,7 +1227,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__le__(group2)
 
-        self.assertTrue(result)
+        assert result
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name3"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1225,7 +1239,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__le__(group2)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1236,7 +1250,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__le__(group2)
 
-        self.assertEqual(result, NotImplemented)
+        assert result == NotImplemented
 
     # lt
 
@@ -1250,7 +1264,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__lt__(group2)
 
-        self.assertTrue(result)
+        assert result
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1262,7 +1276,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__lt__(group2)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name3"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1274,7 +1288,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__lt__(group2)
 
-        self.assertFalse(result)
+        assert not result
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1285,7 +1299,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__lt__(group2)
 
-        self.assertEqual(result, NotImplemented)
+        assert result == NotImplemented
 
     # __ne__
 
@@ -1298,7 +1312,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__ne__(group2)
 
-        self.assertEqual(result, not mock_eq.return_value)
+        assert result != mock_eq.return_value
         mock_eq.assert_called_with(group2)
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.name", new_callable=PropertyMock(return_value="name1"))
@@ -1310,7 +1324,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group1.__ne__(group2)
 
-        self.assertEqual(result, NotImplemented)
+        assert result == NotImplemented
 
     # Properties
 
@@ -1321,9 +1335,9 @@ class Test_AOVGroup(unittest.TestCase):
         group = aov.AOVGroup(None)
         group._aovs = [mock_aov]
 
-        self.assertEqual(group.aovs, [mock_aov])
+        assert group.aovs == [mock_aov]
 
-        with self.assertRaises(AttributeError):
+        with pytest.raises(AttributeError):
             group.aovs = []
 
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1333,11 +1347,11 @@ class Test_AOVGroup(unittest.TestCase):
         group = aov.AOVGroup(None)
 
         group._comment = mock_value1
-        self.assertEqual(group.comment, mock_value1)
+        assert group.comment == mock_value1
 
         mock_value2 = MagicMock(spec=str)
         group.comment = mock_value2
-        self.assertEqual(group._comment, mock_value2)
+        assert group._comment == mock_value2
 
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
     def test_icon(self):
@@ -1346,11 +1360,11 @@ class Test_AOVGroup(unittest.TestCase):
         group = aov.AOVGroup(None)
 
         group._icon = mock_value1
-        self.assertEqual(group.icon, mock_value1)
+        assert group.icon == mock_value1
 
         mock_value2 = MagicMock(spec=str)
         group.icon = mock_value2
-        self.assertEqual(group._icon, mock_value2)
+        assert group._icon == mock_value2
 
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
     def test_includes(self):
@@ -1359,9 +1373,9 @@ class Test_AOVGroup(unittest.TestCase):
         group = aov.AOVGroup(None)
 
         group._includes = mock_value1
-        self.assertEqual(group.includes, mock_value1)
+        assert group.includes == mock_value1
 
-        with self.assertRaises(AttributeError):
+        with pytest.raises(AttributeError):
             group.includes = mock_value1
 
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1371,9 +1385,9 @@ class Test_AOVGroup(unittest.TestCase):
         group = aov.AOVGroup(None)
 
         group._name = mock_value
-        self.assertEqual(group.name, mock_value)
+        assert group.name == mock_value
 
-        with self.assertRaises(AttributeError):
+        with pytest.raises(AttributeError):
             group.name = mock_value
 
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1383,11 +1397,11 @@ class Test_AOVGroup(unittest.TestCase):
         group = aov.AOVGroup(None)
 
         group._path = mock_value1
-        self.assertEqual(group.path, mock_value1)
+        assert group.path == mock_value1
 
         mock_value2 = MagicMock(spec=str)
         group.path = mock_value2
-        self.assertEqual(group._path, mock_value2)
+        assert group._path == mock_value2
 
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
     def test_priority(self):
@@ -1396,11 +1410,11 @@ class Test_AOVGroup(unittest.TestCase):
         group = aov.AOVGroup(None)
 
         group._priority = mock_value1
-        self.assertEqual(group.priority, mock_value1)
+        assert group.priority == mock_value1
 
         mock_value2 = MagicMock(spec=int)
         group.priority = mock_value2
-        self.assertEqual(group._priority, mock_value2)
+        assert group._priority == mock_value2
 
     # clear
 
@@ -1413,7 +1427,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         group.clear()
 
-        self.assertEqual(group._aovs, [])
+        assert group._aovs == []
 
     # as_data
 
@@ -1434,8 +1448,6 @@ class Test_AOVGroup(unittest.TestCase):
 
         mock_aovs.return_value = [mock_aov1, mock_aov2]
 
-        self.maxDiff = None
-
         expected = {
             mock_name.return_value: {
                 consts.GROUP_INCLUDE_KEY: [mock_var_name1, mock_var_name2, mock_aov1.variable, mock_aov2.variable],
@@ -1447,7 +1459,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group.as_data()
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     @patch.object(aov.AOVGroup, "priority", new_callable=PropertyMock)
     @patch.object(aov.AOVGroup, "comment", new_callable=PropertyMock)
@@ -1478,7 +1490,7 @@ class Test_AOVGroup(unittest.TestCase):
 
         result = group.as_data()
 
-        self.assertEqual(result, expected)
+        assert result == expected
 
     @patch.object(aov.AOVGroup, "aovs", new_callable=PropertyMock)
     @patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
@@ -1500,7 +1512,7 @@ class Test_AOVGroup(unittest.TestCase):
         mock_aov2.write_to_ifd.assert_called_with(mock_wrangler, mock_cam, mock_now)
 
 
-class Test_IntrinsicAOVGroup(unittest.TestCase):
+class Test_IntrinsicAOVGroup(object):
 
     @patch("ht.sohohooks.aovs.aov.AOVGroup.__init__")
     def test___init__(self, mock_super_init):
@@ -1509,10 +1521,10 @@ class Test_IntrinsicAOVGroup(unittest.TestCase):
         result = aov.IntrinsicAOVGroup(mock_name)
 
         mock_super_init.assert_called_with(mock_name)
-        self.assertEqual(result._comment, "Automatically generated")
+        assert result._comment == "Automatically generated"
 
 
-class Test__build_category_map(unittest.TestCase):
+class Test__build_category_map(object):
 
     def test_no_parm(self):
         mock_light1 = MagicMock()
@@ -1523,7 +1535,7 @@ class Test__build_category_map(unittest.TestCase):
 
         result = aov._build_category_map(lights, mock_now)
 
-        self.assertEqual(result, {})
+        assert result == {}
 
         mock_light1.evalString.assert_called_with("categories", mock_now, [])
 
@@ -1538,7 +1550,7 @@ class Test__build_category_map(unittest.TestCase):
 
         result = aov._build_category_map(lights, mock_now)
 
-        self.assertEqual(result, {None: [mock_light1]})
+        assert result == {None: [mock_light1]}
 
     def test_categories(self):
         mock_light1 = MagicMock()
@@ -1553,16 +1565,12 @@ class Test__build_category_map(unittest.TestCase):
 
         result = aov._build_category_map(lights, mock_now)
 
-        self.assertEqual(result, {"cat1": [mock_light1], "cat2": [mock_light1, mock_light2], "cat3": [mock_light2]})
+        assert result == {"cat1": [mock_light1], "cat2": [mock_light1, mock_light2], "cat3": [mock_light2]}
 
 
-class Test__call_post_defplane(unittest.TestCase):
+class Test__call_post_defplane(object):
 
-    def test(self):
-        mock_IFDhooks = MagicMock()
-
-        modules = {"IFDhooks": mock_IFDhooks}
-
+    def test(self, patch_soho):
         mock_variable = MagicMock(spec=str)
         mock_vextype = MagicMock(spec=str)
         mock_planefile = MagicMock(spec=str)
@@ -1579,34 +1587,29 @@ class Test__call_post_defplane(unittest.TestCase):
         mock_cam = MagicMock()
         mock_now = MagicMock(spec=float)
 
-        with patch.dict("sys.modules", modules):
-            aov._call_post_defplane(
-                data,
-                mock_wrangler,
-                mock_cam,
-                mock_now
-            )
+        aov._call_post_defplane(
+            data,
+            mock_wrangler,
+            mock_cam,
+            mock_now
+        )
 
-            mock_IFDhooks.call.assert_called_with(
-                "post_defplane",
-                mock_variable,
-                mock_vextype,
-                -1,
-                mock_wrangler,
-                mock_cam,
-                mock_now,
-                mock_planefile,
-                mock_lightexport
-            )
+        patch_soho[2].call.assert_called_with(
+            "post_defplane",
+            mock_variable,
+            mock_vextype,
+            -1,
+            mock_wrangler,
+            mock_cam,
+            mock_now,
+            mock_planefile,
+            mock_lightexport
+        )
 
 
-class Test__call_pre_defplane(unittest.TestCase):
+class Test__call_pre_defplane(object):
 
-    def test(self):
-        mock_IFDhooks = MagicMock()
-
-        modules = {"IFDhooks": mock_IFDhooks}
-
+    def test(self, patch_soho):
         mock_variable = MagicMock(spec=str)
         mock_vextype = MagicMock(spec=str)
         mock_planefile = MagicMock(spec=str)
@@ -1623,46 +1626,30 @@ class Test__call_pre_defplane(unittest.TestCase):
         mock_cam = MagicMock()
         mock_now = MagicMock(spec=float)
 
-        with patch.dict("sys.modules", modules):
-            aov._call_pre_defplane(
-                data,
-                mock_wrangler,
-                mock_cam,
-                mock_now
-            )
+        aov._call_pre_defplane(
+            data,
+            mock_wrangler,
+            mock_cam,
+            mock_now
+        )
 
-            mock_IFDhooks.call.assert_called_with(
-                "pre_defplane",
-                mock_variable,
-                mock_vextype,
-                -1,
-                mock_wrangler,
-                mock_cam,
-                mock_now,
-                mock_planefile,
-                mock_lightexport
-            )
+        patch_soho[2].call.assert_called_with(
+            "pre_defplane",
+            mock_variable,
+            mock_vextype,
+            -1,
+            mock_wrangler,
+            mock_cam,
+            mock_now,
+            mock_planefile,
+            mock_lightexport
+        )
 
 
-class Test__write_data_to_ifd(unittest.TestCase):
-
-    def setUp(self):
-        super(Test__write_data_to_ifd, self).setUp()
-
-        self.mock_ifd = MagicMock()
-        modules = {"IFDapi": self.mock_ifd}
-
-        self.patcher = patch.dict("sys.modules", modules)
-
-        self.patcher.start()
-
-    def tearDown(self):
-        super(Test__write_data_to_ifd, self).tearDown()
-
-        self.patcher.stop()
+class Test__write_data_to_ifd(object):
 
     @patch("ht.sohohooks.aovs.aov._call_pre_defplane")
-    def test_pre_defplane(self, mock_pre):
+    def test_pre_defplane(self, mock_pre, patch_soho):
         mock_pre.return_value = True
 
         data = {}
@@ -1674,11 +1661,11 @@ class Test__write_data_to_ifd(unittest.TestCase):
 
         mock_pre.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
 
-        self.mock_ifd.ray_start.assert_not_called()
+        patch_soho[1].ray_start.assert_not_called()
 
     @patch("ht.sohohooks.aovs.aov._call_post_defplane")
     @patch("ht.sohohooks.aovs.aov._call_pre_defplane")
-    def test_base_data(self, mock_pre, mock_post):
+    def test_base_data(self, mock_pre, mock_post, patch_soho):
         mock_pre.return_value = False
         mock_post.return_value = False
 
@@ -1705,14 +1692,14 @@ class Test__write_data_to_ifd(unittest.TestCase):
 
         ]
 
-        self.mock_ifd.ray_property.assert_has_calls(calls)
+        patch_soho[1].ray_property.assert_has_calls(calls)
 
         mock_pre.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
         mock_post.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
 
     @patch("ht.sohohooks.aovs.aov._call_post_defplane")
     @patch("ht.sohohooks.aovs.aov._call_pre_defplane")
-    def test_full_data(self, mock_pre, mock_post):
+    def test_full_data(self, mock_pre, mock_post, patch_soho):
         mock_pre.return_value = False
         mock_post.return_value = False
 
@@ -1758,14 +1745,14 @@ class Test__write_data_to_ifd(unittest.TestCase):
             call("plane", "excludedcm", [True]),
         ]
 
-        self.mock_ifd.ray_property.assert_has_calls(calls)
+        patch_soho[1].ray_property.assert_has_calls(calls)
 
         mock_pre.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
         mock_post.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
 
     @patch("ht.sohohooks.aovs.aov._call_post_defplane")
     @patch("ht.sohohooks.aovs.aov._call_pre_defplane")
-    def test_None_planefile(self, mock_pre, mock_post):
+    def test_None_planefile(self, mock_pre, mock_post, patch_soho):
         mock_pre.return_value = False
         mock_post.return_value = False
 
@@ -1792,14 +1779,14 @@ class Test__write_data_to_ifd(unittest.TestCase):
             call("plane", "channel", [mock_channel]),
         ]
 
-        self.mock_ifd.ray_property.assert_has_calls(calls)
+        patch_soho[1].ray_property.assert_has_calls(calls)
 
         mock_pre.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
         mock_post.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
 
     @patch("ht.sohohooks.aovs.aov._call_post_defplane")
     @patch("ht.sohohooks.aovs.aov._call_pre_defplane")
-    def test_post_defplane(self, mock_pre, mock_post):
+    def test_post_defplane(self, mock_pre, mock_post, patch_soho):
         mock_pre.return_value = False
         mock_post.return_value = True
 
@@ -1825,33 +1812,18 @@ class Test__write_data_to_ifd(unittest.TestCase):
             call("plane", "channel", [mock_channel]),
         ]
 
-        self.mock_ifd.ray_property.assert_has_calls(calls)
+        patch_soho[1].ray_property.assert_has_calls(calls)
 
         mock_pre.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
         mock_post.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
 
-        self.mock_ifd.ray_end.assert_not_called()
+        patch_soho[1].ray_end.assert_not_called()
 
 
-class Test__write_light(unittest.TestCase):
-
-    def setUp(self):
-        super(Test__write_light, self).setUp()
-
-        self.mock_soho = MagicMock()
-        modules = {"soho": self.mock_soho}
-
-        self.patcher = patch.dict("sys.modules", modules)
-
-        self.patcher.start()
-
-    def tearDown(self):
-        super(Test__write_light, self).tearDown()
-
-        self.patcher.stop()
+class Test__write_light(object):
 
     @patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
-    def test_suffix_prefix(self, mock_write):
+    def test_suffix_prefix(self, mock_write, patch_soho):
         mock_light = MagicMock()
         mock_light.getName.return_value = "light1"
 
@@ -1882,7 +1854,7 @@ class Test__write_light(unittest.TestCase):
         )
 
     @patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
-    def test_no_suffix_path_prefix(self, mock_write):
+    def test_no_suffix_path_prefix(self, mock_write, patch_soho):
         mock_light = MagicMock()
         mock_light.getName.return_value = "/obj/light1"
 
@@ -1912,7 +1884,7 @@ class Test__write_light(unittest.TestCase):
         )
 
     @patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
-    def test_suffix_no_prefix(self, mock_write):
+    def test_suffix_no_prefix(self, mock_write, patch_soho):
         mock_light = MagicMock()
         mock_light.getName.return_value = "/obj/light1"
 
@@ -1939,7 +1911,7 @@ class Test__write_light(unittest.TestCase):
         )
 
     @patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
-    def test_empty_suffix(self, mock_write):
+    def test_empty_suffix(self, mock_write, patch_soho):
         mock_light = MagicMock()
         mock_light.getName.return_value = "/obj/light1"
 
@@ -1955,7 +1927,7 @@ class Test__write_light(unittest.TestCase):
 
         aov._write_light(mock_light, base_channel, data, mock_wrangler, mock_cam, mock_now)
 
-        self.mock_soho.error.assert_called()
+        patch_soho[0].error.assert_called()
 
         mock_write.assert_called_with(
             {
@@ -1968,7 +1940,7 @@ class Test__write_light(unittest.TestCase):
         )
 
 
-class Test__write_per_category(unittest.TestCase):
+class Test__write_per_category(object):
 
     @patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
     @patch("ht.sohohooks.aovs.aov._build_category_map")
@@ -2039,7 +2011,7 @@ class Test__write_per_category(unittest.TestCase):
         )
 
 
-class Test__write_single_channel(unittest.TestCase):
+class Test__write_single_channel(object):
 
     @patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
     def test_lights(self, mock_write):
@@ -2082,8 +2054,3 @@ class Test__write_single_channel(unittest.TestCase):
             mock_cam,
             mock_now
         )
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()

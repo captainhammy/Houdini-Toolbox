@@ -4,11 +4,14 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
+import imp
 import io
 import logging
+
+# Third Party Imports
 from mock import MagicMock, call, patch
-import unittest
+import pytest
 
 # Houdini Toolbox Imports
 import ht.logging.shellio
@@ -16,13 +19,16 @@ import ht.logging.shellio
 # Houdini Imports
 import hou
 
-reload(ht.logging.shellio)
+# Reload the module to test to capture load evaluation since it has already
+# been loaded.
+imp.reload(ht.logging.shellio)
+
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_PythonShellHandler(unittest.TestCase):
+class Test_PythonShellHandler(object):
     """Test ht.logging.shellio.PythonShellHandler object."""
 
     @patch.object(ht.logging.shellio.PythonShellHandler, "format")
@@ -75,7 +81,7 @@ class Test_PythonShellHandler(unittest.TestCase):
         mock_record = MagicMock(spec=logging.LogRecord)
         inst = ht.logging.shellio.PythonShellHandler(None)
 
-        with self.assertRaises(KeyboardInterrupt):
+        with pytest.raises(KeyboardInterrupt):
             inst.emit(mock_record)
 
         mock_format.assert_called_with(mock_record)
@@ -89,7 +95,7 @@ class Test_PythonShellHandler(unittest.TestCase):
         mock_record = MagicMock(spec=logging.LogRecord)
         inst = ht.logging.shellio.PythonShellHandler(None)
 
-        with self.assertRaises(SystemExit):
+        with pytest.raises(SystemExit):
             inst.emit(mock_record)
 
         mock_format.assert_called_with(mock_record)
@@ -108,8 +114,3 @@ class Test_PythonShellHandler(unittest.TestCase):
 
         mock_format.assert_called_with(mock_record)
         mock_handle.assert_called_with(mock_record)
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()

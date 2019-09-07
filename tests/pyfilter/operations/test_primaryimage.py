@@ -4,45 +4,50 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
 import argparse
+
+# Third Party Imports
 from mock import MagicMock, call, patch
-import unittest
+import pytest
 
 # Houdini Toolbox Imports
 from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.operations import primaryimage
 
-reload(primaryimage)
+
+# =============================================================================
+# FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def patch_logger():
+    """Mock the log_filter_call logger."""
+
+    patcher = patch("ht.pyfilter.operations.operation._logger", autospec=True)
+
+    yield
+
+    patcher.stop()
 
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_SetPrimaryImage(unittest.TestCase):
+class Test_SetPrimaryImage(object):
     """Test the ht.pyfilter.operations.primaryimage.SetPrimaryImage object."""
-
-    def setUp(self):
-        super(Test_SetPrimaryImage, self).setUp()
-
-        self.patcher = patch("ht.pyfilter.operations.operation._logger", autospec=True)
-        self.patcher.start()
-
-    def tearDown(self):
-        super(Test_SetPrimaryImage, self).tearDown()
-        self.patcher.stop()
 
     def test___init__(self):
         mock_manager = MagicMock(spec=PyFilterManager)
 
         op = primaryimage.SetPrimaryImage(mock_manager)
 
-        self.assertEqual(op._data, {})
-        self.assertEqual(op._manager, mock_manager)
+        assert op._data == {}
+        assert op._manager == mock_manager
 
-        self.assertFalse(op._disable_primary_image)
-        self.assertIsNone(op._primary_image_path)
+        assert not op._disable_primary_image
+        assert op._primary_image_path is None
 
     # Properties
 
@@ -50,23 +55,23 @@ class Test_SetPrimaryImage(unittest.TestCase):
     def test_disable_primary_image(self):
         op = primaryimage.SetPrimaryImage(None)
         op._disable_primary_image = True
-        self.assertTrue(op.disable_primary_image)
+        assert op.disable_primary_image
 
         op._disable_primary_image = False
         op.disable_primary_image = True
-        self.assertTrue(op._disable_primary_image)
+        assert op._disable_primary_image
 
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
-    def test_manager(self):
+    def test_primary_image_path(self):
         path = "/path/to/image.exr"
 
         op = primaryimage.SetPrimaryImage(None)
         op._primary_image_path = path
-        self.assertEqual(op.primary_image_path, path)
+        assert op.primary_image_path == path
 
         op._primary_image_path = None
         op.primary_image_path = path
-        self.assertEqual(op._primary_image_path, path)
+        assert op._primary_image_path == path
 
     # Static Methods
 
@@ -75,19 +80,19 @@ class Test_SetPrimaryImage(unittest.TestCase):
     def test_build_arg_string__empty(self):
         result = primaryimage.SetPrimaryImage.build_arg_string()
 
-        self.assertEqual(result, "")
+        assert result == ""
 
     def test_build_arg_string__path(self):
         path = "/path/to/image.exr"
 
         result = primaryimage.SetPrimaryImage.build_arg_string(primary_image_path=path)
 
-        self.assertEqual(result, "--primary-image-path={}".format(path))
+        assert result == "--primary-image-path={}".format(path)
 
     def test_build_arg_string__disable(self):
         result = primaryimage.SetPrimaryImage.build_arg_string(disable_primary_image=True)
 
-        self.assertEqual(result, "--disable-primary-image")
+        assert result == "--disable-primary-image"
 
     # register_parser_args
 
@@ -109,7 +114,7 @@ class Test_SetPrimaryImage(unittest.TestCase):
     @patch("ht.pyfilter.operations.primaryimage._logger")
     @patch("ht.pyfilter.operations.primaryimage.set_property")
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
-    def test_filter_camera__disable(self, mock_set, mock_logger):
+    def test_filter_camera__disable(self, mock_set, mock_logger, patch_logger):
         op = primaryimage.SetPrimaryImage(None)
         op._disable_primary_image = True
 
@@ -120,7 +125,7 @@ class Test_SetPrimaryImage(unittest.TestCase):
     @patch("ht.pyfilter.operations.primaryimage._logger")
     @patch("ht.pyfilter.operations.primaryimage.set_property")
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
-    def test_filter_camera__path(self, mock_set, mock_logger):
+    def test_filter_camera__path(self, mock_set, mock_logger, patch_logger):
         path = "/path/to/images.exr"
 
         op = primaryimage.SetPrimaryImage(None)
@@ -134,7 +139,7 @@ class Test_SetPrimaryImage(unittest.TestCase):
     @patch("ht.pyfilter.operations.primaryimage._logger")
     @patch("ht.pyfilter.operations.primaryimage.set_property")
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
-    def test_filter_camera__no_op(self, mock_set, mock_logger):
+    def test_filter_camera__no_op(self, mock_set, mock_logger, patch_logger):
         path = "/path/to/images.exr"
 
         op = primaryimage.SetPrimaryImage(None)
@@ -160,9 +165,9 @@ class Test_SetPrimaryImage(unittest.TestCase):
 
         op.process_parsed_args(mock_namespace)
 
-        self.assertFalse(op.disable_primary_image)
+        assert not op.disable_primary_image
 
-        self.assertIsNone(op.primary_image_path)
+        assert op.primary_image_path is None
 
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
     def test_process_parsed_args(self):
@@ -177,9 +182,9 @@ class Test_SetPrimaryImage(unittest.TestCase):
 
         op.process_parsed_args(mock_namespace)
 
-        self.assertTrue(op.disable_primary_image)
+        assert op.disable_primary_image
 
-        self.assertEqual(op.primary_image_path, path)
+        assert op.primary_image_path == path
 
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
     def test_should_run__no_op(self):
@@ -187,7 +192,7 @@ class Test_SetPrimaryImage(unittest.TestCase):
         op._disable_primary_image = False
         op._primary_image_path = None
 
-        self.assertFalse(op.should_run())
+        assert not op.should_run()
 
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
     def test_should_run__disable(self):
@@ -195,7 +200,7 @@ class Test_SetPrimaryImage(unittest.TestCase):
         op._disable_primary_image = True
         op._primary_image_path = None
 
-        self.assertTrue(op.should_run())
+        assert op.should_run()
 
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
     def test_should_run__no_op(self):
@@ -203,9 +208,4 @@ class Test_SetPrimaryImage(unittest.TestCase):
         op._disable_primary_image = False
         op._primary_image_path = "/path/to/image.exr"
 
-        self.assertTrue(op.should_run())
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()
+        assert op.should_run()

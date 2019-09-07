@@ -4,9 +4,8 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Third Party Imports
 from mock import MagicMock, patch
-import unittest
 
 # Houdini Toolbox Imports
 from ht.nodes import badges
@@ -19,7 +18,7 @@ import hou
 # CLASSES
 # =============================================================================
 
-class Test_clear_generic_image_badge(unittest.TestCase):
+class Test_clear_generic_image_badge(object):
     """Test ht.nodes.badges.clear_generic_image_badge."""
 
     @patch("ht.nodes.badges._ht_generic_image_badge.get_generic_image_key")
@@ -50,7 +49,7 @@ class Test_clear_generic_image_badge(unittest.TestCase):
         mock_node.destroyUserData.assert_called_with(mock_data_name.return_value)
 
 
-class Test_clear_generic_text_badge(unittest.TestCase):
+class Test_clear_generic_text_badge(object):
     """Test ht.nodes.badges.clear_generic_text_badge."""
 
     @patch("ht.nodes.badges.clear_generic_text_badge_color")
@@ -87,7 +86,7 @@ class Test_clear_generic_text_badge(unittest.TestCase):
         mock_clear_color.assert_called()
 
 
-class Test_clear_generic_text_badge_color(unittest.TestCase):
+class Test_clear_generic_text_badge_color(object):
     """Test ht.nodes.badges.clear_generic_text_badge_color."""
 
     @patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key")
@@ -117,7 +116,7 @@ class Test_clear_generic_text_badge_color(unittest.TestCase):
         mock_node.destroyUserData.assert_called_with(mock_data_name.return_value)
 
 
-class Test_set_generic_image_badge(unittest.TestCase):
+class Test_set_generic_image_badge(object):
     """Test ht.nodes.badges.set_generic_image_badge."""
 
     @patch("ht.nodes.badges._ht_generic_image_badge.get_generic_image_key")
@@ -136,7 +135,7 @@ class Test_set_generic_image_badge(unittest.TestCase):
         )
 
 
-class Test_set_generic_text_badge(unittest.TestCase):
+class Test_set_generic_text_badge(object):
     """Test ht.nodes.badges.set_generic_text_badge."""
 
     @patch("ht.nodes.badges.set_generic_text_badge_color")
@@ -177,7 +176,7 @@ class Test_set_generic_text_badge(unittest.TestCase):
         mock_set_color.assert_called_with(mock_node, mock_color)
 
 
-class Test_set_generic_text_badge_color(unittest.TestCase):
+class Test_set_generic_text_badge_color(object):
     """Test ht.nodes.badges.set_generic_text_badge_color."""
 
     @patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key")
@@ -196,9 +195,3 @@ class Test_set_generic_text_badge_color(unittest.TestCase):
             mock_data_name.return_value,
             "rgb 0.1 0.2 0.3"
         )
-
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()

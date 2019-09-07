@@ -4,9 +4,9 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Third Party Imports
 from mock import MagicMock, call, patch
-import unittest
+import pytest
 
 # Houdini Toolbox Imports
 import ht.ui.menus.parmmenu
@@ -14,13 +14,12 @@ import ht.ui.menus.parmmenu
 # Houdini Imports
 import hou
 
-reload(ht.ui.menus.parmmenu)
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test__valid_to_convert_to_absolute_reference(unittest.TestCase):
+class Test__valid_to_convert_to_absolute_reference(object):
     """Test ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference."""
 
     def test_empty_string(self):
@@ -34,7 +33,7 @@ class Test__valid_to_convert_to_absolute_reference(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
 
-        self.assertFalse(result)
+        assert not result
 
         mock_parm.unexpandedString.assert_not_called()
 
@@ -53,7 +52,7 @@ class Test__valid_to_convert_to_absolute_reference(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
 
-        self.assertFalse(result)
+        assert not result
 
         mock_path.startswith.assert_called_with("..")
 
@@ -76,7 +75,7 @@ class Test__valid_to_convert_to_absolute_reference(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
 
-        self.assertTrue(result)
+        assert result
 
         mock_path.startswith.assert_called_with("..")
         mock_parm.evalAsNode.assert_called()
@@ -98,7 +97,7 @@ class Test__valid_to_convert_to_absolute_reference(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
 
-        self.assertFalse(result)
+        assert not result
 
         mock_path.startswith.assert_called_with("..")
         mock_parm.evalAsNode.assert_called()
@@ -119,7 +118,7 @@ class Test__valid_to_convert_to_absolute_reference(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
 
-        self.assertFalse(result)
+        assert not result
 
         mock_path.startswith.assert_called_with("..")
         mock_parm.evalAsNode.assert_not_called()
@@ -134,7 +133,7 @@ class Test__valid_to_convert_to_absolute_reference(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
 
-        self.assertFalse(result)
+        assert not result
 
         mock_parm.eval.assert_not_called()
 
@@ -147,10 +146,10 @@ class Test__valid_to_convert_to_absolute_reference(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
 
-        self.assertFalse(result)
+        assert not result
 
 
-class Test__valid_to_convert_to_relative_reference(unittest.TestCase):
+class Test__valid_to_convert_to_relative_reference(object):
     """Test ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference."""
 
     def test_empty_string(self):
@@ -164,7 +163,7 @@ class Test__valid_to_convert_to_relative_reference(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
 
-        self.assertFalse(result)
+        assert not result
 
         mock_parm.unexpandedString.assert_not_called()
 
@@ -183,7 +182,7 @@ class Test__valid_to_convert_to_relative_reference(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
 
-        self.assertFalse(result)
+        assert not result
 
         mock_path.startswith.assert_called_with("/")
 
@@ -206,7 +205,7 @@ class Test__valid_to_convert_to_relative_reference(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
 
-        self.assertTrue(result)
+        assert result
 
         mock_path.startswith.assert_called_with("/")
         mock_parm.evalAsNode.assert_called()
@@ -228,7 +227,7 @@ class Test__valid_to_convert_to_relative_reference(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
 
-        self.assertFalse(result)
+        assert not result
 
         mock_path.startswith.assert_called_with("/")
         mock_parm.evalAsNode.assert_called()
@@ -249,7 +248,7 @@ class Test__valid_to_convert_to_relative_reference(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
 
-        self.assertFalse(result)
+        assert not result
 
         mock_path.startswith.assert_called_with("/")
         mock_parm.evalAsNode.assert_not_called()
@@ -264,7 +263,7 @@ class Test__valid_to_convert_to_relative_reference(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
 
-        self.assertFalse(result)
+        assert not result
 
         mock_parm.eval.assert_not_called()
 
@@ -277,10 +276,10 @@ class Test__valid_to_convert_to_relative_reference(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
 
-        self.assertFalse(result)
+        assert not result
 
 
-class Test_convert_absolute_to_relative_path_context(unittest.TestCase):
+class Test_convert_absolute_to_relative_path_context(object):
     """Test ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context."""
 
     @patch("ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference", return_value=False)
@@ -295,7 +294,7 @@ class Test_convert_absolute_to_relative_path_context(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context(scriptargs)
 
-        self.assertFalse(result)
+        assert not result
 
         mock_valid.assert_has_calls(
             [call(mock_parm1), call(mock_parm2)]
@@ -313,14 +312,14 @@ class Test_convert_absolute_to_relative_path_context(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context(scriptargs)
 
-        self.assertTrue(result)
+        assert result
 
         mock_valid.assert_has_calls(
             [call(mock_parm1), call(mock_parm2)]
         )
 
 
-class Test_convert_absolute_to_relative_path(unittest.TestCase):
+class Test_convert_absolute_to_relative_path(object):
     """Test ht.ui.menus.parmmenu.convert_absolute_to_relative_path."""
 
     @patch("ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference", side_effect=(False, True))
@@ -346,7 +345,7 @@ class Test_convert_absolute_to_relative_path(unittest.TestCase):
         mock_parm2.node.return_value.relativePathTo.assert_called_with(mock_parm2.evalAsNode.return_value)
 
 
-class Test_convert_relative_to_absolute_path_context(unittest.TestCase):
+class Test_convert_relative_to_absolute_path_context(object):
     """Test ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context."""
 
     @patch("ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference", return_value=False)
@@ -361,7 +360,7 @@ class Test_convert_relative_to_absolute_path_context(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context(scriptargs)
 
-        self.assertFalse(result)
+        assert not result
 
         mock_valid.assert_has_calls(
             [call(mock_parm1), call(mock_parm2)]
@@ -379,14 +378,14 @@ class Test_convert_relative_to_absolute_path_context(unittest.TestCase):
 
         result = ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context(scriptargs)
 
-        self.assertTrue(result)
+        assert result
 
         mock_valid.assert_has_calls(
             [call(mock_parm1), call(mock_parm2)]
         )
 
 
-class Test_convert_relative_to_absolute_path(unittest.TestCase):
+class Test_convert_relative_to_absolute_path(object):
     """Test ht.ui.menus.parmmenu.convert_relative_to_absolute_path."""
 
     @patch("ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference", side_effect=(False, True))
@@ -411,7 +410,7 @@ class Test_convert_relative_to_absolute_path(unittest.TestCase):
         mock_parm2.set.assert_called_with(mock_parm2.evalAsNode.return_value.path.return_value)
 
 
-class Test_promote_parameter_to_node(unittest.TestCase):
+class Test_promote_parameter_to_node(object):
     """Test ht.ui.menus.parmmenu.promote_parameter_to_node."""
 
     @patch("ht.ui.menus.parmmenu.hou.node")
@@ -436,7 +435,7 @@ class Test_promote_parameter_to_node(unittest.TestCase):
             "parms": (mock_parm1, )
         }
 
-        with self.assertRaises(hou.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
         mock_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
@@ -735,9 +734,3 @@ class Test_promote_parameter_to_node(unittest.TestCase):
         mock_hou_node.assert_called_with(mock_ui.selectNode.return_value)
 
         del hou.ui
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()
-

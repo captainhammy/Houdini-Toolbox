@@ -4,9 +4,8 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Third Party Imports
 from mock import MagicMock, patch
-import unittest
 
 # Houdini Toolbox Imports
 import ht.ui.menus.opmenu
@@ -14,13 +13,12 @@ import ht.ui.menus.opmenu
 # Houdini Imports
 import hou
 
-reload(ht.ui.menus.opmenu)
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_create_absolute_reference_copy(unittest.TestCase):
+class Test_create_absolute_reference_copy(object):
     """Test ht.ui.menus.opmenu.create_absolute_reference_copy."""
 
     def test(self):
@@ -37,12 +35,16 @@ class Test_create_absolute_reference_copy(unittest.TestCase):
 
         ht.ui.menus.opmenu.create_absolute_reference_copy(scriptargs)
 
-        mock_node.parent.return_value.copyItems.assert_called_with([mock_node], channel_reference_originals=True, relative_references=False)
+        mock_node.parent.return_value.copyItems.assert_called_with(
+            [mock_node],
+            channel_reference_originals=True,
+            relative_references=False
+        )
 
         del hou.ui
 
 
-class Test_save_item_to_file(unittest.TestCase):
+class Test_save_item_to_file(object):
     """Test ht.ui.menus.opmenu.save_item_to_file."""
 
     @patch("ht.ui.menus.opmenu.copy_item")
@@ -57,8 +59,3 @@ class Test_save_item_to_file(unittest.TestCase):
         ht.ui.menus.opmenu.save_item_to_file(scriptargs)
 
         mock_copy.assert_called_with(mock_node)
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()

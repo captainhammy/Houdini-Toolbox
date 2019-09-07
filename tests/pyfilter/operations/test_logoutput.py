@@ -5,23 +5,17 @@
 # =============================================================================
 
 # Python Imports
-import argparse
-import logging
-from mock import MagicMock, PropertyMock, call, patch
-import unittest
+from mock import MagicMock, call, patch
 
 # Houdini Toolbox Imports
-from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.operations import logoutput
-
-reload(logoutput)
 
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_LogOutput(unittest.TestCase):
+class Test_LogOutput(object):
     """Test the ht.pyfilter.operations.logoutput.LogOutput object."""
 
     # Methods
@@ -29,7 +23,6 @@ class Test_LogOutput(unittest.TestCase):
     @patch("ht.pyfilter.operations.logoutput._logger", autospec=True)
     @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
     def test_filter_error__level_0(self, mock_logger):
-
         level = 0
 
         mock_message1 = MagicMock(spec=str)
@@ -44,7 +37,7 @@ class Test_LogOutput(unittest.TestCase):
 
         result = op.filter_error(level, mock_message, mock_prefix)
 
-        self.assertTrue(result)
+        assert result
 
         mock_message.split.assert_called_with('\n')
 
@@ -67,7 +60,7 @@ class Test_LogOutput(unittest.TestCase):
 
         result = op.filter_error(level, mock_message, mock_prefix)
 
-        self.assertTrue(result)
+        assert result
 
         mock_message.split.assert_called_with('\n')
 
@@ -87,7 +80,7 @@ class Test_LogOutput(unittest.TestCase):
 
         result = op.filter_error(level, mock_message, mock_prefix)
 
-        self.assertTrue(result)
+        assert result
 
         mock_message.split.assert_called_with('\n')
 
@@ -107,13 +100,8 @@ class Test_LogOutput(unittest.TestCase):
 
         result = op.filter_error(level, mock_message, mock_prefix)
 
-        self.assertTrue(result)
+        assert result
 
         mock_message.split.assert_called_with('\n')
 
         mock_logger.debug.assert_called_with(mock_message)
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()

@@ -4,23 +4,28 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Standard Library Imports
+import imp
+
+# Third Party Imports
 from mock import MagicMock, PropertyMock, patch
-import unittest
+import pytest
 
 # Houdini Toolbox Imports
 import ht.events.item
 import ht.events.event
 import ht.events.stats
 
-reload(ht.events.event)
+# Reload the module to test to capture load evaluation since it has already
+# been loaded.
+imp.reload(ht.events.event)
 
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class Test_HoudiniEventFactory(unittest.TestCase):
+class Test_HoudiniEventFactory(object):
     """Test ht.events.event.HoudiniEventFactory class."""
 
     @patch.object(ht.events.event.HoudiniEventFactory, "_mappings", new_callable=PropertyMock)
@@ -34,7 +39,7 @@ class Test_HoudiniEventFactory(unittest.TestCase):
 
         result = ht.events.event.HoudiniEventFactory.get_event_type(mock_name)
 
-        self.assertEqual(result, mock_return.return_value)
+        assert result == mock_return.return_value
         mock_return.assert_called_once()
 
     @patch("ht.events.event.HoudiniEvent", autospec=True)
@@ -51,7 +56,7 @@ class Test_HoudiniEventFactory(unittest.TestCase):
 
         result = ht.events.event.HoudiniEventFactory.get_event_type(mock_event_name)
 
-        self.assertEqual(result, mock_event.return_value)
+        assert result == mock_event.return_value
 
         mock_event.assert_called_with(mock_event_name)
 
@@ -69,10 +74,10 @@ class Test_HoudiniEventFactory(unittest.TestCase):
 
         ht.events.event.HoudiniEventFactory.register_event_class(mock_event_name, mock_event)
 
-        self.assertEqual(mappings, {mock_event_name: mock_event})
+        assert mappings == {mock_event_name: mock_event}
 
 
-class Test_HoudiniEvent(unittest.TestCase):
+class Test_HoudiniEvent(object):
     """Test ht.events.event.HoudiniEvent class."""
 
     @patch("ht.events.event.HoudiniEventStats", autospec=True)
@@ -82,12 +87,12 @@ class Test_HoudiniEvent(unittest.TestCase):
 
         event = ht.events.event.HoudiniEvent(mock_name)
 
-        self.assertEqual(event._data, {})
-        self.assertTrue(event._enabled)
-        self.assertEqual(event._item_map, {})
-        self.assertEqual(event._name, mock_name)
+        assert event._data == {}
+        assert event._enabled
+        assert event._item_map == {}
+        assert event._name == mock_name
+        assert event._stats ==  mock_stats.return_value
 
-        self.assertEqual(event._stats, mock_stats.return_value)
         mock_stats.assert_called_with(mock_name)
 
     # Properties
@@ -99,7 +104,7 @@ class Test_HoudiniEvent(unittest.TestCase):
         event = ht.events.event.HoudiniEvent(None)
         event._data = mock_value
 
-        self.assertEqual(event.data, mock_value)
+        assert event.data == mock_value
 
     @patch.object(ht.events.event.HoudiniEvent, "__init__", lambda x, y: None)
     def test_enabled(self):
@@ -108,11 +113,11 @@ class Test_HoudiniEvent(unittest.TestCase):
         event = ht.events.event.HoudiniEvent(None)
 
         event._enabled = mock_value1
-        self.assertEqual(event.enabled, mock_value1)
+        assert event.enabled == mock_value1
 
         mock_value2 = MagicMock(spec=bool)
         event.enabled = mock_value2
-        self.assertEqual(event.enabled, mock_value2)
+        assert event.enabled == mock_value2
 
     @patch.object(ht.events.event.HoudiniEvent, "__init__", lambda x, y: None)
     def test_item_map(self):
@@ -122,7 +127,7 @@ class Test_HoudiniEvent(unittest.TestCase):
         event = ht.events.event.HoudiniEvent(None)
 
         event._item_map = mock_value
-        self.assertEqual(event.item_map, mock_value)
+        assert event.item_map == mock_value
 
     @patch.object(ht.events.event.HoudiniEvent, "__init__", lambda x, y: None)
     def test_name(self):
@@ -131,7 +136,7 @@ class Test_HoudiniEvent(unittest.TestCase):
         event = ht.events.event.HoudiniEvent(None)
 
         event._name = mock_value
-        self.assertEqual(event.name, mock_value)
+        assert event.name == mock_value
 
     @patch.object(ht.events.event.HoudiniEvent, "__init__", lambda x, y: None)
     def test_stats(self):
@@ -141,7 +146,7 @@ class Test_HoudiniEvent(unittest.TestCase):
         mock_stats = MagicMock(spec=ht.events.stats.HoudiniEventStats)
         event._stats = mock_stats
 
-        self.assertEqual(event.stats, mock_stats)
+        assert event.stats == mock_stats
 
     # Functions
 
@@ -152,7 +157,8 @@ class Test_HoudiniEvent(unittest.TestCase):
         """Test registering an object which is not a HoudiniEventItem."""
         event = ht.events.event.HoudiniEvent(None)
 
-        with self.assertRaises(TypeError):
+        # with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             event.register_item(None)
 
     @patch.object(ht.events.event.HoudiniEvent, "item_map", new_callable=PropertyMock)
@@ -169,7 +175,7 @@ class Test_HoudiniEvent(unittest.TestCase):
         event = ht.events.event.HoudiniEvent(None)
         event.register_item(mock_item)
 
-        self.assertEqual(mock_map, {mock_item.priority: [mock_item]})
+        assert mock_map == {mock_item.priority: [mock_item]}
 
     # run
 
@@ -187,7 +193,7 @@ class Test_HoudiniEvent(unittest.TestCase):
         # If the event is disabled nothing should happen and scriptargs should
         # be unchanged.
         expected_scriptargs = {"key": "value"}
-        self.assertEqual(scriptargs, expected_scriptargs)
+        assert scriptargs == expected_scriptargs
 
     @patch.object(ht.events.event.HoudiniEvent, "item_map", new_callable=PropertyMock)
     @patch.object(ht.events.event.HoudiniEvent, "stats", new_callable=PropertyMock)
@@ -234,13 +240,8 @@ class Test_HoudiniEvent(unittest.TestCase):
         mock_item2.run.assert_called_once()
         mock_item3.run.assert_called_once()
 
-        self.assertEqual(scriptargs, expected_scriptargs)
+        assert scriptargs == expected_scriptargs
 
         # Ensure the context manager was called.
         mock_stats.return_value.__enter__.assert_called_once()
         mock_stats.return_value.__exit__.assert_called_once()
-
-# =============================================================================
-
-if __name__ == '__main__':
-    unittest.main()
