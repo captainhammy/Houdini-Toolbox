@@ -8,7 +8,7 @@
 import copy
 import imp
 
-# Python Imports
+# Third Party Imports
 from mock import MagicMock, PropertyMock, patch
 
 # Houdini Toolbox Imports

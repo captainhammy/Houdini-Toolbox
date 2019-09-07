@@ -4,7 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Python Imports
+# Third Party Imports
 from mock import MagicMock, call, patch
 
 # Houdini Toolbox Imports
