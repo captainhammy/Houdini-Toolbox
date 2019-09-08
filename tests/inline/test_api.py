@@ -1393,30 +1393,6 @@ class Test_copy_attribute_values(object):
             len(mock_build.return_value)
         )
 
-@patch("ht.inline.api.copy_attribute_values")
-def test_copy_point_attribute_values(mock_copy):
-    """Test ht.inline.api.copy_point_attribute_values."""
-    mock_target_point = MagicMock(spec=hou.Point)
-    mock_source_point = MagicMock(spec=hou.Point)
-    mock_attributes = MagicMock(spec=str)
-
-    api.copy_point_attribute_values(mock_target_point, mock_source_point, mock_attributes)
-
-    mock_copy.assert_called_with(mock_source_point, mock_attributes, mock_target_point)
-
-
-@patch("ht.inline.api.copy_attribute_values")
-def test_copy_prim_attribute_values(mock_copy):
-    """Test ht.inline.api.copy_prim_attribute_values."""
-
-    mock_target_prim = MagicMock(spec=hou.Prim)
-    mock_source_prim = MagicMock(spec=hou.Prim)
-    mock_attributes = MagicMock(spec=str)
-
-    api.copy_prim_attribute_values(mock_target_prim, mock_source_prim, mock_attributes)
-
-    mock_copy.assert_called_with(mock_source_prim, mock_attributes, mock_target_prim)
-
 
 @patch("ht.inline.api.utils.get_prims_from_list")
 @patch("ht.inline.api._cpp_methods.pointAdjacentPolygons")

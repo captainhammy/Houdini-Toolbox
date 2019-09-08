@@ -1,5 +1,4 @@
 """Integration tests for ht.inline.api."""
-# pylint: disable=missing-docstring,unused-argument,redefined-outer-name
 
 # =============================================================================
 # IMPORTS
@@ -22,7 +21,6 @@ import hou
 # =============================================================================
 
 OBJ = hou.node("/obj")
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 # =============================================================================
@@ -31,52 +29,62 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @pytest.fixture(scope="module")
 def load_test_file():
-    hou.hipFile.load(os.path.join(THIS_DIR, "test_inline.hipnc"), ignore_load_warnings=True)
+    """Load the test hip file."""
+    hou.hipFile.load(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "test_api_integration.hipnc"),
+        ignore_load_warnings=True
+    )
+
     yield
 
     hou.hipFile.clear()
 
 
-# =============================================================================
-# CLASSES
-# =============================================================================
+# Need to ensure the hip file gets loaded.
+pytestmark = pytest.mark.usefixtures("load_test_file")
 
 
-def test_get_variable():
+# =============================================================================
+# TEST FUNCTIONS
+# =============================================================================
+
+def test_get_variable_value():
+    """Test ht.inline.api.get_variable_value."""
     hip_name = ht.inline.api.get_variable_value("HIPNAME")
 
     assert hip_name == os.path.splitext(os.path.basename(hou.hipFile.path()))[0]
 
 
 def test_set_variable():
+    """Test ht.inline.api.set_variable."""
     value = 22
     ht.inline.api.set_variable("awesome", value)
 
     assert ht.inline.api.get_variable_value("awesome") == 22
 
 
-def test_get_variable_names(load_test_file):
+def test_get_variable_names():
+    """Test ht.inline.api.get_variable_value."""
     variable_names = ht.inline.api.get_variable_names()
 
     assert "ACTIVETAKE" in variable_names
 
-
-def test_get_variable_names__dirty(load_test_file):
-    variable_names = ht.inline.api.get_variable_names()
-
+    # Dirty
     dirty_variable_names = ht.inline.api.get_variable_names(dirty=True)
 
     assert variable_names != dirty_variable_names
 
 
 def test_unset_variable():
+    """Test ht.inline.api.unset_variable."""
     ht.inline.api.set_variable("tester", 10)
     ht.inline.api.unset_variable("tester")
 
     assert ht.inline.api.get_variable_value("tester") is None
 
 
-def test_emit_var_change(load_test_file):
+def test_emit_var_change():
+    """Test ht.inline.api.emit_var_change."""
     parm = hou.parm("/obj/test_emit_var_change/file1/file")
 
     string = "something_$VARCHANGE.bgeo"
@@ -101,13 +109,15 @@ def test_emit_var_change(load_test_file):
 
 
 def test_expand_range():
+    """Test ht.inline.api.expand_range."""
     values = ht.inline.api.expand_range("0-5 10-20:2 64 65-66")
     target = (0, 1, 2, 3, 4, 5, 10, 12, 14, 16, 18, 20, 64, 65, 66)
 
     assert values == target
 
 
-def test_read_only(load_test_file):
+def test_is_geometry_read_only():
+    """Test ht.inline.api.is_geometry_read_only."""
     geo = get_obj_geo("test_read_only")
 
     assert ht.inline.api.is_geometry_read_only(geo)
@@ -117,19 +127,22 @@ def test_read_only(load_test_file):
     assert not ht.inline.api.is_geometry_read_only(geo)
 
 
-def test_num_points(load_test_file):
+def test_num_points():
+    """Test ht.inline.api.num_points."""
     geo = get_obj_geo("test_num_points")
 
     assert ht.inline.api.num_points(geo) == 5000
 
 
-def test_num_prims(load_test_file):
+def test_num_prims():
+    """Test ht.inline.api.num_prims."""
     geo = get_obj_geo("test_num_prims")
 
     assert ht.inline.api.num_prims(geo) == 12
 
 
-def test_pack_geometry(load_test_file):
+def test_pack_geometry():
+    """Test ht.inline.api.pack_geometry."""
     geo = get_obj_geo("test_pack_geometry")
 
     prim = geo.prims()[0]
@@ -137,7 +150,8 @@ def test_pack_geometry(load_test_file):
     assert isinstance(prim, hou.PackedGeometry)
 
 
-def test_sort_geometry_by_attribute(load_test_file):
+def test_sort_geometry_by_attribute():
+    """Test ht.inline.api.sort_geometry_by_attribute."""
     geo = get_obj_geo_copy("test_sort_geometry_by_attribute")
 
     attrib = geo.findPrimAttrib("id")
@@ -148,8 +162,7 @@ def test_sort_geometry_by_attribute(load_test_file):
 
     assert values, range(10)
 
-
-def test_sort_geometry_by_attribute_reversed(load_test_file):
+    # Reversed
     geo = get_obj_geo_copy("test_sort_geometry_by_attribute")
 
     attrib = geo.findPrimAttrib("id")
@@ -160,8 +173,7 @@ def test_sort_geometry_by_attribute_reversed(load_test_file):
 
     assert values == list(reversed(range(10)))
 
-
-def test_sort_geometry_by_attribute_invalid_index(load_test_file):
+    # Invalid index
     geo = get_obj_geo_copy("test_sort_geometry_by_attribute")
 
     attrib = geo.findPrimAttrib("id")
@@ -169,8 +181,7 @@ def test_sort_geometry_by_attribute_invalid_index(load_test_file):
     with pytest.raises(IndexError):
         ht.inline.api.sort_geometry_by_attribute(geo, attrib, 1)
 
-
-def test_sort_geometry_by_attribute_detail(load_test_file):
+    # Detail
     geo = get_obj_geo_copy("test_sort_geometry_by_attribute")
 
     attrib = geo.findGlobalAttrib("varmap")
@@ -179,7 +190,9 @@ def test_sort_geometry_by_attribute_detail(load_test_file):
         ht.inline.api.sort_geometry_by_attribute(geo, attrib)
 
 
-def test_sort_geometry_along_axis_points(load_test_file):
+def test_sort_geometry_along_axis():
+    """Test ht.inline.api.sort_geometry_along_axis."""
+    # Points
     geo = get_obj_geo_copy("test_sort_geometry_along_axis_points")
 
     ht.inline.api.sort_geometry_along_axis(geo, hou.geometryType.Points, 0)
@@ -188,8 +201,7 @@ def test_sort_geometry_along_axis_points(load_test_file):
 
     assert values == range(10)
 
-
-def test_sort_geometry_along_axis_prims(load_test_file):
+    # Prims
     geo = get_obj_geo_copy("test_sort_geometry_along_axis_prims")
 
     ht.inline.api.sort_geometry_along_axis(geo, hou.geometryType.Primitives, 2)
@@ -200,11 +212,13 @@ def test_sort_geometry_along_axis_prims(load_test_file):
 
 
 def test_sort_geometry_by_values():
-    # TODO: Test this.
+    """Test ht.inline.api.sort_geometry_by_values."""
     pass
 
 
-def test_sort_geometry_randomly__points(load_test_file):
+def test_sort_geometry_randomly():
+    """Test ht.inline.api.sort_geometry_randomly."""
+    # Points
     seed = 11
     target = [5, 9, 3, 8, 0, 2, 6, 1, 4, 7]
 
@@ -215,8 +229,7 @@ def test_sort_geometry_randomly__points(load_test_file):
 
     assert values == target
 
-
-def test_sort_geometry_randomly__prims(load_test_file):
+    # Prims
     seed = 345
     target = [4, 0, 9, 2, 1, 8, 3, 6, 7, 5]
 
@@ -228,7 +241,9 @@ def test_sort_geometry_randomly__prims(load_test_file):
     assert values == target
 
 
-def test_shift_geometry_elements__points(load_test_file):
+def test_shift_geometry_elements():
+    """Test ht.inline.api.shift_geometry_elements."""
+    # Points
     offset = -18
     target = [8, 9, 0, 1, 2, 3, 4, 5, 6, 7]
 
@@ -239,8 +254,7 @@ def test_shift_geometry_elements__points(load_test_file):
 
     assert values == target
 
-
-def test_shift_geometry_elements__prims(load_test_file):
+    # Prims
     offset = 6
     target = [4, 5, 6, 7, 8, 9, 0, 1, 2, 3]
 
@@ -252,7 +266,9 @@ def test_shift_geometry_elements__prims(load_test_file):
     assert values == target
 
 
-def test_reverse_sort_geometry__points(load_test_file):
+def test_reverse_sort_geometry():
+    """Test ht.inline.api.reverse_sort_geometry."""
+    # Points
     target = range(10)
     target.reverse()
 
@@ -263,8 +279,7 @@ def test_reverse_sort_geometry__points(load_test_file):
 
     assert values == target
 
-
-def test_reverse_sort_geometry__prims(load_test_file):
+    # Prims
     target = range(10)
     target.reverse()
 
@@ -276,7 +291,9 @@ def test_reverse_sort_geometry__prims(load_test_file):
     assert values == target
 
 
-def test_sort_geometry_by_proximity_to_position__points(load_test_file):
+def test_sort_geometry_by_proximity_to_position():
+    """Test ht.inline.api.sort_geometry_by_proximity_to_position."""
+    # Points
     target = [4, 3, 5, 2, 6, 1, 7, 0, 8, 9]
     position = hou.Vector3(4, 1, 2)
 
@@ -287,8 +304,7 @@ def test_sort_geometry_by_proximity_to_position__points(load_test_file):
 
     assert values == target
 
-
-def test_sort_geometry_by_proximity_to_position__prims(load_test_file):
+    # Prims
     target = [6, 7, 5, 8, 4, 9, 3, 2, 1, 0]
     position = hou.Vector3(3, -1, 2)
 
@@ -300,7 +316,8 @@ def test_sort_geometry_by_proximity_to_position__prims(load_test_file):
     assert values == target
 
 
-def test_sort_geometry_by_vertex_order(load_test_file):
+def test_sort_geometry_by_vertex_order():
+    """Test ht.inline.api.sort_geometry_by_vertex_order."""
     target = range(10)
 
     geo = get_obj_geo_copy("test_sort_geometry_by_vertex_order")
@@ -311,14 +328,15 @@ def test_sort_geometry_by_vertex_order(load_test_file):
     assert values == target
 
 
-def test_sort_geometry_by_expression__points(load_test_file):
+def test_sort_geometry_by_expression():
+    """Test ht.inline.api.sort_geometry_by_expression."""
+    # Points
     target_geo = OBJ.node("test_sort_geometry_by_expression_points/RESULT").geometry()
     test_geo = OBJ.node("test_sort_geometry_by_expression_points/TEST").geometry()
 
     assert test_geo.pointFloatAttribValues("id") == target_geo.pointFloatAttribValues("id")
 
-
-def test_sort_geometry_by_expression__prims(load_test_file):
+    # Prims
     target_geo = OBJ.node("test_sort_geometry_by_expression_prims/RESULT").geometry()
     test_geo = OBJ.node("test_sort_geometry_by_expression_prims/TEST").geometry()
 
@@ -326,6 +344,16 @@ def test_sort_geometry_by_expression__prims(load_test_file):
 
 
 def test_create_point_at_position():
+    """Test ht.inline.api.create_point_at_position."""
+    geo = hou.Geometry()
+
+    # Read only
+    frozen_geo = geo.freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.create_point_at_position(frozen_geo, hou.Vector3(1, 2, 3))
+
+    # Success
     geo = hou.Geometry()
 
     point = ht.inline.api.create_point_at_position(geo, hou.Vector3(1, 2, 3))
@@ -334,106 +362,231 @@ def test_create_point_at_position():
 
 
 def test_create_n_points():
+    """Test ht.inline.api.create_n_points."""
     geo = hou.Geometry()
+
+    # Read only
+    frozen_geo = geo.freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.create_n_points(frozen_geo, 15)
+
+    # Success
     points = ht.inline.api.create_n_points(geo, 15)
 
     assert points == geo.points()
 
-
-def test_create_n_points__invalid_number():
-    geo = hou.Geometry()
-
+    # Invalid Number
     with pytest.raises(ValueError):
         ht.inline.api.create_n_points(geo, -4)
 
 
-def test_merge_point_group(load_test_file):
+def test_merge_point_group():
+    """Test ht.inline.api.merge_point_group."""
     geo = hou.Geometry()
+
     source_geo = get_obj_geo("test_merge_point_group")
 
     group = source_geo.pointGroups()[0]
 
+    # Read only
+    frozen_geo = geo.freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.merge_point_group(frozen_geo, group)
+
+    # Invalid group type
+    prim_group = source_geo.primGroups()[0]
+
+    with pytest.raises(ValueError):
+        ht.inline.api.merge_point_group(geo, prim_group)
+
+    # Success
     ht.inline.api.merge_point_group(geo, group)
 
     assert len(geo.iterPoints()) == len(group.points())
 
 
-def test_merge_points(load_test_file):
+def test_merge_points():
+    """Test ht.inline.api.merge_points."""
     geo = hou.Geometry()
     source_geo = get_obj_geo("test_merge_points")
 
     points = source_geo.globPoints("0 6 15 35-38 66")
 
+    # Read only
+    frozen_geo = geo.freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.merge_points(frozen_geo, points)
+
+    # Success
     ht.inline.api.merge_points(geo, points)
 
     assert len(geo.iterPoints()) == len(points)
 
 
-def test_merge_prim_group(load_test_file):
+def test_merge_prim_group():
+    """Test ht.inline.api.merge_prim_group."""
     geo = hou.Geometry()
     source_geo = get_obj_geo("test_merge_prim_group")
 
     group = source_geo.primGroups()[0]
 
+    # Read only
+    frozen_geo = geo.freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.merge_prim_group(frozen_geo, group)
+
+    # Invalid group type
+    point_group = source_geo.pointGroups()[0]
+
+    with pytest.raises(ValueError):
+        ht.inline.api.merge_prim_group(geo, point_group)
+
+    # Success
     ht.inline.api.merge_prim_group(geo, group)
 
     assert len(geo.iterPrims()) == len(group.prims())
 
 
-def test_merge_prims(load_test_file):
+def test_merge_prims():
+    """Test ht.inline.api.merge_prims."""
     geo = hou.Geometry()
     source_geo = get_obj_geo("test_merge_prims")
 
     prims = source_geo.globPrims("0 6 15 35-38 66")
 
+    # Read only
+    frozen_geo = geo.freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.merge_prims(frozen_geo, prims)
+
+    # Success
     ht.inline.api.merge_prims(geo, prims)
 
     assert len(geo.iterPrims()) == len(prims)
 
 
-def test_copy_point_attribute_values(load_test_file):
-    source = get_obj_geo("test_copy_point_attribute_values")
+def test_copy_attrib_values():
+    """Test ht.inline.api.copy_attribute_values."""
+    # Points
+    source = get_obj_geo("test_copy_attribute_values")
 
     attribs = source.pointAttribs()
 
     geo = hou.Geometry()
 
-    p1 = geo.createPoint()
-    p2 = geo.createPoint()
+    pt1 = geo.createPoint()
+    pt2 = geo.createPoint()
 
-    ht.inline.api.copy_point_attribute_values(p1, source.iterPoints()[2], attribs)
-    ht.inline.api.copy_point_attribute_values(p2, source.iterPoints()[6], attribs)
+    ht.inline.api.copy_attribute_values(source.iterPoints()[2], attribs, pt1)
+    ht.inline.api.copy_attribute_values(source.iterPoints()[6], attribs, pt2)
 
     # Ensure all the attributes got copied right.
     assert len(geo.pointAttribs()) == len(attribs)
 
     # Ensure P got copied right.
-    assert p1.position() == hou.Vector3(5, 0, -5)
-    assert p2.position() == hou.Vector3(-5, 0, 5)
+    assert pt1.position().isAlmostEqual(hou.Vector3(1.66667, 0, -5))
+    assert pt2.position().isAlmostEqual(hou.Vector3(1.66667, 0, -1.66667))
 
-
-def test_copy_prim_attribute_values(load_test_file):
-    source = get_obj_geo("test_copy_prim_attribute_values")
+    # Prims
+    source = get_obj_geo("test_copy_attribute_values")
 
     attribs = source.primAttribs()
 
     geo = hou.Geometry()
 
-    p1 = geo.createPolygon()
-    p2 = geo.createPolygon()
+    pr1 = geo.createPolygon()
+    pr2 = geo.createPolygon()
 
-    ht.inline.api.copy_point_attribute_values(p1, source.iterPrims()[1], attribs)
-    ht.inline.api.copy_point_attribute_values(p2, source.iterPrims()[4], attribs)
+    ht.inline.api.copy_attribute_values(source.iterPrims()[1], attribs, pr1)
+    ht.inline.api.copy_attribute_values(source.iterPrims()[4], attribs, pr2)
 
     # Ensure all the attributes got copied right.
     assert len(geo.primAttribs()) == len(attribs)
 
     # Ensure P got copied right.
-    assert p1.attribValue("prnum") == 1
-    assert p2.attribValue("prnum") == 4
+    assert pr1.attribValue("prnum") == 1
+    assert pr2.attribValue("prnum") == 4
+
+    # Vertex to point
+    source = get_obj_geo("test_copy_attribute_values")
+    attribs = source.vertexAttribs()
+
+    pt1 = geo.createPoint()
+
+    pr1 = source.prims()[1]
+
+    ht.inline.api.copy_attribute_values(pr1.vertex(2), attribs, pt1)
+    assert pt1.attribValue("id") == 6
+    assert pt1.attribValue("random_vtx") == 0.031702518463134766
+
+    # Points to global
+    source = get_obj_geo("test_copy_attribute_values")
+
+    attribs = source.pointAttribs()
+    geo = hou.Geometry()
+
+    ht.inline.api.copy_attribute_values(source.iterPoints()[2], attribs, geo)
+
+    # Ensure all the attributes got copied right.
+    assert len(geo.globalAttribs()) == len(attribs)
+
+    assert geo.attribValue("ptnum") == 2
+
+    assert geo.attribValue("random") == 0.5108950138092041
+
+    # Global to point
+    source = get_obj_geo("test_copy_attribute_values")
+
+    geo = hou.Geometry()
+    attribs = source.globalAttribs()
+    pt1 = geo.createPoint()
+
+    ht.inline.api.copy_attribute_values(source, attribs, pt1)
+
+    assert pt1.attribValue("barbles") == 33
+    assert pt1.attribValue("foobles") == (1.0, 2.0)
+
+    # Global to global
+    source = get_obj_geo("test_copy_attribute_values")
+    geo = hou.Geometry()
+    attribs = source.globalAttribs()
+
+    ht.inline.api.copy_attribute_values(source, attribs, geo)
+    assert geo.attribValue("barbles") == 33
+    assert geo.attribValue("foobles") == (1.0, 2.0)
+
+    # Global to vertex
+
+    source = get_obj_geo("test_copy_attribute_values")
+    attribs = source.globalAttribs()
+
+    geo = hou.Geometry()
+
+    pt1 = geo.createPoint()
+    pr1 = geo.createPolygon()
+    pr1.addVertex(pt1)
+    vtx1 = pr1.vertex(0)
+
+    ht.inline.api.copy_attribute_values(source, attribs, vtx1)
+    assert vtx1.attribValue("barbles") == 33
+    assert vtx1.attribValue("foobles") == (1.0, 2)
+
+    # Read only
+    source = get_obj_geo("test_copy_attribute_values")
+    geo = hou.Geometry().freeze(True)
+    attribs = source.globalAttribs()
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.copy_attribute_values(source, attribs, geo)
 
 
-def test_point_adjacent_polygons(load_test_file):
+def test_point_adjacent_polygons():
+    """Test ht.inline.api.point_adjacent_polygons."""
     geo = get_obj_geo("test_point_adjacent_polygons")
 
     target = geo.globPrims("1 2")
@@ -443,7 +596,8 @@ def test_point_adjacent_polygons(load_test_file):
     assert prims == target
 
 
-def test_edge_adjacent_polygons(load_test_file):
+def test_edge_adjacent_polygons():
+    """Test ht.inline.api.edge_adjacent_polygons."""
     geo = get_obj_geo("test_edge_adjacent_polygons")
 
     target = geo.globPrims("2")
@@ -453,17 +607,8 @@ def test_edge_adjacent_polygons(load_test_file):
     assert prims == target
 
 
-def test_connected_prims(load_test_file):
-    geo = get_obj_geo("test_connected_prims")
-
-    target = geo.prims()
-
-    prims = ht.inline.api.connected_prims(geo.iterPoints()[4])
-
-    assert prims == target
-
-
-def test_connected_points(load_test_file):
+def test_connected_points():
+    """Test ht.inline.api.connected_points."""
     geo = get_obj_geo("test_connected_points")
 
     target = geo.globPoints("1 3 5 7")
@@ -473,7 +618,19 @@ def test_connected_points(load_test_file):
     assert points == target
 
 
-def test_referencing_vertices(load_test_file):
+def test_connected_prims():
+    """Test ht.inline.api.connected_prims."""
+    geo = get_obj_geo("test_connected_prims")
+
+    target = geo.prims()
+
+    prims = ht.inline.api.connected_prims(geo.iterPoints()[4])
+
+    assert prims == target
+
+
+def test_referencing_vertices():
+    """Test ht.inline.api.referencing_vertices."""
     geo = get_obj_geo("test_referencing_vertices")
 
     target = geo.globVertices("0v2 1v3 2v1 3v0")
@@ -483,17 +640,23 @@ def test_referencing_vertices(load_test_file):
     assert vertices == target
 
 
-def test_point_string_table_indices(load_test_file):
+def test_string_table_indices():
+    """Test ht.inline.api.string_table_indices."""
+    # Not a string
     geo = get_obj_geo("test_point_string_table_indices")
+    attr = geo.findPointAttrib("not_string")
 
+    with pytest.raises(ValueError):
+        ht.inline.api.string_table_indices(attr)
+
+    # Points
     target = (0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1)
 
     attr = geo.findPointAttrib("test")
 
     assert ht.inline.api.string_table_indices(attr) == target
 
-
-def test_prim_string_table_indices(load_test_file):
+    # Prims
     geo = get_obj_geo("test_prim_string_table_indices")
 
     target = (0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4)
@@ -503,16 +666,30 @@ def test_prim_string_table_indices(load_test_file):
     assert ht.inline.api.string_table_indices(attr) == target
 
 
-def test_vertex_string_attrib_values(load_test_file):
+def test_vertex_string_attrib_values():
+    """Test ht.inline.api.vertex_string_attrib_values."""
     geo = get_obj_geo("test_vertex_string_attrib_values")
+
+    with pytest.raises(hou.OperationFailed):
+        assert ht.inline.api.vertex_string_attrib_values(geo, "foo")
+
+    with pytest.raises(ValueError):
+        assert ht.inline.api.vertex_string_attrib_values(geo, "not_string")
 
     target = ('vertex0', 'vertex1', 'vertex2', 'vertex3', 'vertex4', 'vertex5', 'vertex6', 'vertex7')
 
     assert ht.inline.api.vertex_string_attrib_values(geo, "test") == target
 
 
-def test_set_vertex_string_attrib_values(load_test_file):
+def test_set_vertex_string_attrib_values():
+    """Test ht.inline.api.set_vertex_string_attrib_values."""
     target = ('vertex0', 'vertex1', 'vertex2', 'vertex3', 'vertex4')
+
+    # Read only
+    geo = get_obj_geo("test_set_vertex_string_attrib_values")
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.set_vertex_string_attrib_values(geo, "test", target)
 
     geo = get_obj_geo_copy("test_set_vertex_string_attrib_values")
     attr = geo.findVertexAttrib("test")
@@ -522,43 +699,47 @@ def test_set_vertex_string_attrib_values(load_test_file):
     values = []
 
     for prim in geo.prims():
-        values.extend([vert.attribValue(attr) for vert in prim.vertices()])
+        values.extend([vertex.attribValue(attr) for vertex in prim.vertices()])
 
     assert tuple(values) == target
 
-
-def test_set_vertex_string_attrib_values__invalid_attribute(load_test_file):
-    target = ('vertex0', 'vertex1', 'vertex2', 'vertex3', 'vertex4')
-
-    geo = get_obj_geo_copy("test_set_vertex_string_attrib_values")
-
+    # Invalid attribute
     with pytest.raises(hou.OperationFailed):
         ht.inline.api.set_vertex_string_attrib_values(geo, "thing", target)
 
-
-def test_set_vertex_string_attrib_values__invalid_attribute_type(load_test_file):
-    target = ('vertex0', 'vertex1', 'vertex2', 'vertex3', 'vertex4')
-
-    geo = get_obj_geo_copy("test_set_vertex_string_attrib_values")
-
+    # Invalid attribute type
     with pytest.raises(ValueError):
         ht.inline.api.set_vertex_string_attrib_values(geo, "notstring", target)
 
-
-def test_set_vertex_string_attrib_values__invalid_attribute_size(load_test_file):
+    # Invalid attribute size
     target = ('vertex0', 'vertex1', 'vertex2', 'vertex3')
-
-    geo = get_obj_geo_copy("test_set_vertex_string_attrib_values")
 
     with pytest.raises(ValueError):
         ht.inline.api.set_vertex_string_attrib_values(geo, "test", target)
 
 
-def test_set_shared_point_string_attrib__all():
+def test_set_shared_point_string_attrib():
+    """Test ht.inline.api.set_shared_point_string_attrib."""
     target = ["point0"]*5
+
     geo = hou.Geometry()
+
+    frozen_geo = geo.freeze(True)
+
+    # Read only
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.set_shared_point_string_attrib(frozen_geo, "test", "point0")
+
+    # No attribute
+    with pytest.raises(ValueError):
+        ht.inline.api.set_shared_point_string_attrib(geo, "foo", "point0")
+
     ht.inline.api.create_n_points(geo, 5)
     attr = geo.addAttrib(hou.attribType.Point, "test", "")
+    geo.addAttrib(hou.attribType.Point, "not_string", 0)
+
+    with pytest.raises(ValueError):
+        ht.inline.api.set_shared_point_string_attrib(geo, "not_string", "point0")
 
     ht.inline.api.set_shared_point_string_attrib(geo, attr.name(), "point0")
 
@@ -566,8 +747,7 @@ def test_set_shared_point_string_attrib__all():
 
     assert values == target
 
-
-def test_set_shared_point_string_attrib__group():
+    # Group
     target = ["point0"]*5 + [""]*5
 
     geo = hou.Geometry()
@@ -589,10 +769,25 @@ def test_set_shared_point_string_attrib__group():
     assert values == target
 
 
-def test_set_shared_prim_string_attrib__all(load_test_file):
+def test_set_shared_prim_string_attrib():
+    """Test ht.inline.api.set_shared_prim_string_attrib."""
     target = ["value"]*5
-
     geo = get_obj_geo_copy("test_set_shared_prim_string_attrib")
+
+    frozen_geo = geo.freeze(True)
+
+    # Read only
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.set_shared_prim_string_attrib(frozen_geo, "test", "prim0")
+
+    # No attribute
+    with pytest.raises(ValueError):
+        ht.inline.api.set_shared_prim_string_attrib(geo, "foo", "prim0")
+
+    geo.addAttrib(hou.attribType.Prim, "not_string", 0)
+
+    with pytest.raises(ValueError):
+        ht.inline.api.set_shared_prim_string_attrib(geo, "not_string", "value")
 
     attr = geo.findPrimAttrib("test")
 
@@ -602,8 +797,7 @@ def test_set_shared_prim_string_attrib__all(load_test_file):
 
     assert values == target
 
-
-def test_set_shared_prim_string_attrib__group(load_test_file):
+    # Group
     target = ["value"]*3 + ["", ""]
 
     geo = get_obj_geo_copy("test_set_shared_prim_string_attrib")
@@ -619,29 +813,30 @@ def test_set_shared_prim_string_attrib__group(load_test_file):
     assert values == target
 
 
-def test_has_edge(load_test_file):
+def test_face_has_edge():
+    """Test ht.inline.api.face_has_edge."""
     geo = get_obj_geo("test_has_edge")
 
     face = geo.iterPrims()[0]
 
-    p0 = geo.iterPoints()[0]
-    p1 = geo.iterPoints()[1]
+    pt0 = geo.iterPoints()[0]
+    pt1 = geo.iterPoints()[1]
 
-    assert ht.inline.api.face_has_edge(face, p0, p1)
+    assert ht.inline.api.face_has_edge(face, pt0, pt1)
 
-
-def test_has_edge__false(load_test_file):
+    # False
     geo = get_obj_geo("test_has_edge")
 
     face = geo.iterPrims()[0]
 
-    p0 = geo.iterPoints()[0]
-    p2 = geo.iterPoints()[2]
+    pt0 = geo.iterPoints()[0]
+    pt2 = geo.iterPoints()[2]
 
-    assert ht.inline.api.face_has_edge(face, p0, p2)
+    assert ht.inline.api.face_has_edge(face, pt0, pt2)
 
 
-def test_shared_edges(load_test_file):
+def test_shared_edges():
+    """Test ht.inline.api.shared_edges."""
     geo = get_obj_geo("test_shared_edges")
 
     pr0, pr1 = geo.prims()
@@ -656,38 +851,41 @@ def test_shared_edges(load_test_file):
     assert edges == (edge,)
 
 
-def test_insert_vertex__read_only(load_test_file):
+def test_insert_vertex():
+    """Test ht.inline.api.insert_vertex."""
+    # Read only
     geo = get_obj_geo("test_insert_vertex")
 
     face = geo.iterPrims()[0]
 
-    pt = geo.points()[0]
+    pt0 = geo.points()[0]
 
     with pytest.raises(hou.GeometryPermissionError):
-        ht.inline.api.insert_vertex(face, pt, 2)
+        ht.inline.api.insert_vertex(face, pt0, 2)
 
-
-def test_insert_vertex(load_test_file):
+    # Success
     geo = get_obj_geo_copy("test_insert_vertex")
 
     face = geo.iterPrims()[0]
 
-    pt = ht.inline.api.create_point_at_position(geo, hou.Vector3(0.5, 0, 0.5))
+    new_point = ht.inline.api.create_point_at_position(geo, hou.Vector3(0.5, 0, 0.5))
 
-    ht.inline.api.insert_vertex(face, pt, 2)
+    ht.inline.api.insert_vertex(face, new_point, 2)
 
-    assert face.vertex(2).point() == pt
+    assert face.vertex(2).point() == new_point
 
     # Negative index.
     with pytest.raises(IndexError):
-        ht.inline.api.insert_vertex(face, pt, -1)
+        ht.inline.api.insert_vertex(face, new_point, -1)
 
     # Invalid index.
     with pytest.raises(IndexError):
-        ht.inline.api.insert_vertex(face, pt, 10)
+        ht.inline.api.insert_vertex(face, new_point, 10)
 
 
-def test_delete_vertex__read_only(load_test_file):
+def test_delete_vertex():
+    """Test ht.inline.api.delete_vertex_from_face."""
+    # Read only
     geo = get_obj_geo("test_delete_vertex")
 
     face = geo.iterPrims()[0]
@@ -695,8 +893,7 @@ def test_delete_vertex__read_only(load_test_file):
     with pytest.raises(hou.GeometryPermissionError):
         ht.inline.api.delete_vertex_from_face(face, 3)
 
-
-def test_delete_vertex(load_test_file):
+    # Success
     geo = get_obj_geo_copy("test_delete_vertex")
 
     face = geo.iterPrims()[0]
@@ -712,36 +909,38 @@ def test_delete_vertex(load_test_file):
         ht.inline.api.delete_vertex_from_face(face, 10)
 
 
-def test_set_face_vertex_point__read_only(load_test_file):
+def test_set_face_vertex_point():
+    """Test ht.inline.api.set_face_vertex_point."""
+    # Read only
     geo = get_obj_geo("test_set_point")
 
     face = geo.iterPrims()[0]
-    pt = geo.iterPoints()[4]
+    pt4 = geo.iterPoints()[4]
 
     with pytest.raises(hou.GeometryPermissionError):
-        ht.inline.api.set_face_vertex_point(face, 3, pt)
+        ht.inline.api.set_face_vertex_point(face, 3, pt4)
 
-
-def test_set_face_vertex_point(load_test_file):
+    # Success
     geo = get_obj_geo_copy("test_set_point")
 
     face = geo.iterPrims()[0]
-    pt = geo.iterPoints()[4]
+    pt4 = geo.iterPoints()[4]
 
-    ht.inline.api.set_face_vertex_point(face, 3, pt)
+    ht.inline.api.set_face_vertex_point(face, 3, pt4)
 
     assert face.vertex(3).point().number() == 4
 
     # Negative index.
     with pytest.raises(IndexError):
-        ht.inline.api.set_face_vertex_point(face, -1, pt)
+        ht.inline.api.set_face_vertex_point(face, -1, pt4)
 
     # Invalid index.
     with pytest.raises(IndexError):
-        ht.inline.api.set_face_vertex_point(face, 10, pt)
+        ht.inline.api.set_face_vertex_point(face, 10, pt4)
 
 
-def test_bary_center(load_test_file):
+def test_primitive_bary_center():
+    """Test ht.inline.api.primitive_bary_center."""
     target = hou.Vector3(1.5, 1, -1)
     geo = get_obj_geo_copy("test_bary_center")
 
@@ -750,7 +949,8 @@ def test_bary_center(load_test_file):
     assert ht.inline.api.primitive_bary_center(prim) == target
 
 
-def test_primitive_area(load_test_file):
+def test_primitive_area():
+    """Test ht.inline.api.primitive_area."""
     target = 4.375
     geo = get_obj_geo_copy("test_primitive_area")
 
@@ -759,7 +959,8 @@ def test_primitive_area(load_test_file):
     assert ht.inline.api.primitive_area(prim) == target
 
 
-def test_perimeter(load_test_file):
+def test_primitive_perimeter():
+    """Test ht.inline.api.primitive_perimeter."""
     target = 6.5
     geo = get_obj_geo_copy("test_perimeter")
 
@@ -768,7 +969,8 @@ def test_perimeter(load_test_file):
     assert ht.inline.api.primitive_perimeter(prim) == target
 
 
-def test_volume(load_test_file):
+def test_primitive_volume():
+    """Test ht.inline.api.primitive_volume."""
     target = 0.1666666716337204
     geo = get_obj_geo_copy("test_volume")
 
@@ -777,7 +979,9 @@ def test_volume(load_test_file):
     assert ht.inline.api.primitive_volume(prim) == target
 
 
-def test_reverse_prim__read_only(load_test_file):
+def test_reverse_prim():
+    """Test ht.inline.api.reverse_prim."""
+    # Read only
     geo = get_obj_geo("test_reverse_prim")
 
     prim = geo.iterPrims()[0]
@@ -785,8 +989,7 @@ def test_reverse_prim__read_only(load_test_file):
     with pytest.raises(hou.GeometryPermissionError):
         ht.inline.api.reverse_prim(prim)
 
-
-def test_reverse_prim(load_test_file):
+    # Success
     target = hou.Vector3(0, -1, 0)
     geo = get_obj_geo_copy("test_reverse_prim")
 
@@ -796,7 +999,9 @@ def test_reverse_prim(load_test_file):
     assert prim.normal() == target
 
 
-def test_make_primitive_points_unique__read_only(load_test_file):
+def test_make_primitive_points_unique():
+    """Test ht.inline.api.make_primitive_points_unique."""
+    # Read only
     geo = get_obj_geo("test_make_unique")
 
     prim = geo.iterPrims()[4]
@@ -804,8 +1009,7 @@ def test_make_primitive_points_unique__read_only(load_test_file):
     with pytest.raises(hou.GeometryPermissionError):
         ht.inline.api.make_primitive_points_unique(prim)
 
-
-def test_make_primitive_points_unique(load_test_file):
+    # Success
     target = 28
     geo = get_obj_geo_copy("test_make_unique")
 
@@ -815,8 +1019,8 @@ def test_make_primitive_points_unique(load_test_file):
     assert len(geo.iterPoints()) == target
 
 
-
-def test_check_minimum_polygon_vertex_count__pass(load_test_file):
+def test_check_minimum_polygon_vertex_count():
+    """Test ht.inline.api.check_minimum_polygon_vertex_count."""
     geo = get_obj_geo_copy("test_check_minimum_polygon_vertex_count")
 
     assert ht.inline.api.check_minimum_polygon_vertex_count(geo, 3)
@@ -826,7 +1030,8 @@ def test_check_minimum_polygon_vertex_count__pass(load_test_file):
     assert not ht.inline.api.check_minimum_polygon_vertex_count(geo, 5)
 
 
-def test_primitive_bounding_box(load_test_file):
+def test_primitive_bounding_box():
+    """Test ht.inline.api.primitive_bounding_box."""
     target = hou.BoundingBox(-0.75, 0, -0.875, 0.75, 1.5, 0.875)
     geo = get_obj_geo_copy("test_prim_bounding_box")
 
@@ -835,14 +1040,15 @@ def test_primitive_bounding_box(load_test_file):
     assert ht.inline.api.primitive_bounding_box(prim) == target
 
 
-def test_compute_point_normals__read_only(load_test_file):
+def test_compute_point_normals():
+    """Test ht.inline.api.compute_point_normals."""
+    # Read only
     geo = get_obj_geo("test_compute_point_normals")
 
     with pytest.raises(hou.GeometryPermissionError):
         ht.inline.api.compute_point_normals(geo)
 
-
-def test_compute_point_normals(load_test_file):
+    # Success
     geo = get_obj_geo_copy("test_compute_point_normals")
 
     ht.inline.api.compute_point_normals(geo)
@@ -850,92 +1056,92 @@ def test_compute_point_normals(load_test_file):
     assert geo.findPointAttrib("N") is not None
 
 
-def test_add_point_normal_attribute__read_only(load_test_file):
+def test_add_point_normal_attribute():
+    """Test ht.inline.api.add_point_normal_attribute."""
+    # Read only
     geo = get_obj_geo("test_add_point_normal_attribute")
 
     with pytest.raises(hou.GeometryPermissionError):
         ht.inline.api.add_point_normal_attribute(geo)
 
-
-def test_add_point_normal_attribute(load_test_file):
+    # Success
     geo = get_obj_geo_copy("test_add_point_normal_attribute")
 
     assert ht.inline.api.add_point_normal_attribute(geo) is not None
 
 
-def test_add_point_velocity_attribute__read_only(load_test_file):
+def test_add_point_velocity_attribute():
+    """Test ht.inline.api.add_point_velocity_attribute."""
+    # Read only
     geo = get_obj_geo("test_add_point_velocity_attribute")
 
     with pytest.raises(hou.GeometryPermissionError):
         assert ht.inline.api.add_point_velocity_attribute(geo) is not None
 
-
-def test_add_point_velocity_attribute(load_test_file):
+    # Success
     geo = get_obj_geo_copy("test_add_point_velocity_attribute")
 
     assert ht.inline.api.add_point_velocity_attribute(geo) is not None
 
 
-def test_add_color_attribute__read_only(load_test_file):
+def test_add_color_attribute():
+    """Test ht.inline.api.add_color_attribute."""
+    # Read only
     geo = get_obj_geo("test_add_color_attribute")
 
     with pytest.raises(hou.GeometryPermissionError):
         ht.inline.api.add_color_attribute(geo, hou.attribType.Point)
 
-
-def test_add_color_attribute__global(load_test_file):
+    # Global error
     geo = get_obj_geo_copy("test_add_color_attribute")
 
     with pytest.raises(ValueError):
         ht.inline.api.add_color_attribute(geo, hou.attribType.Global)
 
-
-def test_add_color_attribute__point(load_test_file):
+    # Point
     geo = get_obj_geo_copy("test_add_color_attribute")
 
     result = ht.inline.api.add_color_attribute(geo, hou.attribType.Point)
-
     assert result is not None
 
-
-def test_add_color_attribute__prim(load_test_file):
+    # Prim
     geo = get_obj_geo_copy("test_add_color_attribute")
 
     result = ht.inline.api.add_color_attribute(geo, hou.attribType.Prim)
-
     assert result is not None
 
-
-def test_add_color_attribute__vertex(load_test_file):
+    # Vertex
     geo = get_obj_geo_copy("test_add_color_attribute")
 
     result = ht.inline.api.add_color_attribute(geo, hou.attribType.Vertex)
-
     assert result is not None
 
 
-def test_convex_polygons__read_only(load_test_file):
+def test_convex_polygons():
+    """Test ht.inline.api.convex_polygons."""
+    # Read only
     geo = get_obj_geo("test_convex")
 
     with pytest.raises(hou.GeometryPermissionError):
         ht.inline.api.convex_polygons(geo)
 
-
-def test_convex_polygons(load_test_file):
+    # Success
     geo = get_obj_geo_copy("test_convex")
 
     ht.inline.api.convex_polygons(geo)
 
     assert len(geo.iterPrims()) == 162
 
-    vertices = [vert for prim in geo.prims() for vert in prim.vertices()]
+    vertices = [vertex for prim in geo.prims() for vertex in prim.vertices()]
     assert len(vertices) == 486
 
 
-def test_clip_geometry(load_test_file):
+def test_clip_geometry():
+    """Test ht.inline.api.clip_geometry."""
     origin = hou.Vector3(0, 0, 0)
     direction = hou.Vector3(-0.5, 0.6, -0.6)
 
+    # Read only
     geo = get_obj_geo("test_clip")
 
     with pytest.raises(hou.GeometryPermissionError):
@@ -975,17 +1181,19 @@ def test_clip_geometry(load_test_file):
     assert len(geo.iterPoints()) == 98
 
 
-def test_destroy_empty_groups(load_test_file):
+def test_destroy_empty_groups():
+    """Test ht.inline.api.destroy_empty_groups."""
     geo = hou.Geometry()
 
+    # Read only
     frozen_geo = geo.freeze(True)
 
     with pytest.raises(hou.GeometryPermissionError):
-        ht.inline.api.destroy_empty_groups(frozen_geo,  hou.attribType.Point)
+        ht.inline.api.destroy_empty_groups(frozen_geo, hou.attribType.Point)
 
     # Global attribute
     with pytest.raises(ValueError):
-        ht.inline.api.destroy_empty_groups(geo,  hou.attribType.Global)
+        ht.inline.api.destroy_empty_groups(geo, hou.attribType.Global)
 
     # Point group
     geo.createPointGroup("empty")
@@ -1002,12 +1210,15 @@ def test_destroy_empty_groups(load_test_file):
     assert not geo.primGroups()
 
 
-def test_destroy_unused_points(load_test_file):
+def test_destroy_unused_points():
+    """Test ht.inline.api.destroy_unused_points."""
     geo = get_obj_geo("test_destroy_unused_points")
 
+    # Read only
     with pytest.raises(hou.GeometryPermissionError):
         ht.inline.api.destroy_unused_points(geo)
 
+    # Full geometry
     geo = get_obj_geo_copy("test_destroy_unused_points")
     ht.inline.api.destroy_unused_points(geo)
     assert len(geo.iterPoints()) == 20
@@ -1019,12 +1230,15 @@ def test_destroy_unused_points(load_test_file):
     assert len(geo.iterPoints()) == 3729
 
 
-def test_consolidate_points(load_test_file):
+def test_consolidate_points():
+    """Test ht.inline.api.consolidate_points."""
+    # Read only
     geo = get_obj_geo("test_consolidate_points")
 
     with pytest.raises(hou.GeometryPermissionError):
         ht.inline.api.consolidate_points(geo)
 
+    # Full geometry
     geo = get_obj_geo_copy("test_consolidate_points")
 
     ht.inline.api.consolidate_points(geo)
@@ -1048,12 +1262,15 @@ def test_consolidate_points(load_test_file):
     assert len(geo.iterPoints()) == 212
 
 
-def test_unique_points(load_test_file):
+def test_unique_points():
+    """Test ht.inline.api.unique_points."""
+    # Read only
     geo = get_obj_geo("test_unique_points")
 
     with pytest.raises(hou.GeometryPermissionError):
         ht.inline.api.unique_points(geo)
 
+    # Full geometry
     geo = get_obj_geo_copy("test_unique_points")
 
     ht.inline.api.unique_points(geo)
@@ -1069,13 +1286,16 @@ def test_unique_points(load_test_file):
     assert len(geo.iterPoints()) == 195
 
 
-def test_rename_group(load_test_file):
+def test_rename_group():
+    """Test ht.inline.api.rename_group."""
+    # Read only
     geo = get_obj_geo("test_rename_point_group")
     group = geo.pointGroups()[0]
 
     with pytest.raises(hou.GeometryPermissionError):
         ht.inline.api.rename_group(group, "test_group")
 
+    # Point group
     geo = get_obj_geo_copy("test_rename_point_group")
 
     group = geo.pointGroups()[0]
@@ -1125,7 +1345,8 @@ def test_rename_group(load_test_file):
         ht.inline.api.rename_group(group, name)
 
 
-def test_group_bounding_box(load_test_file):
+def test_group_bounding_box():
+    """Test ht.inline.api.group_bounding_box."""
     # Point group
     target = hou.BoundingBox(-4, 0, -1, -2, 0, 2)
 
@@ -1157,7 +1378,8 @@ def test_group_bounding_box(load_test_file):
     assert bbox == target
 
 
-def test_group_size(load_test_file):
+def test_group_size():
+    """Test ht.inline.api.group_size."""
     # Point group
     geo = get_obj_geo("test_point_group_size")
 
@@ -1180,7 +1402,9 @@ def test_group_size(load_test_file):
     assert ht.inline.api.group_size(group) == 52
 
 
-def test_toggle_point_in_group(load_test_file):
+def test_toggle_point_in_group():
+    """Test ht.inline.api.toggle_point_in_group."""
+    # Read only
     geo = get_obj_geo("test_toggle_point")
 
     group = geo.pointGroups()[0]
@@ -1188,7 +1412,6 @@ def test_toggle_point_in_group(load_test_file):
 
     with pytest.raises(hou.GeometryPermissionError):
         ht.inline.api.toggle_point_in_group(group, point)
-
 
     geo = get_obj_geo_copy("test_toggle_point")
 
@@ -1200,7 +1423,9 @@ def test_toggle_point_in_group(load_test_file):
     assert group.contains(point)
 
 
-def test_toggle_prim_in_group(load_test_file):
+def test_toggle_prim_in_group():
+    """Test ht.inline.api.toggle_point_in_group."""
+    # Read only
     geo = get_obj_geo("test_toggle_prim")
 
     group = geo.primGroups()[0]
@@ -1219,7 +1444,9 @@ def test_toggle_prim_in_group(load_test_file):
     assert group.contains(prim)
 
 
-def test_toggle_group_entries__point(load_test_file):
+def test_toggle_group_entries():
+    """Test ht.inline.api.toggle_group_entries."""
+    # Read only
     geo = get_obj_geo("test_toggle_entries_point")
 
     group = geo.pointGroups()[0]
@@ -1256,13 +1483,15 @@ def test_toggle_group_entries__point(load_test_file):
     assert len(group.edges()) == 20
 
 
-def test_copy_group(load_test_file):
+def test_copy_group():
+    """Test ht.inline.api.copy_group."""
+    # Read only
     geo = get_obj_geo("test_copy_point_group")
 
     group = geo.pointGroups()[0]
 
     with pytest.raises(hou.GeometryPermissionError):
-        new_group = ht.inline.api.copy_group(group, "new_group")
+        ht.inline.api.copy_group(group, "new_group")
 
     geo = get_obj_geo_copy("test_copy_point_group")
 
@@ -1314,7 +1543,8 @@ def test_copy_group(load_test_file):
         ht.inline.api.copy_group(group, other_group.name())
 
 
-def test_groups_share_elements(load_test_file):
+def test_groups_share_elements():
+    """Test ht.inline.api.groups_share_elements."""
     geo = get_obj_geo_copy("test_point_group_contains_any")
 
     group1 = geo.pointGroups()[0]
@@ -1350,7 +1580,9 @@ def test_groups_share_elements(load_test_file):
         ht.inline.api.groups_share_elements(group1, group2)
 
 
-def test_convert_prim_to_point_group(load_test_file):
+def test_convert_prim_to_point_group():
+    """Test ht.inline.api.convert_prim_to_point_group."""
+    # Read only
     geo = get_obj_geo("test_convert_prim_to_point_group")
 
     group = geo.primGroups()[0]
@@ -1395,13 +1627,15 @@ def test_convert_prim_to_point_group(load_test_file):
         ht.inline.api.convert_prim_to_point_group(group, group.name())
 
 
-def test_convert_point_to_prim_group(load_test_file):
+def test_convert_point_to_prim_group():
+    """Test ht.inline.api.convert_point_to_prim_group."""
+    # Read only
     geo = get_obj_geo("test_convert_point_to_prim_group")
 
     group = geo.pointGroups()[0]
 
     with pytest.raises(hou.GeometryPermissionError):
-        new_group = ht.inline.api.convert_point_to_prim_group(group)
+        ht.inline.api.convert_point_to_prim_group(group)
 
     geo = get_obj_geo_copy("test_convert_point_to_prim_group")
 
@@ -1444,7 +1678,8 @@ def test_convert_point_to_prim_group(load_test_file):
 # UNGROUPED POINTS
 # =========================================================================
 
-def test_geometry_has_ungrouped_points(load_test_file):
+def test_geometry_has_ungrouped_points():
+    """Test ht.inline.api.geometry_has_ungrouped_points."""
     geo = get_obj_geo("test_has_ungrouped_points")
 
     assert ht.inline.api.geometry_has_ungrouped_points(geo)
@@ -1454,7 +1689,9 @@ def test_geometry_has_ungrouped_points(load_test_file):
     assert not ht.inline.api.geometry_has_ungrouped_points(geo)
 
 
-def test_group_ungrouped_points(load_test_file):
+def test_group_ungrouped_points():
+    """Test ht.inline.api.group_ungrouped_points."""
+    # Read only
     geo = get_obj_geo("test_group_ungrouped_points")
 
     with pytest.raises(hou.GeometryPermissionError):
@@ -1490,7 +1727,8 @@ def test_group_ungrouped_points(load_test_file):
 # UNGROUPED PRIMS
 # =========================================================================
 
-def test_has_ungrouped_prims(load_test_file):
+def test_has_ungrouped_prims():
+    """Test ht.inline.api.geometry_has_ungrouped_prims."""
     geo = get_obj_geo("test_has_ungrouped_prims")
 
     assert ht.inline.api.geometry_has_ungrouped_prims(geo)
@@ -1500,7 +1738,9 @@ def test_has_ungrouped_prims(load_test_file):
     assert not ht.inline.api.geometry_has_ungrouped_prims(geo)
 
 
-def test_group_ungrouped_prims(load_test_file):
+def test_group_ungrouped_prims():
+    """Test ht.inline.api.group_ungrouped_prims."""
+    # Read only
     geo = get_obj_geo("test_group_ungrouped_prims")
 
     with pytest.raises(hou.GeometryPermissionError):
@@ -1537,6 +1777,7 @@ def test_group_ungrouped_prims(load_test_file):
 # =========================================================================
 
 def test_bounding_box_is_inside():
+    """Test ht.inline.api.bounding_box_is_inside."""
     bbox1 = hou.BoundingBox(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5)
     bbox2 = hou.BoundingBox(-1, -1, -1, 1, 1, 1)
 
@@ -1549,6 +1790,7 @@ def test_bounding_box_is_inside():
 
 
 def test_bounding_boxes_intersect():
+    """Test ht.inline.api.bounding_boxes_intersect."""
     bbox1 = hou.BoundingBox(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5)
     bbox2 = hou.BoundingBox(0, 0, 0, 0.5, 0.5, 0.5)
 
@@ -1561,6 +1803,7 @@ def test_bounding_boxes_intersect():
 
 
 def test_compute_bounding_box_intersection():
+    """Test ht.inline.api.compute_bounding_box_intersection."""
     bbox1 = hou.BoundingBox(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5)
     bbox2 = hou.BoundingBox(0, 0, 0, 0.5, 0.5, 0.5)
 
@@ -1576,6 +1819,7 @@ def test_compute_bounding_box_intersection():
 
 
 def test_expand_bounding_box():
+    """Test ht.inline.api.expand_bounding_box."""
     bbox = hou.BoundingBox(-1, -1.75, -3, 1, 1.75, 3)
     ht.inline.api.expand_bounding_box(bbox, 1, 1, 1)
 
@@ -1584,6 +1828,7 @@ def test_expand_bounding_box():
 
 
 def test_add_to_bounding_box_min():
+    """Test ht.inline.api.add_to_bounding_box_min."""
     bbox = hou.BoundingBox(-1, -1.75, -3, 1, 1.75, 3)
     ht.inline.api.add_to_bounding_box_min(bbox, hou.Vector3(1, 0.25, 1))
 
@@ -1591,6 +1836,7 @@ def test_add_to_bounding_box_min():
 
 
 def test_add_to_bounding_box_max():
+    """Test ht.inline.api.add_to_bounding_box_max."""
     bbox = hou.BoundingBox(-1, -1.75, -3, 1, 1.75, 3)
     ht.inline.api.add_to_bounding_box_max(bbox, hou.Vector3(2, 0.25, 1))
 
@@ -1598,12 +1844,14 @@ def test_add_to_bounding_box_max():
 
 
 def test_bounding_box_area():
+    """Test ht.inline.api.bounding_box_area."""
     bbox = hou.BoundingBox(-1, -1.75, -3, 1, 1.75, 3)
 
     assert ht.inline.api.bounding_box_area(bbox) == 80
 
 
 def test_bounding_box_volume():
+    """Test ht.inline.api.bounding_box_volume."""
     bbox = hou.BoundingBox(-1, -1.75, -3, 1, 1.75, 3)
 
     assert ht.inline.api.bounding_box_volume(bbox) == 42
@@ -1613,7 +1861,8 @@ def test_bounding_box_volume():
 # PARMS
 # =========================================================================
 
-def test_is_parm_tuple_vector(load_test_file):
+def test_is_parm_tuple_vector():
+    """Test ht.inline.api.is_parm_tuple_vector."""
     node = OBJ.node("test_is_vector/node")
     parm = node.parmTuple("vec")
 
@@ -1625,7 +1874,8 @@ def test_is_parm_tuple_vector(load_test_file):
     assert not ht.inline.api.is_parm_tuple_vector(parm)
 
 
-def test_eval_as_vector(load_test_file):
+def test_eval_parm_tuple_as_vector():
+    """Test ht.inline.api.eval_parm_tuple_as_vector."""
     node = OBJ.node("test_eval_as_vector/node")
     parm = node.parmTuple("vec2")
 
@@ -1645,7 +1895,8 @@ def test_eval_as_vector(load_test_file):
         ht.inline.api.eval_parm_tuple_as_vector(parm)
 
 
-def test_is_parm_tuple_color(load_test_file):
+def test_is_parm_tuple_color():
+    """Test ht.inline.api.is_parm_tuple_color."""
     node = OBJ.node("test_is_color/node")
     parm = node.parmTuple("color")
 
@@ -1657,7 +1908,8 @@ def test_is_parm_tuple_color(load_test_file):
     assert not ht.inline.api.is_parm_tuple_color(parm)
 
 
-def test_eval_parm_tuple_as_color(load_test_file):
+def test_eval_parm_tuple_as_color():
+    """Test ht.inline.api.eval_parm_tuple_as_color."""
     node = OBJ.node("test_eval_as_color/node")
     parm = node.parmTuple("color")
 
@@ -1670,7 +1922,8 @@ def test_eval_parm_tuple_as_color(load_test_file):
         ht.inline.api.eval_parm_tuple_as_color(parm)
 
 
-def test_eval_parm_tuple_as_strip(load_test_file):
+def test_eval_parm_as_strip():
+    """Test ht.inline.api.eval_parm_as_strip."""
     node = OBJ.node("test_eval_as_strip/node")
 
     parm = node.parm("cacheinput")
@@ -1692,7 +1945,8 @@ def test_eval_parm_tuple_as_strip(load_test_file):
     assert ht.inline.api.eval_parm_as_strip(parm) == target
 
 
-def test_eval_strip_as_string(load_test_file):
+def test_eval_parm_strip_as_string():
+    """Test ht.inline.api.eval_parm_strip_as_string."""
     node = OBJ.node("test_eval_as_strip/node")
     parm = node.parm("strip_normal")
 
@@ -1712,7 +1966,8 @@ def test_eval_strip_as_string(load_test_file):
 # MULTIPARMS
 # =========================================================================
 
-def test_is_parm_multiparm(load_test_file):
+def test_is_parm_multiparm():
+    """Test ht.inline.api.is_parm_multiparm."""
     node = OBJ.node("test_is_multiparm/object_merge")
     parm = node.parm("numobj")
 
@@ -1728,7 +1983,8 @@ def test_is_parm_multiparm(load_test_file):
     assert not ht.inline.api.is_parm_multiparm(parm_tuple)
 
 
-def test_get_multiparm_instances_per_item(load_test_file):
+def test_get_multiparm_instances_per_item():
+    """Test ht.inline.api.get_multiparm_instances_per_item."""
     node = OBJ.node("test_get_multiparm_instances_per_item/object_merge")
 
     parm = node.parm("numobj")
@@ -1743,7 +1999,8 @@ def test_get_multiparm_instances_per_item(load_test_file):
         ht.inline.api.get_multiparm_instances_per_item(parm)
 
 
-def test_get_multiparm_start_offset(load_test_file):
+def test_get_multiparm_start_offset():
+    """Test ht.inline.api.get_multiparm_start_offset."""
     node = OBJ.node("test_get_multiparm_start_offset/add")
 
     parm = node.parm("remove")
@@ -1766,7 +2023,8 @@ def test_get_multiparm_start_offset(load_test_file):
     assert ht.inline.api.get_multiparm_start_offset(parm_tuple) == 1
 
 
-def test_get_multiparm_instance_index(load_test_file):
+def test_get_multiparm_instance_index():
+    """Test ht.inline.api.get_multiparm_instance_index."""
     target = (2, )
 
     node = OBJ.node("test_get_multiparm_instance_index/object_merge")
@@ -1789,7 +2047,8 @@ def test_get_multiparm_instance_index(load_test_file):
         ht.inline.api.get_multiparm_instance_index(parm_tuple)
 
 
-def test_get_multiparm_instances(load_test_file):
+def test_get_multiparm_instances():
+    """Test ht.inline.api.get_multiparm_instances."""
     node = OBJ.node("test_get_multiparm_instances/null1")
 
     parm = node.parm("cacheinput")
@@ -1823,7 +2082,8 @@ def test_get_multiparm_instances(load_test_file):
     assert instances == target
 
 
-def test_get_multiparm_instance_values(load_test_file):
+def test_get_multiparm_instance_values():
+    """Test ht.inline.api.get_multiparm_instance_values."""
     node = OBJ.node("test_get_multiparm_instance_values/null1")
 
     parm = node.parm("cacheinput")
@@ -1857,7 +2117,8 @@ def test_get_multiparm_instance_values(load_test_file):
     assert values == target
 
 
-def test_eval_multiparm_instance(load_test_file):
+def test_eval_multiparm_instance():
+    """Test ht.inline.api.eval_multiparm_instance."""
     node = OBJ.node("test_eval_multiparm_instance/null1")
 
     with pytest.raises(ValueError):
@@ -1892,26 +2153,30 @@ def test_eval_multiparm_instance(load_test_file):
         ht.inline.api.eval_multiparm_instance(node, "hello#", 2)
 
 
-
 # =========================================================================
 # NODES AND NODE TYPES
 # =========================================================================
 
-def test_disconnect_all_outputs(load_test_file):
+def test_disconnect_all_outputs():
+    """Test ht.inline.api.disconnect_all_inputs."""
     node = OBJ.node("test_disconnect_all_outputs/file")
 
     ht.inline.api.disconnect_all_outputs(node)
 
     assert not node.outputs()
 
-def test_disconnect_all_inputs(load_test_file):
+
+def test_disconnect_all_inputs():
+    """Test ht.inline.api.disconnect_all_outputs."""
     node = OBJ.node("test_disconnect_all_inputs/merge")
 
     ht.inline.api.disconnect_all_inputs(node)
 
     assert not node.inputs()
 
-def test_node_is_contained_by(load_test_file):
+
+def test_node_is_contained_by():
+    """Test ht.inline.api.node_is_contained_by."""
     node = OBJ.node("test_is_contained_by")
 
     box = node.node("subnet/box")
@@ -1919,18 +2184,24 @@ def test_node_is_contained_by(load_test_file):
     assert ht.inline.api.node_is_contained_by(box, node)
     assert not ht.inline.api.node_is_contained_by(node, hou.node("/shop"))
 
-def test_author_name(load_test_file):
+
+def test_author_name():
+    """Test ht.inline.api.node_author_name."""
     node = OBJ.node("test_author_name")
 
     assert ht.inline.api.node_author_name(node) == "gthompson"
 
+
 def test_set_node_type_icon():
+    """Test ht.inline.api.set_node_type_icon."""
     node_type = hou.nodeType(hou.objNodeTypeCategory(), "geo")
     ht.inline.api.set_node_type_icon(node_type, "SOP_box")
 
     assert node_type.icon() == "SOP_box"
 
+
 def test_set_node_type_default_icon():
+    """Test ht.inline.api.set_node_type_default_icon."""
     node_type = hou.nodeType(hou.objNodeTypeCategory(), "geo")
     ht.inline.api.set_node_type_icon(node_type, "SOP_box")
 
@@ -1938,7 +2209,9 @@ def test_set_node_type_default_icon():
 
     assert node_type.icon() == "OBJ_geo"
 
+
 def test_is_node_type_python():
+    """Test ht.inline.api.is_node_type_python."""
     node_type = hou.nodeType(hou.sopNodeTypeCategory(), "tableimport")
     assert ht.inline.api.is_node_type_python(node_type)
 
@@ -1946,7 +2219,9 @@ def test_is_node_type_python():
     node_type = hou.nodeType(hou.sopNodeTypeCategory(), "file")
     assert not ht.inline.api.is_node_type_python(node_type)
 
+
 def test_is_node_type_subnet():
+    """Test ht.inline.api.is_node_type_subnet."""
     node_type = hou.nodeType(hou.objNodeTypeCategory(), "subnet")
     assert ht.inline.api.is_node_type_subnet(node_type)
 
@@ -1954,76 +2229,85 @@ def test_is_node_type_subnet():
     node_type = hou.nodeType(hou.objNodeTypeCategory(), "geo")
     assert not ht.inline.api.is_node_type_subnet(node_type)
 
+
 # =========================================================================
 # VECTORS AND MATRICES
 # =========================================================================
 
 def test_vector_component_along():
-    v3 = hou.Vector3(1, 2, 3)
+    """Test ht.inline.api.vector_component_along."""
+    vec = hou.Vector3(1, 2, 3)
 
-    assert ht.inline.api.vector_component_along(v3, hou.Vector3(0, 0, 15)) == 3.0
+    assert ht.inline.api.vector_component_along(vec, hou.Vector3(0, 0, 15)) == 3.0
+
 
 def test_vector_project_along():
-    v3 = hou.Vector3(-1.3, 0.5, 7.6)
-    projection = ht.inline.api.vector_project_along(v3, hou.Vector3(2.87, 3.1, -0.5))
+    """Test ht.inline.api.vector_project_along."""
+    vec = hou.Vector3(-1.3, 0.5, 7.6)
+    projection = ht.inline.api.vector_project_along(vec, hou.Vector3(2.87, 3.1, -0.5))
 
     result = hou.Vector3(-0.948531, -1.02455, 0.165249)
 
     assert projection.isAlmostEqual(result)
 
-def test_vector_contains_nans__v2():
+
+def test_vector_contains_nans():
+    """Test ht.inline.api.vector_contains_nans."""
     nan = float('nan')
+
     vec = hou.Vector2(nan, 1)
-
     assert ht.inline.api.vector_contains_nans(vec)
 
-def test_vector_contains_nans__v3():
-    nan = float('nan')
     vec = hou.Vector3(6.5, 1, nan)
-
     assert ht.inline.api.vector_contains_nans(vec)
 
-def test_vector_contains_nans__v4():
-    nan = float('nan')
     vec = hou.Vector4(-4, 5, -0, nan)
-
     assert ht.inline.api.vector_contains_nans(vec)
+
 
 def test_vector_compute_dual():
+    """Test ht.inline.api.vector_compute_dual."""
     target = hou.Matrix3(((0, -3, 2), (3, 0, -1), (-2, 1, 0)))
 
     vec = hou.Vector3(1, 2, 3)
 
     assert ht.inline.api.vector_compute_dual(vec) == target
 
-def test_is_identity_matrix__m3():
-    m3 = hou.Matrix3()
-    m3.setToIdentity()
 
-    assert ht.inline.api.is_identity_matrix(m3)
+def test_is_identity_matrix():
+    """Test ht.inline.api.is_identity_matrix."""
+    # Matrix 3
+    mat3 = hou.Matrix3()
+    mat3.setToIdentity()
 
-    # Not the identity matrix.
-    m3 = hou.Matrix3()
-    assert not ht.inline.api.is_identity_matrix(m3)
-
-def test_is_identity_matrix__m4():
-    m4 = hou.Matrix4()
-    m4.setToIdentity()
-
-    assert ht.inline.api.is_identity_matrix(m4)
+    assert ht.inline.api.is_identity_matrix(mat3)
 
     # Not the identity matrix.
-    m4 = hou.Matrix4()
-    assert not ht.inline.api.is_identity_matrix(m4)
+    mat3 = hou.Matrix3()
+    assert not ht.inline.api.is_identity_matrix(mat3)
+
+    # Matrix4
+    mat4 = hou.Matrix4()
+    mat4.setToIdentity()
+
+    assert ht.inline.api.is_identity_matrix(mat4)
+
+    # Not the identity matrix.
+    mat4 = hou.Matrix4()
+    assert not ht.inline.api.is_identity_matrix(mat4)
+
 
 def test_set_matrix_translates():
+    """Test ht.inline.api.set_matrix_translates."""
     translates = hou.Vector3(1, 2, 3)
     identity = hou.hmath.identityTransform()
     ht.inline.api.set_matrix_translates(identity, translates)
 
     assert identity.extractTranslates() == translates
 
+
 def test_build_lookat_matrix():
+    """Test ht.inline.api.build_lookat_matrix."""
     target = hou.Matrix3(
         (
             (0.70710678118654746, -0.0, 0.70710678118654746),
@@ -2040,7 +2324,9 @@ def test_build_lookat_matrix():
 
     assert mat == target
 
+
 def test_build_instance_matrix():
+    """Test ht.inline.api.build_instance_matrix."""
     target = hou.Matrix4(
         (
             (
@@ -2079,7 +2365,7 @@ def test_build_instance_matrix():
 
     assert mat == target
 
-def test_build_instance_matrix__orient():
+    # By orient
     target = hou.Matrix4(
         (
             (
@@ -2116,56 +2402,72 @@ def test_build_instance_matrix__orient():
 
     assert mat == target
 
+
 # =========================================================================
 # DIGITAL ASSETS
 # =========================================================================
 
-def test_get_node_message_nodes(load_test_file):
+def test_get_node_message_nodes():
+    """Test ht.inline.api.get_node_message_nodes."""
     node = OBJ.node("test_message_nodes/solver")
 
     target = (node.node("d/s"),)
 
     assert ht.inline.api.get_node_message_nodes(node) == target
 
-def test_get_node_editable_nodes(load_test_file):
+
+def test_get_node_editable_nodes():
+    """Test ht.inline.api.get_node_editable_nodes."""
     node = OBJ.node("test_message_nodes/solver")
 
     target = (node.node("d/s"),)
 
     assert ht.inline.api.get_node_editable_nodes(node) == target
 
-def test_get_node_dive_target(load_test_file):
+
+def test_get_node_dive_target():
+    """Test ht.inline.api.get_node_dive_target."""
     node = OBJ.node("test_message_nodes/solver")
 
     target = node.node("d/s")
 
     assert ht.inline.api.get_node_dive_target(node) == target
 
-def test_get_node_representative_node(load_test_file):
+
+def test_get_node_representative_node():
+    """Test ht.inline.api.get_node_representative_node."""
     node = OBJ.node("test_representative_node")
 
     target = node.node("stereo_camera")
 
     assert ht.inline.api.get_node_representative_node(node) == target
 
+
 def test_asset_file_meta_source():
+    """Test ht.inline.api.asset_file_meta_source."""
     target = "Scanned Asset Library Directories"
     path = hou.expandString("$HH/otls/OPlibSop.hda")
 
     assert ht.inline.api.asset_file_meta_source(path) == target
 
+
 def test_get_definition_meta_source():
+    """Test ht.inline.api.get_definition_meta_source."""
     target = "Scanned Asset Library Directories"
 
     node_type = hou.nodeType(hou.sopNodeTypeCategory(), "explodedview")
 
     assert ht.inline.api.get_definition_meta_source(node_type.definition()) == target
 
+
 def test_libraries_in_meta_source():
+    """Test ht.inline.api.libraries_in_meta_source."""
     libs = ht.inline.api.libraries_in_meta_source("Scanned Asset Library Directories")
     assert libs
 
-def test_is_dummy_definition(load_test_file):
+
+def test_is_dummy_definition():
+    """Test ht.inline.api.is_dummy_definition."""
     geo = OBJ.createNode("geo")
     subnet = geo.createNode("subnet")
 

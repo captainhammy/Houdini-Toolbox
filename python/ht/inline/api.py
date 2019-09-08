@@ -805,46 +805,6 @@ def copy_attribute_values(source_element, source_attribs, target_element):
     )
 
 
-def copy_point_attribute_values(target_point, source_point, attributes):
-    """Copy attribute values from the source point to the point.
-
-    If the attributes do not exist on the destination detail they will be
-    created.
-
-    This function is deprecated.  Use copy_attribute_values instead.
-
-    :param target_point: The point to copy to.
-    :type target_point: hou.Point
-    :param source_point: The point to copy from.
-    :type source_point: hou.Point
-    :param attributes: A list of attributes to copy.
-    :type attributes: list(hou.Attrib)
-    :return:
-
-    """
-    copy_attribute_values(source_point, attributes, target_point)
-
-
-def copy_prim_attribute_values(target_prim, source_prim, attributes):
-    """Copy attribute values from the source primitive to the primitive.
-
-    If the attributes do not exist on the destination primitive they will be
-    created.
-
-    This function is deprecated.  Use copy_attribute_values instead.
-
-    :param target_prim: The primitive to copy to.
-    :type target_prim: hou.Prim
-    :param source_prim: The primitive to copy from.
-    :type source_prim: hou.Prim
-    :param attributes: A list of attributes to copy.
-    :type attributes: list(hou.Attrib)
-    :return:
-
-    """
-    copy_attribute_values(source_prim, attributes, target_prim)
-
-
 def point_adjacent_polygons(prim):
     """Get all prims that are adjacent to the prim through a point.
 
