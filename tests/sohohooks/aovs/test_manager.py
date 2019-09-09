@@ -25,57 +25,11 @@ imp.reload(manager)
 
 
 # =============================================================================
-# FIXTURES
-# =============================================================================
-
-@pytest.fixture
-def patch_soho():
-    """Mock importing of soho modules."""
-    mock_api = MagicMock()
-    mock_settings = MagicMock()
-    mock_soho = MagicMock()
-
-    modules = {
-        "IFDapi": mock_api,
-        "IFDsettings": mock_settings,
-        "soho": mock_soho,
-    }
-
-    patcher = patch.dict("sys.modules", modules)
-    patcher.start()
-
-    yield mock_soho, mock_api, mock_settings
-
-    patcher.stop()
-
-
-# =============================================================================
 # CLASSES
 # =============================================================================
 
 class Test_AOVManager(object):
     """Test ht.sohohooks.aovs.manager.AOVManager object."""
-    #
-    # def setUp(self):
-    #     super(Test_AOVManager, self).setUp()
-    #
-    #     self.mock_api = MagicMock()
-    #     self.mock_settings = MagicMock()
-    #     self.mock_soho = MagicMock()
-    #
-    #     modules = {
-    #         "IFDapi": self.mock_api,
-    #         "IFDsettings": self.mock_settings,
-    #         "soho": self.mock_soho
-    #     }
-    #
-    #     self.patcher = patch.dict("sys.modules", modules)
-    #     self.patcher.start()
-    #
-    # def tearDown(self):
-    #     super(Test_AOVManager, self).tearDown()
-    #
-    #     self.patcher.stop()
 
     @patch("ht.sohohooks.aovs.manager.AOVManager._init_from_files")
     def test___init__(self, mock_init):
@@ -409,7 +363,7 @@ class Test_AOVManager(object):
 
         mgr.add_aovs_to_ifd(mock_wrangler, mock_cam, mock_now)
 
-        patch_soho[0].SohoParm.assert_has_calls(calls)
+        patch_soho["soho"].SohoParm.assert_has_calls(calls)
 
     @patch.object(manager.AOVManager, "get_aovs_from_string")
     @patch.object(manager.AOVManager, "__init__", lambda x: None)
@@ -435,7 +389,7 @@ class Test_AOVManager(object):
 
         mgr.add_aovs_to_ifd(mock_wrangler, mock_cam, mock_now)
 
-        patch_soho[0].SohoParm.assert_has_calls(calls)
+        patch_soho["soho"].SohoParm.assert_has_calls(calls)
 
     @patch("ht.sohohooks.aovs.manager.flatten_aov_items")
     @patch.object(manager.AOVManager, "get_aovs_from_string")
@@ -471,13 +425,13 @@ class Test_AOVManager(object):
 
         mgr.add_aovs_to_ifd(mock_wrangler, mock_cam, mock_now)
 
-        patch_soho[0].SohoParm.assert_has_calls(calls)
+        patch_soho["soho"].SohoParm.assert_has_calls(calls)
 
         mock_get.assert_called_with(mock_aovs_result.Value[0])
 
         mock_aov.write_to_ifd.assert_called_with(mock_wrangler, mock_cam, mock_now)
 
-        patch_soho[1].ray_comment.assert_not_called()
+        patch_soho["IFDapi"].ray_comment.assert_not_called()
 
     @patch("ht.sohohooks.aovs.manager.flatten_aov_items")
     @patch.object(manager.AOVManager, "get_aovs_from_string")
@@ -514,13 +468,13 @@ class Test_AOVManager(object):
 
         mgr.add_aovs_to_ifd(mock_wrangler, mock_cam, mock_now)
 
-        patch_soho[0].SohoParm.assert_has_calls(calls)
+        patch_soho["soho"].SohoParm.assert_has_calls(calls)
 
         mock_get.assert_called_with(mock_aovs_result.Value[0])
 
         mock_aov.write_to_ifd.assert_called_with(mock_wrangler, mock_cam, mock_now)
-        patch_soho[1].ray_comment.assert_called()
-        assert patch_soho[2]._GenerateOpId
+        patch_soho["IFDapi"].ray_comment.assert_called()
+        assert patch_soho["IFDsettings"]._GenerateOpId
 
     # add_group
 
@@ -1263,11 +1217,8 @@ class Test__find_houdinipath_aov_folders(object):
     """Test ht.sohohooks.aovs.manager._find_houdinipath_aov_folders."""
 
     @patch("ht.sohohooks.aovs.manager.hou.findDirectories")
-    def test_no_dirs(self, mock_find):
-        def raise_error(*args, **kwargs):
-            raise hou.OperationFailed()
-
-        mock_find.side_effect = raise_error
+    def test_no_dirs(self, mock_find, raise_hou_operationfailed):
+        mock_find.side_effect = raise_hou_operationfailed
 
         result = manager._find_houdinipath_aov_folders()
 

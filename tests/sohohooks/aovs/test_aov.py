@@ -23,31 +23,6 @@ imp.reload(aov)
 
 
 # =============================================================================
-# FIXTURES
-# =============================================================================
-
-@pytest.fixture
-def patch_soho():
-    """Mock importing of soho modules."""
-    mock_IFDhooks = MagicMock()
-    mock_api = MagicMock()
-    mock_soho = MagicMock()
-
-    modules = {
-        "IFDapi": mock_api,
-        "IFDhooks": mock_IFDhooks,
-        "soho": mock_soho,
-    }
-
-    patcher = patch.dict("sys.modules", modules)
-    patcher.start()
-
-    yield mock_soho, mock_api, mock_IFDhooks
-
-    patcher.stop()
-
-
-# =============================================================================
 # CLASSES
 # =============================================================================
 
@@ -968,13 +943,13 @@ class Test_AOV(object):
         mock_now = MagicMock(spec=float)
 
         mock_parm = MagicMock()
-        patch_soho[0].SohoParm.return_value = mock_parm
+        patch_soho["soho"].SohoParm.return_value = mock_parm
 
         mock_cam.wrangle.return_value = {}
 
         inst.write_to_ifd(mock_wrangler, mock_cam, mock_now)
 
-        patch_soho[0].SohoParm.assert_called_with("vm_exportcomponents", "str", [''], skipdefault=False)
+        patch_soho["soho"].SohoParm.assert_called_with("vm_exportcomponents", "str", [''], skipdefault=False)
 
         mock_export.assert_not_called()
 
@@ -994,7 +969,7 @@ class Test_AOV(object):
         mock_now = MagicMock(spec=float)
 
         mock_parm = MagicMock()
-        patch_soho[0].SohoParm.return_value = mock_parm
+        patch_soho["soho"].SohoParm.return_value = mock_parm
 
         mock_result = MagicMock()
         mock_result.Value = ["comp1 comp2"]
@@ -1005,7 +980,7 @@ class Test_AOV(object):
 
         inst.write_to_ifd(mock_wrangler, mock_cam, mock_now)
 
-        patch_soho[0].SohoParm.assert_called_with("vm_exportcomponents", "str", [''], skipdefault=False)
+        patch_soho["soho"].SohoParm.assert_called_with("vm_exportcomponents", "str", [''], skipdefault=False)
 
         calls = [
             call({"key": "value", consts.CHANNEL_KEY: "Pworld_comp1", consts.COMPONENT_KEY: "comp1"}, mock_wrangler, mock_cam, mock_now),
@@ -1594,7 +1569,7 @@ class Test__call_post_defplane(object):
             mock_now
         )
 
-        patch_soho[2].call.assert_called_with(
+        patch_soho["IFDhooks"].call.assert_called_with(
             "post_defplane",
             mock_variable,
             mock_vextype,
@@ -1633,7 +1608,7 @@ class Test__call_pre_defplane(object):
             mock_now
         )
 
-        patch_soho[2].call.assert_called_with(
+        patch_soho["IFDhooks"].call.assert_called_with(
             "pre_defplane",
             mock_variable,
             mock_vextype,
@@ -1661,7 +1636,7 @@ class Test__write_data_to_ifd(object):
 
         mock_pre.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
 
-        patch_soho[1].ray_start.assert_not_called()
+        patch_soho["IFDapi"].ray_start.assert_not_called()
 
     @patch("ht.sohohooks.aovs.aov._call_post_defplane")
     @patch("ht.sohohooks.aovs.aov._call_pre_defplane")
@@ -1692,7 +1667,7 @@ class Test__write_data_to_ifd(object):
 
         ]
 
-        patch_soho[1].ray_property.assert_has_calls(calls)
+        patch_soho["IFDapi"].ray_property.assert_has_calls(calls)
 
         mock_pre.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
         mock_post.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
@@ -1745,7 +1720,7 @@ class Test__write_data_to_ifd(object):
             call("plane", "excludedcm", [True]),
         ]
 
-        patch_soho[1].ray_property.assert_has_calls(calls)
+        patch_soho["IFDapi"].ray_property.assert_has_calls(calls)
 
         mock_pre.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
         mock_post.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
@@ -1779,7 +1754,7 @@ class Test__write_data_to_ifd(object):
             call("plane", "channel", [mock_channel]),
         ]
 
-        patch_soho[1].ray_property.assert_has_calls(calls)
+        patch_soho["IFDapi"].ray_property.assert_has_calls(calls)
 
         mock_pre.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
         mock_post.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
@@ -1812,12 +1787,12 @@ class Test__write_data_to_ifd(object):
             call("plane", "channel", [mock_channel]),
         ]
 
-        patch_soho[1].ray_property.assert_has_calls(calls)
+        patch_soho["IFDapi"].ray_property.assert_has_calls(calls)
 
         mock_pre.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
         mock_post.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
 
-        patch_soho[1].ray_end.assert_not_called()
+        patch_soho["IFDapi"].ray_end.assert_not_called()
 
 
 class Test__write_light(object):
@@ -1927,7 +1902,7 @@ class Test__write_light(object):
 
         aov._write_light(mock_light, base_channel, data, mock_wrangler, mock_cam, mock_now)
 
-        patch_soho[0].error.assert_called()
+        patch_soho["soho"].error.assert_called()
 
         mock_write.assert_called_with(
             {

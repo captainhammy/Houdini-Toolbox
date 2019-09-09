@@ -9,7 +9,6 @@ import imp
 
 # Third Party Imports
 from mock import MagicMock, PropertyMock, patch
-import pytest
 
 # Houdini Toolbox Imports
 from ht.sohohooks import manager
@@ -17,27 +16,6 @@ from ht.sohohooks import manager
 # Reload the module to test to capture load evaluation since it has already
 # been loaded.
 imp.reload(manager)
-
-
-# =============================================================================
-# FIXTURES
-# =============================================================================
-
-@pytest.fixture
-def patch_ifdapi():
-    """Mock importing of IFDapi."""
-    mock_api = MagicMock()
-
-    modules = {
-        "IFDapi": mock_api,
-    }
-
-    patcher = patch.dict("sys.modules", modules)
-    patcher.start()
-
-    yield mock_api
-
-    patcher.stop()
 
 
 # =============================================================================
@@ -55,8 +33,6 @@ class Test_SohoHookManager(object):
 
     # Properties
 
-    # hooks
-
     @patch.object(manager.SohoHookManager, "__init__", lambda x: None)
     def test_hooks(self):
         """Test the 'hooks' property."""
@@ -73,7 +49,7 @@ class Test_SohoHookManager(object):
 
     @patch.object(manager.SohoHookManager, "hooks", new_callable=PropertyMock)
     @patch.object(manager.SohoHookManager, "__init__", lambda x: None)
-    def test_call_hook__func_result_true(self, mock_hooks, patch_ifdapi):
+    def test_call_hook__func_result_true(self, mock_hooks, patch_soho):
         """Test when a function returns a value that is equivalent to bool(value) == True."""
         mock_hook_name = MagicMock(spec=str)
         mock_hook = MagicMock()
@@ -94,7 +70,7 @@ class Test_SohoHookManager(object):
 
     @patch.object(manager.SohoHookManager, "hooks", new_callable=PropertyMock)
     @patch.object(manager.SohoHookManager, "__init__", lambda x: None)
-    def test_call_hook__func_no_result(self, mock_hooks, patch_ifdapi):
+    def test_call_hook__func_no_result(self, mock_hooks, patch_soho):
         """Test when a function returns no value."""
         mock_hook_name = MagicMock(spec=str)
         mock_hook = MagicMock()
@@ -115,7 +91,7 @@ class Test_SohoHookManager(object):
 
     @patch.object(manager.SohoHookManager, "hooks", new_callable=PropertyMock)
     @patch.object(manager.SohoHookManager, "__init__", lambda x: None)
-    def test_call_hook__error(self, mock_hooks, patch_ifdapi):
+    def test_call_hook__error(self, mock_hooks, patch_soho):
         """Test when calling a hook generates an exception."""
         mock_hook_name = MagicMock(spec=str)
         mock_hook = MagicMock()
@@ -134,7 +110,7 @@ class Test_SohoHookManager(object):
 
         mock_hook.assert_called_with(mock_arg, foo=mock_kwarg)
 
-        assert patch_ifdapi.ray_comment.call_count == 2
+        assert patch_soho["IFDapi"].ray_comment.call_count == 2
 
     # register_hook
 

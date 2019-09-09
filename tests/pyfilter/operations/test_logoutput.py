@@ -6,9 +6,21 @@
 
 # Third Party Imports
 from mock import MagicMock, call, patch
+import pytest
 
 # Houdini Toolbox Imports
 from ht.pyfilter.operations import logoutput
+
+
+# =============================================================================
+# FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def patch_logger():
+    """Mock the module logger."""
+    with patch("ht.pyfilter.operations.logoutput._logger", autospec=True) as mock_logger:
+        yield mock_logger
 
 
 # =============================================================================
@@ -20,9 +32,8 @@ class Test_LogOutput(object):
 
     # Methods
 
-    @patch("ht.pyfilter.operations.logoutput._logger", autospec=True)
     @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
-    def test_filter_error__level_0(self, mock_logger):
+    def test_filter_error__level_0(self, patch_logger):
         level = 0
 
         mock_message1 = MagicMock(spec=str)
@@ -41,13 +52,12 @@ class Test_LogOutput(object):
 
         mock_message.split.assert_called_with('\n')
 
-        mock_logger.error.assert_has_calls(
+        patch_logger.error.assert_has_calls(
             [call(mock_message1), call(mock_message2)]
         )
 
-    @patch("ht.pyfilter.operations.logoutput._logger", autospec=True)
     @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
-    def test_filter_error__prefix(self, mock_logger):
+    def test_filter_error__prefix(self, patch_logger):
         level = 1
 
         mock_message = MagicMock(spec=str)
@@ -64,11 +74,10 @@ class Test_LogOutput(object):
 
         mock_message.split.assert_called_with('\n')
 
-        mock_logger.warning.assert_called_with(mock_message)
+        patch_logger.warning.assert_called_with(mock_message)
 
-    @patch("ht.pyfilter.operations.logoutput._logger", autospec=True)
     @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
-    def test_filter_error__level_1(self, mock_logger):
+    def test_filter_error__level_1(self, patch_logger):
         level = 1
 
         mock_message = MagicMock(spec=str)
@@ -84,11 +93,10 @@ class Test_LogOutput(object):
 
         mock_message.split.assert_called_with('\n')
 
-        mock_logger.info.assert_called_with(mock_message)
+        patch_logger.info.assert_called_with(mock_message)
 
-    @patch("ht.pyfilter.operations.logoutput._logger", autospec=True)
     @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
-    def test_filter_error__debug(self, mock_logger):
+    def test_filter_error__debug(self, patch_logger):
         level = MagicMock(spec=int)
 
         mock_message = MagicMock(spec=str)
@@ -104,4 +112,4 @@ class Test_LogOutput(object):
 
         mock_message.split.assert_called_with('\n')
 
-        mock_logger.debug.assert_called_with(mock_message)
+        patch_logger.debug.assert_called_with(mock_message)

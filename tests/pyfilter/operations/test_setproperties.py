@@ -15,34 +15,6 @@ import pytest
 from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.operations import setproperties
 
-# reload(setproperties)
-
-
-# =============================================================================
-# FIXTURES
-# =============================================================================
-
-@pytest.fixture
-def patch_items():
-    """Mock things"""
-    mock_mantra = MagicMock()
-    mock_hou = MagicMock()
-
-    modules = {
-        "hou": mock_hou,
-        "mantra": mock_mantra,
-    }
-
-    module_patcher = patch.dict("sys.modules", modules)
-    module_patcher.start()
-
-    patcher = patch("ht.pyfilter.operations.operation._logger", autospec=True)
-
-    yield mock_hou
-
-    module_patcher.stop()
-    patcher.stop()
-
 
 # =============================================================================
 # CLASSES
@@ -188,21 +160,6 @@ class Test_PropertySetterManager(object):
 
 class Test_PropertySetter(object):
     """Test the ht.pyfilter.operations.setproperties.PropertySetter class."""
-    #
-    # def setUp(self):
-    #     super(Test_PropertySetter, self).setUp()
-    #
-    #     patch_items = MagicMock()
-    #
-    #     modules = {"hou": patch_items}
-    #
-    #     self.patcher = patch.dict("sys.modules", modules)
-    #     self.patcher.start()
-    #
-    # def tearDown(self):
-    #     super(Test_PropertySetter, self).tearDown()
-    #
-    #     self.patcher.stop()
 
     @patch.object(setproperties.PropertySetter, "find_file", new_callable=PropertyMock(return_value=False))
     def test___init___no_findfile(self, mock_find_file):
@@ -224,7 +181,7 @@ class Test_PropertySetter(object):
         assert op._rendertype == mock_rendertype
 
     @patch.object(setproperties.PropertySetter, "find_file", new_callable=PropertyMock(return_value=True))
-    def test___init___findfile(self, mock_find_file, patch_items):
+    def test___init___findfile(self, mock_find_file, patch_hou, patch_soho):
         mock_name = MagicMock(spec=str)
 
         mock_value = MagicMock()
@@ -237,11 +194,11 @@ class Test_PropertySetter(object):
         op = setproperties.PropertySetter(mock_name, block)
 
         assert op._name == mock_name
-        assert op._value == patch_items.findFile.return_value
+        assert op._value == patch_hou["hou"].findFile.return_value
         assert op._find_file
         assert op._rendertype is None
 
-        patch_items.findFile.assert_called_with(mock_value)
+        patch_hou["hou"].findFile.assert_called_with(mock_value)
 
     # Properties
 
@@ -294,15 +251,15 @@ class Test_PropertySetter(object):
     @patch("ht.pyfilter.operations.setproperties.get_property")
     @patch.object(setproperties.PropertySetter, "rendertype", new_callable=PropertyMock)
     @patch.object(setproperties.PropertySetter, "__init__", lambda x, y, z: None)
-    def test_set_property__rendertype_no_match(self, mock_rendertype, mock_get, mock_logger, mock_set, patch_items):
+    def test_set_property__rendertype_no_match(self, mock_rendertype, mock_get, mock_logger, mock_set, patch_hou, patch_soho):
 
-        patch_items.patternMatch.return_value = False
+        patch_hou["hou"].patternMatch.return_value = False
 
         op = setproperties.PropertySetter(None, None)
         op.set_property()
 
         mock_get.assert_called_with("renderer:rendertype")
-        patch_items.patternMatch.assert_called_with(mock_rendertype.return_value, mock_get.return_value)
+        patch_hou["hou"].patternMatch.assert_called_with(mock_rendertype.return_value, mock_get.return_value)
 
         mock_set.assert_not_called()
 
@@ -314,14 +271,14 @@ class Test_PropertySetter(object):
     @patch.object(setproperties.PropertySetter, "rendertype", new_callable=PropertyMock)
     @patch.object(setproperties.PropertySetter, "__init__", lambda x, y, z: None)
     def test_set_property__rendertype_match(self, mock_rendertype, mock_name, mock_value, mock_get, mock_logger,
-                                            mock_set, patch_items):
-        patch_items.patternMatch.return_value = True
+                                            mock_set, patch_hou, patch_soho):
+        patch_hou["hou"].patternMatch.return_value = True
 
         op = setproperties.PropertySetter(None, None)
         op.set_property()
 
         mock_get.assert_called_with("renderer:rendertype")
-        patch_items.patternMatch.assert_called_with(mock_rendertype.return_value, mock_get.return_value)
+        patch_hou["hou"].patternMatch.assert_called_with(mock_rendertype.return_value, mock_get.return_value)
 
         mock_set.assert_called_with(mock_name.return_value, mock_value.return_value)
 
@@ -333,8 +290,8 @@ class Test_PropertySetter(object):
     @patch.object(setproperties.PropertySetter, "rendertype", new_callable=PropertyMock(return_value=None))
     @patch.object(setproperties.PropertySetter, "__init__", lambda x, y, z: None)
     def test_set_property__no_rendertype(self, mock_rendertype, mock_name, mock_value, mock_get, mock_logger, mock_set,
-                                         patch_items):
-        patch_items.patternMatch.return_value = True
+                                         patch_hou, patch_soho):
+        patch_hou["hou"].patternMatch.return_value = True
 
         op = setproperties.PropertySetter(None, None)
         op.set_property()
@@ -346,21 +303,6 @@ class Test_PropertySetter(object):
 
 class Test_MaskedPropertySetter(object):
     """Test the ht.pyfilter.operations.setproperties.MaskedPropertySetter class."""
-    #
-    # def setUp(self):
-    #     super(Test_MaskedPropertySetter, self).setUp()
-    #
-    #     patch_items = MagicMock()
-    #
-    #     modules = {"hou": patch_items}
-    #
-    #     self.patcher = patch.dict("sys.modules", modules)
-    #     self.patcher.start()
-    #
-    # def tearDown(self):
-    #     super(Test_MaskedPropertySetter, self).tearDown()
-    #
-    #     self.patcher.stop()
 
     @patch.object(setproperties.PropertySetter, "__init__")
     def test___init__(self, mock_super_init):
@@ -406,14 +348,14 @@ class Test_MaskedPropertySetter(object):
     @patch.object(setproperties.MaskedPropertySetter, "mask_property_name", new_callable=PropertyMock)
     @patch.object(setproperties.MaskedPropertySetter, "mask", new_callable=PropertyMock)
     @patch.object(setproperties.MaskedPropertySetter, "__init__", lambda x, y, z: None)
-    def test_set_property__mask_no_match(self, mock_mask, mock_mask_name, mock_get, mock_super_set, patch_items):
-        patch_items.patternMatch.return_value = False
+    def test_set_property__mask_no_match(self, mock_mask, mock_mask_name, mock_get, mock_super_set, patch_hou, patch_soho):
+        patch_hou["hou"].patternMatch.return_value = False
 
         op = setproperties.MaskedPropertySetter(None, None)
         op.set_property()
 
         mock_get.assert_called_with(mock_mask_name.return_value)
-        patch_items.patternMatch.assert_called_with(mock_mask.return_value, mock_get.return_value)
+        patch_hou["hou"].patternMatch.assert_called_with(mock_mask.return_value, mock_get.return_value)
 
         mock_super_set.assert_not_called()
 
@@ -422,14 +364,14 @@ class Test_MaskedPropertySetter(object):
     @patch.object(setproperties.MaskedPropertySetter, "mask_property_name", new_callable=PropertyMock)
     @patch.object(setproperties.MaskedPropertySetter, "mask", new_callable=PropertyMock)
     @patch.object(setproperties.MaskedPropertySetter, "__init__", lambda x, y, z: None)
-    def test_set_property__mask_match(self, mock_mask, mock_mask_name, mock_get, mock_super_set, patch_items):
-        patch_items.patternMatch.return_value = True
+    def test_set_property__mask_match(self, mock_mask, mock_mask_name, mock_get, mock_super_set, patch_hou, patch_soho):
+        patch_hou["hou"].patternMatch.return_value = True
 
         op = setproperties.MaskedPropertySetter(None, None)
         op.set_property()
 
         mock_get.assert_called_with(mock_mask_name.return_value)
-        patch_items.patternMatch.assert_called_with(mock_mask.return_value, mock_get.return_value)
+        patch_hou["hou"].patternMatch.assert_called_with(mock_mask.return_value, mock_get.return_value)
 
         mock_super_set.assert_called()
 
@@ -449,22 +391,6 @@ class Test_MaskedPropertySetter(object):
 
 class Test_SetProperties(object):
     """Test the ht.pyfilter.operations.setproperties.SetProperties class."""
-
-    # def setUp(self):
-    #     super(Test_SetProperties, self).setUp()
-    #
-    #     modules = {"mantra": MagicMock()}
-    #     self.patcher = patch.dict("sys.modules", modules)
-    #     self.patcher.start()
-    #
-    #     self.log_patcher = patch("ht.pyfilter.operations.operation._logger", autospec=True)
-    #     self.log_patcher.start()
-    #
-    # def tearDown(self):
-    #     super(Test_SetProperties, self).tearDown()
-    #
-    #     self.patcher.stop()
-    #     self.log_patcher.stop()
 
     @patch("ht.pyfilter.operations.setproperties.PropertySetterManager", autospec=True)
     def test___init__(self, mock_prop_manager):
@@ -534,7 +460,7 @@ class Test_SetProperties(object):
 
     @patch.object(setproperties.SetProperties, "property_manager", new_callable=PropertyMock)
     @patch.object(setproperties.SetProperties, "__init__", lambda x, y: None)
-    def test_filter_camera(self, mock_set):
+    def test_filter_camera(self, mock_set, patch_operation_logger):
         mock_manager = MagicMock(spec=setproperties.PropertySetterManager)
         mock_set.return_value = mock_manager
 
@@ -546,7 +472,7 @@ class Test_SetProperties(object):
 
     @patch.object(setproperties.SetProperties, "property_manager", new_callable=PropertyMock)
     @patch.object(setproperties.SetProperties, "__init__", lambda x, y: None)
-    def test_filter_instance(self, mock_set, patch_items):
+    def test_filter_instance(self, mock_set, patch_hou, patch_soho, patch_operation_logger):
         mock_manager = MagicMock(spec=setproperties.PropertySetterManager)
         mock_set.return_value = mock_manager
 
@@ -558,7 +484,7 @@ class Test_SetProperties(object):
 
     @patch.object(setproperties.SetProperties, "property_manager", new_callable=PropertyMock)
     @patch.object(setproperties.SetProperties, "__init__", lambda x, y: None)
-    def test_filter_light(self, mock_set, patch_items):
+    def test_filter_light(self, mock_set, patch_hou, patch_soho, patch_operation_logger):
         mock_manager = MagicMock(spec=setproperties.PropertySetterManager)
         mock_set.return_value = mock_manager
 

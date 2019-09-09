@@ -9,26 +9,10 @@ import argparse
 
 # Third Party Imports
 from mock import MagicMock, call, patch
-import pytest
 
 # Houdini Toolbox Imports
 from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.operations import deepimage
-
-
-# =============================================================================
-# FIXTURES
-# =============================================================================
-
-@pytest.fixture
-def patch_logger():
-    """Mock the log_filter_call logger."""
-
-    patcher = patch("ht.pyfilter.operations.operation._logger", autospec=True)
-
-    yield
-
-    patcher.stop()
 
 
 # =============================================================================
@@ -388,7 +372,7 @@ class Test_DeepImage(object):
     @patch("ht.pyfilter.operations.deepimage._logger")
     @patch.object(deepimage.SetDeepImage, "_modify_deep_args")
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
-    def test_filter_camera__not_beauty(self, mock_modify, mock_logger, mock_get):
+    def test_filter_camera__not_beauty(self, mock_modify, mock_logger, mock_get, patch_operation_logger):
         """Test for non-beauty renders."""
         mock_get.return_value = "shadow"
 
@@ -404,7 +388,7 @@ class Test_DeepImage(object):
     @patch("ht.pyfilter.operations.deepimage._logger")
     @patch.object(deepimage.SetDeepImage, "_modify_deep_args")
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
-    def test_filter_camera__disable_deep_image(self, mock_modify, mock_logger, mock_get, mock_set):
+    def test_filter_camera__disable_deep_image(self, mock_modify, mock_logger, mock_get, mock_set, patch_operation_logger):
         """Try to disable deep image export."""
         mock_get.return_value = "beauty"
 
@@ -422,7 +406,7 @@ class Test_DeepImage(object):
     @patch("ht.pyfilter.operations.deepimage._logger")
     @patch.object(deepimage.SetDeepImage, "_modify_deep_args")
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
-    def test_filter_camera__no_deep_args_no_resolver(self, mock_modify, mock_logger, mock_get, mock_set):
+    def test_filter_camera__no_deep_args_no_resolver(self, mock_modify, mock_logger, mock_get, mock_set, patch_operation_logger):
         """Try to set the resolver when there is no resolver already set and
         we don't provide enough data.
 
@@ -450,7 +434,7 @@ class Test_DeepImage(object):
     @patch("ht.pyfilter.operations.deepimage._logger")
     @patch.object(deepimage.SetDeepImage, "_modify_deep_args")
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
-    def test_filter_camera__no_deep_args_no_file(self, mock_modify, mock_logger, mock_get, mock_set):
+    def test_filter_camera__no_deep_args_no_file(self, mock_modify, mock_logger, mock_get, mock_set, patch_operation_logger):
         """Try to set the resolver when there is no resolver already set and
         we don't provide enough data.
 
@@ -478,7 +462,7 @@ class Test_DeepImage(object):
     @patch("ht.pyfilter.operations.deepimage._logger")
     @patch.object(deepimage.SetDeepImage, "_modify_deep_args")
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
-    def test_filter_camera__no_deep_args_resolver_and_file(self, mock_modify, mock_logger, mock_get, mock_set):
+    def test_filter_camera__no_deep_args_resolver_and_file(self, mock_modify, mock_logger, mock_get, mock_set, patch_operation_logger):
         """Try to set the resolver when there is no resolver already set and
         we don't provide enough data.
 
@@ -510,7 +494,7 @@ class Test_DeepImage(object):
     @patch("ht.pyfilter.operations.deepimage._logger")
     @patch.object(deepimage.SetDeepImage, "_modify_deep_args")
     @patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
-    def test_filter_camera__deep_args(self, mock_modify, mock_logger, mock_get, mock_set):
+    def test_filter_camera__deep_args(self, mock_modify, mock_logger, mock_get, mock_set, patch_operation_logger):
         """Try to set the resolver when there is no resolver already set and
         we don't provide enough data.
 

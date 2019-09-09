@@ -9,26 +9,10 @@ import argparse
 
 # Third Party Imports
 from mock import MagicMock, PropertyMock, call, patch
-import pytest
 
 # Houdini Toolbox Imports
 from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.operations import settilecallback
-
-
-# =============================================================================
-# FIXTURES
-# =============================================================================
-
-@pytest.fixture
-def patch_logger():
-    """Mock the log_filter_call logger."""
-
-    patcher = patch("ht.pyfilter.operations.operation._logger", autospec=True)
-
-    yield
-
-    patcher.stop()
 
 
 # =============================================================================
@@ -98,7 +82,7 @@ class Test_SetTileCallback(object):
     @patch("ht.pyfilter.operations.settilecallback.set_property")
     @patch.object(settilecallback.SetTileCallback, "tilecallback", new_callable=PropertyMock)
     @patch.object(settilecallback.SetTileCallback, "__init__", lambda x, y: None)
-    def test_filter_camera(self, mock_tilecallback, mock_set, patch_logger):
+    def test_filter_camera(self, mock_tilecallback, mock_set, patch_operation_logger):
         """Test filter_camera."""
         op = settilecallback.SetTileCallback(None)
 

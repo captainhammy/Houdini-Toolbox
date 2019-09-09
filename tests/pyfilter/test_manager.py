@@ -14,9 +14,6 @@ from mock import MagicMock, PropertyMock, mock_open, patch
 from ht.pyfilter import manager
 from ht.pyfilter.operations.operation import PyFilterOperation
 
-# Houdini Imports
-import hou
-
 
 # =============================================================================
 # CLASSES
@@ -283,11 +280,8 @@ class Test__find_operation_files(object):
 
     @patch("ht.pyfilter.manager._logger")
     @patch("hou.findFiles")
-    def test_no_files(self, mock_find_files, mock_logger):
-        def raise_exc(*args, **kwargs):
-            raise hou.OperationFailed
-
-        mock_find_files.side_effect = raise_exc
+    def test_no_files(self, mock_find_files, mock_logger, raise_hou_operationfailed):
+        mock_find_files.side_effect = raise_hou_operationfailed
 
         result = manager._find_operation_files()
 

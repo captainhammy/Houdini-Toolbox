@@ -1198,12 +1198,9 @@ class Test__find_files(object):
 
     @patch("ht.nodes.styles.manager.glob.glob")
     @patch("hou.findDirectories")
-    def test_no_dirs(self, mock_find, mock_glob):
+    def test_no_dirs(self, mock_find, mock_glob, raise_hou_operationfailed):
         """Test finding files where there are no config/styles folders in the HOUDINI_PATH."""
-        def raise_error(*args, **kwargs):
-            raise hou.OperationFailed()
-
-        mock_find.side_effect = raise_error
+        mock_find.side_effect = raise_hou_operationfailed
 
         result = manager._find_files()
 

@@ -9,31 +9,9 @@ import json
 
 # Third Party Imports
 from mock import MagicMock, patch
-import pytest
 
 # Houdini Toolbox Imports
 from ht.pyfilter import property as prop
-
-
-# =============================================================================
-# FIXTURES
-# =============================================================================
-
-@pytest.fixture
-def patch_mantra():
-    """Mock importing mantra module."""
-    mock_mantra = MagicMock()
-
-    modules = {
-        "mantra": mock_mantra,
-    }
-
-    patcher = patch.dict("sys.modules", modules)
-    patcher.start()
-
-    yield mock_mantra
-
-    patcher.stop()
 
 
 # =============================================================================
@@ -220,25 +198,25 @@ class Test_get_property(object):
     """Test ht.pyfilter.property.get_property."""
 
     @patch("ht.pyfilter.property._transform_values")
-    def test(self, mock_transform, patch_mantra):
+    def test(self, mock_transform, patch_soho):
         mock_name = MagicMock(spec=str)
 
         result = prop.get_property(mock_name)
 
         assert result == mock_transform.return_value
 
-        mock_transform.assert_called_with(patch_mantra.property.return_value)
+        mock_transform.assert_called_with(patch_soho["mantra"].property.return_value)
 
 
 class Test_set_property(object):
     """Test ht.pyfilter.property.set_property."""
 
     @patch("ht.pyfilter.property._prep_value_to_set")
-    def test(self, mock_prep, patch_mantra):
+    def test(self, mock_prep, patch_soho):
         mock_name = MagicMock(spec=str)
         mock_value = MagicMock(spec=int)
 
         prop.set_property(mock_name, mock_value)
 
         mock_prep.assert_called_with(mock_value)
-        patch_mantra.setproperty.assert_called_with(mock_name, mock_prep.return_value)
+        patch_soho["mantra"].setproperty.assert_called_with(mock_name, mock_prep.return_value)

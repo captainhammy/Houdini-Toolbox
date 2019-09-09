@@ -9,26 +9,10 @@ import argparse
 
 # Third Party Imports
 from mock import MagicMock, call, patch
-import pytest
 
 # Houdini Toolbox Imports
 from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.operations import primaryimage
-
-
-# =============================================================================
-# FIXTURES
-# =============================================================================
-
-@pytest.fixture
-def patch_logger():
-    """Mock the log_filter_call logger."""
-
-    patcher = patch("ht.pyfilter.operations.operation._logger", autospec=True)
-
-    yield
-
-    patcher.stop()
 
 
 # =============================================================================
@@ -114,7 +98,7 @@ class Test_SetPrimaryImage(object):
     @patch("ht.pyfilter.operations.primaryimage._logger")
     @patch("ht.pyfilter.operations.primaryimage.set_property")
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
-    def test_filter_camera__disable(self, mock_set, mock_logger, patch_logger):
+    def test_filter_camera__disable(self, mock_set, mock_logger, patch_operation_logger):
         op = primaryimage.SetPrimaryImage(None)
         op._disable_primary_image = True
 
@@ -125,7 +109,7 @@ class Test_SetPrimaryImage(object):
     @patch("ht.pyfilter.operations.primaryimage._logger")
     @patch("ht.pyfilter.operations.primaryimage.set_property")
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
-    def test_filter_camera__path(self, mock_set, mock_logger, patch_logger):
+    def test_filter_camera__path(self, mock_set, mock_logger, patch_operation_logger):
         path = "/path/to/images.exr"
 
         op = primaryimage.SetPrimaryImage(None)
@@ -139,7 +123,7 @@ class Test_SetPrimaryImage(object):
     @patch("ht.pyfilter.operations.primaryimage._logger")
     @patch("ht.pyfilter.operations.primaryimage.set_property")
     @patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
-    def test_filter_camera__no_op(self, mock_set, mock_logger, patch_logger):
+    def test_filter_camera__no_op(self, mock_set, mock_logger, patch_operation_logger):
         path = "/path/to/images.exr"
 
         op = primaryimage.SetPrimaryImage(None)

@@ -23,13 +23,10 @@ class Test_clear_generic_image_badge(object):
 
     @patch("ht.nodes.badges._ht_generic_image_badge.get_generic_image_key")
     @patch("ht.nodes.badges.hou.undos.disabler")
-    def test_no_data(self, mock_disabler, mock_data_name):
+    def test_no_data(self, mock_disabler, mock_data_name, raise_hou_operationfailed):
         mock_node = MagicMock(spec=hou.Node)
 
-        def raise_error(*args, **kwargs):
-            raise hou.OperationFailed()
-
-        mock_node.destroyUserData.side_effect = raise_error
+        mock_node.destroyUserData.side_effect = raise_hou_operationfailed
 
         badges.clear_generic_image_badge(mock_node)
 
@@ -55,13 +52,10 @@ class Test_clear_generic_text_badge(object):
     @patch("ht.nodes.badges.clear_generic_text_badge_color")
     @patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_key")
     @patch("ht.nodes.badges.hou.undos.disabler")
-    def test_no_data(self, mock_disabler, mock_data_name, mock_clear_color):
+    def test_no_data(self, mock_disabler, mock_data_name, mock_clear_color, raise_hou_operationfailed):
         mock_node = MagicMock(spec=hou.Node)
 
-        def raise_error(*args, **kwargs):
-            raise hou.OperationFailed()
-
-        mock_node.destroyUserData.side_effect = raise_error
+        mock_node.destroyUserData.side_effect = raise_hou_operationfailed
 
         badges.clear_generic_text_badge(mock_node)
 
@@ -91,13 +85,10 @@ class Test_clear_generic_text_badge_color(object):
 
     @patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key")
     @patch("ht.nodes.badges.hou.undos.disabler")
-    def test_no_data(self, mock_disabler, mock_data_name):
+    def test_no_data(self, mock_disabler, mock_data_name, raise_hou_operationfailed):
         mock_node = MagicMock(spec=hou.Node)
 
-        def raise_error(*args, **kwargs):
-            raise hou.OperationFailed()
-
-        mock_node.destroyUserData.side_effect = raise_error
+        mock_node.destroyUserData.side_effect = raise_hou_operationfailed
 
         badges.clear_generic_text_badge_color(mock_node)
 
