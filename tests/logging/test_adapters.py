@@ -186,7 +186,8 @@ class Test_HoudiniLoggerAdapter(object):
     @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=PropertyMock(return_value=None))
     @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
     @patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
-    def test_process__ui_passed_no_severity_no_title(self, mock_node_prop, mock_dialog_prop, mock_status_prop, mock_available):
+    def test_process__ui_passed_no_severity_no_title(self, mock_node_prop, mock_dialog_prop, mock_status_prop,
+                                                     mock_available, mock_hou_ui):
         """Test passing 'dialog' and 'status_bar' via extra dict with no severity or title."""
         mock_message = MagicMock(spec=str)
 
@@ -194,19 +195,14 @@ class Test_HoudiniLoggerAdapter(object):
             "extra": {"dialog": True, "status_bar": True}
         }
 
-        mock_ui = MagicMock()
-        hou.ui = mock_ui
-
         log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
 
         result = log.process(mock_message, kwargs)
 
         assert result == (mock_message, kwargs)
 
-        mock_ui.displayMessage.assert_called_with(mock_message, severity=hou.severityType.Message, title=None)
-        mock_ui.setStatusMessage.assert_called_with(mock_message, severity=hou.severityType.Message)
-
-        del hou.ui
+        mock_hou_ui.displayMessage.assert_called_with(mock_message, severity=hou.severityType.Message, title=None)
+        mock_hou_ui.setStatusMessage.assert_called_with(mock_message, severity=hou.severityType.Message)
 
     @patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
     @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=PropertyMock(return_value=True))
@@ -214,7 +210,8 @@ class Test_HoudiniLoggerAdapter(object):
     @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=PropertyMock(return_value=None))
     @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
     @patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
-    def test_process__ui_properties_with_severity_and_title(self, mock_node_prop, mock_dialog_prop, mock_status_prop, mock_available):
+    def test_process__ui_properties_with_severity_and_title(self, mock_node_prop, mock_dialog_prop, mock_status_prop,
+                                                            mock_available, mock_hou_ui):
         """Test passing 'dialog' and 'status_bar' via properties with a severity and title."""
         mock_message = MagicMock(spec=str)
         mock_title = MagicMock(spec=str)
@@ -223,19 +220,14 @@ class Test_HoudiniLoggerAdapter(object):
             "extra": {"severity": hou.severityType.Error, "title": mock_title}
         }
 
-        mock_ui = MagicMock()
-        hou.ui = mock_ui
-
         log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
 
         result = log.process(mock_message, kwargs)
 
         assert result == (mock_message, kwargs)
 
-        mock_ui.displayMessage.assert_called_with(mock_message, severity=hou.severityType.Error, title=mock_title)
-        mock_ui.setStatusMessage.assert_called_with(mock_message, severity=hou.severityType.Error)
-
-        del hou.ui
+        mock_hou_ui.displayMessage.assert_called_with(mock_message, severity=hou.severityType.Error, title=mock_title)
+        mock_hou_ui.setStatusMessage.assert_called_with(mock_message, severity=hou.severityType.Error)
 
     @patch("ht.logging.adapters.hou.hipFile.basename")
     @patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
@@ -244,15 +236,13 @@ class Test_HoudiniLoggerAdapter(object):
     @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=PropertyMock(return_value=None))
     @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
     @patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
-    def test_process__message_args(self, mock_node_prop, mock_dialog_prop, mock_status_prop, mock_available, mock_basename):
+    def test_process__message_args(self, mock_node_prop, mock_dialog_prop, mock_status_prop, mock_available,
+                                   mock_basename, mock_hou_ui):
         """Test passing along 'message_args'."""
         mock_message = MagicMock(spec=str)
         mock_arg = MagicMock(spec=str)
 
         kwargs = {"extra": {"message_args": (mock_arg, )}}
-
-        mock_ui = MagicMock()
-        hou.ui = mock_ui
 
         log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
 
@@ -260,11 +250,9 @@ class Test_HoudiniLoggerAdapter(object):
 
         assert result == (mock_message, kwargs)
 
-        mock_ui.displayMessage.assert_called_with(mock_message.__mod__.return_value, severity=hou.severityType.Message, title=None)
+        mock_hou_ui.displayMessage.assert_called_with(mock_message.__mod__.return_value, severity=hou.severityType.Message, title=None)
 
         mock_message.__mod__.assert_called_with((mock_arg, ))
-
-        del hou.ui
 
     @patch("ht.logging.adapters.hou.hipFile.basename")
     @patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
@@ -273,15 +261,13 @@ class Test_HoudiniLoggerAdapter(object):
     @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=PropertyMock(return_value=None))
     @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
     @patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
-    def test_process__message_args_no_display(self, mock_node_prop, mock_dialog_prop, mock_status_prop, mock_available, mock_basename):
+    def test_process__message_args_no_display(self, mock_node_prop, mock_dialog_prop, mock_status_prop, mock_available,
+                                              mock_basename, mock_hou_ui):
         """Test passing along 'message_args' but not displaying them."""
         mock_message = MagicMock(spec=str)
         mock_arg = MagicMock(spec=str)
 
         kwargs = {"extra": {"message_args": (mock_arg, )}}
-
-        mock_ui = MagicMock()
-        hou.ui = mock_ui
 
         log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
 
@@ -289,11 +275,9 @@ class Test_HoudiniLoggerAdapter(object):
 
         assert result == (mock_message, kwargs)
 
-        mock_ui.displayMessage.assert_not_called()
+        mock_hou_ui.displayMessage.assert_not_called()
 
         mock_message.__mod__.assert_called_with((mock_arg, ))
-
-        del hou.ui
 
     @patch("ht.logging.adapters.hou.hipFile.basename")
     @patch("ht.logging.adapters.hou.isUIAvailable", return_value=False)

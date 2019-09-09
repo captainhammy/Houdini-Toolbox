@@ -11,13 +11,20 @@ import pytest
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # FIXTURES
 # =============================================================================
 
 @pytest.fixture
 def patch_hou():
-    """Mock importing of the hou module."""
+    """Mock importing of the hou module.
+
+    The mocked module is available via the 'hou' key.
+
+    The original hou module is available via the 'original_hou' key.
+
+    """
     mock_hou = MagicMock()
 
     modules = {
@@ -34,8 +41,24 @@ def patch_hou():
 
 
 @pytest.fixture
+def mock_hou_ui():
+    """Mock the hou.ui module which isn't available when running tests via Hython."""
+    mock_ui = MagicMock()
+
+    hou.ui = mock_ui
+
+    yield mock_ui
+
+    del hou.ui
+
+
+@pytest.fixture
 def patch_soho():
-    """Mock importing of soho modules."""
+    """Mock importing of mantra/soho related modules.
+
+    Available mocked modules are available via their original names as keys.
+
+    """
     mock_api = MagicMock()
     mock_hooks = MagicMock()
     mock_mantra = MagicMock()
@@ -60,7 +83,13 @@ def patch_soho():
 
 @pytest.fixture
 def raise_hou_operationfailed():
+    """Fixture to represent throwing a hou.OperationFailed exception.
 
+    We have to use these because setting a mock object's side_effect to a
+    hou.Error (or subclass) exception doesn't work properly compared to normal
+    Exceptions.
+
+    """
     def raise_error(*args, **kwargs):
         raise hou.OperationFailed()
 

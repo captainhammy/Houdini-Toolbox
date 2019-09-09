@@ -1314,48 +1314,39 @@ class Test_build_menu_script(object):
         assert result == expected
 
 
-class Test_flatten_aov_items(object):
+def test_flatten_aov_items():
     """Test ht.sohohooks.aovs.manager.flatten_aov_items."""
+    mock_aov = MagicMock(spec=manager.AOV)
 
-    def test(self):
-        mock_aov = MagicMock(spec=manager.AOV)
+    mock_group_aov = MagicMock(spec=manager.AOV)
 
-        mock_group_aov = MagicMock(spec=manager.AOV)
+    mock_group = MagicMock(spec=manager.AOVGroup)
+    type(mock_group).aovs = PropertyMock(return_value = [mock_group_aov])
 
-        mock_group = MagicMock(spec=manager.AOVGroup)
-        type(mock_group).aovs = PropertyMock(return_value = [mock_group_aov])
+    result = manager.flatten_aov_items((mock_aov, mock_group))
 
-        result = manager.flatten_aov_items((mock_aov, mock_group))
-
-        assert result == (mock_aov, mock_group_aov)
+    assert result == (mock_aov, mock_group_aov)
 
 
-class Test_load_json_files(object):
+@patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
+@patch("ht.sohohooks.aovs.manager.os.path.exists")
+@patch("ht.sohohooks.aovs.manager.os.path.expandvars")
+def test_load_json_files(mock_expand, mock_exists, mock_manager, mock_hou_ui):
     """Test ht.sohohooks.aovs.manager.load_json_files."""
+    mock_expand.side_effect = ("expanded1", "expanded2")
 
-    @patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
-    @patch("ht.sohohooks.aovs.manager.os.path.exists")
-    @patch("ht.sohohooks.aovs.manager.os.path.expandvars")
-    def test(self, mock_expand, mock_exists, mock_manager):
-        mock_expand.side_effect = ("expanded1", "expanded2")
+    mock_exists.side_effect = (False, True)
 
-        mock_exists.side_effect = (False, True)
+    path_str = "path1 ; path2"
 
-        path_str = "path1 ; path2"
+    mock_hou_ui.selectFile.return_value = path_str
 
-        mock_ui = MagicMock()
-        mock_ui.selectFile.return_value = path_str
+    manager.load_json_files()
 
-        hou.ui = mock_ui
+    mock_hou_ui.selectFile.assert_called_with(
+        pattern="*.json",
+        chooser_mode=hou.fileChooserMode.Read,
+        multiple_select=True
+    )
 
-        manager.load_json_files()
-
-        mock_ui.selectFile.assert_called_with(
-            pattern="*.json",
-            chooser_mode=hou.fileChooserMode.Read,
-            multiple_select=True
-        )
-
-        mock_manager.load.assert_called_with("expanded2")
-
-        del hou.ui
+    mock_manager.load.assert_called_with("expanded2")

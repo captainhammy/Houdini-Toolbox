@@ -414,7 +414,7 @@ class Test_promote_parameter_to_node(object):
     """Test ht.ui.menus.parmmenu.promote_parameter_to_node."""
 
     @patch("ht.ui.menus.parmmenu.hou.node")
-    def test_target_is_source(self, mock_hou_node):
+    def test_target_is_source(self, mock_hou_node, mock_hou_ui):
         """Test when trying to promote to the node containing the parms to promote."""
         mock_node1 = MagicMock(spec=hou.Node)
 
@@ -427,10 +427,6 @@ class Test_promote_parameter_to_node(object):
 
         mock_hou_node.return_value = mock_node1
 
-        mock_ui = MagicMock()
-
-        hou.ui = mock_ui
-
         scriptargs = {
             "parms": (mock_parm1, )
         }
@@ -438,13 +434,11 @@ class Test_promote_parameter_to_node(object):
         with pytest.raises(hou.OperationFailed):
             ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
-        mock_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
-        mock_hou_node.assert_called_with(mock_ui.selectNode.return_value)
-
-        del hou.ui
+        mock_hou_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
+        mock_hou_node.assert_called_with(mock_hou_ui.selectNode.return_value)
 
     @patch("ht.ui.menus.parmmenu.hou.node")
-    def test_parm_exists_no_set(self, mock_hou_node):
+    def test_parm_exists_no_set(self, mock_hou_node, mock_hou_ui):
         """Test when the target exists and we don't want to set the target value to the
         current value before promoting.
 
@@ -466,10 +460,7 @@ class Test_promote_parameter_to_node(object):
 
         mock_hou_node.return_value = mock_target_node
 
-        mock_ui = MagicMock()
-        mock_ui.displayMessage.return_value = 0
-
-        hou.ui = mock_ui
+        mock_hou_ui.displayMessage.return_value = 0
 
         scriptargs = {
             "parms": (mock_parm1, )
@@ -477,8 +468,8 @@ class Test_promote_parameter_to_node(object):
 
         ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
-        mock_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
-        mock_hou_node.assert_called_with(mock_ui.selectNode.return_value)
+        mock_hou_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
+        mock_hou_node.assert_called_with(mock_hou_ui.selectNode.return_value)
 
         mock_target_node.parmTuple.assert_called_with(mock_parm_tuple1.name.return_value)
 
@@ -487,10 +478,8 @@ class Test_promote_parameter_to_node(object):
 
         mock_parm1.set.assert_called_with(mock_target_parm1)
 
-        del hou.ui
-
     @patch("ht.ui.menus.parmmenu.hou.node")
-    def test_parm_exists_set_value(self, mock_hou_node):
+    def test_parm_exists_set_value(self, mock_hou_node, mock_hou_ui):
         """Test when the target exists and we want to set the target value to the current
         value before promoting.
 
@@ -512,10 +501,7 @@ class Test_promote_parameter_to_node(object):
 
         mock_hou_node.return_value = mock_target_node
 
-        mock_ui = MagicMock()
-        mock_ui.displayMessage.return_value = 1
-
-        hou.ui = mock_ui
+        mock_hou_ui.displayMessage.return_value = 1
 
         scriptargs = {
             "parms": (mock_parm1, )
@@ -523,8 +509,8 @@ class Test_promote_parameter_to_node(object):
 
         ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
-        mock_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
-        mock_hou_node.assert_called_with(mock_ui.selectNode.return_value)
+        mock_hou_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
+        mock_hou_node.assert_called_with(mock_hou_ui.selectNode.return_value)
 
         mock_target_node.parmTuple.assert_called_with(mock_parm_tuple1.name.return_value)
 
@@ -533,10 +519,8 @@ class Test_promote_parameter_to_node(object):
 
         mock_parm1.set.assert_called_with(mock_target_parm1)
 
-        del hou.ui
-
     @patch("ht.ui.menus.parmmenu.hou.node")
-    def test_parm_exists_cancel(self, mock_hou_node):
+    def test_parm_exists_cancel(self, mock_hou_node, mock_hou_ui):
         """Test when the target exists and we want to cancel."""
         mock_node1 = MagicMock(spec=hou.Node)
 
@@ -555,10 +539,7 @@ class Test_promote_parameter_to_node(object):
 
         mock_hou_node.return_value = mock_target_node
 
-        mock_ui = MagicMock()
-        mock_ui.displayMessage.return_value = 2
-
-        hou.ui = mock_ui
+        mock_hou_ui.displayMessage.return_value = 2
 
         scriptargs = {
             "parms": (mock_parm1, )
@@ -566,16 +547,15 @@ class Test_promote_parameter_to_node(object):
 
         ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
-        mock_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
-        mock_hou_node.assert_called_with(mock_ui.selectNode.return_value)
+        mock_hou_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
+        mock_hou_node.assert_called_with(mock_hou_ui.selectNode.return_value)
 
         mock_target_node.parmTuple.assert_called_with(mock_parm_tuple1.name.return_value)
 
         mock_target_node.parm.assert_not_called()
-        del hou.ui
 
     @patch("ht.ui.menus.parmmenu.hou.node")
-    def test_no_existing_single_component(self, mock_hou_node):
+    def test_no_existing_single_component(self, mock_hou_node, mock_hou_ui):
         """Test when there is no existing parm and we want to promote a single parm from the tuple."""
         mock_node1 = MagicMock(spec=hou.Node)
 
@@ -600,18 +580,14 @@ class Test_promote_parameter_to_node(object):
 
         mock_hou_node.return_value = mock_target_node
 
-        mock_ui = MagicMock()
-
-        hou.ui = mock_ui
-
         scriptargs = {
             "parms": (mock_parm1, )
         }
 
         ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
-        mock_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
-        mock_hou_node.assert_called_with(mock_ui.selectNode.return_value)
+        mock_hou_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
+        mock_hou_node.assert_called_with(mock_hou_ui.selectNode.return_value)
 
         mock_target_node.parmTuple.assert_called_with(mock_parm_tuple1.name.return_value)
 
@@ -626,10 +602,8 @@ class Test_promote_parameter_to_node(object):
 
         mock_parm1.set.assert_called_with(mock_target_parm1)
 
-        del hou.ui
-
     @patch("ht.ui.menus.parmmenu.hou.node")
-    def test_no_existing_multiple_components(self, mock_hou_node):
+    def test_no_existing_multiple_components(self, mock_hou_node, mock_hou_ui):
         """Test when there is no existing parm and we want to promote a full tuple."""
         mock_node1 = MagicMock(spec=hou.Node)
 
@@ -662,18 +636,14 @@ class Test_promote_parameter_to_node(object):
 
         mock_hou_node.return_value = mock_target_node
 
-        mock_ui = MagicMock()
-
-        hou.ui = mock_ui
-
         scriptargs = {
             "parms": (mock_parm1, mock_parm2, mock_parm3)
         }
 
         ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
-        mock_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
-        mock_hou_node.assert_called_with(mock_ui.selectNode.return_value)
+        mock_hou_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
+        mock_hou_node.assert_called_with(mock_hou_ui.selectNode.return_value)
 
         mock_target_node.parmTuple.assert_called_with(mock_parm_tuple1.name.return_value)
 
@@ -692,10 +662,8 @@ class Test_promote_parameter_to_node(object):
 
         mock_parm1.set.assert_called_with(mock_target_parm1)
 
-        del hou.ui
-
     @patch("ht.ui.menus.parmmenu.hou.node")
-    def test_no_selection(self, mock_hou_node):
+    def test_no_selection(self, mock_hou_node, mock_hou_ui):
         """Test when no target node is selected."""
         mock_node1 = MagicMock(spec=hou.Node)
 
@@ -720,17 +688,11 @@ class Test_promote_parameter_to_node(object):
 
         mock_hou_node.return_value = None
 
-        mock_ui = MagicMock()
-
-        hou.ui = mock_ui
-
         scriptargs = {
             "parms": (mock_parm1,)
         }
 
         ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
-        mock_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
-        mock_hou_node.assert_called_with(mock_ui.selectNode.return_value)
-
-        del hou.ui
+        mock_hou_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
+        mock_hou_node.assert_called_with(mock_hou_ui.selectNode.return_value)
