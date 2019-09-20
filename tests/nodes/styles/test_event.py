@@ -7,12 +7,8 @@
 # Standard Library Imports
 import imp
 
-# Third Party Imports
-from mock import MagicMock, patch
-
 # Houdini Toolbox Imports
 import ht.nodes.styles.event
-
 from ht.events.item import HoudiniEventItem
 from ht.events.types import NodeEvents
 
@@ -32,6 +28,7 @@ class Test_StyleNodeEvent(object):
     """Test ht.nodes.styles.event.StyleNodeEvent class."""
 
     def test___init__(self):
+        """Test object initialization."""
         event = ht.nodes.styles.event.StyleNodeEvent()
 
         expected_map = {
@@ -43,12 +40,11 @@ class Test_StyleNodeEvent(object):
 
     # Methods
 
-    # style_node_by_name
+    def test_style_node_by_name(self, mocker):
+        mocker.patch.object(ht.nodes.styles.event.StyleNodeEvent, "__init__", lambda x: None)
+        mock_manager = mocker.patch("ht.nodes.styles.event.MANAGER", autospec=True)
 
-    @patch("ht.nodes.styles.event.MANAGER", autospec=True)
-    @patch.object(ht.nodes.styles.event.StyleNodeEvent, "__init__", lambda x: None)
-    def test_style_node_by_name(self, mock_manager):
-        mock_node = MagicMock(spec=hou.Node)
+        mock_node = mocker.MagicMock(spec=hou.Node)
 
         event = ht.nodes.styles.event.StyleNodeEvent()
 
@@ -58,12 +54,11 @@ class Test_StyleNodeEvent(object):
 
         mock_manager.style_node_by_name.assert_called_with(mock_node)
 
-    # style_node_on_creation
+    def test_style_node_on_creation(self, mocker):
+        mocker.patch.object(ht.nodes.styles.event.StyleNodeEvent, "__init__", lambda x: None)
+        mock_manager = mocker.patch("ht.nodes.styles.event.MANAGER", autospec=True)
 
-    @patch("ht.nodes.styles.event.MANAGER", autospec=True)
-    @patch.object(ht.nodes.styles.event.StyleNodeEvent, "__init__", lambda x: None)
-    def test_style_node_on_creation(self, mock_manager):
-        mock_node = MagicMock(spec=hou.Node)
+        mock_node = mocker.MagicMock(spec=hou.Node)
 
         event = ht.nodes.styles.event.StyleNodeEvent()
 

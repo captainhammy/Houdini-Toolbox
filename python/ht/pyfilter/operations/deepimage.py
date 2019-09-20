@@ -95,140 +95,71 @@ class SetDeepImage(PyFilterOperation):
         """bool: Modify deep resolver during all render types."""
         return self._all_passes
 
-    @all_passes.setter
-    def all_passes(self, all_passes):
-        self._all_passes = all_passes
-
-    # -------------------------------------------------------------------------
-
     @property
     def compositing(self):
         """int: Pre-composite the samples."""
         return self._compositing
-
-    @compositing.setter
-    def compositing(self, compositing):
-        self._compositing = compositing
-
-    # -------------------------------------------------------------------------
 
     @property
     def deepcompression(self):
         """int: Compression value."""
         return self._deepcompression
 
-    @deepcompression.setter
-    def deepcompression(self, deepcompression):
-        self._deepcompression = deepcompression
-
-    # -------------------------------------------------------------------------
-
     @property
     def depth_planes(self):
         """str: Special planes."""
         return self._depth_planes
-
-    @depth_planes.setter
-    def depth_planes(self, depth_planes):
-        self._depth_planes = depth_planes
-
-    # -------------------------------------------------------------------------
 
     @property
     def disable_deep_image(self):
         """bool: Disable deep image generation."""
         return self._disable_deep_image
 
-    @disable_deep_image.setter
-    def disable_deep_image(self, disable_deep_image):
-        self._disable_deep_image = disable_deep_image
-
-    # -------------------------------------------------------------------------
-
     @property
     def filename(self):
         """The deep image path to set."""
         return self._filename
-
-    @filename.setter
-    def filename(self, filename):
-        self._filename = filename
-
-    # -------------------------------------------------------------------------
 
     @property
     def mipmaps(self):
         """int: Create MIP mapped images."""
         return self._mipmaps
 
-    @mipmaps.setter
-    def mipmaps(self, mipmaps):
-        self._mipmaps = mipmaps
-
-    # -------------------------------------------------------------------------
-
     @property
     def ofsize(self):
         """int: The opacity storage size."""
         return self._ofsize
-
-    @ofsize.setter
-    def ofsize(self, ofsize):
-        self._ofsize = ofsize
-
-    # -------------------------------------------------------------------------
 
     @property
     def ofstorage(self):
         """str: The opacity bit depth."""
         return self._ofstorage
 
-    @ofstorage.setter
-    def ofstorage(self, ofstorage):
-        self._ofstorage = ofstorage
-
-    # -------------------------------------------------------------------------
-
     @property
     def pzstorage(self):
         """str: The depth bit depth."""
         return self._pzstorage
-
-    @pzstorage.setter
-    def pzstorage(self, pzstorage):
-        self._pzstorage = pzstorage
-
-    # -------------------------------------------------------------------------
 
     @property
     def resolver(self):
         """str: The type of deep to generate."""
         return self._resolver
 
-    @resolver.setter
-    def resolver(self, resolver):
-        self._resolver = resolver
-
-    # -------------------------------------------------------------------------
-
     @property
     def zbias(self):
         """float: Compression bias."""
         return self._zbias
-
-    @zbias.setter
-    def zbias(self, zbias):
-        self._zbias = zbias
 
     # -------------------------------------------------------------------------
     # STATIC METHODS
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def build_arg_string(disable_deep_image=None, deep_all_passes=None,  # pylint: disable=arguments-differ,too-many-arguments
-                         deep_image_path=None, resolver=None, compositing=None,
-                         compression=None, depth_planes=None, mipmaps=None,
-                         ofsize=None, ofstorage=None, pzstorage=None, zbias=None):
+    def build_arg_string(disable_deep_image=None,  # pylint: disable=arguments-differ,too-many-arguments
+                         deep_all_passes=None, deep_image_path=None, resolver=None,
+                         compositing=None, compression=None, depth_planes=None,
+                         mipmaps=None, ofsize=None, ofstorage=None, pzstorage=None,
+                         zbias=None):
         """Build an argument string for this operation.
 
         :param disable_deep_image: Whether or not to disable the deep image.
@@ -400,40 +331,40 @@ class SetDeepImage(PyFilterOperation):
 
         """
         if filter_args.disable_deep_image:
-            self.disable_deep_image = True
+            self._disable_deep_image = True
 
         if filter_args.deep_all_passes:
-            self.all_passes = True
+            self._all_passes = True
 
         if filter_args.deep_image_path is not None:
-            self.filename = filter_args.deep_image_path
+            self._filename = filter_args.deep_image_path
 
         if filter_args.deep_resolver is not None:
-            self.resolver = filter_args.deep_resolver
+            self._resolver = filter_args.deep_resolver
 
         if filter_args.deep_compositing is not None:
-            self.compositing = filter_args.deep_compositing
+            self._compositing = filter_args.deep_compositing
 
         if filter_args.deep_compression is not None:
-            self.deepcompression = filter_args.deep_compression
+            self._deepcompression = filter_args.deep_compression
 
         if filter_args.deep_depth_planes is not None:
-            self.depth_planes = filter_args.deep_depth_planes
+            self._depth_planes = filter_args.deep_depth_planes
 
         if filter_args.deep_mipmaps is not None:
-            self.mipmaps = filter_args.deep_mipmaps
+            self._mipmaps = filter_args.deep_mipmaps
 
         if filter_args.deep_ofsize is not None:
-            self.ofsize = filter_args.deep_ofsize
+            self._ofsize = filter_args.deep_ofsize
 
         if filter_args.deep_ofstorage is not None:
-            self.ofstorage = filter_args.deep_ofstorage
+            self._ofstorage = filter_args.deep_ofstorage
 
         if filter_args.deep_pzstorage is not None:
-            self.pzstorage = filter_args.deep_pzstorage
+            self._pzstorage = filter_args.deep_pzstorage
 
         if filter_args.deep_zbias is not None:
-            self.zbias = filter_args.deep_zbias
+            self._zbias = filter_args.deep_zbias
 
     def should_run(self):
         """Determine whether or not this operation should be run.

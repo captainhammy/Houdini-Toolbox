@@ -7,9 +7,6 @@
 # Standard Library Imports
 import imp
 
-# Third Party Imports
-from mock import patch
-
 # Houdini Toolbox Imports
 import ht.events.events.scene_load
 
@@ -39,9 +36,10 @@ class Test_SceneLoadEvent(object):
 
     # Methods
 
-    @patch("ht.events.events.scene_load.hou.hscript")
-    @patch.object(ht.events.events.scene_load.SceneLoadEvent, "__init__", lambda x: None)
-    def test_clear_session_settings(self, mock_hscript):
+    def test_clear_session_settings(self, mocker):
+        mocker.patch.object(ht.events.events.scene_load.SceneLoadEvent, "__init__", lambda x: None)
+        mock_hscript = mocker.patch("ht.events.events.scene_load.hou.hscript")
+
         event = ht.events.events.scene_load.SceneLoadEvent()
 
         event.clear_session_settings({})

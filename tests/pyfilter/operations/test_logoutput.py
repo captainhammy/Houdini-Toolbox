@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Third Party Imports
-from mock import MagicMock, call, patch
 import pytest
 
 # Houdini Toolbox Imports
@@ -17,10 +16,20 @@ from ht.pyfilter.operations import logoutput
 # =============================================================================
 
 @pytest.fixture
-def patch_logger():
-    """Mock the module logger."""
-    with patch("ht.pyfilter.operations.logoutput._logger", autospec=True) as mock_logger:
-        yield mock_logger
+def init_operation(mocker):
+    """Fixture to initialize an operation."""
+    mocker.patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
+
+    def create():
+        return logoutput.LogOutput(None)
+
+    return create
+
+
+@pytest.fixture
+def patch_logger(mocker):
+    """Mock the fake 'mantra' module logger."""
+    yield mocker.patch("ht.pyfilter.operations.logoutput._logger", autospec=True)
 
 
 # =============================================================================
@@ -32,83 +41,75 @@ class Test_LogOutput(object):
 
     # Methods
 
-    @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
-    def test_filter_error__level_0(self, patch_logger):
+    def test_filter_error__level_0(self, init_operation, patch_logger, mocker):
+        """Filter an error with level=0."""
         level = 0
 
-        mock_message1 = MagicMock(spec=str)
-        mock_message2 = MagicMock(spec=str)
+        mock_message1 = mocker.MagicMock(spec=str)
+        mock_message2 = mocker.MagicMock(spec=str)
 
-        mock_message = MagicMock(spec=str)
+        mock_message = mocker.MagicMock(spec=str)
         mock_message.split.return_value = [mock_message1, mock_message2]
 
-        mock_prefix = MagicMock(spec=str)
+        mock_prefix = mocker.MagicMock(spec=str)
 
-        op = logoutput.LogOutput(None)
+        op = init_operation()
 
-        result = op.filter_error(level, mock_message, mock_prefix)
-
-        assert result
+        assert op.filter_error(level, mock_message, mock_prefix)
 
         mock_message.split.assert_called_with('\n')
 
         patch_logger.error.assert_has_calls(
-            [call(mock_message1), call(mock_message2)]
+            [mocker.call(mock_message1), mocker.call(mock_message2)]
         )
 
-    @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
-    def test_filter_error__prefix(self, patch_logger):
-        level = 1
+    def test_filter_error__prefix(self, init_operation, patch_logger, mocker):
+        """Filter a warning due to a prefix."""
+        level = mocker.MagicMock(spec=int)
 
-        mock_message = MagicMock(spec=str)
+        mock_message = mocker.MagicMock(spec=str)
         mock_message.split.return_value = [mock_message]
 
-        mock_prefix = MagicMock(spec=str)
+        mock_prefix = mocker.MagicMock(spec=str)
         mock_prefix.__len__.return_value = 1
 
-        op = logoutput.LogOutput(None)
+        op = init_operation()
 
-        result = op.filter_error(level, mock_message, mock_prefix)
-
-        assert result
+        assert op.filter_error(level, mock_message, mock_prefix)
 
         mock_message.split.assert_called_with('\n')
 
         patch_logger.warning.assert_called_with(mock_message)
 
-    @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
-    def test_filter_error__level_1(self, patch_logger):
+    def test_filter_error__level_1(self, init_operation, patch_logger, mocker):
+        """Filter an info message with level=1."""
         level = 1
 
-        mock_message = MagicMock(spec=str)
+        mock_message = mocker.MagicMock(spec=str)
         mock_message.split.return_value = [mock_message]
 
-        mock_prefix = MagicMock(spec=str)
+        mock_prefix = mocker.MagicMock(spec=str)
 
-        op = logoutput.LogOutput(None)
+        op = init_operation()
 
-        result = op.filter_error(level, mock_message, mock_prefix)
-
-        assert result
+        assert op.filter_error(level, mock_message, mock_prefix)
 
         mock_message.split.assert_called_with('\n')
 
         patch_logger.info.assert_called_with(mock_message)
 
-    @patch.object(logoutput.LogOutput, "__init__", lambda x, y: None)
-    def test_filter_error__debug(self, patch_logger):
-        level = MagicMock(spec=int)
+    def test_filter_error__debug(self, init_operation, patch_logger, mocker):
+        """Filter a debug message."""
+        level = mocker.MagicMock(spec=int)
 
-        mock_message = MagicMock(spec=str)
+        mock_message = mocker.MagicMock(spec=str)
         mock_message.split.return_value = [mock_message]
 
-        mock_prefix = MagicMock(spec=str)
+        mock_prefix = mocker.MagicMock(spec=str)
 
-        op = logoutput.LogOutput(None)
+        op = init_operation()
 
-        result = op.filter_error(level, mock_message, mock_prefix)
-
-        assert result
+        assert op.filter_error(level, mock_message, mock_prefix)
 
         mock_message.split.assert_called_with('\n')
 

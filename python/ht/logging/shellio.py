@@ -41,15 +41,15 @@ class PythonShellHandler(logging.StreamHandler):
 
         """
         try:
-            # Format the message
-            msg = self.format(record)
-
             # Get the current stdout stream.
             stream = sys.stdout
 
             # If the stream is really an output to a Python Shell then write
             # the message to it.
             if isinstance(stream, hou.ShellIO):
+                # Format the message
+                msg = self.format(record)
+
                 stream.write(msg)
                 stream.write('\n')
                 stream.flush()

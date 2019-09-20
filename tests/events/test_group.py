@@ -7,8 +7,6 @@
 # Standard Library Imports
 import imp
 
-# Third Party Imports
-from mock import MagicMock, patch
 
 # Houdini Toolbox Imports
 import ht.events.group
@@ -26,7 +24,7 @@ class Test_HoudiniEventGroup(object):
     """Test ht.events.group.HoudiniEventGroup class."""
 
     def test___init__(self):
-        """Test the constructor."""
+        """Test object initialization."""
         group = ht.events.group.HoudiniEventGroup()
 
         assert group._data == {}
@@ -34,21 +32,20 @@ class Test_HoudiniEventGroup(object):
 
     # Properties
 
-    @patch.object(ht.events.group.HoudiniEventGroup, "__init__", lambda x: None)
-    def test_data(self):
+    def test_data(self, mocker):
         """Test the 'data' property."""
-        mock_value = MagicMock(spec=dict)
-
+        mocker.patch.object(ht.events.group.HoudiniEventGroup, "__init__", lambda x: None)
         group = ht.events.group.HoudiniEventGroup()
+
+        mock_value = mocker.MagicMock(spec=dict)
         group._data = mock_value
         assert group.data == mock_value
 
-    @patch.object(ht.events.group.HoudiniEventGroup, "__init__", lambda x: None)
-    def test_event_map(self):
+    def test_event_map(self, mocker):
         """Test 'event_map' property."""
-        mock_value = MagicMock(spec=dict)
-
+        mocker.patch.object(ht.events.group.HoudiniEventGroup, "__init__", lambda x: None)
         group = ht.events.group.HoudiniEventGroup()
-        group._event_map = mock_value
 
+        mock_value = mocker.MagicMock(spec=dict)
+        group._event_map = mock_value
         assert group.event_map == mock_value

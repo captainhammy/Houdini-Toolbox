@@ -82,11 +82,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 
     @property
     def dialog(self):
-        """Whether or not the dialog will be displayed.
-
-        :rtype: bool
-
-        """
+        """bool: Whether or not the dialog will be displayed."""
         return self._dialog
 
     @dialog.setter
@@ -97,11 +93,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 
     @property
     def node(self):
-        """A node the logger is associated with.
-
-        :rtype: hou.Node or None
-
-        """
+        """hou.Node or None: A node the logger is associated with."""
         return self._node
 
     @node.setter
@@ -112,11 +104,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 
     @property
     def status_bar(self):
-        """Whether or not the message will be logged to the status bar.
-
-        :rtype: bool
-
-        """
+        """bool: Whether or not the message will be logged to the status bar."""
         return self._status_bar
 
     @status_bar.setter

@@ -153,7 +153,7 @@ class StyleManager(object):
                         return self._resolve_rule(category_rules[constants.GENERATOR_TYPE_KEY])
 
                 else:
-                    raise hou.OperationFailed(
+                    raise ValueError(
                         "{} is not a manager or a generator type".format(
                             node_type.nameWithCategory()
                         )

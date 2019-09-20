@@ -1,11 +1,11 @@
 enum34
 humanfriendly
 jinja2
-mock
 numpy
 pytest
 pytest-cov
-requets
+pytest-mock
+requests
 scipy
 six
 termcolor

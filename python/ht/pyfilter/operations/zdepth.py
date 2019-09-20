@@ -33,7 +33,7 @@ class ZDepthPass(PyFilterOperation):
         self._active = False
 
         # We have not set the Pz plane yet.
-        self.data["set_pz"] = False
+        self._data["set_pz"] = False
 
     # -------------------------------------------------------------------------
     # PROPERTIES
@@ -43,10 +43,6 @@ class ZDepthPass(PyFilterOperation):
     def active(self):
         """bool: Whether or not the operation is active."""
         return self._active
-
-    @active.setter
-    def active(self, active):
-        self._active = active
 
     # -------------------------------------------------------------------------
     # STATIC METHODS

@@ -103,9 +103,6 @@ class AOV(object):
         return self.variable < other.variable
 
     def __ne__(self, other):
-        if not isinstance(other, AOV):
-            return NotImplemented
-
         return not self.__eq__(other)
 
     def __repr__(self):
@@ -546,6 +543,9 @@ class AOVGroup(object):
 
         return self.name > other.name
 
+    def __hash__(self):
+        return hash(self.name)
+
     def __le__(self, other):
         if not isinstance(other, AOVGroup):
             return NotImplemented
@@ -559,13 +559,7 @@ class AOVGroup(object):
         return self.name < other.name
 
     def __ne__(self, other):
-        if not isinstance(other, AOVGroup):
-            return NotImplemented
-
         return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash(self.name)
 
     def __repr__(self):
         return "<{} {} ({} AOVs)>".format(

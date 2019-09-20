@@ -49,127 +49,63 @@ class IpOverrides(PyFilterOperation):
         """int: Set the bucket rendering size."""
         return self._bucket_size
 
-    @bucket_size.setter
-    def bucket_size(self, bucket_size):
-        self._bucket_size = bucket_size
-
-    # -------------------------------------------------------------------------
-
     @property
     def disable_aovs(self):
         """bool: Disable all extra image planes."""
         return self._disable_aovs
-
-    @disable_aovs.setter
-    def disable_aovs(self, disable_aovs):
-        self._disable_aovs = disable_aovs
-
-    # -------------------------------------------------------------------------
 
     @property
     def disable_blur(self):
         """bool: Disable motion blur."""
         return self._disable_blur
 
-    @disable_blur.setter
-    def disable_blur(self, disable_blur):
-        self._disable_blur = disable_blur
-
-    # -------------------------------------------------------------------------
-
     @property
     def disable_deep(self):
         """bool: Disable deep image generation."""
         return self._disable_deep
-
-    @disable_deep.setter
-    def disable_deep(self, disable_deep):
-        self._disable_deep = disable_deep
-
-    # -------------------------------------------------------------------------
 
     @property
     def disable_displacement(self):
         """bool: Disable shader displacement."""
         return self._disable_displacement
 
-    @disable_displacement.setter
-    def disable_displacement(self, disable_displacement):
-        self._disable_displacement = disable_displacement
-
-    # -------------------------------------------------------------------------
-
     @property
     def disable_matte(self):
         """bool: Disable matte and phantom objects."""
         return self._disable_matte
-
-    @disable_matte.setter
-    def disable_matte(self, disable_matte):
-        self._disable_matte = disable_matte
-
-    # -------------------------------------------------------------------------
 
     @property
     def disable_subd(self):
         """bool: Disable subdivision."""
         return self._disable_subd
 
-    @disable_subd.setter
-    def disable_subd(self, disable_subd):
-        self._disable_subd = disable_subd
-
-    # -------------------------------------------------------------------------
-
     @property
     def disable_tilecallback(self):
         """bool: Disable any tile callback."""
         return self._disable_tilecallback
-
-    @disable_tilecallback.setter
-    def disable_tilecallback(self, disable_tilecallback):
-        self._disable_tilecallback = disable_tilecallback
-
-    # -------------------------------------------------------------------------
 
     @property
     def res_scale(self):
         """float: Amount to scale the image resolution by."""
         return self._res_scale
 
-    @res_scale.setter
-    def res_scale(self, res_scale):
-        self._res_scale = res_scale
-
-    # -------------------------------------------------------------------------
-
     @property
     def sample_scale(self):
         """float: Amount to scale the pixel sample count by."""
         return self._sample_scale
-
-    @sample_scale.setter
-    def sample_scale(self, sample_scale):
-        self._sample_scale = sample_scale
-
-    # -------------------------------------------------------------------------
 
     @property
     def transparent_samples(self):
         """int: Number of transparent samples."""
         return self._transparent_samples
 
-    @transparent_samples.setter
-    def transparent_samples(self, value):
-        self._transparent_samples = value
-
     # -------------------------------------------------------------------------
     # STATIC METHODS
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def build_arg_string(res_scale=None, sample_scale=None, disable_blur=False,  # pylint: disable=arguments-differ,too-many-arguments
-                         disable_aovs=False, disable_deep=False,
+    def build_arg_string(res_scale=None, sample_scale=None,  # pylint: disable=arguments-differ,too-many-arguments
+                         disable_blur=False, disable_aovs=False, disable_deep=False,
                          disable_displacement=False, disable_subd=False,
                          disable_tilecallback=False, bucket_size=None,
                          transparent_samples=None, disable_matte=False):
@@ -265,9 +201,13 @@ class IpOverrides(PyFilterOperation):
 
         parser.add_argument("--ip-disable-matte", action="store_true", dest="ip_disable_matte")
 
-        parser.add_argument("--ip-bucket-size", nargs="?", default=None, type=int, dest="ip_bucket_size", action="store")
+        parser.add_argument(
+            "--ip-bucket-size", nargs="?", default=None, type=int, dest="ip_bucket_size", action="store"
+        )
 
-        parser.add_argument("--ip-transparent-samples", nargs="?", default=None, type=int, action="store", dest="ip_transparent_samples")
+        parser.add_argument(
+            "--ip-transparent-samples", nargs="?", default=None, type=int, action="store", dest="ip_transparent_samples"
+        )
 
     # -------------------------------------------------------------------------
     # METHODS
@@ -362,24 +302,24 @@ class IpOverrides(PyFilterOperation):
 
         """
         if filter_args.ip_res_scale is not None:
-            self.res_scale = filter_args.ip_res_scale
+            self._res_scale = filter_args.ip_res_scale
 
         if filter_args.ip_sample_scale is not None:
-            self.sample_scale = filter_args.ip_sample_scale
+            self._sample_scale = filter_args.ip_sample_scale
 
-        self.disable_aovs = filter_args.ip_disable_aovs
-        self.disable_blur = filter_args.ip_disable_blur
-        self.disable_deep = filter_args.ip_disable_deep
-        self.disable_displacement = filter_args.ip_disable_displacement
-        self.disable_matte = filter_args.ip_disable_matte
-        self.disable_subd = filter_args.ip_disable_subd
-        self.disable_tilecallback = filter_args.ip_disable_tilecallback
+        self._disable_aovs = filter_args.ip_disable_aovs
+        self._disable_blur = filter_args.ip_disable_blur
+        self._disable_deep = filter_args.ip_disable_deep
+        self._disable_displacement = filter_args.ip_disable_displacement
+        self._disable_matte = filter_args.ip_disable_matte
+        self._disable_subd = filter_args.ip_disable_subd
+        self._disable_tilecallback = filter_args.ip_disable_tilecallback
 
         if filter_args.ip_bucket_size is not None:
-            self.bucket_size = filter_args.ip_bucket_size
+            self._bucket_size = filter_args.ip_bucket_size
 
         if filter_args.ip_transparent_samples is not None:
-            self.transparent_samples = filter_args.ip_transparent_samples
+            self._transparent_samples = filter_args.ip_transparent_samples
 
     def should_run(self):
         """Determine whether or not this filter should be run.
@@ -532,9 +472,9 @@ def build_resolution_scale_display(node):
     res_scale = float(node.evalParm("ip_res_fraction"))
 
     # Scale based our override.
-    resx, resy = _scale_resolution(resolution, res_scale)
+    width, height = _scale_resolution(resolution, res_scale)
 
-    return "{}x{}".format(resx, resy)
+    return "{}x{}".format(width, height)
 
 
 def build_pyfilter_command_from_node(node):
@@ -548,9 +488,7 @@ def build_pyfilter_command_from_node(node):
     """
     args = build_arg_string_from_node(node)
 
-    cmd = build_pyfilter_command(args.split())
-
-    return cmd
+    return build_pyfilter_command(args.split())
 
 
 def set_mantra_command(node):

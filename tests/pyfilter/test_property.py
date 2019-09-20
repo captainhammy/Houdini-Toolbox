@@ -4,12 +4,6 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-import json
-
-# Third Party Imports
-from mock import MagicMock, patch
-
 # Houdini Toolbox Imports
 from ht.pyfilter import property as prop
 
@@ -36,93 +30,79 @@ class Test__parse_string_for_bool(object):
 class Test__prep_value_to_set(object):
     """Test ht.pyfilter.property._prep_value_to_set."""
 
-    def test_None(self):
+    def test_none(self):
         result = prop._prep_value_to_set(None)
 
         assert result == []
 
-    def test_str(self):
-        value = "value"
+    def test_str(self, mocker):
+        mock_value = mocker.MagicMock(spec=str)
 
-        result = prop._prep_value_to_set(value)
+        result = prop._prep_value_to_set(mock_value)
 
-        assert result == [value]
+        assert result == [mock_value]
 
-    def test_unicode(self):
-        value = u"value"
+    def test_unicode(self, mocker):
+        mock_value = mocker.MagicMock(spec=unicode)
 
-        result = prop._prep_value_to_set(value)
+        result = prop._prep_value_to_set(mock_value)
 
-        assert result == [value]
+        assert result == [mock_value]
 
-    def test_dict(self):
-        value = {
-            "key1": "value1",
-            "key2": "value2",
-        }
+    def test_dict(self, mocker):
+        mock_dumps = mocker.patch("ht.pyfilter.property.json.dumps")
 
-        result = prop._prep_value_to_set(value)
+        mock_value = mocker.MagicMock(spec=dict)
 
-        expected = json.dumps(value)
+        result = prop._prep_value_to_set(mock_value)
 
-        assert result == [expected]
+        assert result == [mock_dumps.return_value]
 
-    def test_non_iterable(self):
-        value = 123
+        mock_dumps.assert_called_with(mock_value)
 
-        result = prop._prep_value_to_set(value)
+    def test_non_iterable(self, mocker):
+        mock_value = mocker.MagicMock(spec=int)
 
-        assert result == [value]
+        result = prop._prep_value_to_set(mock_value)
 
-    def test_list_of_dicts(self):
-        dict1 = {
-            "key1": "value1",
-            "key2": "value2",
-        }
+        assert result == [mock_value]
 
-        value = [dict1]
+    def test_list_of_dicts(self, mocker):
+        mock_dumps = mocker.patch("ht.pyfilter.property.json.dumps")
 
-        result = prop._prep_value_to_set(value)
+        mock_value = mocker.MagicMock(spec=dict)
 
-        expected = json.dumps(dict1)
+        result = prop._prep_value_to_set([mock_value])
 
-        assert result == [expected]
+        assert result == [mock_dumps.return_value]
 
-    @patch("ht.pyfilter.property.json.dumps")
-    def test_list_of_dicts_TypeError(self, mock_dumps):
-        mock_dumps.side_effect = TypeError
-        dict1 = {
-            "key1": "value1",
-            "key2": "value2",
-        }
+    def test_list_of_dicts__typeerror(self, mocker):
+        mocker.patch("ht.pyfilter.property.json.dumps", side_effect=TypeError)
 
-        value = [dict1]
+        mock_value = mocker.MagicMock(spec=dict)
+
+        value = [mock_value]
 
         result = prop._prep_value_to_set(value)
 
         assert result == value
 
-    @patch("ht.pyfilter.property.json.dumps")
-    def test_list_of_dicts_ValueError(self, mock_dumps):
-        mock_dumps.side_effect = ValueError
-        dict1 = {
-            "key1": "value1",
-            "key2": "value2",
-        }
+    def test_list_of_dicts__valueerror(self, mocker):
+        mocker.patch("ht.pyfilter.property.json.dumps", side_effect=ValueError)
 
-        value = [dict1]
+        mock_value = mocker.MagicMock(spec=dict)
+
+        value = [mock_value]
 
         result = prop._prep_value_to_set(value)
 
         assert result == value
 
-    def test_list_of_non_dicts(self):
-        dict1 = {
-            "key1": "value1",
-            "key2": "value2",
-        }
+    def test_list_of_non_dicts(self, mocker):
+        mock_dict = mocker.MagicMock(spec=dict)
+        mock_int = mocker.MagicMock(spec=int)
 
-        value = [dict1, 3]
+        value = [mock_dict, mock_int]
 
         result = prop._prep_value_to_set(value)
 
@@ -132,91 +112,115 @@ class Test__prep_value_to_set(object):
 class Test__transform_values(object):
     """Test ht.pyfilter.property._transform_values."""
 
-    def test_None(self):
+    def test_none(self):
         result = prop._transform_values(None)
 
         assert result is None
 
-    def test_single_json_string(self):
-        expected = 123
+    def test_single_string(self, mocker):
+        mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
+        mock_value = mocker.MagicMock(spec=str)
 
-        value = json.dumps(expected)
+        result = prop._transform_values([mock_value])
 
-        result = prop._transform_values([value])
+        assert result == mock_loads.return_value
 
-        assert result == expected
+    def test_single_string_dict_value(self, mocker):
+        mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
+        mock_loads.side_effect = ValueError
 
-    def test_single_string_json(self):
-        expected = 123
+        mock_key1 = mocker.MagicMock(spec=str)
+        mock_key2 = mocker.MagicMock(spec=str)
+        mock_value1 = mocker.MagicMock(spec=str)
+        mock_value2 = mocker.MagicMock(spec=str)
 
-        value = json.dumps(expected)
+        mock_value = mocker.MagicMock(spec=str)
+        mock_value.split.return_value = [mock_key1, mock_value1, mock_key2, mock_value2]
 
-        result = prop._transform_values([value])
+        result = prop._transform_values([mock_value])
 
-        assert result == expected
+        assert result == {mock_key1: mock_value1, mock_key2: mock_value2}
 
-    def test_single_string_non_json_dict(self):
-        expected = {"comp1": "comp2", "comp3": "comp4"}
+        mock_loads.assert_called_with(mock_value)
 
-        result = prop._transform_values(["comp1 comp2 comp3 comp4"])
+    def test_single_string_value(self, mocker):
+        mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
+        mock_loads.side_effect = ValueError
 
-        assert result == expected
+        mock_parse = mocker.patch("ht.pyfilter.property._parse_string_for_bool")
 
-    @patch("ht.pyfilter.property._parse_string_for_bool")
-    def test_single_string_value(self, mock_parse):
-        expected = "value"
+        mock_value = mocker.MagicMock(spec=str)
+        mock_value.split.return_value.__len__.return_value = 2
 
-        result = prop._transform_values([expected])
+        result = prop._transform_values([mock_value])
 
         assert result == mock_parse.return_value
 
-        mock_parse.assert_called_with(expected)
+        mock_loads.assert_called_with(mock_value)
 
-    def test_single_non_str(self):
-        value = 123
+        mock_parse.assert_called_with(mock_value)
 
-        result = prop._transform_values([value])
+    def test_single_int(self, mocker):
+        mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
+        mock_value = mocker.MagicMock(spec=int)
 
-        assert result == value
+        result = prop._transform_values([mock_value])
 
-    def test_multiple_json_values(self):
-        values = [1, 2]
+        assert result == mock_value
 
-        result = prop._transform_values([str(val) for val in values])
+        mock_loads.assert_not_called()
 
-        assert result == values
+    def test_multiple_values(self, mocker):
+        mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
 
-    def test_multiple_non_json_values(self):
-        values = [1, "2"]
+        mock_values = [mocker.MagicMock(spec=str), mocker.MagicMock(spec=str)]
 
-        result = prop._transform_values(values)
+        result = prop._transform_values(mock_values)
 
-        assert result == values
+        assert result == [mock_loads.return_value, mock_loads.return_value]
+
+    def test_multiple_values__type_error(self, mocker):
+        mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
+        mock_loads.side_effect = TypeError
+
+        mock_values = [mocker.MagicMock(spec=str), mocker.MagicMock(spec=str)]
+
+        result = prop._transform_values(mock_values)
+
+        assert result == mock_values
+
+    def test_multiple_values__value_error(self, mocker):
+        mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
+        mock_loads.side_effect = ValueError
+
+        mock_values = [mocker.MagicMock(spec=str), mocker.MagicMock(spec=str)]
+
+        result = prop._transform_values(mock_values)
+
+        assert result == mock_values
 
 
-class Test_get_property(object):
+def test_get_property(mocker, patch_soho):
     """Test ht.pyfilter.property.get_property."""
+    mock_transform = mocker.patch("ht.pyfilter.property._transform_values")
 
-    @patch("ht.pyfilter.property._transform_values")
-    def test(self, mock_transform, patch_soho):
-        mock_name = MagicMock(spec=str)
+    mock_name = mocker.MagicMock(spec=str)
 
-        result = prop.get_property(mock_name)
+    result = prop.get_property(mock_name)
 
-        assert result == mock_transform.return_value
+    assert result == mock_transform.return_value
 
-        mock_transform.assert_called_with(patch_soho["mantra"].property.return_value)
+    mock_transform.assert_called_with(patch_soho.mantra.property.return_value)
 
 
-class Test_set_property(object):
+def test_set_property(mocker, patch_soho):
     """Test ht.pyfilter.property.set_property."""
+    mock_prep = mocker.patch("ht.pyfilter.property._prep_value_to_set")
 
-    @patch("ht.pyfilter.property._prep_value_to_set")
-    def test(self, mock_prep, patch_soho):
-        mock_name = MagicMock(spec=str)
-        mock_value = MagicMock(spec=int)
+    mock_name = mocker.MagicMock(spec=str)
+    mock_value = mocker.MagicMock(spec=int)
 
-        prop.set_property(mock_name, mock_value)
+    prop.set_property(mock_name, mock_value)
 
-        mock_prep.assert_called_with(mock_value)
-        patch_soho["mantra"].setproperty.assert_called_with(mock_name, mock_prep.return_value)
+    mock_prep.assert_called_with(mock_value)
+    patch_soho.mantra.setproperty.assert_called_with(mock_name, mock_prep.return_value)

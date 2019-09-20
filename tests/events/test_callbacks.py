@@ -7,9 +7,6 @@
 # Standard Library Imports
 import imp
 
-# Third Party Imports
-from mock import MagicMock, patch
-
 # Houdini Toolbox Imports
 from ht.events import SceneEvents, callbacks
 
@@ -22,88 +19,82 @@ imp.reload(callbacks)
 # CLASSES
 # =============================================================================
 
-class Test__atexit_callback(object):
+def test_atexit_callback(mocker):
     """Test ht.events.callbacks._atexit_callback."""
+    mock_run = mocker.patch("ht.events.callbacks.run_event")
 
-    @patch("ht.events.callbacks.run_event")
-    def test(self, mock_run):
-        """Run the Exit event."""
-        callbacks._atexit_callback()
+    callbacks._atexit_callback()
 
-        mock_run.assert_called_with(SceneEvents.Exit)
+    mock_run.assert_called_with(SceneEvents.Exit)
 
 
-class Test__emit_ui_available(object):
+def test_emit_ui_available(mocker):
     """Test ht.events.callbacks._emit_ui_available."""
+    mock_run = mocker.patch("ht.events.callbacks.run_event")
 
-    @patch("ht.events.callbacks.run_event")
-    def test(self, mock_run):
-        """Run the WhenUIAvailable event."""
-        callbacks._emit_ui_available()
+    callbacks._emit_ui_available()
 
-        mock_run.assert_called_with(SceneEvents.WhenUIAvailable)
+    mock_run.assert_called_with(SceneEvents.WhenUIAvailable)
 
 
 class Test__hip_event_callback(object):
     """Test ht.events.callbacks._hip_event_callback."""
 
-    @patch("ht.events.callbacks.run_event")
-    def test(self, mock_run):
-        mock_event_type = MagicMock()
+    def test(self, mocker):
+        mock_run = mocker.patch("ht.events.callbacks.run_event")
+
+        mock_event_type = mocker.MagicMock()
         mock_event_type.name.return_value = "event_name"
 
-        mock_name_value = MagicMock(spec=str)
+        mock_name_value = mocker.MagicMock(spec=str)
 
-        mock_event = MagicMock()
+        mock_event = mocker.MagicMock()
         mock_event.event_name = mock_name_value
 
-        with patch("ht.events.callbacks.HipFileEvents", mock_event):
-            callbacks._hip_event_callback(mock_event_type)
+        mocker.patch("ht.events.callbacks.HipFileEvents", mock_event)
+        callbacks._hip_event_callback(mock_event_type)
 
-            mock_run.assert_called_with(mock_name_value, {"hip_file_event_type": mock_event_type})
+        mock_run.assert_called_with(mock_name_value, {"hip_file_event_type": mock_event_type})
 
-    @patch("ht.events.callbacks.run_event")
-    def test_no_event_name(self, mock_run):
-        mock_event_type = MagicMock()
+    def test_no_event_name(self, mocker):
+        mock_run = mocker.patch("ht.events.callbacks.run_event")
+
+        mock_event_type = mocker.MagicMock()
         mock_event_type.name.return_value = "event_name"
 
-        mock_event = MagicMock()
+        mock_event = mocker.MagicMock()
         del mock_event.event_name
 
-        with patch("ht.events.callbacks.HipFileEvents", mock_event):
-            callbacks._hip_event_callback(mock_event_type)
+        mocker.patch("ht.events.callbacks.HipFileEvents", mock_event)
+        callbacks._hip_event_callback(mock_event_type)
 
-            mock_run.assert_not_called()
+        mock_run.assert_not_called()
 
 
-class Test__register_when_ui_available(object):
-    """Test ht.events.callbacks._register_when_ui_available."""
+def test_register_when_ui_available(mocker):
+    """Register the _emit_ui_available function with hdefereval."""
+    mock_hdefereval = mocker.MagicMock()
 
-    def test(self):
-        """Register the _emit_ui_available function with hdefereval."""
-        mock_hdefereval = MagicMock()
+    # Need to mock importing hdefereval because the import will fail when
+    # the UI is not available (like in testing).
+    modules = {"hdefereval": mock_hdefereval}
 
-        # Need to mock importing hdefereval because the import will fail when
-        # the UI is not available (like in testing).
-        modules = {"hdefereval": mock_hdefereval}
+    mocker.patch.dict("sys.modules", modules)
+    callbacks._register_when_ui_available()
 
-        with patch.dict("sys.modules", modules):
-            callbacks._register_when_ui_available()
-
-            # Ensure we passed the _emit_ui_available method to the exec function.
-            mock_hdefereval.executeDeferredAfterWaiting.assert_called_once_with(callbacks._emit_ui_available, 1)
+    # Ensure we passed the _emit_ui_available method to the exec function.
+    mock_hdefereval.executeDeferredAfterWaiting.assert_called_once_with(callbacks._emit_ui_available, 1)
 
 
 class Test_register_callbacks(object):
     """Test ht.events.callbacks.register_callbacks."""
 
-    @patch("ht.events.callbacks.hou.hipFile.addEventCallback")
-    @patch("ht.events.callbacks._register_when_ui_available")
-    @patch("ht.events.callbacks.atexit.register")
-    @patch("hou.isUIAvailable")
-    def test_no_ui(self, mock_available, mock_register, mock_emit, mock_add):
+    def test_no_ui(self, mocker):
         """Register callbacks when the UI is not available."""
-        mock_available.return_value = False
+        mocker.patch("hou.isUIAvailable", return_value=False)
+        mock_register = mocker.patch("ht.events.callbacks.atexit.register")
+        mock_emit = mocker.patch("ht.events.callbacks._register_when_ui_available")
+        mock_add = mocker.patch("ht.events.callbacks.hou.hipFile.addEventCallback")
 
         callbacks.register_callbacks()
 
@@ -114,13 +105,12 @@ class Test_register_callbacks(object):
 
         mock_add.assert_called_with(callbacks._hip_event_callback)
 
-    @patch("ht.events.callbacks.hou.hipFile.addEventCallback")
-    @patch("ht.events.callbacks._register_when_ui_available")
-    @patch("ht.events.callbacks.atexit.register")
-    @patch("hou.isUIAvailable")
-    def test_ui_available(self, mock_available, mock_register, mock_emit, mock_add):
+    def test_ui_available(self, mocker):
         """Register callbacks when the UI is available."""
-        mock_available.return_value = True
+        mocker.patch("hou.isUIAvailable", return_value=True)
+        mock_register = mocker.patch("ht.events.callbacks.atexit.register")
+        mock_emit = mocker.patch("ht.events.callbacks._register_when_ui_available")
+        mock_add = mocker.patch("ht.events.callbacks.hou.hipFile.addEventCallback")
 
         callbacks.register_callbacks()
 

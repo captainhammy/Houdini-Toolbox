@@ -39,6 +39,10 @@ omit =
         *tests*
         *__init__*
 
+disable_warnings = 
+	module-not-imported
+	module-not-measured
+
 [report]
 # Regexes for lines to exclude from consideration
 exclude_lines =

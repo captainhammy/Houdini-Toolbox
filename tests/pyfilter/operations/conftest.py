@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Third Party Imports
-from mock import patch
 import pytest
 
 
@@ -14,7 +13,8 @@ import pytest
 # =============================================================================
 
 @pytest.fixture
-def patch_operation_logger():
+def patch_operation_logger(mocker):
     """Mock the log_filter_call logger."""
-    with patch("ht.pyfilter.operations.operation._logger", autospec=True) as mock_logger:
-        yield mock_logger
+    mock_logger = mocker.patch("ht.pyfilter.operations.operation._logger", autospec=True)
+
+    yield mock_logger

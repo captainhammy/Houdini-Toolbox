@@ -9,7 +9,6 @@ import imp
 import os
 
 # Third Party Imports
-from mock import MagicMock, PropertyMock, call, mock_open, patch
 import pytest
 
 # Houdini Toolbox Imports
@@ -25,15 +24,31 @@ imp.reload(manager)
 
 
 # =============================================================================
+# FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def init_manager(mocker):
+    """Fixture to initialize a style constant."""
+    mocker.patch.object(manager.StyleManager, "__init__", lambda x: None)
+
+    def create():
+        return manager.StyleManager()
+
+    return create
+
+
+# =============================================================================
 # CLASSES
 # =============================================================================
 
 class Test_StyleManager(object):
     """Test ht.nodes.styles.manager.StyleManager."""
 
-    @patch.object(manager.StyleManager, "_build")
-    def test___init__(self, mock_build):
+    def test___init__(self, mocker):
         """Test the constructor."""
+        mock_build = mocker.patch.object(manager.StyleManager, "_build")
+
         mgr = manager.StyleManager()
 
         assert mgr._constants == {}
@@ -45,62 +60,58 @@ class Test_StyleManager(object):
 
     # Properties
 
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test_constants(self):
+    def test_constants(self, init_manager, mocker):
         """Test the 'constants' property."""
-        data = MagicMock(spec=dict)
-        mgr = manager.StyleManager()
+        mock_value = mocker.MagicMock(spec=dict)
 
-        mgr._constants = data
-        assert mgr.constants == data
+        mgr = init_manager()
+        mgr._constants = mock_value
+        assert mgr.constants == mock_value
 
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test_name_rules(self):
+    def test_name_rules(self, init_manager, mocker):
         """Test the 'name_rules' property."""
-        data = MagicMock(spec=dict)
-        mgr = manager.StyleManager()
+        mock_value = mocker.MagicMock(spec=dict)
 
-        mgr._name_rules = data
-        assert mgr.name_rules == data
+        mgr = init_manager()
+        mgr._name_rules = mock_value
+        assert mgr.name_rules == mock_value
 
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test_node_type_rules(self):
+    def test_node_type_rules(self, init_manager, mocker):
         """Test the 'node_type_rules' property."""
-        data = MagicMock(spec=dict)
-        mgr = manager.StyleManager()
+        mock_value = mocker.MagicMock(spec=dict)
 
-        mgr._node_type_rules = data
-        assert mgr.node_type_rules == data
+        mgr = init_manager()
+        mgr._node_type_rules = mock_value
+        assert mgr.node_type_rules == mock_value
 
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test_tool_rules(self):
+    def test_tool_rules(self, init_manager, mocker):
         """Test the 'tool_rules' property."""
-        data = MagicMock(spec=dict)
-        mgr = manager.StyleManager()
+        mock_value = mocker.MagicMock(spec=dict)
 
-        mgr._tool_rules = data
-        assert mgr.tool_rules == data
+        mgr = init_manager()
+        mgr._tool_rules = mock_value
+        assert mgr.tool_rules == mock_value
 
     # Non-Public Methods
 
     # _build
 
-    @patch.object(manager.StyleManager, "_build_rules_from_data")
-    @patch.object(manager.StyleManager, "_build_constants_from_data")
-    @patch("ht.nodes.styles.manager.json.load")
-    @patch("ht.nodes.styles.manager._find_files")
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__build(self, mock_find, mock_load, mock_build_consts, mock_build_rules):
+    def test__build(self, init_manager, mocker):
         """Test building all the data from files."""
-        path1 = MagicMock(spec=str)
-        path2 = MagicMock(spec=str)
+        mock_find = mocker.patch("ht.nodes.styles.manager._find_files")
+        mock_load = mocker.patch("ht.nodes.styles.manager.json.load")
+        mock_build_consts = mocker.patch.object(manager.StyleManager, "_build_constants_from_data")
+        mock_build_rules = mocker.patch.object(manager.StyleManager, "_build_rules_from_data")
+
+        path1 = mocker.MagicMock(spec=str)
+        path2 = mocker.MagicMock(spec=str)
 
         # Put files in reversed alphabetical order so they will be sorted
         # opposite of their current order in the function.
         mock_files = (path2, path1)
         mock_find.return_value = mock_files
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         mock_load.side_effect = ({"key1": "value1"}, {"key2": "value2"})
 
@@ -109,39 +120,35 @@ class Test_StyleManager(object):
             {"key2": "value2", consts.PATH_KEY: path2},
         ]
 
-        m = mock_open()
+        mock_handle = mocker.mock_open()
 
-        with patch("__builtin__.open", m):
-            mgr._build()
+        mocker.patch("__builtin__.open", mock_handle)
+        mgr._build()
 
-            mock_load.assert_called_with(m())
+        mock_load.assert_called_with(mock_handle())
 
-            m.assert_any_call(path1)
-            m.assert_any_call(path2)
+        mock_handle.assert_any_call(path1)
+        mock_handle.assert_any_call(path2)
 
         mock_build_consts.assert_called_with(expected_data)
         mock_build_rules.assert_called_with(expected_data)
 
     # _build_constants_from_data
 
-    @patch.object(manager.StyleManager, "constants", new_callable=PropertyMock)
-    @patch("ht.nodes.styles.manager.StyleConstant", autospec=True)
-    @patch("ht.nodes.styles.manager._build_shape")
-    @patch("ht.nodes.styles.manager._build_color")
-    @patch.object(manager.StyleManager, "_build", lambda x: None)
-    def test__build_constants_from_data(self, mock_build_color, mock_build_shape, mock_constant, mock_constants):
+    def test__build_constants_from_data(self, init_manager, mocker):
         """Test building StyleConstants from data."""
-        constants = {}
-        mock_constants.return_value = constants
+        mock_build_color = mocker.patch("ht.nodes.styles.manager._build_color")
+        mock_build_shape = mocker.patch("ht.nodes.styles.manager._build_shape")
+        mock_constant = mocker.patch("ht.nodes.styles.manager.StyleConstant", autospec=True)
 
-        mock_rule1 = MagicMock(spec=dict)
-        mock_rule2 = MagicMock(spec=dict)
+        mock_rule1 = mocker.MagicMock(spec=dict)
+        mock_rule2 = mocker.MagicMock(spec=dict)
 
-        mock_color1 = MagicMock(spec=hou.Color)
-        mock_color2 = MagicMock(spec=hou.Color)
+        mock_color1 = mocker.MagicMock(spec=hou.Color)
+        mock_color2 = mocker.MagicMock(spec=hou.Color)
 
-        color_type1 = MagicMock(spec=str)
-        color_type2 = MagicMock(spec=str)
+        color_type1 = mocker.MagicMock(spec=str)
+        color_type2 = mocker.MagicMock(spec=str)
 
         colors = {
             mock_rule1: (mock_color1, color_type1),
@@ -150,8 +157,8 @@ class Test_StyleManager(object):
 
         mock_build_color.side_effect = lambda e: colors[e]
 
-        shape1 = MagicMock(spec=str)
-        shape2 = MagicMock(spec=str)
+        shape1 = mocker.MagicMock(spec=str)
+        shape2 = mocker.MagicMock(spec=str)
 
         shapes = {
             mock_rule1: shape1,
@@ -160,9 +167,9 @@ class Test_StyleManager(object):
 
         mock_build_shape.side_effect = lambda e: shapes[e]
 
-        path = MagicMock(spec=str)
-        name1 = MagicMock(spec=str)
-        name2 = MagicMock(spec=str)
+        path = mocker.MagicMock(spec=str)
+        name1 = mocker.MagicMock(spec=str)
+        name2 = mocker.MagicMock(spec=str)
 
         all_data = [
             {
@@ -174,16 +181,19 @@ class Test_StyleManager(object):
             }
         ]
 
-        mgr = manager.StyleManager()
+        constants = {}
+
+        mgr = init_manager()
+        type(mgr).constants = mocker.PropertyMock(return_value=constants)
 
         mgr._build_constants_from_data(all_data)
 
-        mock_build_color.assert_has_calls([call(mock_rule1), call(mock_rule2)], any_order=True)
-        mock_build_shape.assert_has_calls([call(mock_rule1), call(mock_rule2)], any_order=True)
+        mock_build_color.assert_has_calls([mocker.call(mock_rule1), mocker.call(mock_rule2)], any_order=True)
+        mock_build_shape.assert_has_calls([mocker.call(mock_rule1), mocker.call(mock_rule2)], any_order=True)
 
         calls = [
-            call(name1, mock_color1, color_type1, shape1, path),
-            call(name2, mock_color2, color_type2, shape2, path),
+            mocker.call(name1, mock_color1, color_type1, shape1, path),
+            mocker.call(name2, mock_color2, color_type2, shape2, path),
         ]
 
         mock_constant.assert_has_calls(calls, any_order=True)
@@ -191,15 +201,15 @@ class Test_StyleManager(object):
         assert constants[name1] == mock_constant.return_value
         assert constants[name2] == mock_constant.return_value
 
-    @patch("ht.nodes.styles.manager.StyleConstant", autospec=True)
-    @patch("ht.nodes.styles.manager._build_shape")
-    @patch("ht.nodes.styles.manager._build_color")
-    @patch.object(manager.StyleManager, "_build", lambda x: None)
-    def test__build_constants_from_data__no_constants(self, mock_build_color, mock_build_shape, mock_constant):
+    def test__build_constants_from_data__no_constants(self, init_manager, mocker):
         """Test building StyleConstants from data when there are no constant definitions."""
-        all_data = [{consts.PATH_KEY: MagicMock(spec=str)}]
+        mock_build_color = mocker.patch("ht.nodes.styles.manager._build_color")
+        mock_build_shape = mocker.patch("ht.nodes.styles.manager._build_shape")
+        mock_constant = mocker.patch("ht.nodes.styles.manager.StyleConstant", autospec=True)
 
-        mgr = manager.StyleManager()
+        all_data = [{consts.PATH_KEY: mocker.MagicMock(spec=str)}]
+
+        mgr = init_manager()
 
         mgr._build_constants_from_data(all_data)
 
@@ -209,26 +219,26 @@ class Test_StyleManager(object):
 
     # _build_rules_from_data
 
-    @patch("ht.nodes.styles.manager._build_category_rules")
-    @patch.object(manager.StyleManager, "_build", lambda x: None)
-    def test__build_rules_from_data__no_rules(self, mock_build):
+    def test__build_rules_from_data__no_rules(self, init_manager, mocker):
         """Test building rules from data when the data contains no rules."""
-        all_data = [{consts.PATH_KEY: MagicMock(spec=str)}]
+        mock_build = mocker.patch("ht.nodes.styles.manager._build_category_rules")
 
-        mgr = manager.StyleManager()
+        all_data = [{consts.PATH_KEY: mocker.MagicMock(spec=str)}]
+
+        mgr = init_manager()
         mgr._build_rules_from_data(all_data)
 
         mock_build.assert_not_called()
 
-    @patch.object(manager.StyleManager, "constants", new_callable=PropertyMock)
-    @patch("ht.nodes.styles.manager._build_category_rules")
-    @patch.object(manager.StyleManager, "_build", lambda x: None)
-    def test__build_rules_from_data__names(self, mock_build, mock_constants):
+    def test__build_rules_from_data__names(self, init_manager, mocker):
         """Test building rules from data when the data contains name rules."""
-        mock_rule1 = MagicMock(spec=dict)
-        mock_rule2 = MagicMock(spec=dict)
+        mock_build = mocker.patch("ht.nodes.styles.manager._build_category_rules")
+        mock_constants = mocker.patch.object(manager.StyleManager, "constants", new_callable=mocker.PropertyMock)
 
-        path = MagicMock(spec=str)
+        mock_rule1 = mocker.MagicMock(spec=dict)
+        mock_rule2 = mocker.MagicMock(spec=dict)
+
+        path = mocker.MagicMock(spec=str)
         all_data = [
             {
                 consts.PATH_KEY: path,
@@ -238,7 +248,8 @@ class Test_StyleManager(object):
             }
         ]
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
+        mgr._name_rules = {}
 
         mgr._build_rules_from_data(all_data)
 
@@ -246,15 +257,15 @@ class Test_StyleManager(object):
 
         mock_build.assert_called_with([mock_rule1, mock_rule2], {}, path, mock_constants.return_value)
 
-    @patch.object(manager.StyleManager, "constants", new_callable=PropertyMock)
-    @patch("ht.nodes.styles.manager._build_category_rules")
-    @patch.object(manager.StyleManager, "_build", lambda x: None)
-    def test__build_rules_from_data__nodes(self, mock_build, mock_constants):
+    def test__build_rules_from_data__nodes(self, init_manager, mocker):
         """Test building rules from data when the data contains node type rules."""
-        mock_rule1 = MagicMock(spec=dict)
-        mock_rule2 = MagicMock(spec=dict)
+        mock_build = mocker.patch("ht.nodes.styles.manager._build_category_rules")
+        mock_constants = mocker.patch.object(manager.StyleManager, "constants", new_callable=mocker.PropertyMock)
 
-        path = MagicMock(spec=str)
+        mock_rule1 = mocker.MagicMock(spec=dict)
+        mock_rule2 = mocker.MagicMock(spec=dict)
+
+        path = mocker.MagicMock(spec=str)
         all_data = [
             {
                 consts.PATH_KEY: path,
@@ -264,7 +275,8 @@ class Test_StyleManager(object):
             }
         ]
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
+        mgr._node_type_rules = {}
 
         mgr._build_rules_from_data(all_data)
 
@@ -272,15 +284,15 @@ class Test_StyleManager(object):
 
         mock_build.assert_called_with([mock_rule1, mock_rule2], {}, path, mock_constants.return_value)
 
-    @patch.object(manager.StyleManager, "constants", new_callable=PropertyMock)
-    @patch("ht.nodes.styles.manager._build_category_rules")
-    @patch.object(manager.StyleManager, "_build", lambda x: None)
-    def test__build_rules_from_data__tools(self, mock_build, mock_constants):
+    def test__build_rules_from_data__tools(self,init_manager, mocker):
         """Test building rules from data when the data contains tool rules."""
-        mock_rule1 = MagicMock(spec=dict)
-        mock_rule2 = MagicMock(spec=dict)
+        mock_build = mocker.patch("ht.nodes.styles.manager._build_category_rules")
+        mock_constants = mocker.patch.object(manager.StyleManager, "constants", new_callable=mocker.PropertyMock)
 
-        path = MagicMock(spec=str)
+        mock_rule1 = mocker.MagicMock(spec=dict)
+        mock_rule2 = mocker.MagicMock(spec=dict)
+
+        path = mocker.MagicMock(spec=str)
         all_data = [
             {
                 consts.PATH_KEY: path,
@@ -288,7 +300,8 @@ class Test_StyleManager(object):
             }
         ]
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
+        mgr._tool_rules = {}
 
         mgr._build_rules_from_data(all_data)
 
@@ -298,21 +311,21 @@ class Test_StyleManager(object):
 
     # _get_manager_generator_style
 
-    @patch.object(manager.StyleManager, "_resolve_rule")
-    @patch.object(manager.StyleManager, "node_type_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_manager_generator_style_manager__none(self, mock_rules, mock_resolve):
+    def test__get_manager_generator_style_manager__none(self, init_manager, mocker):
         """Test getting a style for a manager when no style exists."""
+        mock_rules = mocker.patch.object(manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock)
+        mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
+
         mock_rules.return_value = {"Sop": {}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
         mock_type.isManager.return_value = True
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._get_manager_generator_style(mock_type)
 
@@ -320,24 +333,24 @@ class Test_StyleManager(object):
 
         mock_resolve.assert_not_called()
 
-    @patch.object(manager.StyleManager, "_resolve_rule")
-    @patch.object(manager.StyleManager, "node_type_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_manager_generator_style_manager__category(self, mock_rules, mock_resolve):
+    def test__get_manager_generator_style_manager__category(self, init_manager, mocker):
         """Test getting a style for a manager where a specific category style exists."""
-        mock_rule = MagicMock()
+        mock_rules = mocker.patch.object(manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock)
+        mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
+
+        mock_rule = mocker.MagicMock()
 
         mock_rules.return_value = {"Sop": {consts.MANAGER_TYPE_KEY: mock_rule}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
         mock_type.isManager.return_value = True
         mock_type.isGenerator.return_value = False
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._get_manager_generator_style(mock_type)
 
@@ -345,24 +358,24 @@ class Test_StyleManager(object):
 
         mock_resolve.assert_called_with(mock_rule)
 
-    @patch.object(manager.StyleManager, "_resolve_rule")
-    @patch.object(manager.StyleManager, "node_type_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_manager_generator_style__manager_all(self, mock_rules, mock_resolve):
+    def test__get_manager_generator_style__manager_all(self, init_manager, mocker):
         """Test getting a style for a manager where a generic 'all' style exists."""
-        mock_rule = MagicMock()
+        mock_rules = mocker.patch.object(manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock)
+        mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
+
+        mock_rule = mocker.MagicMock()
 
         mock_rules.return_value = {"all": {consts.MANAGER_TYPE_KEY: mock_rule}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
         mock_type.isManager.return_value = True
         mock_type.isGenerator.return_value = False
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._get_manager_generator_style(mock_type)
 
@@ -370,22 +383,22 @@ class Test_StyleManager(object):
 
         mock_resolve.assert_called_with(mock_rule)
 
-    @patch.object(manager.StyleManager, "_resolve_rule")
-    @patch.object(manager.StyleManager, "node_type_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_manager_generator_style__generator_none(self, mock_rules, mock_resolve):
+    def test__get_manager_generator_style__generator_none(self, init_manager, mocker):
         """Test getting a style for a generator when no style exists."""
+        mock_rules = mocker.patch.object(manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock)
+        mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
+
         mock_rules.return_value = {"Sop": {}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
         mock_type.isGenerator.return_value = True
         mock_type.isManager.return_value = False
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._get_manager_generator_style(mock_type)
 
@@ -393,24 +406,24 @@ class Test_StyleManager(object):
 
         mock_resolve.assert_not_called()
 
-    @patch.object(manager.StyleManager, "_resolve_rule")
-    @patch.object(manager.StyleManager, "node_type_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_manager_generator_style__generator_category(self, mock_rules, mock_resolve):
+    def test__get_manager_generator_style__generator_category(self, init_manager, mocker):
         """Test getting a style for a generator where a specific category style exists."""
-        mock_rule = MagicMock()
+        mock_rules = mocker.patch.object(manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock)
+        mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
+
+        mock_rule = mocker.MagicMock()
 
         mock_rules.return_value = {"Sop": {consts.GENERATOR_TYPE_KEY: mock_rule}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
         mock_type.isGenerator.return_value = True
         mock_type.isManager.return_value = False
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._get_manager_generator_style(mock_type)
 
@@ -418,24 +431,24 @@ class Test_StyleManager(object):
 
         mock_resolve.assert_called_with(mock_rule)
 
-    @patch.object(manager.StyleManager, "_resolve_rule")
-    @patch.object(manager.StyleManager, "node_type_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_manager_generator_style__generator_all(self, mock_rules, mock_resolve):
+    def test__get_manager_generator_style__generator_all(self, init_manager, mocker):
         """Test getting a style for a generator where a generic 'all' style exists."""
-        mock_rule = MagicMock()
+        mock_rules = mocker.patch.object(manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock)
+        mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
+
+        mock_rule = mocker.MagicMock()
 
         mock_rules.return_value = {consts.ALL_CATEGORY_KEY: {consts.GENERATOR_TYPE_KEY: mock_rule}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
         mock_type.isGenerator.return_value = True
         mock_type.isManager.return_value = False
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._get_manager_generator_style(mock_type)
 
@@ -443,55 +456,55 @@ class Test_StyleManager(object):
 
         mock_resolve.assert_called_with(mock_rule)
 
-    @patch.object(manager.StyleManager, "node_type_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_manager_generator_style__error(self, mock_rules):
+    def test__get_manager_generator_style__error(self, init_manager, mocker):
         """Test getting a style when the node type is neither a manager or generator."""
-        mock_rule = MagicMock()
+        mock_rules = mocker.patch.object(manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock)
+
+        mock_rule = mocker.MagicMock()
 
         mock_rules.return_value = {consts.ALL_CATEGORY_KEY: {consts.GENERATOR_TYPE_KEY: mock_rule}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
         mock_type.isGenerator.return_value = False
         mock_type.isManager.return_value = False
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
-        with pytest.raises(hou.OperationFailed):
+        with pytest.raises(ValueError):
             mgr._get_manager_generator_style(mock_type)
 
     # _get_name_style
 
-    @patch.object(manager.StyleManager, "_resolve_rule")
-    @patch("hou.patternMatch", return_value=True)
-    @patch.object(manager.StyleManager, "name_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_name_style__category(self, mock_name_rules, mock_match, mock_resolve):
+    def test__get_name_style__category(self, init_manager, mocker):
         """Test getting a node name style which matches a specific category."""
-        style_name = MagicMock(spec=str)
+        mock_name_rules = mocker.patch.object(manager.StyleManager, "name_rules", new_callable=mocker.PropertyMock)
+        mock_match = mocker.patch("hou.patternMatch", return_value=True)
+        mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
 
-        node_name = MagicMock(spec=str)
+        style_name = mocker.MagicMock(spec=str)
 
-        mock_rule = MagicMock(spec=manager.StyleRule)
-        type(mock_rule).name = PropertyMock(return_value=style_name)
+        node_name = mocker.MagicMock(spec=str)
+
+        mock_rule = mocker.MagicMock(spec=manager.StyleRule)
+        type(mock_rule).name = mocker.PropertyMock(return_value=style_name)
 
         mock_name_rules.return_value = {"Sop": {node_name: mock_rule}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
 
-        mock_node = MagicMock(spec=hou.Node)
+        mock_node = mocker.MagicMock(spec=hou.Node)
         mock_node.name.return_value = node_name
         mock_node.type.return_value = mock_type
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._get_name_style(mock_node)
 
@@ -500,32 +513,32 @@ class Test_StyleManager(object):
 
         mock_resolve.assert_called_with(mock_rule)
 
-    @patch.object(manager.StyleManager, "_resolve_rule")
-    @patch("hou.patternMatch", return_value=True)
-    @patch.object(manager.StyleManager, "name_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_name_style__all(self, mock_name_rules, mock_match, mock_resolve):
+    def test__get_name_style__all(self, init_manager, mocker):
         """Test getting a node name style which matches the generic 'all' category."""
-        style_name = MagicMock(spec=str)
+        mock_name_rules = mocker.patch.object(manager.StyleManager, "name_rules", new_callable=mocker.PropertyMock)
+        mock_match = mocker.patch("hou.patternMatch", return_value=True)
+        mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
 
-        node_name = MagicMock(spec=str)
+        style_name = mocker.MagicMock(spec=str)
 
-        mock_rule = MagicMock(spec=manager.StyleRule)
-        type(mock_rule).name = PropertyMock(return_value=style_name)
+        node_name = mocker.MagicMock(spec=str)
+
+        mock_rule = mocker.MagicMock(spec=manager.StyleRule)
+        type(mock_rule).name = mocker.PropertyMock(return_value=style_name)
 
         mock_name_rules.return_value = {consts.ALL_CATEGORY_KEY: {node_name: mock_rule}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
 
-        mock_node = MagicMock(spec=hou.Node)
+        mock_node = mocker.MagicMock(spec=hou.Node)
         mock_node.name.return_value = node_name
         mock_node.type.return_value = mock_type
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._get_name_style(mock_node)
 
@@ -534,32 +547,32 @@ class Test_StyleManager(object):
 
         mock_resolve.assert_called_with(mock_rule)
 
-    @patch.object(manager.StyleManager, "_resolve_rule")
-    @patch("hou.patternMatch", return_value=False)
-    @patch.object(manager.StyleManager, "name_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_name_style__no_match(self, mock_name_rules, mock_match, mock_resolve):
+    def test__get_name_style__no_match(self, init_manager, mocker):
         """Test getting a node name style that does not match any rules."""
-        style_name = MagicMock(spec=str)
+        mock_name_rules = mocker.patch.object(manager.StyleManager, "name_rules", new_callable=mocker.PropertyMock)
+        mock_match = mocker.patch("hou.patternMatch", return_value=False)
+        mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
 
-        node_name = MagicMock(spec=str)
+        style_name = mocker.MagicMock(spec=str)
 
-        mock_rule = MagicMock(spec=manager.StyleRule)
-        type(mock_rule).name = PropertyMock(return_value=style_name)
+        node_name = mocker.MagicMock(spec=str)
+
+        mock_rule = mocker.MagicMock(spec=manager.StyleRule)
+        type(mock_rule).name = mocker.PropertyMock(return_value=style_name)
 
         mock_name_rules.return_value = {consts.ALL_CATEGORY_KEY: {node_name: mock_rule}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
 
-        mock_node = MagicMock(spec=hou.Node)
+        mock_node = mocker.MagicMock(spec=hou.Node)
         mock_node.name.return_value = node_name
         mock_node.type.return_value = mock_type
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._get_name_style(mock_node)
 
@@ -570,29 +583,29 @@ class Test_StyleManager(object):
 
     # _get_node_type_style
 
-    @patch.object(manager.StyleManager, "_resolve_rule")
-    @patch("hou.patternMatch", return_value=True)
-    @patch.object(manager.StyleManager, "node_type_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_node_type_style__category(self, mock_node_type_rules, mock_match, mock_resolve):
+    def test__get_node_type_style__category(self,init_manager, mocker):
         """Test getting a node type style which matches a specific category."""
-        style_name = MagicMock(spec=str)
+        mock_node_type_rules = mocker.patch.object(manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock)
+        mock_match = mocker.patch("hou.patternMatch", return_value=True)
+        mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
 
-        node_type_name = MagicMock(spec=str)
+        style_name = mocker.MagicMock(spec=str)
 
-        mock_rule = MagicMock(spec=manager.StyleRule)
-        type(mock_rule).name = PropertyMock(return_value=style_name)
+        node_type_name = mocker.MagicMock(spec=str)
+
+        mock_rule = mocker.MagicMock(spec=manager.StyleRule)
+        type(mock_rule).name = mocker.PropertyMock(return_value=style_name)
 
         mock_node_type_rules.return_value = {"Sop": {node_type_name: mock_rule}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
         mock_type.nameComponents.return_value = ("", "", node_type_name, "1")
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._get_node_type_style(mock_type)
 
@@ -601,29 +614,29 @@ class Test_StyleManager(object):
 
         mock_resolve.assert_called_with(mock_rule)
 
-    @patch.object(manager.StyleManager, "_resolve_rule")
-    @patch("hou.patternMatch", return_value=True)
-    @patch.object(manager.StyleManager, "node_type_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_node_type_style__all(self, mock_node_type_rules, mock_match, mock_resolve):
+    def test__get_node_type_style__all(self, init_manager, mocker):
         """Test getting a node type style which matches the generic 'all' category."""
-        style_name = MagicMock(spec=str)
+        mock_node_type_rules = mocker.patch.object(manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock)
+        mock_match = mocker.patch("hou.patternMatch", return_value=True)
+        mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
 
-        node_type_name = MagicMock(spec=str)
+        style_name = mocker.MagicMock(spec=str)
 
-        mock_rule = MagicMock(spec=manager.StyleRule)
-        type(mock_rule).name = PropertyMock(return_value=style_name)
+        node_type_name = mocker.MagicMock(spec=str)
+
+        mock_rule = mocker.MagicMock(spec=manager.StyleRule)
+        type(mock_rule).name = mocker.PropertyMock(return_value=style_name)
 
         mock_node_type_rules.return_value = {consts.ALL_CATEGORY_KEY: {node_type_name: mock_rule}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
         mock_type.nameComponents.return_value = ("", "", node_type_name, "1")
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._get_node_type_style(mock_type)
 
@@ -632,29 +645,29 @@ class Test_StyleManager(object):
 
         mock_resolve.assert_called_with(mock_rule)
 
-    @patch.object(manager.StyleManager, "_resolve_rule")
-    @patch("hou.patternMatch", return_value=False)
-    @patch.object(manager.StyleManager, "node_type_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_node_type_style__no_match(self, mock_node_type_rules, mock_match, mock_resolve):
+    def test__get_node_type_style__no_match(self, init_manager, mocker):
         """Test getting a node type style that does not match any rules."""
-        style_name = MagicMock(spec=str)
+        mock_node_type_rules = mocker.patch.object(manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock)
+        mock_match = mocker.patch("hou.patternMatch", return_value=False)
+        mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
 
-        node_type_name = MagicMock(spec=str)
+        style_name = mocker.MagicMock(spec=str)
 
-        mock_rule = MagicMock(spec=manager.StyleRule)
-        type(mock_rule).name = PropertyMock(return_value=style_name)
+        node_type_name = mocker.MagicMock(spec=str)
+
+        mock_rule = mocker.MagicMock(spec=manager.StyleRule)
+        type(mock_rule).name = mocker.PropertyMock(return_value=style_name)
 
         mock_node_type_rules.return_value = {consts.ALL_CATEGORY_KEY: {node_type_name: mock_rule}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
         mock_type.nameComponents.return_value = ("", "", node_type_name, "1")
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._get_node_type_style(mock_type)
 
@@ -666,32 +679,32 @@ class Test_StyleManager(object):
 
     # _get_tool_style
 
-    @patch.object(manager.StyleManager, "_resolve_rule")
-    @patch("hou.patternMatch", return_value=True)
-    @patch.object(manager.StyleManager, "tool_rules", new_callable=PropertyMock)
-    @patch("ht.nodes.styles.manager._get_tool_menu_locations")
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_tool_style__category(self, mock_get_locations, mock_tool_rules, mock_match, mock_resolve):
+    def test__get_tool_style__category(self, init_manager, mocker):
         """Test getting a tool style which matches a specific category."""
-        location = MagicMock(spec=str)
+        mock_get_locations = mocker.patch("ht.nodes.styles.manager._get_tool_menu_locations")
+        mock_tool_rules = mocker.patch.object(manager.StyleManager, "tool_rules", new_callable=mocker.PropertyMock)
+        mock_match = mocker.patch("hou.patternMatch", return_value=True)
+        mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
+
+        location = mocker.MagicMock(spec=str)
 
         locations = (location, )
         mock_get_locations.return_value = locations
 
-        style_name = MagicMock(spec=str)
+        style_name = mocker.MagicMock(spec=str)
 
-        mock_rule = MagicMock(spec=manager.StyleRule)
-        type(mock_rule).name = PropertyMock(return_value=style_name)
+        mock_rule = mocker.MagicMock(spec=manager.StyleRule)
+        type(mock_rule).name = mocker.PropertyMock(return_value=style_name)
 
         mock_tool_rules.return_value = {"Sop": {location: mock_rule}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._get_tool_style(mock_type)
 
@@ -703,30 +716,30 @@ class Test_StyleManager(object):
 
         mock_resolve.assert_called_with(mock_rule)
 
-    @patch.object(manager.StyleManager, "_resolve_rule")
-    @patch("hou.patternMatch")
-    @patch.object(manager.StyleManager, "tool_rules", new_callable=PropertyMock)
-    @patch("ht.nodes.styles.manager._get_tool_menu_locations")
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_tool_style__all(self, mock_get_locations, mock_tool_rules, mock_match, mock_resolve):
+    def test__get_tool_style__all(self, init_manager, mocker):
         """Test getting a tool style which matches the generic 'all' category."""
-        location = MagicMock(spec=str)
+        mock_get_locations = mocker.patch("ht.nodes.styles.manager._get_tool_menu_locations")
+        mock_tool_rules = mocker.patch.object(manager.StyleManager, "tool_rules", new_callable=mocker.PropertyMock)
+        mock_match = mocker.patch("hou.patternMatch", return_value=True)
+        mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
+
+        location = mocker.MagicMock(spec=str)
         mock_get_locations.return_value = (location, )
 
-        style_name = MagicMock(spec=str)
+        style_name = mocker.MagicMock(spec=str)
 
-        mock_rule = MagicMock(spec=manager.StyleRule)
-        type(mock_rule).name = PropertyMock(return_value=style_name)
+        mock_rule = mocker.MagicMock(spec=manager.StyleRule)
+        type(mock_rule).name = mocker.PropertyMock(return_value=style_name)
 
         mock_tool_rules.return_value = {consts.ALL_CATEGORY_KEY: {location: mock_rule}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         mock_match.return_value = True
 
@@ -740,31 +753,31 @@ class Test_StyleManager(object):
 
         mock_resolve.assert_called_with(mock_rule)
 
-    @patch.object(manager.StyleManager, "_resolve_rule")
-    @patch("hou.patternMatch", return_value=False)
-    @patch.object(manager.StyleManager, "tool_rules", new_callable=PropertyMock)
-    @patch("ht.nodes.styles.manager._get_tool_menu_locations")
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__get_tool_style__no_match(self, mock_get_locations, mock_tool_rules, mock_match, mock_resolve):
+    def test__get_tool_style__no_match(self, init_manager, mocker):
         """Test getting a tool style that does not match any rules."""
-        location = MagicMock(spec=str)
+        mock_get_locations = mocker.patch("ht.nodes.styles.manager._get_tool_menu_locations")
+        mock_tool_rules = mocker.patch.object(manager.StyleManager, "tool_rules", new_callable=mocker.PropertyMock)
+        mock_match = mocker.patch("hou.patternMatch", return_value=False)
+        mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
+
+        location = mocker.MagicMock(spec=str)
         mock_locations = (location, )
         mock_get_locations.return_value = mock_locations
 
-        style_name = MagicMock(spec=str)
+        style_name = mocker.MagicMock(spec=str)
 
-        mock_rule = MagicMock(spec=manager.StyleRule)
-        type(mock_rule).name = PropertyMock(return_value=style_name)
+        mock_rule = mocker.MagicMock(spec=manager.StyleRule)
+        type(mock_rule).name = mocker.PropertyMock(return_value=style_name)
 
         mock_tool_rules.return_value = {consts.ALL_CATEGORY_KEY: {location: mock_rule}}
 
-        mock_category = MagicMock(spec=hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(spec=hou.NodeTypeCategory)
         mock_category.name.return_value = "Sop"
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._get_tool_style(mock_type)
 
@@ -778,30 +791,29 @@ class Test_StyleManager(object):
 
     # _resolve_rule
 
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__resolve_rule__style(self):
+    def test__resolve_rule__style(self, init_manager, mocker):
         """Test resolving a rule which is a StyleRule."""
-        mock_rule = MagicMock(spec=manager.StyleRule)
+        mock_rule = mocker.MagicMock(spec=manager.StyleRule)
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._resolve_rule(mock_rule)
 
         assert result == mock_rule
 
-    @patch.object(manager.StyleManager, "constants", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test__resolve_rule__constant(self, mock_constants):
+    def test__resolve_rule__constant(self, init_manager, mocker):
         """Test resolving a rule which is a ConstantRule."""
-        constant_name = MagicMock(spec=str)
+        mock_constants = mocker.patch.object(manager.StyleManager, "constants", new_callable=mocker.PropertyMock)
 
-        mock_constant = MagicMock(spec=manager.StyleConstant)
+        constant_name = mocker.MagicMock(spec=str)
+
+        mock_constant = mocker.MagicMock(spec=manager.StyleConstant)
         mock_constants.return_value = {constant_name: mock_constant}
 
-        mock_rule = MagicMock(spec=manager.ConstantRule)
-        type(mock_rule).constant_name = PropertyMock(return_value=constant_name)
+        mock_rule = mocker.MagicMock(spec=manager.ConstantRule)
+        type(mock_rule).constant_name = mocker.PropertyMock(return_value=constant_name)
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         result = mgr._resolve_rule(mock_rule)
 
@@ -809,22 +821,22 @@ class Test_StyleManager(object):
 
     # style_node
 
-    @patch.object(manager.StyleManager, "_get_tool_style")
-    @patch.object(manager.StyleManager, "_get_node_type_style")
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test_style_node__by_type(self, mock_get_type, mock_get_tool):
+    def test_style_node__by_type(self, init_manager, mocker):
         """Style a node by the node type."""
-        mock_style = MagicMock(spec=manager.StyleRule)
+        mock_get_type = mocker.patch.object(manager.StyleManager, "_get_node_type_style")
+        mock_get_tool = mocker.patch.object(manager.StyleManager, "_get_tool_style")
+
+        mock_style = mocker.MagicMock(spec=manager.StyleRule)
         mock_get_type.return_value = mock_style
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.isGenerator.return_value = False
         mock_type.isManager.return_value = False
 
-        mock_node = MagicMock(spec=hou.Node)
+        mock_node = mocker.MagicMock(spec=hou.Node)
         mock_node.type.return_value = mock_type
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         mgr.style_node(mock_node)
 
@@ -835,22 +847,22 @@ class Test_StyleManager(object):
         mock_get_tool.assert_not_called()
         mock_type.isManager.assert_not_called()
 
-    @patch.object(manager.StyleManager, "_get_tool_style")
-    @patch.object(manager.StyleManager, "_get_node_type_style", return_value=None)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test_style_node__by_tool(self, mock_get_type, mock_get_tool):
+    def test_style_node__by_tool(self, init_manager, mocker):
         """Style a node by the tool menu location."""
-        mock_style = MagicMock(spec=manager.StyleRule)
+        mock_get_type = mocker.patch.object(manager.StyleManager, "_get_node_type_style", return_value=None)
+        mock_get_tool = mocker.patch.object(manager.StyleManager, "_get_tool_style")
+
+        mock_style = mocker.MagicMock(spec=manager.StyleRule)
         mock_get_tool.return_value = mock_style
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.isGenerator.return_value = False
         mock_type.isManager.return_value = False
 
-        mock_node = MagicMock(spec=hou.Node)
+        mock_node = mocker.MagicMock(spec=hou.Node)
         mock_node.type.return_value = mock_type
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         mgr.style_node(mock_node)
 
@@ -861,23 +873,23 @@ class Test_StyleManager(object):
 
         mock_type.isManager.assert_not_called()
 
-    @patch.object(manager.StyleManager, "_get_manager_generator_style")
-    @patch.object(manager.StyleManager, "_get_tool_style", return_value=None)
-    @patch.object(manager.StyleManager, "_get_node_type_style", return_value=None)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test_style_node__by_manager(self, mock_get_type, mock_get_tool, mock_get_manager):
+    def test_style_node__by_manager(self, init_manager, mocker):
         """Style a node because it is a manager."""
-        mock_style = MagicMock(spec=manager.StyleRule)
+        mock_get_type = mocker.patch.object(manager.StyleManager, "_get_node_type_style", return_value=None)
+        mock_get_tool = mocker.patch.object(manager.StyleManager, "_get_tool_style", return_value=None)
+        mock_get_manager = mocker.patch.object(manager.StyleManager, "_get_manager_generator_style")
+
+        mock_style = mocker.MagicMock(spec=manager.StyleRule)
         mock_get_manager.return_value = mock_style
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.isGenerator.return_value = False
         mock_type.isManager.return_value = True
 
-        mock_node = MagicMock(spec=hou.Node)
+        mock_node = mocker.MagicMock(spec=hou.Node)
         mock_node.type.return_value = mock_type
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         mgr.style_node(mock_node)
 
@@ -890,23 +902,23 @@ class Test_StyleManager(object):
 
         mock_get_manager.assert_called_with(mock_type)
 
-    @patch.object(manager.StyleManager, "_get_manager_generator_style")
-    @patch.object(manager.StyleManager, "_get_tool_style", return_value=None)
-    @patch.object(manager.StyleManager, "_get_node_type_style", return_value=None)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test_style_node__by_generator(self, mock_get_type, mock_get_tool, mock_get_manager):
+    def test_style_node__by_generator(self, init_manager, mocker):
         """Style a node because it is a generator."""
-        mock_style = MagicMock(spec=manager.StyleRule)
+        mock_get_type = mocker.patch.object(manager.StyleManager, "_get_node_type_style", return_value=None)
+        mock_get_tool = mocker.patch.object(manager.StyleManager, "_get_tool_style", return_value=None)
+        mock_get_manager = mocker.patch.object(manager.StyleManager, "_get_manager_generator_style")
+
+        mock_style = mocker.MagicMock(spec=manager.StyleRule)
         mock_get_manager.return_value = mock_style
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.isGenerator.return_value = True
         mock_type.isManager.return_value = False
 
-        mock_node = MagicMock(spec=hou.Node)
+        mock_node = mocker.MagicMock(spec=hou.Node)
         mock_node.type.return_value = mock_type
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         mgr.style_node(mock_node)
 
@@ -916,23 +928,23 @@ class Test_StyleManager(object):
         mock_get_tool.assert_called_with(mock_type)
         mock_get_manager.assert_called_with(mock_type)
 
-    @patch.object(manager.StyleManager, "_get_manager_generator_style")
-    @patch.object(manager.StyleManager, "_get_tool_style", return_value=None)
-    @patch.object(manager.StyleManager, "_get_node_type_style", return_value=None)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test_style_node__no_match(self, mock_get_type, mock_get_tool, mock_get_manager):
+    def test_style_node__no_match(self, init_manager, mocker):
         """Try to style a node but do not match any rule types."""
-        mock_style = MagicMock(spec=manager.StyleRule)
+        mock_get_type = mocker.patch.object(manager.StyleManager, "_get_node_type_style", return_value=None)
+        mock_get_tool = mocker.patch.object(manager.StyleManager, "_get_tool_style", return_value=None)
+        mock_get_manager = mocker.patch.object(manager.StyleManager, "_get_manager_generator_style")
+
+        mock_style = mocker.MagicMock(spec=manager.StyleRule)
         mock_get_manager.return_value = mock_style
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.isGenerator.return_value = False
         mock_type.isManager.return_value = False
 
-        mock_node = MagicMock(spec=hou.Node)
+        mock_node = mocker.MagicMock(spec=hou.Node)
         mock_node.type.return_value = mock_type
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         mgr.style_node(mock_node)
 
@@ -942,17 +954,17 @@ class Test_StyleManager(object):
 
     # style_node_by_name
 
-    @patch.object(manager.StyleManager, "_get_name_style")
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test_style_node_by_name(self, mock_get_name):
+    def test_style_node_by_name(self, init_manager, mocker):
         """Style a node by its name."""
-        mock_style = MagicMock(spec=manager.StyleRule)
+        mock_get_name = mocker.patch.object(manager.StyleManager, "_get_name_style")
+
+        mock_style = mocker.MagicMock(spec=manager.StyleRule)
 
         mock_get_name.return_value = mock_style
 
-        mock_node = MagicMock(spec=hou.Node)
+        mock_node = mocker.MagicMock(spec=hou.Node)
 
-        mgr = manager.StyleManager()
+        mgr = init_manager()
 
         mgr.style_node_by_name(mock_node)
 
@@ -960,13 +972,13 @@ class Test_StyleManager(object):
 
         mock_get_name.assert_called_with(mock_node)
 
-    @patch.object(manager.StyleManager, "_get_name_style", return_value=None)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test_style_node_by_name__no_match(self, mock_get_name):
+    def test_style_node_by_name__no_match(self, init_manager, mocker):
         """Try to style a node by its name but do not match any rules."""
-        mock_node = MagicMock(spec=hou.Node)
+        mock_get_name = mocker.patch.object(manager.StyleManager, "_get_name_style", return_value=None)
 
-        mgr = manager.StyleManager()
+        mock_node = mocker.MagicMock(spec=hou.Node)
+
+        mgr = init_manager()
 
         mgr.style_node_by_name(mock_node)
 
@@ -974,20 +986,20 @@ class Test_StyleManager(object):
 
     # reload
 
-    @patch.object(manager.StyleManager, "_build")
-    @patch.object(manager.StyleManager, "tool_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "node_type_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "name_rules", new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "constants",  new_callable=PropertyMock)
-    @patch.object(manager.StyleManager, "__init__", lambda x: None)
-    def test_reload(self, mock_constants, mock_name_rules, mock_node_type_rules, mock_tool_rules, mock_build):
+    def test_reload(self, init_manager, mocker):
         """Test reloading all the data."""
-        mgr = manager.StyleManager()
+        mock_constants = mocker.patch.object(manager.StyleManager, "constants", new_callable=mocker.PropertyMock)
+        mock_name_rules= mocker.patch.object(manager.StyleManager, "name_rules", new_callable=mocker.PropertyMock)
+        mock_node_type_rules = mocker.patch.object(manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock)
+        mock_tool_rules = mocker.patch.object(manager.StyleManager, "tool_rules", new_callable=mocker.PropertyMock)
+        mock_build = mocker.patch.object(manager.StyleManager, "_build")
 
-        mock_constants.return_value = MagicMock(spec=dict)
-        mock_name_rules.return_value = MagicMock(spec=dict)
-        mock_node_type_rules.return_value = MagicMock(spec=dict)
-        mock_tool_rules.return_value = MagicMock(spec=dict)
+        mgr = init_manager()
+
+        mock_constants.return_value = mocker.MagicMock(spec=dict)
+        mock_name_rules.return_value = mocker.MagicMock(spec=dict)
+        mock_node_type_rules.return_value = mocker.MagicMock(spec=dict)
+        mock_tool_rules.return_value = mocker.MagicMock(spec=dict)
 
         mgr.reload()
 
@@ -1002,33 +1014,34 @@ class Test_StyleManager(object):
 class Test__build_category_rules(object):
     """Test ht.nodes.styles.manager._build_category_rules."""
 
-    def test_invalid_constant(self):
+    def test_invalid_constant(self, mocker):
         """Test building with an invalid constant."""
-        path = MagicMock(spec=str)
+        path = mocker.MagicMock(spec=str)
         constants = {}
 
         rules = [
             {
-                consts.RULE_NAME_KEY: MagicMock(spec=str),
-                consts.RULE_CONSTANT_KEY: MagicMock(spec=str)
+                consts.RULE_NAME_KEY: mocker.MagicMock(spec=str),
+                consts.RULE_CONSTANT_KEY: mocker.MagicMock(spec=str)
             }
         ]
 
         with pytest.raises(manager.ConstantDoesNotExistError):
             manager._build_category_rules(rules, {}, path, constants)
 
-    @patch("ht.nodes.styles.manager.ConstantRule", autospec=True)
-    @patch("ht.nodes.styles.manager._build_color")
-    def test_constant(self, mock_build_color, mock_const_rule):
+    def test_constant(self, mocker):
         """Test building a ConstantRule."""
-        constant_name = MagicMock(spec=str)
+        mock_build_color = mocker.patch("ht.nodes.styles.manager._build_color")
+        mock_const_rule = mocker.patch("ht.nodes.styles.manager.ConstantRule", autospec=True)
+
+        constant_name = mocker.MagicMock(spec=str)
 
         category_map = {}
 
-        path = MagicMock(spec=str)
-        constants = {constant_name: MagicMock(spec=manager.StyleConstant)}
+        path = mocker.MagicMock(spec=str)
+        constants = {constant_name: mocker.MagicMock(spec=manager.StyleConstant)}
 
-        rule_name = MagicMock(spec=str)
+        rule_name = mocker.MagicMock(spec=str)
 
         rules = [
             {
@@ -1045,23 +1058,24 @@ class Test__build_category_rules(object):
 
         mock_build_color.assert_not_called()
 
-    @patch("ht.nodes.styles.manager.StyleRule", autospec=True)
-    @patch("ht.nodes.styles.manager.ConstantRule", autospec=True)
-    @patch("ht.nodes.styles.manager._build_shape")
-    @patch("ht.nodes.styles.manager._build_color")
-    def test_style(self, mock_build_color, mock_build_shape, mock_const_rule, mock_style_rule):
+    def test_style(self, mocker):
         """Test building a StyleRule."""
-        mock_color = MagicMock(spec=hou.Color)
-        color_type = MagicMock(spec=str)
+        mock_build_color = mocker.patch("ht.nodes.styles.manager._build_color")
+        mock_build_shape = mocker.patch("ht.nodes.styles.manager._build_shape")
+        mock_const_rule = mocker.patch("ht.nodes.styles.manager.ConstantRule", autospec=True)
+        mock_style_rule = mocker.patch("ht.nodes.styles.manager.StyleRule", autospec=True)
+
+        mock_color = mocker.MagicMock(spec=hou.Color)
+        color_type = mocker.MagicMock(spec=str)
         mock_build_color.return_value = (mock_color, color_type)
 
-        shape = MagicMock(spec=str)
+        shape = mocker.MagicMock(spec=str)
         mock_build_shape.return_value = shape
 
         category_map = {}
-        path = MagicMock(spec=str)
+        path = mocker.MagicMock(spec=str)
 
-        rule_name = MagicMock(spec=str)
+        rule_name = mocker.MagicMock(spec=str)
 
         data = {consts.RULE_NAME_KEY: rule_name}
 
@@ -1085,9 +1099,10 @@ class Test__build_color(object):
 
         assert result == (None, None)
 
-    @patch("hou.colorType")
-    def test_invalid_color_type(self, mock_type):
+    def test_invalid_color_type(self, mocker):
         """Test building a color when the type is invalid."""
+        mock_type = mocker.patch("hou.colorType")
+
         del mock_type.foo
 
         data = {consts.RULE_COLOR_KEY: {consts.RULE_COLOR_TYPE_KEY: "foo"}}
@@ -1095,83 +1110,89 @@ class Test__build_color(object):
         with pytest.raises(manager.InvalidColorTypeError):
             manager._build_color(data)
 
-    @patch("hou.Color", autospec=True)
-    def test_rgb_single(self, mock_color):
+    def test_rgb_single(self, mocker):
         """Test building an RGB color with a single float value."""
+        mock_color = mocker.patch("hou.Color", autospec=True)
+
         color_type = "RGB"
-        value = 0.3
-        data = {consts.RULE_COLOR_KEY: {consts.RULE_COLOR_TYPE_KEY: color_type, consts.RULE_COLOR_VALUE_KEY: value}}
+        mock_value = mocker.MagicMock(spec=float)
+        data = {consts.RULE_COLOR_KEY: {consts.RULE_COLOR_TYPE_KEY: color_type, consts.RULE_COLOR_VALUE_KEY: mock_value}}
 
         result = manager._build_color(data)
 
         assert result == (mock_color(), color_type)
 
-        mock_color().setRGB.assert_called_with([value] * 3)
+        mock_color().setRGB.assert_called_with([mock_value] * 3)
 
-    @patch("hou.Color", autospec=True)
-    def test_rgb(self, mock_color):
+    def test_rgb(self, mocker):
         """Test building an RGB color with 3 float values."""
+        mock_color = mocker.patch("hou.Color", autospec=True)
+
         color_type = "RGB"
-        value = [0.3, 0.1, 0.6]
-        data = {consts.RULE_COLOR_KEY: {consts.RULE_COLOR_TYPE_KEY: color_type, consts.RULE_COLOR_VALUE_KEY: value}}
+        mock_value = mocker.MagicMock(spec=list)
+        data = {consts.RULE_COLOR_KEY: {consts.RULE_COLOR_TYPE_KEY: color_type, consts.RULE_COLOR_VALUE_KEY: mock_value}}
 
         result = manager._build_color(data)
 
         assert result == (mock_color(), color_type)
 
-        mock_color().setRGB.assert_called_with(value)
+        mock_color().setRGB.assert_called_with(mock_value)
 
-    @patch("hou.Color", autospec=True)
-    def test_hsl(self, mock_color):
+    def test_hsl(self, mocker):
         """Test building an HSL color."""
+        mock_color = mocker.patch("hou.Color", autospec=True)
+
         color_type = "HSL"
-        value = [0.3, 0.1, 0.6]
-        data = {consts.RULE_COLOR_KEY: {consts.RULE_COLOR_TYPE_KEY: color_type, consts.RULE_COLOR_VALUE_KEY: value}}
+        mock_value = mocker.MagicMock(spec=list)
+        data = {consts.RULE_COLOR_KEY: {consts.RULE_COLOR_TYPE_KEY: color_type, consts.RULE_COLOR_VALUE_KEY: mock_value}}
 
         result = manager._build_color(data)
 
         assert result == (mock_color(), color_type)
 
-        mock_color().setHSL.assert_called_with(value)
+        mock_color().setHSL.assert_called_with(mock_value)
 
-    @patch("hou.Color", autospec=True)
-    def test_hsv(self, mock_color):
+    def test_hsv(self, mocker):
         """Test building an HSV color."""
+        mock_color = mocker.patch("hou.Color", autospec=True)
+
         color_type = "HSV"
-        value = [0.3, 0.1, 0.6]
-        data = {consts.RULE_COLOR_KEY: {consts.RULE_COLOR_TYPE_KEY: color_type, consts.RULE_COLOR_VALUE_KEY: value}}
+        mock_value = mocker.MagicMock(spec=list)
+        data = {consts.RULE_COLOR_KEY: {consts.RULE_COLOR_TYPE_KEY: color_type, consts.RULE_COLOR_VALUE_KEY: mock_value}}
 
         result = manager._build_color(data)
 
         assert result == (mock_color(), color_type)
 
-        mock_color().setHSV.assert_called_with(value)
+        mock_color().setHSV.assert_called_with(mock_value)
 
-    @patch("hou.Color", autospec=True)
-    def test_lab(self, mock_color):
+    def test_lab(self, mocker):
         """Test building a LAB color."""
+        mock_color = mocker.patch("hou.Color", autospec=True)
+
         color_type = "LAB"
-        value = [0.3, 0.1, 0.6]
-        data = {consts.RULE_COLOR_KEY: {consts.RULE_COLOR_TYPE_KEY: color_type, consts.RULE_COLOR_VALUE_KEY: value}}
+        mock_value = mocker.MagicMock(spec=list)
+        data = {consts.RULE_COLOR_KEY: {consts.RULE_COLOR_TYPE_KEY: color_type, consts.RULE_COLOR_VALUE_KEY: mock_value}}
 
         result = manager._build_color(data)
 
         assert result == (mock_color(), color_type)
 
-        mock_color().setLAB.assert_called_with(value)
+        mock_color().setLAB.assert_called_with(mock_value)
 
-    @patch("hou.Color", autospec=True)
-    def test_xyz(self, mock_color):
+    def test_xyz(self, mocker):
         """Test building an XYZ color."""
+        mock_color = mocker.patch("hou.Color", autospec=True)
+
         color_type = "XYZ"
-        value = [0.3, 0.1, 0.6]
-        data = {consts.RULE_COLOR_KEY: {consts.RULE_COLOR_TYPE_KEY: color_type, consts.RULE_COLOR_VALUE_KEY: value}}
+        mock_value = mocker.MagicMock(spec=list)
+        data = {consts.RULE_COLOR_KEY: {consts.RULE_COLOR_TYPE_KEY: color_type, consts.RULE_COLOR_VALUE_KEY: mock_value}}
 
         result = manager._build_color(data)
 
         assert result == (mock_color(), color_type)
 
-        mock_color().setXYZ.assert_called_with(value)
+        mock_color().setXYZ.assert_called_with(mock_value)
 
 
 class Test__build_shape(object):
@@ -1196,11 +1217,10 @@ class Test__build_shape(object):
 class Test__find_files(object):
     """Test ht.nodes.styles.manager._find_files."""
 
-    @patch("ht.nodes.styles.manager.glob.glob")
-    @patch("hou.findDirectories")
-    def test_no_dirs(self, mock_find, mock_glob, raise_hou_operationfailed):
+    def test_no_dirs(self, mocker, mock_hou_exceptions):
         """Test finding files where there are no config/styles folders in the HOUDINI_PATH."""
-        mock_find.side_effect = raise_hou_operationfailed
+        mocker.patch("hou.findDirectories", side_effect=mock_hou_exceptions.OperationFailed)
+        mock_glob = mocker.patch("ht.nodes.styles.manager.glob.glob")
 
         result = manager._find_files()
 
@@ -1208,27 +1228,28 @@ class Test__find_files(object):
 
         mock_glob.assert_not_called()
 
-    @patch("ht.nodes.styles.manager.glob.glob")
-    @patch("hou.findDirectories")
-    def test(self, mock_find, mock_glob):
+    def test(self, mocker):
         """Test finding files where there are valid config/styles folders in the HOUDINI_PATH."""
-        dir1 = os.path.join("/", "some", "dir1")
-        dir2 = os.path.join("/", "some", "dir2")
+        mock_find = mocker.patch("hou.findDirectories")
+        mock_glob = mocker.patch("ht.nodes.styles.manager.glob.glob")
 
-        file1 = os.path.join(dir1, "file1.json")
-        file2 = os.path.join(dir1, "file2.json")
-        file3 = os.path.join(dir2, "file3.json")
+        mock_dir1 = mocker.MagicMock(spec=str)
+        mock_dir2 = mocker.MagicMock(spec=str)
 
-        mock_find.return_value = (dir1, dir2)
+        mock_file1 = mocker.MagicMock(spec=str)
+        mock_file2 = mocker.MagicMock(spec=str)
+        mock_file3 = mocker.MagicMock(spec=str)
 
-        mock_glob.side_effect = ((file1, file2), (file3,))
+        mock_find.return_value = (mock_dir1, mock_dir2)
 
-        expected = (file1, file2, file3)
+        mock_glob.side_effect = ((mock_file1, mock_file2), (mock_file3,))
+
+        expected = (mock_file1, mock_file2, mock_file3)
         result = manager._find_files()
 
         assert result == expected
 
-        calls = [call(os.path.join(dir1, "*.json")), call(os.path.join(dir2, "*.json"))]
+        calls = [mocker.call(os.path.join(mock_dir1, "*.json")), mocker.call(os.path.join(mock_dir2, "*.json"))]
 
         mock_glob.assert_has_calls(calls)
 
@@ -1236,13 +1257,14 @@ class Test__find_files(object):
 class Test__get_tool_menu_locations(object):
     """Test ht.nodes.styles.manager._get_tool_menu_locations."""
 
-    @patch("hou.shelves.defaultToolName")
-    @patch("hou.shelves.tools", return_value={})
-    def test_no_match(self, mock_get_tools, mock_default_name):
+    def test_no_match(self, mocker):
         """Test getting tab menu locations when no default tool exists."""
-        mock_category = MagicMock(hou.NodeTypeCategory)
+        mocker.patch("hou.shelves.tools", return_value={})
+        mock_default_name = mocker.patch("hou.shelves.defaultToolName")
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_category = mocker.MagicMock(hou.NodeTypeCategory)
+
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
 
         result = manager._get_tool_menu_locations(mock_type)
@@ -1254,17 +1276,18 @@ class Test__get_tool_menu_locations(object):
             mock_type.name.return_value
         )
 
-    @patch("hou.shelves.defaultToolName")
-    @patch("hou.shelves.tools")
-    def test(self, mock_get_tools, mock_default_name):
+    def test(self, mocker):
         """Test getting tab menu locations when the default tool exists."""
-        mock_tool = MagicMock(spec=hou.Tool)
+        mock_get_tools = mocker.patch("hou.shelves.tools")
+        mock_default_name = mocker.patch("hou.shelves.defaultToolName")
+
+        mock_tool = mocker.MagicMock(spec=hou.Tool)
 
         mock_get_tools.return_value = {mock_default_name.return_value: mock_tool}
 
-        mock_category = MagicMock(hou.NodeTypeCategory)
+        mock_category = mocker.MagicMock(hou.NodeTypeCategory)
 
-        mock_type = MagicMock(spec=hou.NodeType)
+        mock_type = mocker.MagicMock(spec=hou.NodeType)
         mock_type.category.return_value = mock_category
 
         result = manager._get_tool_menu_locations(mock_type)

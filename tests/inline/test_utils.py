@@ -7,7 +7,7 @@
 # Standard Library Imports
 import ctypes
 
-from mock import MagicMock, call, patch
+# Third Party Imports
 import pytest
 
 # Houdini Toolbox Imports
@@ -15,6 +15,7 @@ from ht.inline import utils
 
 # Houdini Imports
 import hou
+
 
 # =============================================================================
 # CLASSES
@@ -60,16 +61,16 @@ def test_build_c_string_array():
     assert isinstance(result, expected_type)
 
 
-def test_clean_string_values():
+def test_clean_string_values(mocker):
     """Test ht.inline.utils.clean_string_values."""
 
-    mock_str1 = MagicMock(spec=str)
+    mock_str1 = mocker.MagicMock(spec=str)
     mock_str1.__len__.return_value = 1
 
-    mock_str2 = MagicMock(spec=str)
+    mock_str2 = mocker.MagicMock(spec=str)
     mock_str2.__len__.return_value = 0
 
-    mock_str3 = MagicMock(spec=str)
+    mock_str3 = mocker.MagicMock(spec=str)
     mock_str3.__len__.return_value = 2
 
     values = [mock_str1, mock_str2, mock_str3]
@@ -82,9 +83,9 @@ def test_clean_string_values():
 class Test_find_attrib(object):
     """Test ht.inline.utils.find_attrib."""
 
-    def test_vertex(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
+    def test_vertex(self, mocker):
+        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        mock_name = mocker.MagicMock(spec=str)
 
         result = utils.find_attrib(mock_geometry, hou.attribType.Vertex, mock_name)
 
@@ -92,9 +93,9 @@ class Test_find_attrib(object):
 
         mock_geometry.findVertexAttrib.assert_called_with(mock_name)
 
-    def test_point(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
+    def test_point(self, mocker):
+        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        mock_name = mocker.MagicMock(spec=str)
 
         result = utils.find_attrib(mock_geometry, hou.attribType.Point, mock_name)
 
@@ -102,9 +103,9 @@ class Test_find_attrib(object):
 
         mock_geometry.findPointAttrib.assert_called_with(mock_name)
 
-    def test_prim(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
+    def test_prim(self, mocker):
+        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        mock_name = mocker.MagicMock(spec=str)
 
         result = utils.find_attrib(mock_geometry, hou.attribType.Prim, mock_name)
 
@@ -112,9 +113,9 @@ class Test_find_attrib(object):
 
         mock_geometry.findPrimAttrib.assert_called_with(mock_name)
 
-    def test_global(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
+    def test_global(self, mocker):
+        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        mock_name = mocker.MagicMock(spec=str)
 
         result = utils.find_attrib(mock_geometry, hou.attribType.Global, mock_name)
 
@@ -122,10 +123,10 @@ class Test_find_attrib(object):
 
         mock_geometry.findGlobalAttrib.assert_called_with(mock_name)
 
-    def test_invalid(self):
+    def test_invalid(self, mocker):
         """Test an invalid attribute type."""
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
+        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        mock_name = mocker.MagicMock(spec=str)
 
         with pytest.raises(ValueError):
             utils.find_attrib(mock_geometry, None, mock_name)
@@ -134,9 +135,9 @@ class Test_find_attrib(object):
 class Test_find_group(object):
     """Test ht.inline.utils.find_group."""
 
-    def test_point(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
+    def test_point(self, mocker):
+        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        mock_name = mocker.MagicMock(spec=str)
 
         result = utils.find_group(mock_geometry, 0, mock_name)
 
@@ -144,9 +145,9 @@ class Test_find_group(object):
 
         mock_geometry.findPointGroup.assert_called_with(mock_name)
 
-    def test_prim(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
+    def test_prim(self, mocker):
+        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        mock_name = mocker.MagicMock(spec=str)
 
         result = utils.find_group(mock_geometry, 1, mock_name)
 
@@ -154,9 +155,9 @@ class Test_find_group(object):
 
         mock_geometry.findPrimGroup.assert_called_with(mock_name)
 
-    def test_edge(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
+    def test_edge(self, mocker):
+        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        mock_name = mocker.MagicMock(spec=str)
 
         result = utils.find_group(mock_geometry, 2, mock_name)
 
@@ -164,9 +165,9 @@ class Test_find_group(object):
 
         mock_geometry.findEdgeGroup.assert_called_with(mock_name)
 
-    def test_invalid(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
-        mock_name = MagicMock(spec=str)
+    def test_invalid(self, mocker):
+        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        mock_name = mocker.MagicMock(spec=str)
 
         with pytest.raises(ValueError):
             utils.find_group(mock_geometry, None, mock_name)
@@ -175,9 +176,9 @@ class Test_find_group(object):
 class Test_geo_details_match(object):
     """Test ht.inline.utils.geo_details_match."""
 
-    def test_match(self):
-        mock_geometry1 = MagicMock(spec=hou.Geometry)
-        mock_geometry2 = MagicMock(spec=hou.Geometry)
+    def test_match(self, mocker):
+        mock_geometry1 = mocker.MagicMock(spec=hou.Geometry)
+        mock_geometry2 = mocker.MagicMock(spec=hou.Geometry)
 
         mock_geometry1._guDetailHandle.return_value._asVoidPointer.return_value = 1
         mock_geometry2._guDetailHandle.return_value._asVoidPointer.return_value = 1
@@ -187,9 +188,9 @@ class Test_geo_details_match(object):
         mock_geometry1._guDetailHandle.return_value.destroy.assert_called()
         mock_geometry2._guDetailHandle.return_value.destroy.assert_called()
 
-    def test_no_match(self):
-        mock_geometry1 = MagicMock(spec=hou.Geometry)
-        mock_geometry2 = MagicMock(spec=hou.Geometry)
+    def test_no_match(self, mocker):
+        mock_geometry1 = mocker.MagicMock(spec=hou.Geometry)
+        mock_geometry2 = mocker.MagicMock(spec=hou.Geometry)
 
         mock_geometry1._guDetailHandle.return_value._asVoidPointer.return_value = 0
         mock_geometry2._guDetailHandle.return_value._asVoidPointer.return_value = 1
@@ -203,167 +204,181 @@ class Test_geo_details_match(object):
 class Test_get_attrib_owner(object):
     """Test ht.inline.utils.get_attrib_owner."""
 
-    def test_in_map(self):
-        mock_data_type = MagicMock(spec=hou.attribType)
-        mock_dict = MagicMock(spec=dict)
+    def test_in_map(self, mocker):
+        mock_data_type = mocker.MagicMock(spec=hou.attribType)
+        mock_dict = mocker.MagicMock(spec=dict)
 
-        with patch("ht.inline.utils._ATTRIB_TYPE_MAP", mock_dict):
-            result = utils.get_attrib_owner(mock_data_type)
+        mocker.patch("ht.inline.utils._ATTRIB_TYPE_MAP", mock_dict)
 
-            assert result == mock_dict.__getitem__.return_value
+        result = utils.get_attrib_owner(mock_data_type)
 
-            mock_dict.__getitem__.assert_called_with(mock_data_type)
+        assert result == mock_dict.__getitem__.return_value
 
-    def test_invalid(self):
-        mock_data_type = MagicMock(spec=hou.attribType)
+        mock_dict.__getitem__.assert_called_with(mock_data_type)
 
-        with patch("ht.inline.utils._ATTRIB_TYPE_MAP", {}):
-            with pytest.raises(ValueError):
-                utils.get_attrib_owner(mock_data_type)
+    def test_invalid(self, mocker):
+        mock_data_type = mocker.MagicMock(spec=hou.attribType)
+
+        mocker.patch("ht.inline.utils._ATTRIB_TYPE_MAP", {})
+
+        with pytest.raises(ValueError):
+            utils.get_attrib_owner(mock_data_type)
 
 
 class Test_get_attrib_owner_from_geometry_entity_type(object):
     """Test ht.inline.utils.get_attrib_owner_from_geometry_entity_type."""
 
-    def test_in_map(self):
-        mock_entity_type = MagicMock()
-        mock_owner_value = MagicMock(spec=int)
+    def test_in_map(self, mocker):
+        mock_entity_type = mocker.MagicMock()
+        mock_owner_value = mocker.MagicMock(spec=int)
 
         data = {
             mock_entity_type: mock_owner_value
         }
 
-        with patch("ht.inline.utils._GEOMETRY_ATTRIB_MAP", data):
-            result = utils.get_attrib_owner_from_geometry_entity_type(mock_entity_type)
+        mocker.patch("ht.inline.utils._GEOMETRY_ATTRIB_MAP", data)
 
-            assert result == mock_owner_value
+        result = utils.get_attrib_owner_from_geometry_entity_type(mock_entity_type)
 
-    def test_subclass_in_map(self):
+        assert result == mock_owner_value
+
+    def test_subclass_in_map(self, mocker):
         mock_entity_type = hou.Polygon
         mock_parent_type = hou.Prim
 
-        mock_owner_value = MagicMock(spec=int)
+        mock_owner_value = mocker.MagicMock(spec=int)
 
         data = {
             mock_parent_type: mock_owner_value
         }
 
-        with patch("ht.inline.utils._GEOMETRY_ATTRIB_MAP", data):
-            result = utils.get_attrib_owner_from_geometry_entity_type(mock_entity_type)
+        mocker.patch("ht.inline.utils._GEOMETRY_ATTRIB_MAP", data)
 
-            assert result == mock_owner_value
+        result = utils.get_attrib_owner_from_geometry_entity_type(mock_entity_type)
 
-    def test_invalid_type(self):
-        mock_owner_value = MagicMock(spec=int)
+        assert result == mock_owner_value
+
+    def test_invalid_type(self, mocker):
+        mock_owner_value = mocker.MagicMock(spec=int)
 
         data = {
-            MagicMock: mock_owner_value
+            mocker.MagicMock: mock_owner_value
         }
 
-        with patch("ht.inline.utils._GEOMETRY_ATTRIB_MAP", data):
-            with pytest.raises(ValueError):
-                utils.get_attrib_owner_from_geometry_entity_type(hou.Vector2)
+        mocker.patch("ht.inline.utils._GEOMETRY_ATTRIB_MAP", data)
+
+        with pytest.raises(ValueError):
+            utils.get_attrib_owner_from_geometry_entity_type(hou.Vector2)
 
 
 class Test_get_attrib_owner_from_geometry_type(object):
     """Test ht.inline.utils.get_attrib_owner_from_geometry_type."""
 
-    def test_in_map(self):
-        mock_geometry_type = MagicMock(spec=hou.geometryType)
-        mock_owner_value = MagicMock(spec=int)
+    def test_in_map(self, mocker):
+        mock_geometry_type = mocker.MagicMock(spec=hou.geometryType)
+        mock_owner_value = mocker.MagicMock(spec=int)
 
         data = {mock_geometry_type: mock_owner_value}
 
-        with patch("ht.inline.utils._GEOMETRY_TYPE_MAP", data):
-            result = utils.get_attrib_owner_from_geometry_type(mock_geometry_type)
+        mocker.patch("ht.inline.utils._GEOMETRY_TYPE_MAP", data)
 
-            assert result == mock_owner_value
+        result = utils.get_attrib_owner_from_geometry_type(mock_geometry_type)
 
-    def test_invalid_type(self):
-        mock_geometry_type = MagicMock(spec=hou.geometryType)
+        assert result == mock_owner_value
+
+    def test_invalid_type(self, mocker):
+        mock_geometry_type = mocker.MagicMock(spec=hou.geometryType)
 
         data = {}
 
-        with patch("ht.inline.utils._GEOMETRY_TYPE_MAP", data):
-            with pytest.raises(ValueError):
-                utils.get_attrib_owner_from_geometry_type(mock_geometry_type)
+        mocker.patch("ht.inline.utils._GEOMETRY_TYPE_MAP", data)
+
+        with pytest.raises(ValueError):
+            utils.get_attrib_owner_from_geometry_type(mock_geometry_type)
 
 
 class Test_get_attrib_storage(object):
     """Test ht.inline.utils.get_attrib_storage."""
 
-    def test(self):
-        mock_data_type = MagicMock(spec=hou.attribData)
-        mock_dict = MagicMock(spec=dict)
+    def test(self, mocker):
+        mock_data_type = mocker.MagicMock(spec=hou.attribData)
+        mock_dict = mocker.MagicMock(spec=dict)
 
-        with patch("ht.inline.utils._ATTRIB_STORAGE_MAP", mock_dict):
-            result = utils.get_attrib_storage(mock_data_type)
+        mocker.patch("ht.inline.utils._ATTRIB_STORAGE_MAP", mock_dict)
 
-            assert result == mock_dict.__getitem__.return_value
+        result = utils.get_attrib_storage(mock_data_type)
 
-            mock_dict.__getitem__.assert_called_with(mock_data_type)
+        assert result == mock_dict.__getitem__.return_value
 
-    def test_invalid(self):
-        mock_data_type = MagicMock(spec=hou.attribData)
+        mock_dict.__getitem__.assert_called_with(mock_data_type)
 
-        with patch("ht.inline.utils._ATTRIB_STORAGE_MAP", {}):
-            with pytest.raises(ValueError):
-                utils.get_attrib_storage(mock_data_type)
+    def test_invalid(self, mocker):
+        mock_data_type = mocker.MagicMock(spec=hou.attribData)
+
+        mocker.patch("ht.inline.utils._ATTRIB_STORAGE_MAP", {})
+
+        with pytest.raises(ValueError):
+            utils.get_attrib_storage(mock_data_type)
 
 
 class Test_get_group_attrib_owner(object):
     """Test ht.inline.utils.get_group_attrib_owner."""
 
-    def test(self):
-        mock_data_type = MagicMock()
-        mock_dict = MagicMock(spec=dict)
+    def test(self, mocker):
+        mock_data_type = mocker.MagicMock()
+        mock_dict = mocker.MagicMock(spec=dict)
 
-        with patch("ht.inline.utils._GROUP_ATTRIB_MAP", mock_dict):
-            result = utils.get_group_attrib_owner(mock_data_type)
+        mocker.patch("ht.inline.utils._GROUP_ATTRIB_MAP", mock_dict)
 
-            assert result == mock_dict.__getitem__.return_value
+        result = utils.get_group_attrib_owner(mock_data_type)
 
-            mock_dict.__getitem__.assert_called_with(type(mock_data_type))
+        assert result == mock_dict.__getitem__.return_value
 
-    def test_invalid(self):
-        mock_data_type = MagicMock()
+        mock_dict.__getitem__.assert_called_with(type(mock_data_type))
 
-        with patch("ht.inline.utils._GROUP_ATTRIB_MAP", {}):
-            with pytest.raises(ValueError):
-                utils.get_group_attrib_owner(mock_data_type)
+    def test_invalid(self, mocker):
+        mock_data_type = mocker.MagicMock()
+
+        mocker.patch("ht.inline.utils._GROUP_ATTRIB_MAP", {})
+
+        with pytest.raises(ValueError):
+            utils.get_group_attrib_owner(mock_data_type)
 
 
 class Test_get_group_type(object):
     """Test ht.inline.utils.get_group_type."""
 
-    def test(self):
-        mock_data_type = MagicMock()
-        mock_dict = MagicMock(spec=dict)
+    def test(self, mocker):
+        mock_data_type = mocker.MagicMock()
+        mock_dict = mocker.MagicMock(spec=dict)
 
-        with patch("ht.inline.utils._GROUP_TYPE_MAP", mock_dict):
-            result = utils.get_group_type(mock_data_type)
+        mocker.patch("ht.inline.utils._GROUP_TYPE_MAP", mock_dict)
 
-            assert result == mock_dict.__getitem__.return_value
+        result = utils.get_group_type(mock_data_type)
 
-            mock_dict.__getitem__.assert_called_with(type(mock_data_type))
+        assert result == mock_dict.__getitem__.return_value
 
-    def test_invalid(self):
-        mock_data_type = MagicMock()
+        mock_dict.__getitem__.assert_called_with(type(mock_data_type))
 
-        with patch("ht.inline.utils._GROUP_TYPE_MAP", {}):
-            with pytest.raises(ValueError):
-                utils.get_group_type(mock_data_type)
+    def test_invalid(self, mocker):
+        mock_data_type = mocker.MagicMock()
 
-@patch("ht.inline.utils.hou.node")
-def test_get_nodes_from_paths(mock_hou_node):
+        mocker.patch("ht.inline.utils._GROUP_TYPE_MAP", {})
+
+        with pytest.raises(ValueError):
+            utils.get_group_type(mock_data_type)
+
+
+def test_get_nodes_from_paths(mocker):
     """Test ht.inline.utils.get_nodes_from_paths."""
+    mock_hou_node = mocker.patch("ht.inline.utils.hou.node")
 
-    mock_path1 = MagicMock(spec=str)
+    mock_path1 = mocker.MagicMock(spec=str)
 
-    mock_path2 = MagicMock(spec=str)
+    mock_path2 = mocker.MagicMock(spec=str)
     mock_path2.__len__.return_value = 1
 
-    mock_path3 = MagicMock(spec=str)
+    mock_path3 = mocker.MagicMock(spec=str)
     mock_path3.__len__.return_value = 1
 
     result = utils.get_nodes_from_paths([mock_path1, mock_path2, mock_path3])
@@ -371,25 +386,25 @@ def test_get_nodes_from_paths(mock_hou_node):
     assert result == (mock_hou_node.return_value, mock_hou_node.return_value)
 
     mock_hou_node.assert_has_calls(
-        [call(mock_path2), call(mock_path3)]
+        [mocker.call(mock_path2), mocker.call(mock_path3)]
     )
 
 
 class Test_get_points_from_list(object):
     """Test ht.inline.utils.get_points_from_list."""
 
-    def test_empty(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
+    def test_empty(self, mocker):
+        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
         result = utils.get_points_from_list(mock_geometry, [])
 
         assert result == ()
 
-    def test(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
+    def test(self, mocker):
+        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
-        mock_int1 = MagicMock(spec=int)
-        mock_int2 = MagicMock(spec=int)
+        mock_int1 = mocker.MagicMock(spec=int)
+        mock_int2 = mocker.MagicMock(spec=int)
 
         result = utils.get_points_from_list(mock_geometry, [mock_int1, mock_int2])
 
@@ -401,18 +416,18 @@ class Test_get_points_from_list(object):
 class Test_get_prims_from_list(object):
     """Test ht.inline.utils.get_prims_from_list."""
 
-    def test_empty(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
+    def test_empty(self, mocker):
+        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
         result = utils.get_prims_from_list(mock_geometry, [])
 
         assert result == ()
 
-    def test(self):
-        mock_geometry = MagicMock(spec=hou.Geometry)
+    def test(self, mocker):
+        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
-        mock_int1 = MagicMock(spec=int)
-        mock_int2 = MagicMock(spec=int)
+        mock_int1 = mocker.MagicMock(spec=int)
+        mock_int2 = mocker.MagicMock(spec=int)
 
         result = utils.get_prims_from_list(mock_geometry, [mock_int1, mock_int2])
 

@@ -121,6 +121,7 @@ class RopRenderEvent(HoudiniEventGroup):
         else:
             _logger.info("Completed Render")
 
+
     def post_write(self, scriptargs):  # pylint: disable=no-self-use
         """Action run after the frame is written to disk.
 

@@ -9,13 +9,27 @@ from __future__ import absolute_import
 import logging
 
 # Third Party Imports
-from mock import MagicMock, PropertyMock, call, patch
+import pytest
 
 # Houdini Toolbox Imports
 import ht.logging.adapters
 
 # Houdini Imports
 import hou
+
+# =============================================================================
+# FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def init_adapter(mocker):
+    """Fixture to initialize an adapter."""
+    mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w, u: None)
+
+    def create():
+        return ht.logging.adapters.HoudiniLoggerAdapter(None, None, None, None)
+
+    return create
 
 
 # =============================================================================
@@ -25,31 +39,33 @@ import hou
 class Test_HoudiniLoggerAdapter(object):
     """Test ht.logging.adapters.HoudiniLoggerAdapter."""
 
-    def test___init__(self):
+    def test___init__(self, mocker):
         """Test object initialization."""
-        mock_base_logger = MagicMock(spec=logging.Logger)
-        mock_dialog = MagicMock(spec=bool)
-        mock_node = MagicMock(spec=hou.Node)
-        mock_status_bar = MagicMock(spec=bool)
+        mock_super_init = mocker.patch.object(ht.logging.adapters.logging.LoggerAdapter, "__init__")
 
-        with patch.object(ht.logging.adapters.logging.LoggerAdapter, "__init__") as mock_super_init:
-            log = ht.logging.adapters.HoudiniLoggerAdapter(mock_base_logger, mock_dialog, mock_node, mock_status_bar)
+        mock_base_logger = mocker.MagicMock(spec=logging.Logger)
+        mock_dialog = mocker.MagicMock(spec=bool)
+        mock_node = mocker.MagicMock(spec=hou.Node)
+        mock_status_bar = mocker.MagicMock(spec=bool)
 
-            mock_super_init.assert_called_with(mock_base_logger, {})
+        log = ht.logging.adapters.HoudiniLoggerAdapter(mock_base_logger, mock_dialog, mock_node, mock_status_bar)
+
+        mock_super_init.assert_called_with(mock_base_logger, {})
 
         assert log._dialog == mock_dialog
         assert log._node == mock_node
         assert log._status_bar == mock_status_bar
 
-    @patch("ht.logging.adapters._wrap_logger")
-    @patch("ht.logging.adapters.callable", side_effect=(True, False))
-    @patch.object(ht.logging.adapters.logging.LoggerAdapter, "__new__")
-    def test___new__(self, mock_super_new, mock_callable, mock_wrap):
+    def test___new__(self, mocker):
         """Test object creation."""
-        mock_base_logger = MagicMock(spec=logging.Logger)
-        mock_dialog = MagicMock(spec=bool)
+        mock_super_new = mocker.patch.object(ht.logging.adapters.logging.LoggerAdapter, "__new__")
+        mock_callable = mocker.patch("ht.logging.adapters.callable", side_effect=(True, False))
+        mock_wrap = mocker.patch("ht.logging.adapters._wrap_logger")
 
-        mock_inst = MagicMock(spec=ht.logging.adapters.HoudiniLoggerAdapter)
+        mock_base_logger = mocker.MagicMock(spec=logging.Logger)
+        mock_dialog = mocker.MagicMock(spec=bool)
+
+        mock_inst = mocker.MagicMock(spec=ht.logging.adapters.HoudiniLoggerAdapter)
 
         orig_info = mock_inst.info
 
@@ -63,16 +79,16 @@ class Test_HoudiniLoggerAdapter(object):
             "foobles": None
         }
 
-        with patch.dict(ht.logging.adapters._TO_WRAP, wrap_dict, clear=True):
-            result = cls.__new__(cls, mock_base_logger, dialog=mock_dialog)
+        mocker.patch.dict(ht.logging.adapters._TO_WRAP, wrap_dict, clear=True)
+        result = cls.__new__(cls, mock_base_logger, dialog=mock_dialog)
 
         assert result == mock_inst
         mock_super_new.assert_called_with(cls)
 
         mock_callable.assert_has_calls(
             [
-                call(orig_info),
-                call(mock_inst.warning)
+                mocker.call(orig_info),
+                mocker.call(mock_inst.warning)
             ]
         )
 
@@ -82,51 +98,40 @@ class Test_HoudiniLoggerAdapter(object):
 
     # Properties
 
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
-    def test_dialog(self):
+    def test_dialog(self, init_adapter, mocker):
         """Test the 'dialog' property."""
-        adapter = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
+        adapter = init_adapter()
 
-        mock_value1 = MagicMock(spec=bool)
-
+        mock_value1 = mocker.MagicMock(spec=bool)
         adapter._dialog = mock_value1
 
         assert adapter.dialog == mock_value1
 
-        mock_value2 = MagicMock(spec=bool)
-
+        mock_value2 = mocker.MagicMock(spec=bool)
         adapter.dialog = mock_value2
         assert adapter._dialog == mock_value2
 
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
-    def test_node(self):
+    def test_node(self, init_adapter, mocker):
         """Test the 'node' property."""
-        adapter = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
+        adapter = init_adapter()
 
-        mock_value1 = MagicMock(spec=hou.Node)
-
+        mock_value1 = mocker.MagicMock(spec=hou.Node)
         adapter._node = mock_value1
-
         assert adapter.node == mock_value1
 
-        mock_value2 = MagicMock(spec=hou.Node)
-
+        mock_value2 = mocker.MagicMock(spec=hou.Node)
         adapter.node = mock_value2
         assert adapter._node == mock_value2
 
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
-    def test_status_bar(self):
+    def test_status_bar(self, init_adapter, mocker):
         """Test the 'status_bar' property."""
-        adapter = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
+        adapter = init_adapter()
 
-        mock_value1 = MagicMock(spec=bool)
-
+        mock_value1 = mocker.MagicMock(spec=bool)
         adapter._status_bar = mock_value1
-
         assert adapter.status_bar == mock_value1
 
-        mock_value2 = MagicMock(spec=bool)
-
+        mock_value2 = mocker.MagicMock(spec=bool)
         adapter.status_bar = mock_value2
         assert adapter._status_bar == mock_value2
 
@@ -134,23 +139,23 @@ class Test_HoudiniLoggerAdapter(object):
 
     # process
 
-    @patch("ht.logging.adapters.hou.isUIAvailable", return_value=False)
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=PropertyMock(return_value=False))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=PropertyMock(return_value=False))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=PropertyMock)
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
-    @patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
-    def test_process__node_arg(self, mock_node_prop, mock_dialog_prop, mock_status_prop, mock_available):
+    def test_process__node_arg(self, init_adapter, mocker):
         """Test when passing a node."""
-        mock_message = MagicMock(spec=str)
+        mocker.patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=mocker.PropertyMock)
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=mocker.PropertyMock(return_value=False))
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=mocker.PropertyMock(return_value=False))
+        mocker.patch("ht.logging.adapters.hou.isUIAvailable", return_value=False)
 
-        mock_node = MagicMock(spec=hou.Node)
+        mock_message = mocker.MagicMock(spec=str)
+
+        mock_node = mocker.MagicMock(spec=hou.Node)
 
         kwargs = {
             "extra": {"node": mock_node}
         }
 
-        log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
+        log = init_adapter()
 
         result = log.process(mock_message, kwargs)
 
@@ -158,21 +163,21 @@ class Test_HoudiniLoggerAdapter(object):
 
         mock_node.path.assert_called()
 
-    @patch("ht.logging.adapters.hou.isUIAvailable", return_value=False)
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=PropertyMock(return_value=False))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=PropertyMock(return_value=False))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=PropertyMock)
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
-    @patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
-    def test_process__node_property(self, mock_node_prop, mock_dialog_prop, mock_status_prop, mock_available):
+    def test_process__node_property(self, init_adapter, mocker):
         """Test when using the 'node' property."""
-        mock_message = MagicMock(spec=str)
+        mocker.patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
+        mock_node_prop = mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=mocker.PropertyMock)
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=mocker.PropertyMock(return_value=False))
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=mocker.PropertyMock(return_value=False))
+        mocker.patch("ht.logging.adapters.hou.isUIAvailable", return_value=False)
+
+        mock_message = mocker.MagicMock(spec=str)
 
         kwargs = {
             "extra": {}
         }
 
-        log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
+        log = init_adapter()
 
         result = log.process(mock_message, kwargs)
 
@@ -180,22 +185,21 @@ class Test_HoudiniLoggerAdapter(object):
 
         mock_node_prop.return_value.path.assert_called()
 
-    @patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=PropertyMock(return_value=False))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=PropertyMock(return_value=False))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=PropertyMock(return_value=None))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
-    @patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
-    def test_process__ui_passed_no_severity_no_title(self, mock_node_prop, mock_dialog_prop, mock_status_prop,
-                                                     mock_available, mock_hou_ui):
+    def test_process__ui_passed_no_severity_no_title(self, init_adapter, mocker, mock_hou_ui):
         """Test passing 'dialog' and 'status_bar' via extra dict with no severity or title."""
-        mock_message = MagicMock(spec=str)
+        mocker.patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=mocker.PropertyMock(return_value=None))
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=mocker.PropertyMock(return_value=False))
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=mocker.PropertyMock(return_value=False))
+        mocker.patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
+
+        mock_message = mocker.MagicMock(spec=str)
 
         kwargs = {
             "extra": {"dialog": True, "status_bar": True}
         }
 
-        log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
+        log = init_adapter()
 
         result = log.process(mock_message, kwargs)
 
@@ -204,23 +208,22 @@ class Test_HoudiniLoggerAdapter(object):
         mock_hou_ui.displayMessage.assert_called_with(mock_message, severity=hou.severityType.Message, title=None)
         mock_hou_ui.setStatusMessage.assert_called_with(mock_message, severity=hou.severityType.Message)
 
-    @patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=PropertyMock(return_value=True))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=PropertyMock(return_value=True))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=PropertyMock(return_value=None))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
-    @patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
-    def test_process__ui_properties_with_severity_and_title(self, mock_node_prop, mock_dialog_prop, mock_status_prop,
-                                                            mock_available, mock_hou_ui):
+    def test_process__ui_properties_with_severity_and_title(self, init_adapter, mocker, mock_hou_ui):
         """Test passing 'dialog' and 'status_bar' via properties with a severity and title."""
-        mock_message = MagicMock(spec=str)
-        mock_title = MagicMock(spec=str)
+        mocker.patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=mocker.PropertyMock(return_value=None))
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=mocker.PropertyMock(return_value=True))
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=mocker.PropertyMock(return_value=True))
+        mocker.patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
+
+        mock_message = mocker.MagicMock(spec=str)
+        mock_title = mocker.MagicMock(spec=str)
 
         kwargs = {
             "extra": {"severity": hou.severityType.Error, "title": mock_title}
         }
 
-        log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
+        log = init_adapter()
 
         result = log.process(mock_message, kwargs)
 
@@ -229,22 +232,20 @@ class Test_HoudiniLoggerAdapter(object):
         mock_hou_ui.displayMessage.assert_called_with(mock_message, severity=hou.severityType.Error, title=mock_title)
         mock_hou_ui.setStatusMessage.assert_called_with(mock_message, severity=hou.severityType.Error)
 
-    @patch("ht.logging.adapters.hou.hipFile.basename")
-    @patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=PropertyMock(return_value=False))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=PropertyMock(return_value=True))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=PropertyMock(return_value=None))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
-    @patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
-    def test_process__message_args(self, mock_node_prop, mock_dialog_prop, mock_status_prop, mock_available,
-                                   mock_basename, mock_hou_ui):
+    def test_process__message_args(self, init_adapter, mocker, mock_hou_ui):
         """Test passing along 'message_args'."""
-        mock_message = MagicMock(spec=str)
-        mock_arg = MagicMock(spec=str)
+        mocker.patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=mocker.PropertyMock(return_value=None))
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=mocker.PropertyMock(return_value=True))
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=mocker.PropertyMock(return_value=False))
+        mocker.patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
+
+        mock_message = mocker.MagicMock(spec=str)
+        mock_arg = mocker.MagicMock(spec=str)
 
         kwargs = {"extra": {"message_args": (mock_arg, )}}
 
-        log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
+        log = init_adapter()
 
         result = log.process(mock_message, kwargs)
 
@@ -254,22 +255,21 @@ class Test_HoudiniLoggerAdapter(object):
 
         mock_message.__mod__.assert_called_with((mock_arg, ))
 
-    @patch("ht.logging.adapters.hou.hipFile.basename")
-    @patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=PropertyMock(return_value=False))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=PropertyMock(return_value=False))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=PropertyMock(return_value=None))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
-    @patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
-    def test_process__message_args_no_display(self, mock_node_prop, mock_dialog_prop, mock_status_prop, mock_available,
-                                              mock_basename, mock_hou_ui):
+    def test_process__message_args_no_display(self, init_adapter, mocker, mock_hou_ui):
         """Test passing along 'message_args' but not displaying them."""
-        mock_message = MagicMock(spec=str)
-        mock_arg = MagicMock(spec=str)
+        mocker.patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=mocker.PropertyMock(return_value=None))
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=mocker.PropertyMock(return_value=False))
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=mocker.PropertyMock(return_value=False))
+        mocker.patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
+        mocker.patch("ht.logging.adapters.hou.hipFile.basename")
+
+        mock_message = mocker.MagicMock(spec=str)
+        mock_arg = mocker.MagicMock(spec=str)
 
         kwargs = {"extra": {"message_args": (mock_arg, )}}
 
-        log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
+        log = init_adapter()
 
         result = log.process(mock_message, kwargs)
 
@@ -279,20 +279,20 @@ class Test_HoudiniLoggerAdapter(object):
 
         mock_message.__mod__.assert_called_with((mock_arg, ))
 
-    @patch("ht.logging.adapters.hou.hipFile.basename")
-    @patch("ht.logging.adapters.hou.isUIAvailable", return_value=False)
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=PropertyMock(return_value=False))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=PropertyMock(return_value=False))
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=PropertyMock)
-    @patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w: None)
-    @patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
-    def test_process__no_extra(self, mock_node_prop, mock_dialog_prop, mock_status_prop, mock_available, mock_basename):
+    def test_process__no_extra(self, init_adapter, mocker):
         """Test passing along an empty kwargs dict."""
-        mock_message = MagicMock(spec=str)
+        mocker.patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
+        mock_node_prop = mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=mocker.PropertyMock)
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=mocker.PropertyMock(return_value=False))
+        mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=mocker.PropertyMock(return_value=False))
+        mocker.patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
+        mocker.patch("ht.logging.adapters.hou.hipFile.basename")
+
+        mock_message = mocker.MagicMock(spec=str)
 
         kwargs = {}
 
-        log = ht.logging.adapters.HoudiniLoggerAdapter(None, None, None)
+        log = init_adapter()
 
         result = log.process(mock_message, kwargs)
 
@@ -304,10 +304,10 @@ class Test_HoudiniLoggerAdapter(object):
 class Test__wrap_logger(object):
     """Test ht.logging.adapters._wrap_logger."""
 
-    def test_all_kwargs(self):
+    def test_all_kwargs(self, mocker):
         """Test with passing all optional kwarg args."""
         # A fake function to wrap.
-        mock_func = MagicMock(spec=str)
+        mock_func = mocker.MagicMock(spec=str)
         mock_func.__name__ = "test"
 
         # Wrap the test function up.
@@ -317,13 +317,13 @@ class Test__wrap_logger(object):
         extra = {}
 
         # Mock function args.
-        mock_arg1 = MagicMock()
-        mock_arg2 = MagicMock()
+        mock_arg1 = mocker.MagicMock()
+        mock_arg2 = mocker.MagicMock()
 
-        mock_node = MagicMock(spec=hou.Node)
-        mock_dialog = MagicMock(spec=bool)
-        mock_status_bar = MagicMock(spec=bool)
-        mock_title = MagicMock(spec=str)
+        mock_node = mocker.MagicMock(spec=hou.Node)
+        mock_dialog = mocker.MagicMock(spec=bool)
+        mock_status_bar = mocker.MagicMock(spec=bool)
+        mock_title = mocker.MagicMock(spec=str)
 
         # Call the function.
         func(mock_arg1, mock_arg2, extra=extra, dialog=mock_dialog, node=mock_node, status_bar=mock_status_bar, title=mock_title)
@@ -344,10 +344,10 @@ class Test__wrap_logger(object):
         # Verify that the wrapped function was called with the expected data.
         mock_func.assert_called_with(mock_arg1, mock_arg2, extra=expected)
 
-    def test_no_kwargs(self):
+    def test_no_kwargs(self, mocker):
         """Test with passing none of the optional kwarg args."""
         # A fake function to wrap.
-        mock_func = MagicMock(spec=str)
+        mock_func = mocker.MagicMock(spec=str)
         mock_func.__name__ = "test"
 
         # Wrap the test function up.
@@ -357,7 +357,7 @@ class Test__wrap_logger(object):
         extra = {}
 
         # Mock function arg.
-        mock_arg = MagicMock()
+        mock_arg = mocker.MagicMock()
 
         # Call the function.
         func(mock_arg, extra=extra)

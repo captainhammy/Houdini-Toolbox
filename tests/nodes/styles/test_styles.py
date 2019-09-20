@@ -8,7 +8,7 @@
 import imp
 
 # Third Party Imports
-from mock import MagicMock, PropertyMock, patch
+import pytest
 
 # Houdini Toolbox Imports
 from ht.nodes.styles import styles
@@ -22,19 +22,56 @@ imp.reload(styles)
 
 
 # =============================================================================
+# FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def init_constant_rule(mocker):
+    """Fixture to initialize a style constant."""
+    mocker.patch.object(styles.ConstantRule, "__init__", lambda x, y, z: None)
+
+    def create():
+        return styles.ConstantRule(None, None)
+
+    return create
+
+
+@pytest.fixture
+def init_style_constant(mocker):
+    """Fixture to initialize a style constant."""
+    mocker.patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
+
+    def create():
+        return styles.StyleConstant(None, None, None, None)
+
+    return create
+
+
+@pytest.fixture
+def init_style_rule(mocker):
+    """Fixture to initialize a style rule."""
+    mocker.patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
+
+    def create():
+        return styles.StyleRule(None, None, None, None)
+
+    return create
+
+
+# =============================================================================
 # CLASSES
 # =============================================================================
 
 class Test_StyleConstant(object):
     """Test ht.nodes.styles.styles.StyleConstant."""
 
-    def test___init__(self):
-        """Test the constructor"""
-        mock_name = MagicMock(spec=str)
-        mock_color = MagicMock(spec=hou.Color)
-        mock_color_type = MagicMock(spec=str)
-        mock_shape = MagicMock(spec=str)
-        mock_file_path = MagicMock(spec=str)
+    def test___init__(self, mocker):
+        """Test object initialization."""
+        mock_name = mocker.MagicMock(spec=str)
+        mock_color = mocker.MagicMock(spec=hou.Color)
+        mock_color_type = mocker.MagicMock(spec=str)
+        mock_shape = mocker.MagicMock(spec=str)
+        mock_file_path = mocker.MagicMock(spec=str)
 
         constant = styles.StyleConstant(mock_name, mock_color, mock_color_type, mock_shape, mock_file_path)
 
@@ -44,15 +81,15 @@ class Test_StyleConstant(object):
         assert constant._shape == mock_shape
         assert constant._file_path == mock_file_path
 
-    @patch.object(styles.StyleConstant, "name", new_callable=PropertyMock)
-    @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
-    def test___eq__(self, mock_name_prop):
+    def test___eq__(self, init_style_constant, mocker):
         """Test the equality operator."""
+        mock_name_prop = mocker.patch.object(styles.StyleConstant, "name", new_callable=mocker.PropertyMock)
+
         mock_name_prop.return_value = "name1"
 
-        constant = styles.StyleConstant(None, None, None, None)
+        constant = init_style_constant()
 
-        mock_constant = MagicMock(spec=styles.StyleConstant)
+        mock_constant = mocker.MagicMock(spec=styles.StyleConstant)
         mock_constant.name = "name2"
 
         assert constant != mock_constant
@@ -62,14 +99,14 @@ class Test_StyleConstant(object):
 
         assert constant == mock_constant
 
-        result = constant.__eq__(MagicMock())
+        result = constant.__eq__(mocker.MagicMock())
         assert result == NotImplemented
 
-    @patch.object(styles.StyleConstant, "name", new_callable=PropertyMock)
-    @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
-    def test___hash__(self, mock_name_prop):
+    def test___hash__(self, init_style_constant, mocker):
         """Test the hash operator."""
-        constant = styles.StyleConstant(None, None, None, None)
+        mocker.patch.object(styles.StyleConstant, "name", new_callable=mocker.PropertyMock)
+
+        constant = init_style_constant()
 
         result = constant.__hash__()
 
@@ -79,102 +116,94 @@ class Test_StyleConstant(object):
 
     # ne
 
-    @patch.object(styles.StyleConstant, "__eq__")
-    @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
-    def test___ne__(self, mock_eq):
-        """Test the ne operator."""
-        constant = styles.StyleConstant(None, None, None, None)
+    def test___ne__(self, init_style_constant, mocker):
+        """Test the __ne__ operator."""
+        mock_eq = mocker.patch.object(styles.StyleConstant, "__eq__")
 
-        mock_constant = MagicMock(spec=styles.StyleConstant)
+        constant = init_style_constant()
+
+        mock_constant = mocker.MagicMock(spec=styles.StyleConstant)
 
         result = constant.__ne__(mock_constant)
 
         assert result != mock_eq.return_value
 
-    @patch.object(styles.StyleConstant, "__eq__")
-    @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
-    def test___ne___different_type(self, mock_eq):
-        """Test the ne operator when the other item isn't a StyleConstant."""
-        constant = styles.StyleConstant(None, None, None, None)
+    def test___ne___different_type(self, init_style_constant, mocker):
+        """Test the __ne__ operator when the other item isn't a StyleConstant."""
+        constant = init_style_constant()
 
-        result = constant.__ne__(MagicMock())
+        result = constant.__ne__(mocker.MagicMock())
 
         assert result == NotImplemented
 
     # Properties
 
-    @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
-    def test_color(self):
+    def test_color(self, init_style_constant, mocker):
         """Test the 'color' property."""
-        mock_color1 = MagicMock(spec=hou.Color)
+        mock_value = mocker.MagicMock(spec=hou.Color)
 
-        constant = styles.StyleConstant(None, None, None, None)
-        constant._color = mock_color1
+        constant = init_style_constant()
+        constant._color = mock_value
+        assert constant.color == mock_value
 
-        assert constant.color == mock_color1
-
-    @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
-    def test_color_type(self):
+    def test_color_type(self, init_style_constant, mocker):
         """Test the 'color_type' property."""
-        value1 = MagicMock(spec=str)
-        constant = styles.StyleConstant(None, None, None, None)
-        constant._color_type = value1
+        value1 = mocker.MagicMock(spec=str)
 
+        constant = init_style_constant()
+        constant._color_type = value1
         assert constant.color_type == value1
 
-    @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
-    def test_file_path(self):
+    def test_file_path(self, init_style_constant, mocker):
         """Test the 'file_path' property."""
-        value = MagicMock(spec=str)
-        constant = styles.StyleConstant(None, None, None, None)
-        constant._file_path = value
+        mock_value = mocker.MagicMock(spec=str)
 
-        assert constant.file_path == value
+        constant = init_style_constant()
+        constant._file_path = mock_value
+        assert constant.file_path == mock_value
 
-    @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
-    def test_name(self):
+    def test_name(self, init_style_constant, mocker):
         """Test the 'name' property."""
-        value = MagicMock(spec=str)
-        constant = styles.StyleConstant(None, None, None, None)
-        constant._name = value
+        mock_value = mocker.MagicMock(spec=str)
 
-        assert constant.name == value
+        constant = init_style_constant()
+        constant._name = mock_value
+        assert constant.name == mock_value
 
-    @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
-    def test_shape(self):
+    def test_shape(self, init_style_constant, mocker):
         """Test the 'shape' property."""
-        value1 = MagicMock(spec=str)
-        constant = styles.StyleConstant(None, None, None, None)
-        constant._shape = value1
+        mock_value = mocker.MagicMock(spec=str)
 
-        assert constant.shape == value1
+        constant = init_style_constant()
+        constant._shape = mock_value
+        assert constant.shape == mock_value
 
     # Methods
 
     # apply_to_node
 
-    @patch.object(styles.StyleConstant, "shape", new_callable=PropertyMock)
-    @patch.object(styles.StyleConstant, "color", new_callable=PropertyMock)
-    @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
-    def test_apply_to_node__both(self, mock_color_prop, mock_shape_prop):
+    def test_apply_to_node__both(self, init_style_constant, mocker):
         """Test applying everything to a node."""
-        mock_node = MagicMock(spec=hou.Node)
+        mock_color_prop = mocker.patch.object(styles.StyleConstant, "color", new_callable=mocker.PropertyMock)
+        mock_shape_prop = mocker.patch.object(styles.StyleConstant, "shape", new_callable=mocker.PropertyMock)
 
-        constant = styles.StyleConstant(None, None, None, None)
+        mock_node = mocker.MagicMock(spec=hou.Node)
+
+        constant = init_style_constant()
 
         constant.apply_to_node(mock_node)
 
         mock_node.setColor.assert_called_with(mock_color_prop.return_value)
         mock_node.setUserData.assert_called_with("nodeshape", mock_shape_prop.return_value)
 
-    @patch.object(styles.StyleConstant, "shape", new_callable=PropertyMock(return_value=None))
-    @patch.object(styles.StyleConstant, "color", new_callable=PropertyMock(return_value=None))
-    @patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
-    def test_apply_to_node__none(self, mock_color, mock_shape):
+    def test_apply_to_node__none(self, init_style_constant, mocker):
         """Test applying to a node when no values will be set."""
-        mock_node = MagicMock(spec=hou.Node)
+        mocker.patch.object(styles.StyleConstant, "color", new_callable=mocker.PropertyMock(return_value=None))
+        mocker.patch.object(styles.StyleConstant, "shape", new_callable=mocker.PropertyMock(return_value=None))
 
-        constant = styles.StyleConstant(None, None, None, None)
+        mock_node = mocker.MagicMock(spec=hou.Node)
+
+        constant = init_style_constant()
 
         constant.apply_to_node(mock_node)
 
@@ -185,13 +214,13 @@ class Test_StyleConstant(object):
 class Test_StyleRule(object):
     """Test ht.nodes.styles.styles.StyleRule."""
 
-    def test___init__(self):
+    def test___init__(self, mocker):
         """Test the constructor."""
-        mock_name = MagicMock(spec=str)
-        mock_color = MagicMock(spec=hou.Color)
-        mock_color_type = MagicMock(spec=str)
-        mock_shape = MagicMock(spec=str)
-        mock_file_path = MagicMock(spec=str)
+        mock_name = mocker.MagicMock(spec=str)
+        mock_color = mocker.MagicMock(spec=hou.Color)
+        mock_color_type = mocker.MagicMock(spec=str)
+        mock_shape = mocker.MagicMock(spec=str)
+        mock_file_path = mocker.MagicMock(spec=str)
 
         rule = styles.StyleRule(mock_name, mock_color, mock_color_type, mock_shape, mock_file_path)
 
@@ -201,13 +230,13 @@ class Test_StyleRule(object):
         assert rule._shape == mock_shape
         assert rule._file_path == mock_file_path
 
-    @patch.object(styles.StyleRule, "name", new_callable=PropertyMock(return_value="name"))
-    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
-    def test___eq__(self, mock_name_prop):
+    def test___eq__(self, init_style_rule, mocker):
         """Test the equality operator."""
-        rule = styles.StyleRule(None, None, None, None)
+        mocker.patch.object(styles.StyleRule, "name", new_callable=mocker.PropertyMock(return_value="name"))
 
-        mock_rule = MagicMock(spec=styles.StyleRule)
+        rule = init_style_rule()
+
+        mock_rule = mocker.MagicMock(spec=styles.StyleRule)
         mock_rule.name = "different_name"
 
         assert rule != mock_rule
@@ -215,14 +244,14 @@ class Test_StyleRule(object):
         mock_rule.name = "name"
         assert rule == mock_rule
 
-        result = rule.__eq__(MagicMock())
+        result = rule.__eq__(mocker.MagicMock())
         assert result == NotImplemented
 
-    @patch.object(styles.StyleRule, "name", new_callable=PropertyMock(return_value="name"))
-    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
-    def test___hash__(self, mock_name_prop):
+    def test___hash__(self, init_style_rule, mocker):
         """Test the hash operator."""
-        rule = styles.StyleRule(None, None, None, None)
+        mocker.patch.object(styles.StyleRule, "name", new_callable=mocker.PropertyMock(return_value="name"))
+
+        rule = init_style_rule()
 
         result = rule.__hash__()
 
@@ -232,131 +261,121 @@ class Test_StyleRule(object):
 
     # ne
 
-    @patch.object(styles.StyleRule, "__eq__")
-    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
-    def test___ne__(self, mock_eq):
-        """Test the ne operator."""
-        rule = styles.StyleRule(None, None, None, None)
+    def test___ne__(self, init_style_rule, mocker):
+        """Test the __ne__ operator."""
+        mock_eq = mocker.patch.object(styles.StyleRule, "__eq__")
 
-        mock_rule = MagicMock(spec=styles.StyleRule)
+        rule = init_style_rule()
+
+        mock_rule = mocker.MagicMock(spec=styles.StyleRule)
 
         result = rule.__ne__(mock_rule)
 
         assert result != mock_eq.return_value
 
-    @patch.object(styles.StyleRule, "__eq__")
-    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
-    def test___ne___different_type(self, mock_eq):
-        """Test the ne operator when the other item isn't a StyleConstant."""
-        rule = styles.StyleRule(None, None, None, None)
+    def test___ne___different_type(self, init_style_rule, mocker):
+        """Test the __ne__ operator when the other item isn't a StyleConstant."""
+        mocker.patch.object(styles.StyleRule, "__eq__")
 
-        result = rule.__ne__(MagicMock())
+        rule = init_style_rule()
+
+        result = rule.__ne__(mocker.MagicMock())
 
         assert result == NotImplemented
 
-    @patch.object(styles.StyleRule, "_get_typed_color_value")
-    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
-    def test___str__(self, mock_typed):
+    def test___str__(self, init_style_rule, mocker):
         """Test converting the object to a string."""
+        mock_typed = mocker.patch.object(styles.StyleRule, "_get_typed_color_value")
+
         mock_typed.return_value = (0.46700000762939453, 1.0, 0.5)
 
-        rule = styles.StyleRule(None, None, None, None)
+        rule = init_style_rule()
 
         assert str(rule) == "(0.467, 1, 0.5)"
 
     # Properties
 
-    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
-    def test_color(self):
+    def test_color(self, init_style_rule, mocker):
         """Test the 'color' property."""
-        mock_color = MagicMock(spec=hou.Color)
+        mock_value = mocker.MagicMock(spec=hou.Color)
 
-        rule = styles.StyleRule(None, None, None, None)
-        rule._color = mock_color
+        rule = init_style_rule()
+        rule._color = mock_value
 
-        assert rule.color == mock_color
+        assert rule.color == mock_value
 
-    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
-    def test_color_type(self):
+    def test_color_type(self, init_style_rule, mocker):
         """Test the 'color_type' property."""
-        value = MagicMock(spec=str)
-        rule = styles.StyleRule(None, None, None, None)
-        rule._color_type = value
+        mock_value = mocker.MagicMock(spec=str)
 
-        assert rule.color_type == value
+        rule = init_style_rule()
+        rule._color_type = mock_value
+        assert rule.color_type == mock_value
 
-    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
-    def test_file_path(self):
+    def test_file_path(self, init_style_rule, mocker):
         """Test the 'file_path' property."""
-        value = MagicMock(spec=str)
-        rule = styles.StyleRule(None, None, None, None)
-        rule._file_path = value
+        mock_value = mocker.MagicMock(spec=str)
 
-        assert rule.file_path == value
+        rule = init_style_rule()
+        rule._file_path = mock_value
+        assert rule.file_path == mock_value
 
-    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
-    def test_name(self):
+    def test_name(self, init_style_rule, mocker):
         """Test the 'name' property."""
-        value = MagicMock(spec=str)
-        rule = styles.StyleRule(None, None, None, None)
-        rule._name = value
+        mock_value = mocker.MagicMock(spec=str)
 
-        assert rule.name == value
+        rule = init_style_rule()
+        rule._name = mock_value
+        assert rule.name == mock_value
 
-    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
-    def test_shape(self):
+    def test_shape(self, init_style_rule, mocker):
         """Test the 'shape' property."""
-        value = MagicMock(spec=str)
-        rule = styles.StyleRule(None, None, None, None)
-        rule._shape = value
+        mock_value = mocker.MagicMock(spec=str)
 
-        assert rule.shape == value
+        rule = init_style_rule()
+        rule._shape = mock_value
+        assert rule.shape == mock_value
 
     # Methods
 
     # _get_typed_color_value
 
-    @patch.object(styles.StyleRule, "color_type", new_callable=PropertyMock(return_value="HSV"))
-    @patch.object(styles.StyleRule, "color", new_callable=PropertyMock)
-    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
-    def test__get_typed_color_value(self, mock_color_prop, mock_color_type_prop):
+    def test__get_typed_color_value(self, init_style_rule, mocker):
         """Test getting a typed color value."""
-        value = (1, 2, 3)
+        mock_color_prop = mocker.patch.object(styles.StyleRule, "color", new_callable=mocker.PropertyMock)
+        mocker.patch.object(styles.StyleRule, "color_type", new_callable=mocker.PropertyMock(return_value="HSV"))
 
-        mock_color = MagicMock(spec=hou.Color)
-        mock_color.hsv.return_value = value
-
+        mock_color = mocker.MagicMock(spec=hou.Color)
         mock_color_prop.return_value = mock_color
 
-        rule = styles.StyleRule(None, None, None, None)
+        rule = init_style_rule()
 
         result = rule._get_typed_color_value()
-        assert result == value
+        assert result == mock_color.hsv.return_value
 
     # apply_to_node
 
-    @patch.object(styles.StyleRule, "shape", new_callable=PropertyMock)
-    @patch.object(styles.StyleRule, "color", new_callable=PropertyMock)
-    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
-    def test_apply_to_node__both(self, mock_color_prop,  mock_shape_prop):
+    def test_apply_to_node__both(self, init_style_rule, mocker):
         """Test applying everything to a node."""
-        mock_node = MagicMock(spec=hou.Node)
+        mock_color_prop = mocker.patch.object(styles.StyleRule, "color", new_callable=mocker.PropertyMock)
+        mock_shape_prop = mocker.patch.object(styles.StyleRule, "shape", new_callable=mocker.PropertyMock)
+        mock_node = mocker.MagicMock(spec=hou.Node)
 
-        rule = styles.StyleRule(None, None, None, None)
+        rule = init_style_rule()
 
         rule.apply_to_node(mock_node)
 
         mock_node.setColor.assert_called_with(mock_color_prop.return_value)
         mock_node.setUserData.assert_called_with("nodeshape", mock_shape_prop.return_value)
 
-    @patch.object(styles.StyleRule, "shape", new_callable=PropertyMock(return_value=None))
-    @patch.object(styles.StyleRule, "color", new_callable=PropertyMock(return_value=None))
-    @patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
-    def test_apply_to_node__none(self, mock_color_prop, mock_shape_prop):
+    def test_apply_to_node__none(self, init_style_rule, mocker):
         """Test applying to a node when no values will be set."""
-        mock_node = MagicMock(spec=hou.Node)
+        mocker.patch.object(styles.StyleRule, "color", new_callable=mocker.PropertyMock(return_value=None))
+        mocker.patch.object(styles.StyleRule, "shape", new_callable=mocker.PropertyMock(return_value=None))
 
-        rule = styles.StyleRule(None, None, None, None)
+        mock_node = mocker.MagicMock(spec=hou.Node)
+
+        rule = init_style_rule()
 
         rule.apply_to_node(mock_node)
 
@@ -367,11 +386,11 @@ class Test_StyleRule(object):
 class Test_ConstantRule(object):
     """Test ht.nodes.styles.styles.ConstantRule."""
 
-    def test___init__(self):
+    def test___init__(self, mocker):
         """Test the constructor."""
-        mock_name = MagicMock(spec=str)
-        mock_constant_name = MagicMock(spec=str)
-        mock_file_path = MagicMock(spec=str)
+        mock_name = mocker.MagicMock(spec=str)
+        mock_constant_name = mocker.MagicMock(spec=str)
+        mock_file_path = mocker.MagicMock(spec=str)
 
         rule = styles.ConstantRule(mock_name, mock_constant_name, mock_file_path)
 
@@ -379,15 +398,15 @@ class Test_ConstantRule(object):
         assert rule._constant_name == mock_constant_name
         assert rule._file_path == mock_file_path
 
-    @patch.object(styles.ConstantRule, "name", new_callable=PropertyMock)
-    @patch.object(styles.ConstantRule, "__init__", lambda x, y, z: None)
-    def test___eq__(self, mock_name_prop):
+    def test___eq__(self, init_constant_rule, mocker):
         """Test the equality operator."""
-        constant = styles.ConstantRule(None, None)
+        mock_name_prop = mocker.patch.object(styles.ConstantRule, "name", new_callable=mocker.PropertyMock)
+
+        constant = init_constant_rule()
 
         mock_name_prop.return_value = "name1"
 
-        mock_constant = MagicMock(spec=styles.ConstantRule)
+        mock_constant = mocker.MagicMock(spec=styles.ConstantRule)
         mock_constant.name = "name2"
 
         assert constant != mock_constant
@@ -397,15 +416,15 @@ class Test_ConstantRule(object):
 
         assert constant == mock_constant
 
-        result = constant.__eq__(MagicMock())
-        assert result  == NotImplemented
+        result = constant.__eq__(mocker.MagicMock())
+        assert result == NotImplemented
 
-    @patch.object(styles.ConstantRule, "constant_name", new_callable=PropertyMock)
-    @patch.object(styles.ConstantRule, "name", new_callable=PropertyMock)
-    @patch.object(styles.ConstantRule, "__init__", lambda x, y, z: None)
-    def test___hash__(self, mock_name_prop, mock_constant_prop):
+    def test___hash__(self, init_constant_rule, mocker):
         """Test the hash operator."""
-        constant = styles.ConstantRule(None, None)
+        mocker.patch.object(styles.ConstantRule, "name", new_callable=mocker.PropertyMock)
+        mocker.patch.object(styles.ConstantRule, "constant_name", new_callable=mocker.PropertyMock)
+
+        constant = init_constant_rule()
 
         result = constant.__hash__()
 
@@ -415,52 +434,49 @@ class Test_ConstantRule(object):
 
     # ne
 
-    @patch.object(styles.ConstantRule, "__eq__")
-    @patch.object(styles.ConstantRule, "__init__", lambda x, y, z: None)
-    def test___ne__(self, mock_eq):
+    def test___ne__(self, init_constant_rule, mocker):
         """Test the ne operator."""
-        constant = styles.ConstantRule(None, None)
-        mock_constant = MagicMock(spec=styles.ConstantRule)
+        mock_eq = mocker.patch.object(styles.ConstantRule, "__eq__")
+
+        constant = init_constant_rule()
+        mock_constant = mocker.MagicMock(spec=styles.ConstantRule)
 
         result = constant.__ne__(mock_constant)
 
         assert result != mock_eq.return_value
 
-    @patch.object(styles.ConstantRule, "__eq__")
-    @patch.object(styles.ConstantRule, "__init__", lambda x, y, z: None)
-    def test___ne___different_type(self, mock_eq):
+    def test___ne___different_type(self, init_constant_rule, mocker):
         """Test the ne operator when the other item isn't a StyleConstant."""
-        constant = styles.ConstantRule(None, None)
+        mocker.patch.object(styles.ConstantRule, "__eq__")
 
-        result = constant.__ne__(MagicMock())
+        constant = init_constant_rule()
+
+        result = constant.__ne__(mocker.MagicMock())
 
         assert result == NotImplemented
 
     # Properties
 
-    @patch.object(styles.ConstantRule, "__init__", lambda x, y, z: None)
-    def test_constant_name(self):
+    def test_constant_name(self, init_constant_rule, mocker):
         """Test the 'constant_name' property."""
-        value = MagicMock(spec=str)
-        rule = styles.ConstantRule(None, None)
-        rule._constant_name = value
+        mock_value = mocker.MagicMock(spec=str)
+        constant = init_constant_rule()
+        constant._constant_name = mock_value
 
-        assert rule.constant_name == value
+        assert constant.constant_name == mock_value
 
-    @patch.object(styles.ConstantRule, "__init__", lambda x, y, z: None)
-    def test_file_path(self):
-        "Test the 'file_path' property."
-        value = MagicMock(spec=str)
-        rule = styles.ConstantRule(None, None)
-        rule._file_path = value
+    def test_file_path(self, init_constant_rule, mocker):
+        """Test the 'file_path' property."""
+        mock_value = mocker.MagicMock(spec=str)
+        constant = init_constant_rule()
+        constant._file_path = mock_value
 
-        assert rule.file_path == value
+        assert constant.file_path == mock_value
 
-    @patch.object(styles.ConstantRule, "__init__", lambda x, y, z: None)
-    def test_name(self):
+    def test_name(self, init_constant_rule, mocker):
         """Test the 'name' property."""
-        value = MagicMock(spec=str)
-        rule = styles.ConstantRule(None, None)
-        rule._name = value
+        mock_value = mocker.MagicMock(spec=str)
+        constant = init_constant_rule()
+        constant._name = mock_value
 
-        assert rule.name  == value
+        assert constant.name == mock_value

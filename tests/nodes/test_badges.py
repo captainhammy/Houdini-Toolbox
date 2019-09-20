@@ -4,9 +4,6 @@
 # IMPORTS
 # =============================================================================
 
-# Third Party Imports
-from mock import MagicMock, patch
-
 # Houdini Toolbox Imports
 from ht.nodes import badges
 
@@ -21,12 +18,13 @@ import hou
 class Test_clear_generic_image_badge(object):
     """Test ht.nodes.badges.clear_generic_image_badge."""
 
-    @patch("ht.nodes.badges._ht_generic_image_badge.get_generic_image_key")
-    @patch("ht.nodes.badges.hou.undos.disabler")
-    def test_no_data(self, mock_disabler, mock_data_name, raise_hou_operationfailed):
-        mock_node = MagicMock(spec=hou.Node)
+    def test_no_data(self, mocker, mock_hou_exceptions):
+        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_data_name = mocker.patch("ht.nodes.badges._ht_generic_image_badge.get_generic_image_key")
 
-        mock_node.destroyUserData.side_effect = raise_hou_operationfailed
+        mock_node = mocker.MagicMock(spec=hou.Node)
+
+        mock_node.destroyUserData.side_effect = mock_hou_exceptions.OperationFailed
 
         badges.clear_generic_image_badge(mock_node)
 
@@ -34,10 +32,11 @@ class Test_clear_generic_image_badge(object):
 
         mock_node.destroyUserData.assert_called_with(mock_data_name.return_value)
 
-    @patch("ht.nodes.badges._ht_generic_image_badge.get_generic_image_key")
-    @patch("ht.nodes.badges.hou.undos.disabler")
-    def test(self, mock_disabler, mock_data_name):
-        mock_node = MagicMock(spec=hou.Node)
+    def test(self, mocker):
+        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_data_name = mocker.patch("ht.nodes.badges._ht_generic_image_badge.get_generic_image_key")
+
+        mock_node = mocker.MagicMock(spec=hou.Node)
 
         badges.clear_generic_image_badge(mock_node)
 
@@ -49,13 +48,14 @@ class Test_clear_generic_image_badge(object):
 class Test_clear_generic_text_badge(object):
     """Test ht.nodes.badges.clear_generic_text_badge."""
 
-    @patch("ht.nodes.badges.clear_generic_text_badge_color")
-    @patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_key")
-    @patch("ht.nodes.badges.hou.undos.disabler")
-    def test_no_data(self, mock_disabler, mock_data_name, mock_clear_color, raise_hou_operationfailed):
-        mock_node = MagicMock(spec=hou.Node)
+    def test_no_data(self, mocker, mock_hou_exceptions):
+        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_data_name = mocker.patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_key")
+        mock_clear_color = mocker.patch("ht.nodes.badges.clear_generic_text_badge_color")
 
-        mock_node.destroyUserData.side_effect = raise_hou_operationfailed
+        mock_node = mocker.MagicMock(spec=hou.Node)
+
+        mock_node.destroyUserData.side_effect = mock_hou_exceptions.OperationFailed
 
         badges.clear_generic_text_badge(mock_node)
 
@@ -65,11 +65,12 @@ class Test_clear_generic_text_badge(object):
 
         mock_clear_color.assert_called()
 
-    @patch("ht.nodes.badges.clear_generic_text_badge_color")
-    @patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_key")
-    @patch("ht.nodes.badges.hou.undos.disabler")
-    def test(self, mock_disabler, mock_data_name, mock_clear_color):
-        mock_node = MagicMock(spec=hou.Node)
+    def test(self, mocker):
+        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_data_name = mocker.patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_key")
+        mock_clear_color = mocker.patch("ht.nodes.badges.clear_generic_text_badge_color")
+
+        mock_node = mocker.MagicMock(spec=hou.Node)
 
         badges.clear_generic_text_badge(mock_node)
 
@@ -83,12 +84,13 @@ class Test_clear_generic_text_badge(object):
 class Test_clear_generic_text_badge_color(object):
     """Test ht.nodes.badges.clear_generic_text_badge_color."""
 
-    @patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key")
-    @patch("ht.nodes.badges.hou.undos.disabler")
-    def test_no_data(self, mock_disabler, mock_data_name, raise_hou_operationfailed):
-        mock_node = MagicMock(spec=hou.Node)
+    def test_no_data(self, mocker, mock_hou_exceptions):
+        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_data_name = mocker.patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key")
 
-        mock_node.destroyUserData.side_effect = raise_hou_operationfailed
+        mock_node = mocker.MagicMock(spec=hou.Node)
+
+        mock_node.destroyUserData.side_effect = mock_hou_exceptions.OperationFailed
 
         badges.clear_generic_text_badge_color(mock_node)
 
@@ -96,10 +98,11 @@ class Test_clear_generic_text_badge_color(object):
 
         mock_node.destroyUserData.assert_called_with(mock_data_name.return_value)
 
-    @patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key")
-    @patch("ht.nodes.badges.hou.undos.disabler")
-    def test(self, mock_disabler, mock_data_name):
-        mock_node = MagicMock(spec=hou.Node)
+    def test(self, mocker):
+        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_data_name = mocker.patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key")
+
+        mock_node = mocker.MagicMock(spec=hou.Node)
 
         badges.clear_generic_text_badge_color(mock_node)
 
@@ -107,82 +110,76 @@ class Test_clear_generic_text_badge_color(object):
         mock_node.destroyUserData.assert_called_with(mock_data_name.return_value)
 
 
-class Test_set_generic_image_badge(object):
+def test_set_generic_image_badge(mocker):
     """Test ht.nodes.badges.set_generic_image_badge."""
+    mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+    mock_data_name = mocker.patch("ht.nodes.badges._ht_generic_image_badge.get_generic_image_key")
 
-    @patch("ht.nodes.badges._ht_generic_image_badge.get_generic_image_key")
-    @patch("ht.nodes.badges.hou.undos.disabler")
-    def test(self, mock_disabler, mock_data_name):
-        mock_node = MagicMock(spec=hou.Node)
-        mock_value = MagicMock(spec=str)
+    mock_node = mocker.MagicMock(spec=hou.Node)
+    mock_value = mocker.MagicMock(spec=str)
 
-        badges.set_generic_image_badge(mock_node, mock_value)
+    badges.set_generic_image_badge(mock_node, mock_value)
 
-        mock_disabler.assert_called()
+    mock_disabler.assert_called()
 
-        mock_node.setUserData.assert_called_with(
-            mock_data_name.return_value,
-            mock_value
-        )
+    mock_node.setUserData.assert_called_with(
+        mock_data_name.return_value,
+        mock_value
+    )
 
 
 class Test_set_generic_text_badge(object):
     """Test ht.nodes.badges.set_generic_text_badge."""
 
-    @patch("ht.nodes.badges.set_generic_text_badge_color")
-    @patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_key")
-    @patch("ht.nodes.badges.hou.undos.disabler")
-    def test_no_color(self, mock_disabler, mock_data_name, mock_set_color):
-        mock_node = MagicMock(spec=hou.Node)
-        mock_value = MagicMock(spec=str)
+    def test_no_color(self, mocker):
+        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_data_name = mocker.patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_key")
+        mock_set_color = mocker.patch("ht.nodes.badges.set_generic_text_badge_color")
+
+        mock_node = mocker.MagicMock(spec=hou.Node)
+        mock_value = mocker.MagicMock(spec=str)
 
         badges.set_generic_text_badge(mock_node, mock_value)
 
         mock_disabler.assert_called()
 
-        mock_node.setUserData.assert_called_with(
-            mock_data_name.return_value,
-            mock_value
-        )
+        mock_node.setUserData.assert_called_with(mock_data_name.return_value, mock_value)
 
         mock_set_color.assert_not_called()
 
-    @patch("ht.nodes.badges.set_generic_text_badge_color")
-    @patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_key")
-    @patch("ht.nodes.badges.hou.undos.disabler")
-    def test_color(self, mock_disabler, mock_data_name, mock_set_color):
-        mock_color = MagicMock(spec=hou.Color)
-        mock_value = MagicMock(spec=str)
-        mock_node = MagicMock(spec=hou.Node)
+    def test_color(self, mocker):
+        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_data_name = mocker.patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_key")
+        mock_set_color = mocker.patch("ht.nodes.badges.set_generic_text_badge_color")
+
+        mock_color = mocker.MagicMock(spec=hou.Color)
+        mock_value = mocker.MagicMock(spec=str)
+        mock_node = mocker.MagicMock(spec=hou.Node)
 
         badges.set_generic_text_badge(mock_node, mock_value, mock_color)
 
         mock_disabler.assert_called()
 
-        mock_node.setUserData.assert_called_with(
-            mock_data_name.return_value,
-            mock_value
-        )
+        mock_node.setUserData.assert_called_with(mock_data_name.return_value, mock_value)
 
         mock_set_color.assert_called_with(mock_node, mock_color)
 
 
-class Test_set_generic_text_badge_color(object):
+def test_set_generic_text_badge_color(mocker):
     """Test ht.nodes.badges.set_generic_text_badge_color."""
+    mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+    mock_data_name = mocker.patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key")
 
-    @patch("ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key")
-    @patch("ht.nodes.badges.hou.undos.disabler")
-    def test_no_color(self, mock_disabler, mock_data_name):
-        mock_node = MagicMock(spec=hou.Node)
+    mock_node = mocker.MagicMock(spec=hou.Node)
 
-        mock_color = MagicMock(spec=hou.Color)
-        mock_color.rgb.return_value = (0.1, 0.2, 0.3)
+    mock_color = mocker.MagicMock(spec=hou.Color)
+    mock_color.rgb.return_value = (0.1, 0.2, 0.3)
 
-        badges.set_generic_text_badge_color(mock_node, mock_color)
+    badges.set_generic_text_badge_color(mock_node, mock_color)
 
-        mock_disabler.assert_called()
+    mock_disabler.assert_called()
 
-        mock_node.setUserData.assert_called_with(
-            mock_data_name.return_value,
-            "rgb 0.1 0.2 0.3"
-        )
+    mock_node.setUserData.assert_called_with(
+        mock_data_name.return_value,
+        "rgb 0.1 0.2 0.3"
+    )

@@ -41,20 +41,10 @@ class SetPrimaryImage(PyFilterOperation):
         """bool: Disable primary image generation."""
         return self._disable_primary_image
 
-    @disable_primary_image.setter
-    def disable_primary_image(self, disable_primary_image):
-        self._disable_primary_image = disable_primary_image
-
-    # -------------------------------------------------------------------------
-
     @property
     def primary_image_path(self):
         """str: The primary image path to set."""
         return self._primary_image_path
-
-    @primary_image_path.setter
-    def primary_image_path(self, primary_image_path):
-        self._primary_image_path = primary_image_path
 
     # -------------------------------------------------------------------------
     # STATIC METHODS
@@ -126,10 +116,10 @@ class SetPrimaryImage(PyFilterOperation):
 
         """
         if filter_args.disable_primary_image:
-            self.disable_primary_image = True
+            self._disable_primary_image = True
 
         if filter_args.primary_image_path is not None:
-            self.primary_image_path = filter_args.primary_image_path
+            self._primary_image_path = filter_args.primary_image_path
 
     def should_run(self):
         """Determine whether or not this filter should be run.

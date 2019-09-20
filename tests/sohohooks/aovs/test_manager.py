@@ -9,7 +9,6 @@ import imp
 import os
 
 # Third Party Imports
-from mock import MagicMock, PropertyMock, call, mock_open, patch
 import pytest
 
 # Houdini Toolbox Imports
@@ -25,14 +24,41 @@ imp.reload(manager)
 
 
 # =============================================================================
+# FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def init_file(mocker):
+    """Fixture to initialize a file."""
+    mocker.patch.object(manager.AOVFile, "__init__", lambda x, y: None)
+
+    def create():
+        return manager.AOVFile(None)
+
+    return create
+
+
+@pytest.fixture
+def init_manager(mocker):
+    """Fixture to initialize a manager."""
+    mocker.patch.object(manager.AOVManager, "__init__", lambda x: None)
+
+    def create():
+        return manager.AOVManager()
+
+    return create
+
+
+# =============================================================================
 # CLASSES
 # =============================================================================
 
 class Test_AOVManager(object):
     """Test ht.sohohooks.aovs.manager.AOVManager object."""
 
-    @patch("ht.sohohooks.aovs.manager.AOVManager._init_from_files")
-    def test___init__(self, mock_init):
+    def test___init__(self, mocker):
+        mock_init = mocker.patch("ht.sohohooks.aovs.manager.AOVManager._init_from_files")
+
         mgr = manager.AOVManager()
 
         assert mgr._aovs == {}
@@ -42,20 +68,20 @@ class Test_AOVManager(object):
 
     # _build_intrinsic_groups
 
-    @patch("ht.sohohooks.aovs.manager.IntrinsicAOVGroup", autospec=True)
-    @patch.object(manager.AOVManager, "add_group")
-    @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test__build_intrinsic_groups__new_group(self, mock_aovs, mock_groups, mock_add, mock_int_group):
-        mock_aov = MagicMock(spec=manager.AOV)
+    def test__build_intrinsic_groups__new_group(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
+        mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
+        mock_add = mocker.patch.object(manager.AOVManager, "add_group")
+        mock_int_group = mocker.patch("ht.sohohooks.aovs.manager.IntrinsicAOVGroup", autospec=True)
+
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
         mock_aov.intrinsics = ["int1"]
 
         mock_groups.return_value = {}
 
-        mock_aovs.return_value = {MagicMock(spec=str): mock_aov}
+        mock_aovs.return_value = {mocker.MagicMock(spec=str): mock_aov}
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr._build_intrinsic_groups()
 
         mock_int_group.assert_called_with("i:int1")
@@ -63,37 +89,38 @@ class Test_AOVManager(object):
 
         mock_int_group.return_value.aovs.append.assert_called_with(mock_aov)
 
-    @patch.object(manager.AOVManager, "add_group")
-    @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test__build_intrinsic_groups__existing_group(self, mock_aovs, mock_groups, mock_add):
-        mock_aov = MagicMock(spec=manager.AOV)
+    def test__build_intrinsic_groups__existing_group(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
+        mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
+        mock_add = mocker.patch.object(manager.AOVManager, "add_group")
+
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
         mock_aov.intrinsics = ["int1"]
 
-        mock_group = MagicMock(spec=aov.IntrinsicAOVGroup)
+        mock_group = mocker.MagicMock(spec=aov.IntrinsicAOVGroup)
 
         mock_groups.return_value = {"i:int1": mock_group}
 
-        mock_aovs.return_value = {MagicMock(spec=str): mock_aov}
+        mock_aovs.return_value = {mocker.MagicMock(spec=str): mock_aov}
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr._build_intrinsic_groups()
 
         mock_group.aovs.append.assert_called_with(mock_aov)
+        mock_add.assert_not_called()
 
     # _init_from_files
 
-    @patch.object(manager.AOVManager, "_build_intrinsic_groups")
-    @patch.object(manager.AOVManager, "_merge_readers")
-    @patch("ht.sohohooks.aovs.manager.AOVFile", autospec=True)
-    @patch("ht.sohohooks.aovs.manager._find_aov_files")
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test__init_from_files(self, mock_find, mock_file, mock_merge, mock_build):
-        mock_path = MagicMock(spec=str)
+    def test__init_from_files(self, init_manager, mocker):
+        mock_find = mocker.patch("ht.sohohooks.aovs.manager._find_aov_files")
+        mock_file = mocker.patch("ht.sohohooks.aovs.manager.AOVFile", autospec=True)
+        mock_merge = mocker.patch.object(manager.AOVManager, "_merge_readers")
+        mock_build = mocker.patch.object(manager.AOVManager, "_build_intrinsic_groups")
+
+        mock_path = mocker.MagicMock(spec=str)
         mock_find.return_value = [mock_path]
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr._init_from_files()
 
         mock_file.assert_called_with(mock_path)
@@ -102,163 +129,163 @@ class Test_AOVManager(object):
 
     # _init_group_members
 
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test__init_group_members(self, mock_aovs):
-        mock_varname1 = MagicMock(spec=str)
-        mock_varname2 = MagicMock(spec=str)
+    def test__init_group_members(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
 
-        mock_group = MagicMock(spec=manager.AOVGroup)
+        mock_varname1 = mocker.MagicMock(spec=str)
+        mock_varname2 = mocker.MagicMock(spec=str)
+
+        mock_group = mocker.MagicMock(spec=manager.AOVGroup)
         mock_group.includes = [mock_varname1, mock_varname2]
 
-        mock_aov = MagicMock(spec=manager.AOV)
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
 
         mock_aovs.return_value = {
             mock_varname1: mock_aov,
         }
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr._init_group_members(mock_group)
 
         mock_group.aovs.append.assert_called_with(mock_aov)
 
     # _init_reader_aovs
 
-    @patch.object(manager.AOVManager, "add_aov")
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test__init_reader_aovs__new_aov(self, mock_aovs, mock_add):
-        mock_aov = MagicMock(spec=manager.AOV)
+    def test__init_reader_aovs__new_aov(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
+        mock_add = mocker.patch.object(manager.AOVManager, "add_aov")
 
-        mock_reader = MagicMock(spec=manager.AOVFile)
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
+
+        mock_reader = mocker.MagicMock(spec=manager.AOVFile)
         mock_reader.aovs = [mock_aov]
 
         mock_aovs.return_value = {}
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr._init_reader_aovs(mock_reader)
 
         mock_add.assert_called_with(mock_aov)
 
-    @patch.object(manager.AOVManager, "add_aov")
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test__init_reader_aovs__matches_existing_priority_same(self, mock_aovs, mock_add):
-        mock_varname = MagicMock(spec=str)
-        mock_priority = MagicMock(spec=int)
+    def test__init_reader_aovs__matches_existing_priority_same(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
+        mock_add = mocker.patch.object(manager.AOVManager, "add_aov")
 
-        mock_new_aov = MagicMock(spec=manager.AOV)
+        mock_varname = mocker.MagicMock(spec=str)
+        mock_priority = mocker.MagicMock(spec=int)
+
+        mock_new_aov = mocker.MagicMock(spec=manager.AOV)
         mock_new_aov.variable = mock_varname
         mock_new_aov.priority = mock_priority
 
-        mock_existing_aov = MagicMock(spec=manager.AOV)
+        mock_existing_aov = mocker.MagicMock(spec=manager.AOV)
         mock_existing_aov.variable = mock_varname
         mock_existing_aov.priority = mock_priority
 
-        mock_reader = MagicMock(spec=manager.AOVFile)
+        mock_reader = mocker.MagicMock(spec=manager.AOVFile)
         mock_reader.aovs = [mock_new_aov]
 
         mock_aovs.return_value = {mock_varname: mock_existing_aov}
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr._init_reader_aovs(mock_reader)
 
         mock_add.assert_not_called()
 
-    @patch.object(manager.AOVManager, "add_aov")
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test__init_reader_aovs__matches_existing_priority_lower(self, mock_aovs, mock_add):
-        mock_varname = MagicMock(spec=str)
+    def test__init_reader_aovs__matches_existing_priority_lower(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
+        mock_add = mocker.patch.object(manager.AOVManager, "add_aov")
 
-        mock_new_aov = MagicMock(spec=manager.AOV)
+        mock_varname = mocker.MagicMock(spec=str)
+
+        mock_new_aov = mocker.MagicMock(spec=manager.AOV)
         mock_new_aov.variable = mock_varname
         mock_new_aov.priority = 3
 
-        mock_existing_aov = MagicMock(spec=manager.AOV)
+        mock_existing_aov =mocker.MagicMock(spec=manager.AOV)
         mock_existing_aov.variable = mock_varname
         mock_existing_aov.priority = 2
 
-        mock_reader = MagicMock(spec=manager.AOVFile)
+        mock_reader = mocker.MagicMock(spec=manager.AOVFile)
         mock_reader.aovs = [mock_new_aov]
 
         mock_aovs.return_value = {mock_varname: mock_existing_aov}
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr._init_reader_aovs(mock_reader)
 
         mock_add.assert_called_with(mock_new_aov)
 
     # _init_reader_groups
 
-    @patch.object(manager.AOVManager, "add_group")
-    @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "_init_group_members")
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test__init_reader_groups__new_group(self, mock_init, mock_groups, mock_add):
-        mock_group = MagicMock(spec=manager.AOVGroup)
+    def test__init_reader_groups__new_group(self, init_manager, mocker):
+        mock_init = mocker.patch.object(manager.AOVManager, "_init_group_members")
+        mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
+        mock_add = mocker.patch.object(manager.AOVManager, "add_group")
 
-        mock_reader = MagicMock(spec=manager.AOVFile)
+        mock_group = mocker.MagicMock(spec=manager.AOVGroup)
+
+        mock_reader = mocker.MagicMock(spec=manager.AOVFile)
         mock_reader.groups = [mock_group]
 
         mock_groups.return_value = {}
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr._init_reader_groups(mock_reader)
 
         mock_init.assert_called_with(mock_group)
 
         mock_add.assert_called_with(mock_group)
 
-    @patch.object(manager.AOVManager, "add_group")
-    @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "_init_group_members")
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test__init_reader_groups__matches_existing_priority_same(self, mock_init, mock_groups, mock_add):
-        mock_group_name = MagicMock(spec=str)
-        mock_priority = MagicMock(spec=int)
+    def test__init_reader_groups__matches_existing_priority_same(self, init_manager, mocker):
+        mock_init = mocker.patch.object(manager.AOVManager, "_init_group_members")
+        mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
+        mock_add = mocker.patch.object(manager.AOVManager, "add_group")
 
-        mock_new_group = MagicMock(spec=manager.AOVGroup)
+        mock_group_name = mocker.MagicMock(spec=str)
+        mock_priority = mocker.MagicMock(spec=int)
+
+        mock_new_group = mocker.MagicMock(spec=manager.AOVGroup)
         mock_new_group.name = mock_group_name
         mock_new_group.priority = mock_priority
 
-        mock_reader = MagicMock(spec=manager.AOVFile)
+        mock_reader = mocker.MagicMock(spec=manager.AOVFile)
         mock_reader.groups = [mock_new_group]
 
-        mock_existing_group = MagicMock(spec=manager.AOVGroup)
+        mock_existing_group = mocker.MagicMock(spec=manager.AOVGroup)
         mock_existing_group.name = mock_group_name
         mock_existing_group.priority = mock_priority
 
         mock_groups.return_value = {mock_group_name: mock_existing_group}
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr._init_reader_groups(mock_reader)
 
         mock_init.assert_called_with(mock_new_group)
 
         mock_add.assert_not_called()
 
-    @patch.object(manager.AOVManager, "add_group")
-    @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "_init_group_members")
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test__init_reader_groups__matches_existing_priority_lower(self, mock_init, mock_groups, mock_add):
-        mock_group_name = MagicMock(spec=str)
+    def test__init_reader_groups__matches_existing_priority_lower(self, init_manager, mocker):
+        mock_init = mocker.patch.object(manager.AOVManager, "_init_group_members")
+        mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
+        mock_add = mocker.patch.object(manager.AOVManager, "add_group")
 
-        mock_new_group = MagicMock(spec=manager.AOV)
+        mock_group_name = mocker.MagicMock(spec=str)
+
+        mock_new_group = mocker.MagicMock(spec=manager.AOV)
         mock_new_group.name = mock_group_name
         mock_new_group.priority = 3
 
-        mock_reader = MagicMock(spec=manager.AOVFile)
+        mock_reader = mocker.MagicMock(spec=manager.AOVFile)
         mock_reader.groups = [mock_new_group]
 
-        mock_existing_group = MagicMock(spec=manager.AOV)
+        mock_existing_group = mocker.MagicMock(spec=manager.AOV)
         mock_existing_group.name = mock_group_name
         mock_existing_group.priority = 2
 
         mock_groups.return_value = {mock_group_name: mock_existing_group}
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr._init_reader_groups(mock_reader)
 
         mock_init.assert_called_with(mock_new_group)
@@ -267,77 +294,73 @@ class Test_AOVManager(object):
 
     # _merge_readers
 
-    @patch.object(manager.AOVManager, "_init_reader_groups")
-    @patch.object(manager.AOVManager, "_init_reader_aovs")
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test__merge_readers(self, mock_init_aovs, mock_init_groups):
-        mock_reader = MagicMock(spec=manager.AOVFile)
+    def test__merge_readers(self, init_manager, mocker):
+        mock_init_aovs = mocker.patch.object(manager.AOVManager, "_init_reader_aovs")
+        mock_init_groups = mocker.patch.object(manager.AOVManager, "_init_reader_groups")
+
+        mock_reader = mocker.MagicMock(spec=manager.AOVFile)
 
         readers = [mock_reader]
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr._merge_readers(readers)
 
         mock_init_aovs.assert_called_with(mock_reader)
         mock_init_groups.assert_called_with(mock_reader)
 
-    # properties
+    # Properties
 
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_aovs(self):
-        mock_value = MagicMock(spec=list)
+    def test_aovs(self, init_manager, mocker):
+        mock_value = mocker.MagicMock(spec=list)
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr._aovs = mock_value
-
         assert mgr.aovs == mock_value
 
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_groups(self):
-        mock_value = MagicMock(spec=list)
+    def test_groups(self, init_manager, mocker):
+        mock_value = mocker.MagicMock(spec=list)
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr._groups = mock_value
-
         assert mgr.groups == mock_value
 
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_interface(self):
-        mgr = manager.AOVManager()
-        mgr._interface = None
+    def test_interface(self, init_manager, mocker):
+        mock_value = mocker.MagicMock()
 
-        assert mgr.interface is None
+        mgr = init_manager()
+        mgr._interface = mock_value
+        assert mgr.interface == mock_value
 
     # add_aov
 
-    @patch.object(manager.AOVManager, "interface", new_callable=PropertyMock(return_value=None))
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_add_aov__no_interface(self, mock_aovs, mock_interface):
+    def test_add_aov__no_interface(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
+        mocker.patch.object(manager.AOVManager, "interface", new_callable=mocker.PropertyMock(return_value=None))
+
         aovs = {}
 
         mock_aovs.return_value = aovs
 
-        mock_aov = MagicMock(spec=manager.AOV)
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr.add_aov(mock_aov)
 
         assert aovs == {mock_aov.variable: mock_aov}
 
-    @patch.object(manager.AOVManager, "interface", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_add_aov__interface(self, mock_aovs, mock_interface):
-        interface = MagicMock()
+    def test_add_aov__interface(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
+        mock_interface = mocker.patch.object(manager.AOVManager, "interface", new_callable=mocker.PropertyMock)
+
+        interface = mocker.MagicMock()
         mock_interface.return_value = interface
 
         aovs = {}
         mock_aovs.return_value = aovs
 
-        mock_aov = MagicMock(spec=manager.AOV)
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr.add_aov(mock_aov)
 
         assert aovs == {mock_aov.variable: mock_aov}
@@ -345,66 +368,65 @@ class Test_AOVManager(object):
 
     # add_aovs_to_ifd
 
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_add_aovs_to_ifd__no_parms(self, patch_soho):
-        mock_wrangler = MagicMock()
+    def test_add_aovs_to_ifd__no_parms(self, init_manager, mocker, patch_soho):
+        mock_wrangler = mocker.MagicMock()
 
-        mock_cam = MagicMock()
+        mock_cam = mocker.MagicMock()
         mock_cam.wrangle.return_value = {}
 
-        mock_now = MagicMock(spec=float)
+        mock_now = mocker.MagicMock(spec=float)
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
         calls = [
-            call("enable_auto_aovs", "int", [1], skipdefault=False),
-            call("auto_aovs", "str", [""], skipdefault=False)
+            mocker.call("enable_auto_aovs", "int", [1], skipdefault=False),
+            mocker.call("auto_aovs", "str", [""], skipdefault=False)
         ]
 
         mgr.add_aovs_to_ifd(mock_wrangler, mock_cam, mock_now)
 
-        patch_soho["soho"].SohoParm.assert_has_calls(calls)
+        patch_soho.soho.SohoParm.assert_has_calls(calls)
 
-    @patch.object(manager.AOVManager, "get_aovs_from_string")
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_add_aovs_to_ifd__disabled(self, mock_get, patch_soho):
-        mock_wrangler = MagicMock()
+    def test_add_aovs_to_ifd__disabled(self, init_manager, mocker, patch_soho):
+        mocker.patch.object(manager.AOVManager, "get_aovs_from_string")
 
-        mock_enable_result = MagicMock()
+        mock_wrangler = mocker.MagicMock()
+
+        mock_enable_result = mocker.MagicMock()
         mock_enable_result.Value = [0]
 
-        mock_cam = MagicMock()
+        mock_cam = mocker.MagicMock()
         mock_cam.wrangle.return_value = {
             "enable_auto_aovs": mock_enable_result,
         }
 
-        mock_now = MagicMock(spec=float)
+        mock_now = mocker.MagicMock(spec=float)
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
         calls = [
-            call("enable_auto_aovs", "int", [1], skipdefault=False),
-            call("auto_aovs", "str", [""], skipdefault=False)
+            mocker.call("enable_auto_aovs", "int", [1], skipdefault=False),
+            mocker.call("auto_aovs", "str", [""], skipdefault=False)
         ]
 
         mgr.add_aovs_to_ifd(mock_wrangler, mock_cam, mock_now)
 
-        patch_soho["soho"].SohoParm.assert_has_calls(calls)
+        patch_soho.soho.SohoParm.assert_has_calls(calls)
 
-    @patch("ht.sohohooks.aovs.manager.flatten_aov_items")
-    @patch.object(manager.AOVManager, "get_aovs_from_string")
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_add_aovs_to_ifd__non_opid(self, mock_get, mock_flattened, patch_soho):
-        mock_aov = MagicMock(spec=manager.AOV)
+    def test_add_aovs_to_ifd__non_opid(self, init_manager, mocker, patch_soho):
+        mock_get = mocker.patch.object(manager.AOVManager, "get_aovs_from_string")
+        mock_flattened = mocker.patch("ht.sohohooks.aovs.manager.flatten_aov_items")
 
-        mock_wrangler = MagicMock()
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
 
-        mock_enable_result = MagicMock()
+        mock_wrangler = mocker.MagicMock()
+
+        mock_enable_result = mocker.MagicMock()
         mock_enable_result.Value = [1]
 
-        mock_aovs_result = MagicMock()
+        mock_aovs_result = mocker.MagicMock()
 
-        mock_cam = MagicMock()
+        mock_cam = mocker.MagicMock()
         mock_cam.wrangle.return_value = {
             "enable_auto_aovs": mock_enable_result,
             "auto_aovs": mock_aovs_result,
@@ -412,42 +434,42 @@ class Test_AOVManager(object):
 
         mock_get.return_value = [mock_aov]
 
-        mock_now = MagicMock(spec=float)
+        mock_now = mocker.MagicMock(spec=float)
 
         mock_flattened.return_value = (mock_aov, )
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
         calls = [
-            call("enable_auto_aovs", "int", [1], skipdefault=False),
-            call("auto_aovs", "str", [""], skipdefault=False)
+            mocker.call("enable_auto_aovs", "int", [1], skipdefault=False),
+            mocker.call("auto_aovs", "str", [""], skipdefault=False)
         ]
 
         mgr.add_aovs_to_ifd(mock_wrangler, mock_cam, mock_now)
 
-        patch_soho["soho"].SohoParm.assert_has_calls(calls)
+        patch_soho.soho.SohoParm.assert_has_calls(calls)
 
         mock_get.assert_called_with(mock_aovs_result.Value[0])
 
         mock_aov.write_to_ifd.assert_called_with(mock_wrangler, mock_cam, mock_now)
 
-        patch_soho["IFDapi"].ray_comment.assert_not_called()
+        patch_soho.IFDapi.ray_comment.assert_not_called()
 
-    @patch("ht.sohohooks.aovs.manager.flatten_aov_items")
-    @patch.object(manager.AOVManager, "get_aovs_from_string")
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_add_aovs_to_ifd__opid(self, mock_get, mock_flattened, patch_soho):
-        mock_aov = MagicMock(spec=manager.AOV)
+    def test_add_aovs_to_ifd__opid(self, init_manager, mocker, patch_soho):
+        mock_get = mocker.patch.object(manager.AOVManager, "get_aovs_from_string")
+        mock_flattened = mocker.patch("ht.sohohooks.aovs.manager.flatten_aov_items")
+
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
         mock_aov.variable = "Op_Id"
 
-        mock_wrangler = MagicMock()
+        mock_wrangler = mocker.MagicMock()
 
-        mock_enable_result = MagicMock()
+        mock_enable_result = mocker.MagicMock()
         mock_enable_result.Value = [1]
 
-        mock_aovs_result = MagicMock()
+        mock_aovs_result = mocker.MagicMock()
 
-        mock_cam = MagicMock()
+        mock_cam = mocker.MagicMock()
         mock_cam.wrangle.return_value = {
             "enable_auto_aovs": mock_enable_result,
             "auto_aovs": mock_aovs_result,
@@ -455,57 +477,57 @@ class Test_AOVManager(object):
 
         mock_get.return_value = [mock_aov]
 
-        mock_now = MagicMock(spec=float)
+        mock_now = mocker.MagicMock(spec=float)
 
         mock_flattened.return_value = (mock_aov, )
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
         calls = [
-            call("enable_auto_aovs", "int", [1], skipdefault=False),
-            call("auto_aovs", "str", [""], skipdefault=False)
+            mocker.call("enable_auto_aovs", "int", [1], skipdefault=False),
+            mocker.call("auto_aovs", "str", [""], skipdefault=False)
         ]
 
         mgr.add_aovs_to_ifd(mock_wrangler, mock_cam, mock_now)
 
-        patch_soho["soho"].SohoParm.assert_has_calls(calls)
+        patch_soho.soho.SohoParm.assert_has_calls(calls)
 
         mock_get.assert_called_with(mock_aovs_result.Value[0])
 
         mock_aov.write_to_ifd.assert_called_with(mock_wrangler, mock_cam, mock_now)
-        patch_soho["IFDapi"].ray_comment.assert_called()
-        assert patch_soho["IFDsettings"]._GenerateOpId
+        patch_soho.IFDapi.ray_comment.assert_called()
+        assert patch_soho.IFDsettings._GenerateOpId
 
     # add_group
 
-    @patch.object(manager.AOVManager, "interface", new_callable=PropertyMock(return_value=None))
-    @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_add_group__no_interface(self, mock_groups, mock_interface):
+    def test_add_group__no_interface(self, init_manager, mocker):
+        mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
+        mocker.patch.object(manager.AOVManager, "interface", new_callable=mocker.PropertyMock(return_value=None))
+
         groups = {}
 
         mock_groups.return_value = groups
 
-        mock_group = MagicMock(spec=manager.AOVGroup)
+        mock_group = mocker.MagicMock(spec=manager.AOVGroup)
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr.add_group(mock_group)
 
         assert groups == {mock_group.name: mock_group}
 
-    @patch.object(manager.AOVManager, "interface", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_add_group__interface(self, mock_groups, mock_interface):
-        interface = MagicMock()
+    def test_add_group__interface(self, init_manager, mocker):
+        mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
+        mock_interface = mocker.patch.object(manager.AOVManager, "interface", new_callable=mocker.PropertyMock)
+
+        interface = mocker.MagicMock()
         mock_interface.return_value = interface
 
         groups = {}
         mock_groups.return_value = groups
 
-        mock_group = MagicMock(spec=manager.AOVGroup)
+        mock_group = mocker.MagicMock(spec=manager.AOVGroup)
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr.add_group(mock_group)
 
         assert groups == {mock_group.name: mock_group}
@@ -513,12 +535,11 @@ class Test_AOVManager(object):
 
     # clear
 
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_clear(self):
-        mock_aovs = MagicMock(spec=dict)
-        mock_groups = MagicMock(spec=dict)
+    def test_clear(self, init_manager, mocker):
+        mock_aovs = mocker.MagicMock(spec=dict)
+        mock_groups = mocker.MagicMock(spec=dict)
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
         mgr._aovs = mock_aovs
         mgr._groups = mock_groups
 
@@ -529,14 +550,14 @@ class Test_AOVManager(object):
 
     # get_aovs_from_string
 
-    @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_get_aovs_from_string__no_matches(self, mock_aovs, mock_groups):
+    def test_get_aovs_from_string__no_matches(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
+        mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
+
         mock_aovs.return_value = {}
         mock_groups.return_value = {}
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
         pattern = ""
 
@@ -544,17 +565,17 @@ class Test_AOVManager(object):
 
         assert result == ()
 
-    @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_get_aovs_from_string__aovs_match_spaces(self, mock_aovs, mock_groups):
-        mock_aov_n = MagicMock(spec=manager.AOV)
-        mock_aov_p = MagicMock(spec=manager.AOV)
+    def test_get_aovs_from_string__aovs_match_spaces(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
+        mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
+
+        mock_aov_n = mocker.MagicMock(spec=manager.AOV)
+        mock_aov_p = mocker.MagicMock(spec=manager.AOV)
 
         mock_aovs.return_value = {"N": mock_aov_n, "P": mock_aov_p}
         mock_groups.return_value = {}
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
         pattern = "N P R"
 
@@ -562,17 +583,17 @@ class Test_AOVManager(object):
 
         assert result == (mock_aov_n, mock_aov_p)
 
-    @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_get_aovs_from_string__aovs_match_commas(self, mock_aovs, mock_groups):
-        mock_aov_n = MagicMock(spec=manager.AOV)
-        mock_aov_p = MagicMock(spec=manager.AOV)
+    def test_get_aovs_from_string__aovs_match_commas(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
+        mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
+
+        mock_aov_n = mocker.MagicMock(spec=manager.AOV)
+        mock_aov_p = mocker.MagicMock(spec=manager.AOV)
 
         mock_aovs.return_value = {"N": mock_aov_n, "P": mock_aov_p}
         mock_groups.return_value = {}
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
         pattern = "N,P,R"
 
@@ -580,17 +601,17 @@ class Test_AOVManager(object):
 
         assert result == (mock_aov_n, mock_aov_p)
 
-    @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_get_aovs_from_string__groups_match_spaces(self, mock_aovs, mock_groups):
-        mock_group1 = MagicMock(spec=manager.AOVGroup)
-        mock_group2 = MagicMock(spec=manager.AOVGroup)
+    def test_get_aovs_from_string__groups_match_spaces(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
+        mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
+
+        mock_group1 = mocker.MagicMock(spec=manager.AOVGroup)
+        mock_group2 = mocker.MagicMock(spec=manager.AOVGroup)
 
         mock_aovs.return_value = {}
         mock_groups.return_value = {"group1": mock_group1, "group2": mock_group2}
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
         pattern = "@group1 @group3 @group2"
 
@@ -598,17 +619,17 @@ class Test_AOVManager(object):
 
         assert result == (mock_group1, mock_group2)
 
-    @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_get_aovs_from_string__groups_match_commas(self, mock_aovs, mock_groups):
-        mock_group1 = MagicMock(spec=manager.AOVGroup)
-        mock_group2 = MagicMock(spec=manager.AOVGroup)
+    def test_get_aovs_from_string__groups_match_commas(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
+        mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
+
+        mock_group1 = mocker.MagicMock(spec=manager.AOVGroup)
+        mock_group2 = mocker.MagicMock(spec=manager.AOVGroup)
 
         mock_aovs.return_value = {}
         mock_groups.return_value = {"group1": mock_group1, "group2": mock_group2}
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
         pattern = "@group1,@group3, @group2"
 
@@ -618,30 +639,29 @@ class Test_AOVManager(object):
 
     # init_interface
 
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_init_interface(self):
-        mock_utils = MagicMock()
+    def test_init_interface(self, init_manager, mocker):
+        mock_utils = mocker.MagicMock()
 
         modules = {
             "ht.ui.aovs.utils": mock_utils
         }
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
-        with patch.dict("sys.modules", modules):
-            mgr.init_interface()
+        mocker.patch.dict("sys.modules", modules)
+        mgr.init_interface()
 
         assert mgr._interface == mock_utils.AOVViewerInterface.return_value
 
     # load
 
-    @patch.object(manager.AOVManager, "_merge_readers")
-    @patch("ht.sohohooks.aovs.manager.AOVFile", autospec=True)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_load(self, mock_file, mock_merge):
-        mgr = manager.AOVManager()
+    def test_load(self, init_manager, mocker):
+        mock_file = mocker.patch("ht.sohohooks.aovs.manager.AOVFile", autospec=True)
+        mock_merge = mocker.patch.object(manager.AOVManager, "_merge_readers")
 
-        mock_path = MagicMock(spec=str)
+        mgr = init_manager()
+
+        mock_path = mocker.MagicMock(spec=str)
 
         mgr.load(mock_path)
 
@@ -651,11 +671,11 @@ class Test_AOVManager(object):
 
     # reload
 
-    @patch.object(manager.AOVManager, "_init_from_files")
-    @patch.object(manager.AOVManager, "clear")
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_reload(self, mock_clear, mock_init):
-        mgr = manager.AOVManager()
+    def test_reload(self, init_manager, mocker):
+        mock_clear = mocker.patch.object(manager.AOVManager, "clear")
+        mock_init = mocker.patch.object(manager.AOVManager, "_init_from_files")
+
+        mgr = init_manager()
 
         mgr.reload()
 
@@ -664,52 +684,52 @@ class Test_AOVManager(object):
 
     # remove_aov
 
-    @patch.object(manager.AOVManager, "interface", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_remove_aov__no_match(self, mock_aovs, mock_interface):
-        mock_aov1 = MagicMock(spec=manager.AOV)
-        mock_aov2 = MagicMock(spec=manager.AOV)
+    def test_remove_aov__no_match(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
+        mocker.patch.object(manager.AOVManager, "interface", new_callable=mocker.PropertyMock)
+
+        mock_aov1 = mocker.MagicMock(spec=manager.AOV)
+        mock_aov2 = mocker.MagicMock(spec=manager.AOV)
 
         aovs = {mock_aov2.variable: mock_aov2}
         mock_aovs.return_value = aovs
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
         mgr.remove_aov(mock_aov1)
 
         assert aovs == {mock_aov2.variable: mock_aov2}
 
-    @patch.object(manager.AOVManager, "interface", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_remove_aov__match_no_interface(self, mock_aovs, mock_interface):
+    def test_remove_aov__match_no_interface(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
+        mock_interface = mocker.patch.object(manager.AOVManager, "interface", new_callable=mocker.PropertyMock)
+
         mock_interface.return_value = None
 
-        mock_aov = MagicMock(spec=manager.AOV)
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
 
         aovs = {mock_aov.variable: mock_aov}
         mock_aovs.return_value = aovs
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
         mgr.remove_aov(mock_aov)
 
         assert aovs == {}
 
-    @patch.object(manager.AOVManager, "interface", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_remove_aov__match_interface(self, mock_aovs, mock_interface):
-        interface = MagicMock()
+    def test_remove_aov__match_interface(self, init_manager, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVManager, "aovs", new_callable=mocker.PropertyMock)
+        mock_interface = mocker.patch.object(manager.AOVManager, "interface", new_callable=mocker.PropertyMock)
+
+        interface = mocker.MagicMock()
         mock_interface.return_value = interface
 
-        mock_aov = MagicMock(spec=manager.AOV)
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
 
         aovs = {mock_aov.variable: mock_aov}
         mock_aovs.return_value = aovs
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
         mgr.remove_aov(mock_aov)
 
@@ -719,52 +739,52 @@ class Test_AOVManager(object):
 
     # remove_group
 
-    @patch.object(manager.AOVManager, "interface", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_remove_group__no_match(self, mock_groups, mock_interface):
-        mock_group1 = MagicMock(spec=manager.AOVGroup)
-        mock_group2 = MagicMock(spec=manager.AOVGroup)
+    def test_remove_group__no_match(self, init_manager, mocker):
+        mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
+        mock_interface = mocker.patch.object(manager.AOVManager, "interface", new_callable=mocker.PropertyMock)
+
+        mock_group1 = mocker.MagicMock(spec=manager.AOVGroup)
+        mock_group2 = mocker.MagicMock(spec=manager.AOVGroup)
 
         groups = {mock_group2.name: mock_group2}
         mock_groups.return_value = groups
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
         mgr.remove_group(mock_group1)
 
         assert groups == {mock_group2.name: mock_group2}
 
-    @patch.object(manager.AOVManager, "interface", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_remove_group__match_no_interface(self, mock_groups, mock_interface):
+    def test_remove_group__match_no_interface(self, init_manager, mocker):
+        mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
+        mock_interface = mocker.patch.object(manager.AOVManager, "interface", new_callable=mocker.PropertyMock)
+
         mock_interface.return_value = None
 
-        mock_group = MagicMock(spec=manager.AOVGroup)
+        mock_group = mocker.MagicMock(spec=manager.AOVGroup)
 
         groups = {mock_group.name: mock_group}
         mock_groups.return_value = groups
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
         mgr.remove_group(mock_group)
 
         assert groups == {}
 
-    @patch.object(manager.AOVManager, "interface", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVManager, "__init__", lambda x: None)
-    def test_remove_group__match_interface(self, mock_groups, mock_interface):
-        interface = MagicMock()
+    def test_remove_group__match_interface(self, init_manager, mocker):
+        mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
+        mock_interface = mocker.patch.object(manager.AOVManager, "interface", new_callable=mocker.PropertyMock)
+
+        interface = mocker.MagicMock()
         mock_interface.return_value = interface
 
-        mock_group = MagicMock(spec=manager.AOVGroup)
+        mock_group = mocker.MagicMock(spec=manager.AOVGroup)
 
         groups = {mock_group.name: mock_group}
         mock_groups.return_value = groups
 
-        mgr = manager.AOVManager()
+        mgr = init_manager()
 
         mgr.remove_group(mock_group)
 
@@ -776,10 +796,13 @@ class Test_AOVManager(object):
 class Test_AOVFile(object):
     """Test ht.sohohooks.aovs.manager.AOVFile object."""
 
-    @patch.object(manager.AOVFile, "_init_from_file")
-    @patch.object(manager.AOVFile, "exists", new_callable=PropertyMock(return_value=True))
-    def test___init___exists(self, mock_exists, mock_init):
-        mock_path = MagicMock(spec=str)
+    # __init__
+
+    def test___init___exists(self, mocker):
+        mocker.patch.object(manager.AOVFile, "exists", new_callable=mocker.PropertyMock(return_value=True))
+        mock_init = mocker.patch.object(manager.AOVFile, "_init_from_file")
+
+        mock_path = mocker.MagicMock(spec=str)
 
         aov_file = manager.AOVFile(mock_path)
 
@@ -790,10 +813,11 @@ class Test_AOVFile(object):
 
         mock_init.assert_called()
 
-    @patch.object(manager.AOVFile, "_init_from_file")
-    @patch.object(manager.AOVFile, "exists", new_callable=PropertyMock(return_value=False))
-    def test___init___does_not_exist(self, mock_exists, mock_init):
-        mock_path = MagicMock(spec=str)
+    def test___init___does_not_exist(self, mocker):
+        mocker.patch.object(manager.AOVFile, "exists", new_callable=mocker.PropertyMock(return_value=False))
+        mock_init = mocker.patch.object(manager.AOVFile, "_init_from_file")
+
+        mock_path = mocker.MagicMock(spec=str)
 
         aov_file = manager.AOVFile(mock_path)
 
@@ -804,42 +828,43 @@ class Test_AOVFile(object):
 
         mock_init.assert_not_called()
 
+    # Non-Public Methods
+
     # _create_aovs
 
-    @patch.object(manager.AOVFile, "aovs", new_callable=PropertyMock)
-    @patch("ht.sohohooks.aovs.manager.AOV", autospec=True)
-    @patch.object(manager.AOVFile, "path", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test__create_aovs(self, mock_path, mock_aov, mock_aovs):
-        definition = {
-            "key": "value"
-        }
+    def test__create_aovs(self, init_file, mocker):
+        mock_path = mocker.patch.object(manager.AOVFile, "path", new_callable=mocker.PropertyMock)
+        mock_aov = mocker.patch("ht.sohohooks.aovs.manager.AOV", autospec=True)
+        mock_aovs = mocker.patch.object(manager.AOVFile, "aovs", new_callable=mocker.PropertyMock)
 
-        definitions = [
-            definition
-        ]
+        mock_key = mocker.MagicMock(spec=str)
+        mock_value = mocker.MagicMock(spec=str)
+
+        definition = {mock_key: mock_value}
+        definitions = [definition]
 
         aovs = []
         mock_aovs.return_value = aovs
 
-        aov_file = manager.AOVFile(None)
+        aov_file = init_file()
 
         aov_file._create_aovs(definitions)
 
-        mock_aov.assert_called_with({"key": "value", "path": mock_path.return_value})
+        mock_aov.assert_called_with({mock_key: mock_value, "path": mock_path.return_value})
 
-        assert definition == {"key": "value", "path": mock_path.return_value}
+        # Test that the path got added to the definition.
+        assert definition == {mock_key: mock_value, "path": mock_path.return_value}
 
         assert aovs == [mock_aov.return_value]
 
     # _create_groups
 
-    @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "path", new_callable=PropertyMock)
-    @patch("ht.sohohooks.aovs.manager.AOVGroup", autospec=True)
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test__create_groups_minimal(self, mock_group, mock_path, mock_groups):
-        mock_group_name = MagicMock(spec=str)
+    def test__create_groups_minimal(self, init_file, mocker):
+        mock_group = mocker.patch("ht.sohohooks.aovs.manager.AOVGroup", autospec=True)
+        mock_path = mocker.patch.object(manager.AOVFile, "path", new_callable=mocker.PropertyMock)
+        mock_groups = mocker.patch.object(manager.AOVFile, "groups", new_callable=mocker.PropertyMock)
+
+        mock_group_name = mocker.MagicMock(spec=str)
 
         group_data = {}
 
@@ -848,7 +873,7 @@ class Test_AOVFile(object):
         groups = []
         mock_groups.return_value = groups
 
-        aov_file = manager.AOVFile(None)
+        aov_file = init_file()
 
         aov_file._create_groups(definitions)
 
@@ -858,17 +883,17 @@ class Test_AOVFile(object):
 
         assert mock_group.return_value.path == mock_path.return_value
 
-    @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "path", new_callable=PropertyMock)
-    @patch("ht.sohohooks.aovs.manager.os.path.expandvars")
-    @patch("ht.sohohooks.aovs.manager.AOVGroup", autospec=True)
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test__create_groups_all_data(self, mock_group, mock_expand, mock_path, mock_groups):
-        mock_group_name = MagicMock(spec=str)
-        mock_includes = MagicMock(spec=list)
-        mock_comment = MagicMock(spec=str)
-        mock_priority = MagicMock(spec=int)
-        mock_icon = MagicMock(spec=str)
+    def test__create_groups_all_data(self, init_file, mocker):
+        mock_group = mocker.patch("ht.sohohooks.aovs.manager.AOVGroup", autospec=True)
+        mock_expand = mocker.patch("ht.sohohooks.aovs.manager.os.path.expandvars")
+        mock_path = mocker.patch.object(manager.AOVFile, "path", new_callable=mocker.PropertyMock)
+        mock_groups = mocker.patch.object(manager.AOVFile, "groups", new_callable=mocker.PropertyMock)
+
+        mock_group_name = mocker.MagicMock(spec=str)
+        mock_includes = mocker.MagicMock(spec=list)
+        mock_comment = mocker.MagicMock(spec=str)
+        mock_priority = mocker.MagicMock(spec=int)
+        mock_icon = mocker.MagicMock(spec=str)
 
         group_data = {
             consts.GROUP_INCLUDE_KEY: mock_includes,
@@ -882,7 +907,7 @@ class Test_AOVFile(object):
         groups = []
         mock_groups.return_value = groups
 
-        aov_file = manager.AOVFile(None)
+        aov_file = init_file()
 
         aov_file._create_groups(definitions)
 
@@ -901,290 +926,271 @@ class Test_AOVFile(object):
 
     # _init_from_file
 
-    @patch.object(manager.AOVFile, "_create_groups")
-    @patch.object(manager.AOVFile, "_create_aovs")
-    @patch("ht.sohohooks.aovs.manager.json.load", return_value={})
-    @patch.object(manager.AOVFile, "path", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test__init_from_file__no_items(self, mock_path, mock_load, mock_create_aovs, mock_create_groups):
-        aov_file = manager.AOVFile(None)
+    def test__init_from_file__no_items(self, init_file, mocker):
+        mock_path = mocker.patch.object(manager.AOVFile, "path", new_callable=mocker.PropertyMock)
+        mock_load = mocker.patch("ht.sohohooks.aovs.manager.json.load", return_value={})
+        mock_create_aovs = mocker.patch.object(manager.AOVFile, "_create_aovs")
+        mock_create_groups = mocker.patch.object(manager.AOVFile, "_create_groups")
 
-        with patch("__builtin__.open", mock_open()) as mock_handle:
-            aov_file._init_from_file()
+        aov_file = init_file()
 
-            mock_handle.assert_called_with(mock_path.return_value)
+        mock_handle = mocker.mock_open()
 
-            mock_load.assert_called_with(mock_handle.return_value)
+        mocker.patch("__builtin__.open", mock_handle)
+
+        aov_file._init_from_file()
+
+        mock_handle.assert_called_with(mock_path.return_value)
+
+        mock_load.assert_called_with(mock_handle.return_value)
 
         mock_create_aovs.assert_not_called()
         mock_create_groups.assert_not_called()
 
-    @patch.object(manager.AOVFile, "_create_groups")
-    @patch.object(manager.AOVFile, "_create_aovs")
-    @patch("ht.sohohooks.aovs.manager.json.load")
-    @patch.object(manager.AOVFile, "path", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test__init_from_file__items(self, mock_path, mock_load, mock_create_aovs, mock_create_groups):
-        mock_definitions = MagicMock(spec=dict)
-        mock_groups = MagicMock(spec=dict)
+    def test__init_from_file__items(self, init_file, mocker):
+        mock_path = mocker.patch.object(manager.AOVFile, "path", new_callable=mocker.PropertyMock)
+        mock_load = mocker.patch("ht.sohohooks.aovs.manager.json.load")
+        mock_create_aovs = mocker.patch.object(manager.AOVFile, "_create_aovs")
+        mock_create_groups = mocker.patch.object(manager.AOVFile, "_create_groups")
+
+        mock_definitions = mocker.MagicMock(spec=dict)
+        mock_groups = mocker.MagicMock(spec=dict)
 
         mock_load.return_value = {
             consts.FILE_DEFINITIONS_KEY: mock_definitions,
             consts.FILE_GROUPS_KEY: mock_groups,
         }
 
-        aov_file = manager.AOVFile(None)
+        aov_file = init_file()
 
-        with patch("__builtin__.open", mock_open()) as mock_handle:
-            aov_file._init_from_file()
+        mock_handle = mocker.mock_open()
 
-            mock_handle.assert_called_with(mock_path.return_value)
+        mocker.patch("__builtin__.open", mock_handle)
 
-            mock_load.assert_called_with(mock_handle.return_value)
+        aov_file._init_from_file()
+
+        mock_handle.assert_called_with(mock_path.return_value)
+
+        mock_load.assert_called_with(mock_handle.return_value)
 
         mock_create_aovs.assert_called_with(mock_definitions)
         mock_create_groups.assert_called_with(mock_groups)
 
-    # properties
+    # Properties
 
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test_aovs(self):
-        mock_aov = MagicMock(spec=manager.AOV)
+    def test_aovs(self, init_file, mocker):
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
 
-        aov_file = manager.AOVFile(None)
-
+        aov_file = init_file()
         aov_file._aovs = [mock_aov]
-
         assert aov_file.aovs == [mock_aov]
 
-        with pytest.raises(AttributeError):
-            aov_file.aovs = []
+    def test_groups(self, init_file, mocker):
+        mock_group = mocker.MagicMock(spec=manager.AOVGroup)
 
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test_groups(self):
-        mock_group = MagicMock(spec=manager.AOVGroup)
-
-        aov_file = manager.AOVFile(None)
-
+        aov_file = init_file()
         aov_file._groups = [mock_group]
+        assert aov_file.groups == [mock_group]
 
-        assert aov_file.groups ==[mock_group]
+    def test_path(self, init_file, mocker):
+        mock_value = mocker.MagicMock(spec=str)
 
-        with pytest.raises(AttributeError):
-            aov_file.groups = []
-
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test_path(self):
-        mock_value = MagicMock(spec=str)
-
-        aov_file = manager.AOVFile(None)
-
+        aov_file = init_file()
         aov_file._path = mock_value
-
         assert aov_file.path == mock_value
 
-        with pytest.raises(AttributeError):
-            aov_file.path = mock_value
+    def test_exists(self, init_file, mocker):
+        mock_isfile = mocker.patch("ht.sohohooks.aovs.manager.os.path.isfile")
+        mock_path = mocker.patch.object(manager.AOVFile, "path", new_callable=mocker.PropertyMock)
 
-    @patch.object(manager.AOVFile, "path", new_callable=PropertyMock)
-    @patch("ht.sohohooks.aovs.manager.os.path.isfile")
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test_exists(self, mock_isfile, mock_path):
-        aov_file = manager.AOVFile(None)
+        aov_file = init_file()
 
         assert aov_file.exists == mock_isfile.return_value
 
         mock_isfile.assert_called_with(mock_path.return_value)
 
-        with pytest.raises(AttributeError):
-            aov_file.exists = False
+    # Methods
 
-    # add_aov
+    def test_add_aov(self, init_file, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVFile, "aovs", new_callable=mocker.PropertyMock)
 
-    @patch.object(manager.AOVFile, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test_add_aov(self, mock_aovs):
-        mock_aov = MagicMock(spec=manager.AOV)
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
 
-        aov_file = manager.AOVFile(None)
+        aov_file = init_file()
         aov_file.add_aov(mock_aov)
 
         mock_aovs.return_value.append.assert_called_with(mock_aov)
 
-    # add_group
+    def test_add_group(self, init_file, mocker):
+        mock_groups = mocker.patch.object(manager.AOVFile, "groups", new_callable=mocker.PropertyMock)
 
-    @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test_add_group(self, mock_groups):
-        mock_group = MagicMock(spec=manager.AOVGroup)
+        mock_group = mocker.MagicMock(spec=manager.AOVGroup)
 
-        aov_file = manager.AOVFile(None)
+        aov_file = init_file()
         aov_file.add_group(mock_group)
 
         mock_groups.return_value.append.assert_called_with(mock_group)
 
-    # contains_aov
+    def test_contains_aov(self, init_file, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVFile, "aovs", new_callable=mocker.PropertyMock)
 
-    @patch.object(manager.AOVFile, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test_contains_aov(self, mock_aovs):
-        mock_aov = MagicMock(spec=manager.AOV)
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
 
-        aov_file = manager.AOVFile(None)
+        aov_file = init_file()
         result = aov_file.contains_aov(mock_aov)
 
         assert result == mock_aovs.return_value.__contains__.return_value
 
         mock_aovs.return_value.__contains__.assert_called_with(mock_aov)
 
-    # contains_group
+    def test_contains_group(self, init_file, mocker):
+        mock_groups = mocker.patch.object(manager.AOVFile, "groups", new_callable=mocker.PropertyMock)
 
-    @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test_contains_group(self, mock_groups):
-        mock_group = MagicMock(spec=manager.AOVGroup)
+        mock_group = mocker.MagicMock(spec=manager.AOVGroup)
 
-        aov_file = manager.AOVFile(None)
+        aov_file = init_file()
         result = aov_file.contains_group(mock_group)
 
         assert result == mock_groups.return_value.__contains__.return_value
 
         mock_groups.return_value.__contains__.assert_called_with(mock_group)
 
-    # remove_aov
+    def test_remove_aov(self, init_file, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVFile, "aovs", new_callable=mocker.PropertyMock)
 
-    @patch.object(manager.AOVFile, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test_remove_aov(self, mock_aovs):
-        mock_aov = MagicMock(spec=manager.AOV)
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
 
         aovs = [mock_aov]
         mock_aovs.return_value = aovs
 
-        aov_file = manager.AOVFile(None)
+        aov_file = init_file()
         aov_file.remove_aov(mock_aov)
 
         assert aovs == []
 
-    # remove_group
+    def test_remove_group(self, init_file, mocker):
+        mock_groups = mocker.patch.object(manager.AOVFile, "groups", new_callable=mocker.PropertyMock)
 
-    @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test_remove_group(self, mock_groups):
-        mock_group = MagicMock(spec=manager.AOVGroup)
+        mock_group = mocker.MagicMock(spec=manager.AOVGroup)
 
         groups = [mock_group]
         mock_groups.return_value = groups
 
-        aov_file = manager.AOVFile(None)
+        aov_file = init_file()
         aov_file.remove_group(mock_group)
 
         assert groups == []
 
-    # replace_aov
+    def test_replace_aov(self, init_file, mocker):
+        mock_aovs = mocker.patch.object(manager.AOVFile, "aovs", new_callable=mocker.PropertyMock)
 
-    @patch.object(manager.AOVFile, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test_replace_aov(self, mock_aovs):
-        mock_aov = MagicMock(spec=manager.AOV)
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
 
-        mock_aovs.return_value.index.return_value = 3
+        mock_idx = mocker.MagicMock(spec=int)
+        mock_aovs.return_value.index.return_value = mock_idx
 
-        aov_file = manager.AOVFile(None)
+        aov_file = init_file()
         aov_file.replace_aov(mock_aov)
 
         mock_aovs.return_value.index.assert_called_with(mock_aov)
-        mock_aovs.return_value.__setitem__.assert_called_with(3, mock_aov)
+        mock_aovs.return_value.__setitem__.assert_called_with(mock_idx, mock_aov)
 
-    # replace_group
+    def test_replace_group(self, init_file, mocker):
+        mock_groups = mocker.patch.object(manager.AOVFile, "groups", new_callable=mocker.PropertyMock)
 
-    @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test_replace_group(self, mock_groups):
-        mock_group = MagicMock(spec=manager.AOVGroup)
+        mock_group = mocker.MagicMock(spec=manager.AOVGroup)
 
-        mock_groups.return_value.index.return_value = 2
+        mock_idx = mocker.MagicMock(spec=int)
+        mock_groups.return_value.index.return_value = mock_idx
 
-        aov_file = manager.AOVFile(None)
+        aov_file = init_file()
         aov_file.replace_group(mock_group)
 
         mock_groups.return_value.index.assert_called_with(mock_group)
-        mock_groups.return_value.__setitem__.assert_called_with(2, mock_group)
+        mock_groups.return_value.__setitem__.assert_called_with(mock_idx, mock_group)
 
     # write_to_file
 
-    @patch("ht.sohohooks.aovs.manager.json.dump")
-    @patch.object(manager.AOVFile, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test_write_to_file__nothing_explicit_path(self, mock_groups, mock_aovs, mock_dump):
+    def test_write_to_file__nothing_explicit_path(self, init_file, mocker):
+        mock_groups = mocker.patch.object(manager.AOVFile, "groups", new_callable=mocker.PropertyMock)
+        mock_aovs = mocker.patch.object(manager.AOVFile, "aovs", new_callable=mocker.PropertyMock)
+        mock_dump = mocker.patch("ht.sohohooks.aovs.manager.json.dump")
+
         mock_groups.return_value = []
         mock_aovs.return_value = []
 
-        aov_file = manager.AOVFile(None)
+        aov_file = init_file()
 
-        mock_path = MagicMock(spec=str)
+        mock_path = mocker.MagicMock(spec=str)
 
-        with patch("__builtin__.open", mock_open()) as mock_handle:
-            aov_file.write_to_file(mock_path)
+        mock_handle = mocker.mock_open()
 
-            mock_handle.assert_called_with(mock_path, 'w')
+        mocker.patch("__builtin__.open", mock_handle)
 
-            mock_dump.assert_called_with({}, mock_handle.return_value, indent=4)
+        aov_file.write_to_file(mock_path)
 
-    @patch("ht.sohohooks.aovs.manager.json.dump")
-    @patch.object(manager.AOVFile, "path", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "aovs", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "groups", new_callable=PropertyMock)
-    @patch.object(manager.AOVFile, "__init__", lambda x, y: None)
-    def test_write_to_file(self, mock_groups, mock_aovs, mock_path, mock_dump):
-        mock_group_key = MagicMock(spec=str)
-        mock_group_value = MagicMock(spec=str)
+        mock_handle.assert_called_with(mock_path, 'w')
 
-        mock_group = MagicMock(spec=manager.AOVGroup)
+        mock_dump.assert_called_with({}, mock_handle.return_value, indent=4)
+
+    def test_write_to_file(self, init_file, mocker):
+        mock_groups = mocker.patch.object(manager.AOVFile, "groups", new_callable=mocker.PropertyMock)
+        mock_aovs = mocker.patch.object(manager.AOVFile, "aovs", new_callable=mocker.PropertyMock)
+        mock_path = mocker.patch.object(manager.AOVFile, "path", new_callable=mocker.PropertyMock)
+        mock_dump = mocker.patch("ht.sohohooks.aovs.manager.json.dump")
+
+        mock_group_key = mocker.MagicMock(spec=str)
+        mock_group_value = mocker.MagicMock(spec=str)
+
+        mock_group = mocker.MagicMock(spec=manager.AOVGroup)
         mock_group.as_data.return_value = {mock_group_key: mock_group_value}
 
         mock_groups.return_value = [mock_group]
 
-        mock_aov_key = MagicMock(spec=str)
-        mock_aov_value = MagicMock(spec=str)
+        mock_aov_key = mocker.MagicMock(spec=str)
+        mock_aov_value = mocker.MagicMock(spec=str)
 
-        mock_aov = MagicMock(spec=manager.AOV)
+        mock_aov = mocker.MagicMock(spec=manager.AOV)
         mock_aov.as_data.return_value = {mock_aov_key: mock_aov_value}
 
         mock_aovs.return_value = [mock_aov]
 
-        aov_file = manager.AOVFile(None)
+        aov_file = init_file()
 
         expected = {
             consts.FILE_GROUPS_KEY: {mock_group_key: mock_group_value},
             consts.FILE_DEFINITIONS_KEY: [{mock_aov_key: mock_aov_value}]
         }
 
-        with patch("__builtin__.open", mock_open()) as mock_handle:
-            aov_file.write_to_file()
+        mock_handle = mocker.mock_open()
 
-            mock_handle.assert_called_with(mock_path.return_value, 'w')
+        mocker.patch("__builtin__.open", mock_handle)
 
-            mock_dump.assert_called_with(expected, mock_handle.return_value, indent=4)
+        aov_file.write_to_file()
+
+        mock_handle.assert_called_with(mock_path.return_value, 'w')
+
+        mock_dump.assert_called_with(expected, mock_handle.return_value, indent=4)
 
 
 class Test__find_aov_files(object):
     """Test ht.sohohooks.aovs.manager._find_aov_files."""
 
-    @patch("ht.sohohooks.aovs.manager.glob.glob")
-    @patch("ht.sohohooks.aovs.manager._get_aov_path_folders")
-    def test_aov_path(self, mock_get_folders, mock_glob):
-        mock_folder_path = MagicMock(spec=str)
+    def test_aov_path(self, mocker):
+        mock_glob = mocker.patch("ht.sohohooks.aovs.manager.glob.glob")
+        mock_get_folders = mocker.patch("ht.sohohooks.aovs.manager._get_aov_path_folders")
+
+        mock_folder_path = mocker.MagicMock(spec=str)
         mock_get_folders.return_value = (mock_folder_path, )
 
-        mock_path1 = MagicMock(spec=str)
-        mock_path2 = MagicMock(spec=str)
+        mock_path1 = mocker.MagicMock(spec=str)
+        mock_path2 = mocker.MagicMock(spec=str)
 
         mock_glob.return_value = [mock_path1, mock_path2]
 
-        with patch.dict(os.environ, {"HT_AOV_PATH": "value"}):
-            result = manager._find_aov_files()
+        mocker.patch.dict(os.environ, {"HT_AOV_PATH": "value"})
+
+        result = manager._find_aov_files()
 
         assert result == (mock_path1, mock_path2)
 
@@ -1192,19 +1198,20 @@ class Test__find_aov_files(object):
 
         mock_glob.assert_called_with(os.path.join(mock_folder_path, "*.json"))
 
-    @patch("ht.sohohooks.aovs.manager.glob.glob")
-    @patch("ht.sohohooks.aovs.manager._find_houdinipath_aov_folders")
-    def test_houdini_path(self, mock_find, mock_glob):
-        mock_folder_path = MagicMock(spec=str)
+    def test_houdini_path(self, mocker):
+        mock_find = mocker.patch("ht.sohohooks.aovs.manager._find_houdinipath_aov_folders")
+        mock_glob = mocker.patch("ht.sohohooks.aovs.manager.glob.glob")
+
+        mock_folder_path = mocker.MagicMock(spec=str)
         mock_find.return_value = [mock_folder_path]
 
-        mock_path1 = MagicMock(spec=str)
-        mock_path2 = MagicMock(spec=str)
+        mock_path1 = mocker.MagicMock(spec=str)
+        mock_path2 = mocker.MagicMock(spec=str)
 
         mock_glob.return_value = [mock_path1, mock_path2]
 
-        with patch.dict(os.environ, {}, clear=True):
-            result = manager._find_aov_files()
+        mocker.patch.dict(os.environ, {}, clear=True)
+        result = manager._find_aov_files()
 
         assert result == (mock_path1, mock_path2)
 
@@ -1216,16 +1223,17 @@ class Test__find_aov_files(object):
 class Test__find_houdinipath_aov_folders(object):
     """Test ht.sohohooks.aovs.manager._find_houdinipath_aov_folders."""
 
-    @patch("ht.sohohooks.aovs.manager.hou.findDirectories")
-    def test_no_dirs(self, mock_find, raise_hou_operationfailed):
-        mock_find.side_effect = raise_hou_operationfailed
+    def test_no_dirs(self, mocker, mock_hou_exceptions):
+        mock_find = mocker.patch("ht.sohohooks.aovs.manager.hou.findDirectories")
+        mock_find.side_effect = mock_hou_exceptions.OperationFailed
 
         result = manager._find_houdinipath_aov_folders()
 
         assert result == ()
 
-    @patch("ht.sohohooks.aovs.manager.hou.findDirectories")
-    def test_dirs(self, mock_find):
+    def test_dirs(self, mocker):
+        mock_find = mocker.patch("ht.sohohooks.aovs.manager.hou.findDirectories")
+
         result = manager._find_houdinipath_aov_folders()
 
         assert result == mock_find.return_value
@@ -1234,40 +1242,45 @@ class Test__find_houdinipath_aov_folders(object):
 class Test__get_aov_path_folders(object):
     """Test ht.sohohooks.aovs.manager._get_aov_path_folders."""
 
-    def test_no_hpath(self):
+    def test_no_hpath(self, mocker):
 
         env_dict = {
             "HT_AOV_PATH": "path1:path2"
         }
 
-        with patch.dict(os.environ, env_dict):
-            result = manager._get_aov_path_folders()
+        mocker.patch.dict(os.environ, env_dict)
+
+        result = manager._get_aov_path_folders()
 
         assert result == ("path1", "path2")
 
-    @patch("ht.sohohooks.aovs.manager._find_houdinipath_aov_folders")
-    def test_hpath_no_folders(self, mock_find):
+    def test_hpath_no_folders(self, mocker):
+        mock_find = mocker.patch("ht.sohohooks.aovs.manager._find_houdinipath_aov_folders")
+
         mock_find.return_value = ()
 
         env_dict = {
             "HT_AOV_PATH": "path1:path2:&"
         }
 
-        with patch.dict(os.environ, env_dict):
-            result = manager._get_aov_path_folders()
+        mocker.patch.dict(os.environ, env_dict)
+
+        result = manager._get_aov_path_folders()
 
         assert result == ("path1", "path2", "&")
 
-    @patch("ht.sohohooks.aovs.manager._find_houdinipath_aov_folders")
-    def test_hpath_folders(self, mock_find):
+    def test_hpath_folders(self, mocker):
+        mock_find = mocker.patch("ht.sohohooks.aovs.manager._find_houdinipath_aov_folders")
+
         mock_find.return_value = ("hpath1", "hpath2")
 
         env_dict = {
             "HT_AOV_PATH": "path1:path2:&"
         }
 
-        with patch.dict(os.environ, env_dict):
-            result = manager._get_aov_path_folders()
+        mocker.patch.dict(os.environ, env_dict)
+
+        result = manager._get_aov_path_folders()
 
         assert result == ("path1", "path2", "hpath1", "hpath2")
 
@@ -1275,13 +1288,14 @@ class Test__get_aov_path_folders(object):
 class Test_build_menu_script(object):
     """Test ht.sohohooks.aovs.manager.build_menu_script."""
 
-    @patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
-    def test_no_groups(self, mock_manager):
+    def test_no_groups(self, mocker):
+        mock_manager = mocker.patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
+
         mock_manager.groups = None
 
-        mock_aov1 = MagicMock(spec=manager.AOV)
-        mock_aov2 = MagicMock(spec=manager.AOV)
-        mock_aov3 = MagicMock(spec=manager.AOV)
+        mock_aov1 = mocker.MagicMock(spec=manager.AOV)
+        mock_aov2 = mocker.MagicMock(spec=manager.AOV)
+        mock_aov3 = mocker.MagicMock(spec=manager.AOV)
 
         mock_manager.aovs = {"P": mock_aov1, "N": mock_aov2, "A": mock_aov3}
 
@@ -1289,11 +1303,12 @@ class Test_build_menu_script(object):
 
         assert result == ("A", "A", "N", "N", "P", "P")
 
-    @patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
-    def test_with_groups(self, mock_manager):
-        mock_group1 = MagicMock(spec=manager.AOVGroup)
-        mock_group2 = MagicMock(spec=manager.AOVGroup)
-        mock_group3 = MagicMock(spec=manager.AOVGroup)
+    def test_with_groups(self, mocker):
+        mock_manager = mocker.patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
+
+        mock_group1 = mocker.MagicMock(spec=manager.AOVGroup)
+        mock_group2 = mocker.MagicMock(spec=manager.AOVGroup)
+        mock_group3 = mocker.MagicMock(spec=manager.AOVGroup)
 
         mock_manager.groups = {
             "group1": mock_group1,
@@ -1301,9 +1316,9 @@ class Test_build_menu_script(object):
             "group3": mock_group3,
         }
 
-        mock_aov1 = MagicMock(spec=manager.AOV)
-        mock_aov2 = MagicMock(spec=manager.AOV)
-        mock_aov3 = MagicMock(spec=manager.AOV)
+        mock_aov1 = mocker.MagicMock(spec=manager.AOV)
+        mock_aov2 = mocker.MagicMock(spec=manager.AOV)
+        mock_aov3 = mocker.MagicMock(spec=manager.AOV)
 
         mock_manager.aovs = {"P": mock_aov1, "N": mock_aov2, "A": mock_aov3}
 
@@ -1314,25 +1329,26 @@ class Test_build_menu_script(object):
         assert result == expected
 
 
-def test_flatten_aov_items():
+def test_flatten_aov_items(mocker):
     """Test ht.sohohooks.aovs.manager.flatten_aov_items."""
-    mock_aov = MagicMock(spec=manager.AOV)
+    mock_aov = mocker.MagicMock(spec=manager.AOV)
 
-    mock_group_aov = MagicMock(spec=manager.AOV)
+    mock_group_aov = mocker.MagicMock(spec=manager.AOV)
 
-    mock_group = MagicMock(spec=manager.AOVGroup)
-    type(mock_group).aovs = PropertyMock(return_value = [mock_group_aov])
+    mock_group = mocker.MagicMock(spec=manager.AOVGroup)
+    type(mock_group).aovs = mocker.PropertyMock(return_value=[mock_group_aov])
 
     result = manager.flatten_aov_items((mock_aov, mock_group))
 
     assert result == (mock_aov, mock_group_aov)
 
 
-@patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
-@patch("ht.sohohooks.aovs.manager.os.path.exists")
-@patch("ht.sohohooks.aovs.manager.os.path.expandvars")
-def test_load_json_files(mock_expand, mock_exists, mock_manager, mock_hou_ui):
+def test_load_json_files(mocker, mock_hou_ui):
     """Test ht.sohohooks.aovs.manager.load_json_files."""
+    mock_expand = mocker.patch("ht.sohohooks.aovs.manager.os.path.expandvars")
+    mock_exists = mocker.patch("ht.sohohooks.aovs.manager.os.path.exists")
+    mock_manager = mocker.patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
+
     mock_expand.side_effect = ("expanded1", "expanded2")
 
     mock_exists.side_effect = (False, True)
