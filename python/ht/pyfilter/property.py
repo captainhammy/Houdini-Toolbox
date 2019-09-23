@@ -106,7 +106,7 @@ def _transform_values(values):
                 # If there are multiple values we want to build a
                 # dictionary out of pairs.
                 if len(value_components) > 2:
-                    value = dict(zip(*[iter(value_components)]*2))
+                    value = dict(zip(*[iter(value_components)] * 2))
 
                 # Not multiple values so perform additional processing.
                 else:

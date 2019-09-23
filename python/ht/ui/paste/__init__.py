@@ -11,6 +11,7 @@ from ht.ui.paste.sources import HomeToolDirSource, SourceManager
 # Houdini Imports
 import hou
 
+
 # ==============================================================================
 # FUNCTIONS
 # ==============================================================================
@@ -134,6 +135,7 @@ def paste_items_to_graph(eventtype, editor, uievent):
 
     # This is a one off event so we don't care what happens after this.
     return None, True
+
 
 # ==============================================================================
 

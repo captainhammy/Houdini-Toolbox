@@ -2393,7 +2393,7 @@ def get_multiparm_instance_values(parm):
 
     # Iterate over each multiparm instance.
     for block in parms:
-        values = [parm.eval() for parm in block]
+        values = [block_parm.eval() for block_parm in block]
         all_values.append(tuple(values))
 
     return tuple(all_values)

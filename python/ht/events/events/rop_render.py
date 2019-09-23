@@ -116,11 +116,10 @@ class RopRenderEvent(HoudiniEventGroup):
         if self._render_start is not None:
             end_time = scriptargs["time"]
 
-            _logger.info("Completed Render: %0.5fs", end_time-self._render_start)
+            _logger.info("Completed Render: %0.5fs", end_time - self._render_start)
 
         else:
             _logger.info("Completed Render")
-
 
     def post_write(self, scriptargs):  # pylint: disable=no-self-use
         """Action run after the frame is written to disk.

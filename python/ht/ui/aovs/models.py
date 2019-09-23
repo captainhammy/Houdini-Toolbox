@@ -11,7 +11,7 @@ from PySide2 import QtCore, QtGui
 from ht.sohohooks.aovs import manager
 from ht.sohohooks.aovs.aov import AOV, IntrinsicAOVGroup
 from ht.ui.aovs import utils
-import ht.ui.icons  # pylint: disable=unused-import
+import ht.ui.icons  # pylint: disable=unused-import # noqa: F401
 
 # Houdini Imports
 import hou
@@ -745,7 +745,7 @@ class AOVSelectModel(BaseAOVTreeModel):
 
         self.dataChanged.emit(
             self.index(0, 0, parent),
-            self.index(len(parent_node.children)-1, 0, parent),
+            self.index(len(parent_node.children) - 1, 0, parent),
             [QtCore.Qt.DisplayRole],
         )
 
@@ -816,7 +816,7 @@ class AOVSelectModel(BaseAOVTreeModel):
                 child_index = self.index(row, 0, index)
 
                 # Remove all the existing AOV nodes.
-                self.beginRemoveRows(child_index, 0, len(child.children)-1)
+                self.beginRemoveRows(child_index, 0, len(child.children) - 1)
 
                 child.remove_all_children()
 

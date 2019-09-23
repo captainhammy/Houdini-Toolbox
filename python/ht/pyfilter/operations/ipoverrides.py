@@ -500,6 +500,6 @@ def set_mantra_command(node):
     :return:
 
     """
-    cmd = "mantra `pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.build_pyfilter_command_from_node(hou.pwd())\")`"
+    cmd = "mantra `pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.build_pyfilter_command_from_node(hou.pwd())\")`"  # noqa: 501
 
     node.parm("soho_pipecmd").set(cmd)

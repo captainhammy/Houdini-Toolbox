@@ -140,7 +140,7 @@ def build_aovs_from_multiparm(node):
 
     num_aovs = node.evalParm("vm_numaux")
 
-    for idx in range(1, num_aovs+1):
+    for idx in range(1, num_aovs + 1):
         aov_data = {
             "variable": node.evalParm("vm_variable_plane{}".format(idx)),
             "vextype": node.evalParm("vm_vextype_plane{}".format(idx))
@@ -237,7 +237,7 @@ def get_aov_names_from_multiparms(node):
 
     num_aovs = node.evalParm("vm_numaux")
 
-    for idx in range(1, num_aovs+1):
+    for idx in range(1, num_aovs + 1):
         names.append(node.evalParm("vm_variable_plane{}".format(idx)))
 
     return names

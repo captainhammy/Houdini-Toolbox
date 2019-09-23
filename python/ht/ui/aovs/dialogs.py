@@ -1167,25 +1167,22 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         start_idx = -1
 
         # Populate the AOV chooser with all the existing AOVs.
-        for idx, aov in enumerate(sorted(manager.MANAGER.aovs.values())):
+        for idx, available_aov in enumerate(sorted(manager.MANAGER.aovs.values())):
             # If a channel is specified, put it into the display name.
-            if aov.channel is not None:
-                label = "{} ({})".format(
-                    aov.variable,
-                    aov.channel
-                )
+            if available_aov.channel is not None:
+                label = "{} ({})".format(available_aov.variable, available_aov.channel)
 
             else:
-                label = aov.variable
+                label = available_aov.variable
 
             self.aov_chooser.addItem(
-                utils.get_icon_for_vex_type(aov.vextype),
+                utils.get_icon_for_vex_type(available_aov.vextype),
                 label,
-                aov
+                available_aov
             )
 
             # The AOV matches our start AOV so set the start index.
-            if aov == self.aov:
+            if available_aov == self.aov:
                 start_idx = idx
 
         if start_idx != -1:
@@ -1328,17 +1325,13 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         start_idx = -1
 
         # Populate the group chooser with all the existing groups.
-        for idx, group in enumerate(sorted(manager.MANAGER.groups.values())):
-            label = group.name
+        for idx, available_group in enumerate(sorted(manager.MANAGER.groups.values())):
+            label = available_group.name
 
-            self.group_chooser.addItem(
-                utils.get_icon_for_group(group),
-                label,
-                group
-            )
+            self.group_chooser.addItem(utils.get_icon_for_group(available_group), label, available_group)
 
             # The group matches our start group so set the start index.
-            if group == self.group:
+            if available_group == self.group:
                 start_idx = idx
 
         if start_idx != -1:
