@@ -42,7 +42,7 @@ def init_operation(mocker):
     """Fixture to initialize an operation."""
     mocker.patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
 
-    def create(prop_map=None, as_properties=False):
+    def _create(prop_map=None, as_properties=False):
         """Function which instantiates the operation.
 
         :param prop_map: Map of property name:values to set.
@@ -77,7 +77,7 @@ def init_operation(mocker):
 
         return op
 
-    return create
+    return _create
 
 
 @pytest.fixture

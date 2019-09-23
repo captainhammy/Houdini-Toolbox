@@ -6,7 +6,6 @@
 
 # Standard Library Imports
 import imp
-import io
 import logging
 
 # Third Party Imports
@@ -32,10 +31,10 @@ def init_handler(mocker):
     """Fixture to initialize a handler."""
     mocker.patch.object(ht.logging.shellio.PythonShellHandler, "__init__", lambda x, y: None)
 
-    def create():
+    def _create():
         return ht.logging.shellio.PythonShellHandler(None)
 
-    return create
+    return _create
 
 
 # =============================================================================

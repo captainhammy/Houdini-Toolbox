@@ -17,6 +17,7 @@ import ht.logging.adapters
 # Houdini Imports
 import hou
 
+
 # =============================================================================
 # FIXTURES
 # =============================================================================
@@ -24,12 +25,12 @@ import hou
 @pytest.fixture
 def init_adapter(mocker):
     """Fixture to initialize an adapter."""
-    mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y, z, w, u: None)
+    mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y: None)
 
-    def create():
-        return ht.logging.adapters.HoudiniLoggerAdapter(None, None, None, None)
+    def _create():
+        return ht.logging.adapters.HoudiniLoggerAdapter(None)
 
-    return create
+    return _create
 
 
 # =============================================================================
@@ -326,7 +327,15 @@ class Test__wrap_logger(object):
         mock_title = mocker.MagicMock(spec=str)
 
         # Call the function.
-        func(mock_arg1, mock_arg2, extra=extra, dialog=mock_dialog, node=mock_node, status_bar=mock_status_bar, title=mock_title)
+        func(
+            mock_arg1,
+            mock_arg2,
+            extra=extra,
+            dialog=mock_dialog,
+            node=mock_node,
+            status_bar=mock_status_bar,
+            title=mock_title
+        )
 
         # The expected extra dict values.
         expected = {

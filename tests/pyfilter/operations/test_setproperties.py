@@ -24,10 +24,10 @@ def init_manager(mocker):
     """Fixture to initialize the manager class."""
     mocker.patch.object(setproperties.PropertySetterManager, "__init__", lambda x, y: None)
 
-    def create():
+    def _create():
         return setproperties.PropertySetterManager(None)
 
-    return create
+    return _create
 
 
 @pytest.fixture
@@ -35,10 +35,10 @@ def init_masked_setter(mocker):
     """Fixture to initialize the setter class."""
     mocker.patch.object(setproperties.MaskedPropertySetter, "__init__", lambda x, y, z, w: None)
 
-    def create():
+    def _create():
         return setproperties.MaskedPropertySetter(None, None, None)
 
-    return create
+    return _create
 
 
 @pytest.fixture
@@ -46,11 +46,10 @@ def init_operation(mocker):
     """Fixture to initialize an operation."""
     mocker.patch.object(setproperties.SetProperties, "__init__", lambda x, y: None)
 
-    def create():
+    def _create():
         return setproperties.SetProperties(None)
 
-    return create
-
+    return _create
 
 
 @pytest.fixture
@@ -58,10 +57,10 @@ def init_setter(mocker):
     """Fixture to initialize the masked setter class."""
     mocker.patch.object(setproperties.PropertySetter, "__init__", lambda x, y: None)
 
-    def create():
+    def _create():
         return setproperties.PropertySetter(None)
 
-    return create
+    return _create
 
 
 @pytest.fixture

@@ -30,10 +30,10 @@ def init_constant_rule(mocker):
     """Fixture to initialize a style constant."""
     mocker.patch.object(styles.ConstantRule, "__init__", lambda x, y, z: None)
 
-    def create():
+    def _create():
         return styles.ConstantRule(None, None)
 
-    return create
+    return _create
 
 
 @pytest.fixture
@@ -41,10 +41,10 @@ def init_style_constant(mocker):
     """Fixture to initialize a style constant."""
     mocker.patch.object(styles.StyleConstant, "__init__", lambda x, y, z, u, v: None)
 
-    def create():
+    def _create():
         return styles.StyleConstant(None, None, None, None)
 
-    return create
+    return _create
 
 
 @pytest.fixture
@@ -52,10 +52,10 @@ def init_style_rule(mocker):
     """Fixture to initialize a style rule."""
     mocker.patch.object(styles.StyleRule, "__init__", lambda x, y, z, u, v: None)
 
-    def create():
+    def _create():
         return styles.StyleRule(None, None, None, None)
 
-    return create
+    return _create
 
 
 # =============================================================================

@@ -3705,7 +3705,7 @@ class Test_get_multiparm_instances_per_item(object):
     """Test ht.inline.api.get_multiparm_instances_per_item."""
 
     def test_not_multiparm(self, mocker):
-        mock_is_multiparm = mocker.patch("ht.inline.api.is_parm_multiparm", return_value=False)
+        mocker.patch("ht.inline.api.is_parm_multiparm", return_value=False)
 
         mock_parm = mocker.MagicMock(spec=hou.Parm)
 
@@ -4255,7 +4255,7 @@ class Test_eval_multiparm_instance(object):
     def test_invalid_type(self, mocker):
         mock_is_multiparm = mocker.patch("ht.inline.api.is_parm_multiparm", return_value=True)
         mock_get = mocker.patch("ht.inline.api.get_multiparm_start_offset")
-        mock_eval = mocker.patch("ht.inline.api._cpp_methods.eval_multiparm_instance_string")
+        mocker.patch("ht.inline.api._cpp_methods.eval_multiparm_instance_string")
 
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.eval.return_value = mocker.MagicMock(spec=int)
@@ -4643,7 +4643,6 @@ class Test_vector_contains_nans(object):
         mock_is_nan.assert_has_calls([mocker.call(mock_value1), mocker.call(mock_value2), mocker.call(mock_value3)])
 
 
-
 def test_vector_compute_dual(mocker):
     """Test ht.inline.api.vector_compute_dual."""
     mock_mat = mocker.patch("ht.inline.api.hou.Matrix3", autospec=True)
@@ -4879,7 +4878,7 @@ class Test_build_instance_matrix(object):
             mock_trans, mock_pivot, None
         )
 
-        assert result  == mock_build_trans.return_value * mock_build_scale.return_value * mock_mat4.return_value * mock_mat4.return_value * mock_build_trans.return_value
+        assert result == mock_build_trans.return_value * mock_build_scale.return_value * mock_mat4.return_value * mock_mat4.return_value * mock_build_trans.return_value
 
         mock_scale.__mul__.assert_called_with(mock_pscale)
         mock_build_scale.assert_called_with(mock_scale.__mul__.return_value)

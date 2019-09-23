@@ -24,10 +24,10 @@ def init_operation(mocker):
     """Fixture to initialize an operation."""
     mocker.patch.object(zdepth.ZDepthPass, "__init__", lambda x, y: None)
 
-    def create():
+    def _create():
         return zdepth.ZDepthPass(None)
 
-    return create
+    return _create
 
 
 @pytest.fixture

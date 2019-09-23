@@ -28,10 +28,10 @@ def init_item_stats(mocker):
     """Fixture to initialize a stats object."""
     mocker.patch.object(ht.events.stats.HoudiniEventItemStats, "__init__", lambda x, y: None)
 
-    def create():
+    def _create():
         return ht.events.stats.HoudiniEventItemStats(None)
 
-    return create
+    return _create
 
 
 @pytest.fixture
@@ -39,10 +39,10 @@ def init_stats(mocker):
     """Fixture to initialize a stats object."""
     mocker.patch.object(ht.events.stats.HoudiniEventStats, "__init__", lambda x, y: None)
 
-    def create():
+    def _create():
         return ht.events.stats.HoudiniEventStats(None)
 
-    return create
+    return _create
 
 
 @pytest.fixture

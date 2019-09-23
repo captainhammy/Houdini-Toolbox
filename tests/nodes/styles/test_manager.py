@@ -32,10 +32,10 @@ def init_manager(mocker):
     """Fixture to initialize a style constant."""
     mocker.patch.object(manager.StyleManager, "__init__", lambda x: None)
 
-    def create():
+    def _create():
         return manager.StyleManager()
 
-    return create
+    return _create
 
 
 # =============================================================================
@@ -284,7 +284,7 @@ class Test_StyleManager(object):
 
         mock_build.assert_called_with([mock_rule1, mock_rule2], {}, path, mock_constants.return_value)
 
-    def test__build_rules_from_data__tools(self,init_manager, mocker):
+    def test__build_rules_from_data__tools(self, init_manager, mocker):
         """Test building rules from data when the data contains tool rules."""
         mock_build = mocker.patch("ht.nodes.styles.manager._build_category_rules")
         mock_constants = mocker.patch.object(manager.StyleManager, "constants", new_callable=mocker.PropertyMock)
@@ -583,7 +583,7 @@ class Test_StyleManager(object):
 
     # _get_node_type_style
 
-    def test__get_node_type_style__category(self,init_manager, mocker):
+    def test__get_node_type_style__category(self, init_manager, mocker):
         """Test getting a node type style which matches a specific category."""
         mock_node_type_rules = mocker.patch.object(manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock)
         mock_match = mocker.patch("hou.patternMatch", return_value=True)
@@ -671,7 +671,7 @@ class Test_StyleManager(object):
 
         result = mgr._get_node_type_style(mock_type)
 
-        assert result == None
+        assert result is None
 
         mock_match.assert_called_with(style_name, node_type_name)
 
@@ -989,7 +989,7 @@ class Test_StyleManager(object):
     def test_reload(self, init_manager, mocker):
         """Test reloading all the data."""
         mock_constants = mocker.patch.object(manager.StyleManager, "constants", new_callable=mocker.PropertyMock)
-        mock_name_rules= mocker.patch.object(manager.StyleManager, "name_rules", new_callable=mocker.PropertyMock)
+        mock_name_rules = mocker.patch.object(manager.StyleManager, "name_rules", new_callable=mocker.PropertyMock)
         mock_node_type_rules = mocker.patch.object(manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock)
         mock_tool_rules = mocker.patch.object(manager.StyleManager, "tool_rules", new_callable=mocker.PropertyMock)
         mock_build = mocker.patch.object(manager.StyleManager, "_build")
@@ -1211,7 +1211,7 @@ class Test__build_shape(object):
         """Test building a shape where there is not a shape key."""
         result = manager._build_shape({})
 
-        assert result == None
+        assert result is None
 
 
 class Test__find_files(object):

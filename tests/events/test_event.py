@@ -29,10 +29,10 @@ def init_event(mocker):
     """Fixture to initialize an event."""
     mocker.patch.object(ht.events.event.HoudiniEvent, "__init__", lambda x, y: None)
 
-    def create():
+    def _create():
         return ht.events.event.HoudiniEvent(None)
 
-    return create
+    return _create
 
 
 # =============================================================================

@@ -32,10 +32,10 @@ def init_file(mocker):
     """Fixture to initialize a file."""
     mocker.patch.object(manager.AOVFile, "__init__", lambda x, y: None)
 
-    def create():
+    def _create():
         return manager.AOVFile(None)
 
-    return create
+    return _create
 
 
 @pytest.fixture
@@ -43,10 +43,10 @@ def init_manager(mocker):
     """Fixture to initialize a manager."""
     mocker.patch.object(manager.AOVManager, "__init__", lambda x: None)
 
-    def create():
+    def _create():
         return manager.AOVManager()
 
-    return create
+    return _create
 
 
 # =============================================================================
@@ -202,7 +202,7 @@ class Test_AOVManager(object):
         mock_new_aov.variable = mock_varname
         mock_new_aov.priority = 3
 
-        mock_existing_aov =mocker.MagicMock(spec=manager.AOV)
+        mock_existing_aov = mocker.MagicMock(spec=manager.AOV)
         mock_existing_aov.variable = mock_varname
         mock_existing_aov.priority = 2
 
@@ -741,7 +741,7 @@ class Test_AOVManager(object):
 
     def test_remove_group__no_match(self, init_manager, mocker):
         mock_groups = mocker.patch.object(manager.AOVManager, "groups", new_callable=mocker.PropertyMock)
-        mock_interface = mocker.patch.object(manager.AOVManager, "interface", new_callable=mocker.PropertyMock)
+        mocker.patch.object(manager.AOVManager, "interface", new_callable=mocker.PropertyMock)
 
         mock_group1 = mocker.MagicMock(spec=manager.AOVGroup)
         mock_group2 = mocker.MagicMock(spec=manager.AOVGroup)

@@ -24,10 +24,10 @@ def init_operation(mocker):
     """Fixture to initialize an operation."""
     mocker.patch.object(primaryimage.SetPrimaryImage, "__init__", lambda x, y: None)
 
-    def create():
+    def _create():
         return primaryimage.SetPrimaryImage(None)
 
-    return create
+    return _create
 
 
 # =============================================================================

@@ -33,10 +33,10 @@ def init_event(mocker):
     """Fixture to initialize an event."""
     mocker.patch.object(ht.events.events.rop_render.RopRenderEvent, "__init__", lambda x: None)
 
-    def create():
+    def _create():
         return ht.events.events.rop_render.RopRenderEvent()
 
-    return create
+    return _create
 
 
 # =============================================================================

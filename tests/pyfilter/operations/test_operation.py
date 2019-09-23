@@ -29,10 +29,10 @@ def init_operation(mocker):
     """Fixture to initialize an operation."""
     mocker.patch.object(operation.PyFilterOperation, "__init__", lambda x, y: None)
 
-    def create():
+    def _create():
         return operation.PyFilterOperation(None)
 
-    return create
+    return _create
 
 
 # =============================================================================

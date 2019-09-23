@@ -24,10 +24,10 @@ def init_manager(mocker):
     """Fixture to initialize a manager."""
     mocker.patch.object(manager.PyFilterManager, "__init__", lambda x: None)
 
-    def create():
+    def _create():
         return manager.PyFilterManager()
 
-    return create
+    return _create
 
 
 # =============================================================================
@@ -103,7 +103,6 @@ class TestManager(object):
         mock_operation.process_parsed_args.assert_called_with(mock_args)
 
     # _register_operations
-
 
     def test__register_operations__no_data(self, init_manager, mocker):
         mock_find_files = mocker.patch("ht.pyfilter.manager._find_operation_files")

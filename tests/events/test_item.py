@@ -27,23 +27,23 @@ imp.reload(ht.events.item)
 @pytest.fixture
 def init_exclusive_item(mocker):
     """Fixture to initialize an exclusive item."""
-    mocker.patch.object(ht.events.item.ExclusiveHoudiniEventItem, "__init__", lambda x, y, z, w, v: None)
+    mocker.patch.object(ht.events.item.ExclusiveHoudiniEventItem, "__init__", lambda x, y, z: None)
 
-    def create():
-        return ht.events.item.ExclusiveHoudiniEventItem(None, None, None, None)
+    def _create():
+        return ht.events.item.ExclusiveHoudiniEventItem(None, None)
 
-    return create
+    return _create
 
 
 @pytest.fixture
 def init_item(mocker):
     """Fixture to initialize an item."""
-    mocker.patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y, z, w, v: None)
+    mocker.patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y: None)
 
-    def create():
-        return ht.events.item.HoudiniEventItem(None, None, None, None)
+    def _create():
+        return ht.events.item.HoudiniEventItem(None)
 
-    return create
+    return _create
 
 
 # =============================================================================
@@ -72,7 +72,7 @@ class Test_HoudiniEventItem(object):
         assert item._data == {}
         assert item._stats == mock_stats.return_value
 
-    def test___eq__(self,init_item, mocker):
+    def test___eq__(self, init_item, mocker):
         """Test the equality operator."""
         mock_name = mocker.patch.object(ht.events.item.HoudiniEventItem, "name", new_callable=mocker.PropertyMock)
         mock_callables = mocker.patch.object(ht.events.item.HoudiniEventItem, "callables", new_callable=mocker.PropertyMock)
@@ -285,7 +285,7 @@ class Test_ExclusiveHoudiniEventItem(object):
     # run
 
     def test_run__no_run(self, init_exclusive_item, mocker):
-        mock_eq = mocker.patch("ht.events.item.ExclusiveHoudiniEventItem.__eq__", return_value=False)
+        mocker.patch("ht.events.item.ExclusiveHoudiniEventItem.__eq__", return_value=False)
         mock_super_run = mocker.patch.object(ht.events.item.HoudiniEventItem, "run")
         mock_map = mocker.patch.object(ht.events.item.ExclusiveHoudiniEventItem, "_exclusive_map", new_callable=mocker.PropertyMock)
         mock_name = mocker.patch.object(ht.events.item.ExclusiveHoudiniEventItem, "name", new_callable=mocker.PropertyMock)
@@ -300,7 +300,7 @@ class Test_ExclusiveHoudiniEventItem(object):
         mock_super_run.assert_not_called()
 
     def test__run(self, init_exclusive_item, mocker):
-        mock_eq = mocker.patch("ht.events.item.ExclusiveHoudiniEventItem.__eq__", return_value=True)
+        mocker.patch("ht.events.item.ExclusiveHoudiniEventItem.__eq__", return_value=True)
         mock_super_run = mocker.patch.object(ht.events.item.HoudiniEventItem, "run")
         mock_map = mocker.patch.object(ht.events.item.ExclusiveHoudiniEventItem, "_exclusive_map", new_callable=mocker.PropertyMock)
         mock_name = mocker.patch.object(ht.events.item.ExclusiveHoudiniEventItem, "name", new_callable=mocker.PropertyMock)

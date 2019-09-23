@@ -30,10 +30,10 @@ def init_manager(mocker):
     """Fixture to initialize a manager."""
     mocker.patch.object(ht.events.manager.HoudiniEventManager, "__init__", lambda x: None)
 
-    def create():
+    def _create():
         return ht.events.manager.HoudiniEventManager()
 
-    return create
+    return _create
 
 
 # =============================================================================

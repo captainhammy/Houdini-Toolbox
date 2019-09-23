@@ -24,10 +24,10 @@ def init_operation(mocker):
     """Fixture to initialize an operation."""
     mocker.patch.object(deepimage.SetDeepImage, "__init__", lambda x, y: None)
 
-    def create():
+    def _create():
         return deepimage.SetDeepImage(None)
 
-    return create
+    return _create
 
 
 @pytest.fixture
@@ -457,7 +457,7 @@ class Test_DeepImage(object):
 
         properties.mock_set.assert_called_with("image:deepresolver", ["shadow"])
 
-    def test_filter_camera__deep_args(self,patch_logger, init_operation, properties, mocker):
+    def test_filter_camera__deep_args(self, patch_logger, init_operation, properties, mocker):
         """Try to set the resolver when there is no resolver already set and
         we don't provide enough data.
 
@@ -643,4 +643,3 @@ class Test_DeepImage(object):
         op._zbias = 0.1
         assert op.should_run()
         op._zbias = None
-

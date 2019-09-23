@@ -27,10 +27,10 @@ def init_manager(mocker):
     """Fixture to initialize a manager."""
     mocker.patch.object(manager.SohoHookManager, "__init__", lambda x: None)
 
-    def create():
+    def _create():
         return manager.SohoHookManager()
 
-    return create
+    return _create
 
 
 # =============================================================================

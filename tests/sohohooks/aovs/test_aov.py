@@ -30,10 +30,10 @@ def init_aov(mocker):
     """Fixture to initialize an aov."""
     mocker.patch.object(aov.AOV, "__init__", lambda x, y: None)
 
-    def create():
+    def _create():
         return aov.AOV(None)
 
-    return create
+    return _create
 
 
 @pytest.fixture
@@ -41,10 +41,10 @@ def init_group(mocker):
     """Fixture to initialize an aov."""
     mocker.patch.object(aov.AOVGroup, "__init__", lambda x, y: None)
 
-    def create():
+    def _create():
         return aov.AOVGroup(None)
 
-    return create
+    return _create
 
 
 # =============================================================================
@@ -475,7 +475,6 @@ class Test_AOV(object):
 
     # _update_data
 
-
     def test__update_data__unknown(self, init_aov, mocker):
         mocker.patch("ht.sohohooks.aovs.aov.ALLOWABLE_VALUES", return_value={})
         mock_verify = mocker.patch("ht.sohohooks.aovs.aov.AOV._verify_internal_data")
@@ -892,9 +891,9 @@ class Test_AOV(object):
 
     def test_write_to_ifd__no_channel_no_comp(self, init_aov, mocker, patch_soho):
         mock_as_data = mocker.patch.object(aov.AOV, "as_data")
-        mock_channel = mocker.patch.object(aov.AOV, "channel", new_callable=mocker.PropertyMock(return_value=None))
+        mocker.patch.object(aov.AOV, "channel", new_callable=mocker.PropertyMock(return_value=None))
         mock_variable = mocker.patch.object(aov.AOV, "variable", new_callable=mocker.PropertyMock)
-        mock_component = mocker.patch.object(aov.AOV, "componentexport", new_callable=mocker.PropertyMock(return_value=False))
+        mocker.patch.object(aov.AOV, "componentexport", new_callable=mocker.PropertyMock(return_value=False))
         mock_export = mocker.patch.object(aov.AOV, "_light_export_planes")
 
         mock_as_data.return_value = {"key": "value"}
@@ -939,9 +938,9 @@ class Test_AOV(object):
 
     def test_write_to_ifd__export_no_comp(self, init_aov, mocker, patch_soho):
         mock_as_data = mocker.patch.object(aov.AOV, "as_data")
-        mock_channel = mocker.patch.object(aov.AOV, "channel", new_callable=mocker.PropertyMock)
-        mock_component = mocker.patch.object(aov.AOV, "componentexport", new_callable=mocker.PropertyMock(return_value=True))
-        mock_components = mocker.patch.object(aov.AOV, "components", new_callable=mocker.PropertyMock(return_value=[]))
+        mocker.patch.object(aov.AOV, "channel", new_callable=mocker.PropertyMock)
+        mocker.patch.object(aov.AOV, "componentexport", new_callable=mocker.PropertyMock(return_value=True))
+        mocker.patch.object(aov.AOV, "components", new_callable=mocker.PropertyMock(return_value=[]))
         mock_export = mocker.patch.object(aov.AOV, "_light_export_planes")
 
         mock_as_data.return_value = {"key": "value"}
@@ -965,9 +964,9 @@ class Test_AOV(object):
 
     def test_write_to_ifd__export_components_from_node(self, init_aov, mocker, patch_soho):
         mock_as_data = mocker.patch.object(aov.AOV, "as_data")
-        mock_channel = mocker.patch.object(aov.AOV, "channel", new_callable=mocker.PropertyMock(return_value="Pworld"))
-        mock_component = mocker.patch.object(aov.AOV, "componentexport", new_callable=mocker.PropertyMock(return_value=True))
-        mock_components = mocker.patch.object(aov.AOV, "components", new_callable=mocker.PropertyMock(return_value=[]))
+        mocker.patch.object(aov.AOV, "channel", new_callable=mocker.PropertyMock(return_value="Pworld"))
+        mocker.patch.object(aov.AOV, "componentexport", new_callable=mocker.PropertyMock(return_value=True))
+        mocker.patch.object(aov.AOV, "components", new_callable=mocker.PropertyMock(return_value=[]))
         mock_export = mocker.patch.object(aov.AOV, "_light_export_planes")
 
         mock_as_data.return_value = {"key": "value"}
@@ -1001,9 +1000,9 @@ class Test_AOV(object):
 
     def test_write_to_ifd__export_components(self, init_aov, mocker, patch_soho):
         mock_as_data = mocker.patch.object(aov.AOV, "as_data")
-        mock_channel = mocker.patch.object(aov.AOV, "channel", new_callable=mocker.PropertyMock(return_value="Pworld"))
-        mock_component = mocker.patch.object(aov.AOV, "componentexport", new_callable=mocker.PropertyMock(return_value=True))
-        mock_components = mocker.patch.object(aov.AOV, "components", new_callable=mocker.PropertyMock(return_value=["comp3", "comp4"]))
+        mocker.patch.object(aov.AOV, "channel", new_callable=mocker.PropertyMock(return_value="Pworld"))
+        mocker.patch.object(aov.AOV, "componentexport", new_callable=mocker.PropertyMock(return_value=True))
+        mocker.patch.object(aov.AOV, "components", new_callable=mocker.PropertyMock(return_value=["comp3", "comp4"]))
         mock_export = mocker.patch.object(aov.AOV, "_light_export_planes")
 
         mock_as_data.return_value = {"key": "value"}
@@ -1370,7 +1369,7 @@ class Test_AOVGroup(object):
 
         assert result == expected
 
-    def test_as_data(self, mocker):
+    def test_as_data(self, init_group, mocker):
         mock_includes = mocker.patch.object(aov.AOVGroup, "includes", new_callable=mocker.PropertyMock)
         mock_name = mocker.patch.object(aov.AOVGroup, "name", new_callable=mocker.PropertyMock)
         mock_aovs = mocker.patch.object(aov.AOVGroup, "aovs", new_callable=mocker.PropertyMock)
@@ -1395,7 +1394,7 @@ class Test_AOVGroup(object):
             }
         }
 
-        group = aov.AOVGroup(None)
+        group = init_group()
 
         result = group.as_data()
 
