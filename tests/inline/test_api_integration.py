@@ -2267,7 +2267,8 @@ def test_vector_contains_nans():
 
 def test_vector_compute_dual():
     """Test ht.inline.api.vector_compute_dual."""
-    target = hou.Matrix3(((0, -3, 2), (3, 0, -1), (-2, 1, 0)))
+    target = hou.Matrix3()
+    target.setTo(((0, -3, 2), (3, 0, -1), (-2, 1, 0)))
 
     vec = hou.Vector3(1, 2, 3)
 
@@ -2308,7 +2309,9 @@ def test_set_matrix_translates():
 
 def test_build_lookat_matrix():
     """Test ht.inline.api.build_lookat_matrix."""
-    target = hou.Matrix3(
+    target = hou.Matrix3()
+
+    target.setTo(
         (
             (0.70710678118654746, -0.0, 0.70710678118654746),
             (0.0, 1.0, 0.0),

@@ -364,7 +364,7 @@ def _scale_resolution(resolution, scale):
     :rtype: list(int)
 
     """
-    return [int(round(value * scale)) for value in resolution]
+    return [int(round(value * scale)) for value in resolution]  # pylint: disable=round-builtin
 
 
 def _scale_samples(samples, scale):
