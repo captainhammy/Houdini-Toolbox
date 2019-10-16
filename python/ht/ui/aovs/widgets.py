@@ -66,8 +66,8 @@ class AOVManagerWidget(QtWidgets.QWidget):
         self.to_add_widget.update_enabled_signal.connect(self.check_node_added)
 
         # Left/right button enabling/disabling.
-        self.selected_aov_contained_signal.connect(self.select_widget.install_bar._enable_handler)
-        self.invalid_aov_selected_signal.connect(self.select_widget.install_bar._disable_handler)
+        self.selected_aov_contained_signal.connect(self.select_widget.install_bar.enable_handler)
+        self.invalid_aov_selected_signal.connect(self.select_widget.install_bar.disable_handler)
 
         # Really need a signal?  Maybe just refresh everything?
         manager.MANAGER.init_interface()
@@ -139,7 +139,7 @@ class AOVViewerToolBar(QtWidgets.QToolBar):
 
 # AOVs and Groups
 
-class AOVSelectTreeWidget(QtWidgets.QTreeView):
+class AOVSelectTreeWidget(QtWidgets.QTreeView):  # pylint: disable=too-many-public-methods
     """This class represents a tree with AOVs and AOVGroups that can be
     added to renders.
 
@@ -417,7 +417,7 @@ class AOVSelectTreeWidget(QtWidgets.QTreeView):
         """Mark items as not currently installed in the tree."""
         self.model().sourceModel().mark_uninstalled(items)
 
-    def open_menu(self, position):
+    def open_menu(self, position):  # pylint: disable=too-many-locals
         """Open the RMB context menu."""
         indexes = self.selectedIndexes()
 
@@ -666,15 +666,15 @@ class AOVInstallBarWidget(QtWidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
 
     # -------------------------------------------------------------------------
-    # NON-PUBLIC METHODS
+    # METHODS
     # -------------------------------------------------------------------------
 
-    def _disable_handler(self):
+    def disable_handler(self):
         """Disable both buttons."""
         self.install_button.setEnabled(False)
         self.uninstall_button.setEnabled(False)
 
-    def _enable_handler(self, contains):
+    def enable_handler(self, contains):
         """Enable and disable buttons based on if an item is contained."""
         self.install_button.setEnabled(not contains)
         self.uninstall_button.setEnabled(contains)
@@ -1627,7 +1627,7 @@ class InfoTableView(QtWidgets.QTableView):
         result = self.model().data(index)
 
         if result is not None:
-            clipboard = QtGui.QApplication.clipboard()
+            clipboard = QtGui.QApplication.clipboard()  # pylint: disable=c-extension-no-member
             clipboard.setText(result)
 
     def contextMenuEvent(self, event):

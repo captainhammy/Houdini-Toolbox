@@ -56,7 +56,7 @@ class Test_AOV(object):
 
     def test___init__(self, mocker):
         mock_copy = mocker.patch("ht.sohohooks.aovs.aov.copy.copy")
-        mock_update = mocker.patch.object(aov.AOV, "_update_data")
+        mock_update = mocker.patch.object(aov.AOV, "update_data")
 
         data = mocker.MagicMock(spec=dict)
 
@@ -473,75 +473,6 @@ class Test_AOV(object):
 
         mock_cam.objectList.assert_called_with("objlist:light", mock_now, mock_scope.return_value, mock_select.return_value)
 
-    # _update_data
-
-    def test__update_data__unknown(self, init_aov, mocker):
-        mocker.patch("ht.sohohooks.aovs.aov.ALLOWABLE_VALUES", return_value={})
-        mock_verify = mocker.patch("ht.sohohooks.aovs.aov.AOV._verify_internal_data")
-
-        inst = init_aov()
-        inst._data = {}
-
-        data = {"key": None}
-
-        inst._update_data(data)
-
-        assert inst._data == {}
-
-        mock_verify.assert_called()
-
-    def test__update_data__settable(self, init_aov, mocker):
-        mocker.patch("ht.sohohooks.aovs.aov.ALLOWABLE_VALUES", return_value={})
-        mock_verify = mocker.patch("ht.sohohooks.aovs.aov.AOV._verify_internal_data")
-
-        inst = init_aov()
-        inst._data = {"key": None}
-
-        data = {"key": "value"}
-
-        inst._update_data(data)
-
-        assert inst._data == {"key": "value"}
-
-        mock_verify.assert_called()
-
-    def test__update_data__allowable_valid(self, init_aov, mocker):
-        mock_verify = mocker.patch("ht.sohohooks.aovs.aov.AOV._verify_internal_data")
-
-        inst = init_aov()
-        inst._data = {"key": None}
-
-        data = {"key": "value1"}
-
-        allowable = {
-            "key": ("value1", "value2")
-        }
-
-        mocker.patch.dict(aov.ALLOWABLE_VALUES, allowable, clear=True)
-
-        inst._update_data(data)
-
-        assert inst._data == {"key": "value1"}
-
-        mock_verify.assert_called()
-
-    def test__update_data__allowable_invalid(self, init_aov, mocker):
-        mocker.patch("ht.sohohooks.aovs.aov.AOV._verify_internal_data")
-
-        inst = init_aov()
-        inst._data = {"key": None}
-
-        data = {"key": "value3"}
-
-        allowable = {
-            "key": ("value1", "value2")
-        }
-
-        mocker.patch.dict(aov.ALLOWABLE_VALUES, allowable, clear=True)
-
-        with pytest.raises(aov.InvalidAOVValueError):
-            inst._update_data(data)
-
     # _verify_internal_data
 
     def test__verify_internal_data__no_variable(self, init_aov, mocker):
@@ -790,7 +721,7 @@ class Test_AOV(object):
 
         assert inst._data[consts.VEXTYPE_KEY] == mock_value2
 
-    # _as_data
+    # as_data
 
     def test_as_data__defaults(self, init_aov, mocker):
         mocker.patch.object(aov.AOV, "variable", new_callable=mocker.PropertyMock)
@@ -886,6 +817,75 @@ class Test_AOV(object):
         }
 
         assert result == expected
+
+    # update_data
+
+    def test_update_data__unknown(self, init_aov, mocker):
+        mocker.patch("ht.sohohooks.aovs.aov.ALLOWABLE_VALUES", return_value={})
+        mock_verify = mocker.patch("ht.sohohooks.aovs.aov.AOV._verify_internal_data")
+
+        inst = init_aov()
+        inst._data = {}
+
+        data = {"key": None}
+
+        inst.update_data(data)
+
+        assert inst._data == {}
+
+        mock_verify.assert_called()
+
+    def test_update_data__settable(self, init_aov, mocker):
+        mocker.patch("ht.sohohooks.aovs.aov.ALLOWABLE_VALUES", return_value={})
+        mock_verify = mocker.patch("ht.sohohooks.aovs.aov.AOV._verify_internal_data")
+
+        inst = init_aov()
+        inst._data = {"key": None}
+
+        data = {"key": "value"}
+
+        inst.update_data(data)
+
+        assert inst._data == {"key": "value"}
+
+        mock_verify.assert_called()
+
+    def test_update_data__allowable_valid(self, init_aov, mocker):
+        mock_verify = mocker.patch("ht.sohohooks.aovs.aov.AOV._verify_internal_data")
+
+        inst = init_aov()
+        inst._data = {"key": None}
+
+        data = {"key": "value1"}
+
+        allowable = {
+            "key": ("value1", "value2")
+        }
+
+        mocker.patch.dict(aov.ALLOWABLE_VALUES, allowable, clear=True)
+
+        inst.update_data(data)
+
+        assert inst._data == {"key": "value1"}
+
+        mock_verify.assert_called()
+
+    def test_update_data__allowable_invalid(self, init_aov, mocker):
+        mocker.patch("ht.sohohooks.aovs.aov.AOV._verify_internal_data")
+
+        inst = init_aov()
+        inst._data = {"key": None}
+
+        data = {"key": "value3"}
+
+        allowable = {
+            "key": ("value1", "value2")
+        }
+
+        mocker.patch.dict(aov.ALLOWABLE_VALUES, allowable, clear=True)
+
+        with pytest.raises(aov.InvalidAOVValueError):
+            inst.update_data(data)
 
     # write_to_ifd
 

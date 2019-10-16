@@ -63,7 +63,7 @@ class AOV(object):
     def __init__(self, data):
         self._data = copy.copy(_DEFAULT_AOV_DATA)
 
-        self._update_data(data)
+        self.update_data(data)
 
     # -------------------------------------------------------------------------
     # SPECIAL METHODS
@@ -158,32 +158,6 @@ class AOV(object):
         else:
             # Write a normal AOV definition.
             _write_data_to_ifd(data, wrangler, cam, now)
-
-    def _update_data(self, data):
-        """Update internal data with new data.
-
-        :param data: AOV data.
-        :type data: dict
-        :return:
-
-        """
-        for name, value in data.items():
-            # Check if there is a restriction on the data type.
-            if name in ALLOWABLE_VALUES:
-                # Get the allowable types for this data.
-                allowable = ALLOWABLE_VALUES[name]
-
-                # If the value isn't in the list, raise an exception.
-                if value not in allowable:
-                    raise InvalidAOVValueError(name, value)
-
-            # If the key corresponds to the data in this object we store the
-            # data.
-            if name in self._data:
-                self._data[name] = value
-
-        # Verify the new data is valid.
-        self._verify_internal_data()
 
     def _verify_internal_data(self):
         """Verify data to make sure it is valid.
@@ -440,6 +414,32 @@ class AOV(object):
             data[consts.PRIORITY_KEY] = self.priority
 
         return data
+
+    def update_data(self, data):
+        """Update internal data with new data.
+
+        :param data: AOV data.
+        :type data: dict
+        :return:
+
+        """
+        for name, value in data.items():
+            # Check if there is a restriction on the data type.
+            if name in ALLOWABLE_VALUES:
+                # Get the allowable types for this data.
+                allowable = ALLOWABLE_VALUES[name]
+
+                # If the value isn't in the list, raise an exception.
+                if value not in allowable:
+                    raise InvalidAOVValueError(name, value)
+
+            # If the key corresponds to the data in this object we store the
+            # data.
+            if name in self._data:
+                self._data[name] = value
+
+        # Verify the new data is valid.
+        self._verify_internal_data()
 
     def write_to_ifd(self, wrangler, cam, now):
         """Output the AOV.

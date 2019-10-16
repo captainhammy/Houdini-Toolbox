@@ -52,7 +52,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
     valid_input_signal = QtCore.Signal(bool)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None):  # pylint: disable=too-many-statements
         super(_BaseAOVDialog, self).__init__(parent)
 
         # UI elements are valid.
@@ -748,7 +748,7 @@ class EditAOVDialog(_BaseAOVDialog):
         """Accept the operation."""
         aov_data = self.build_aov_data_from_ui()
 
-        self.aov._updateData(aov_data)
+        self.aov.update_data(aov_data)
 
         # Open file for writing.
         aov_file = manager.AOVFile(self.aov.path)
@@ -1114,7 +1114,7 @@ class EditGroupDialog(_BaseGroupDialog):
         self.build_group_from_ui(group)
 
         aov_file = manager.AOVFile(group.path)
-        aov_file.replaceGroup(group)
+        aov_file.replace_group(group)
         aov_file.write_to_file()
 
         self.group_updated_signal.emit(group)
@@ -1150,6 +1150,8 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
 
     def __init__(self, aov, parent=None):
         super(AOVInfoDialog, self).__init__(parent)
+
+        self._edit_dialog = None
 
         self._aov = aov
 
@@ -1288,11 +1290,11 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
 
         parent = hou.qt.mainWindow()
 
-        self.dialog = EditAOVDialog(self.aov, parent)
+        self._edit_dialog = EditAOVDialog(self.aov, parent)
 
-        self.dialog.aov_updated_signal.connect(self.emit_aov_updated)
+        self._edit_dialog.aov_updated_signal.connect(self.emit_aov_updated)
 
-        self.dialog.show()
+        self._edit_dialog.show()
 
     def emit_aov_updated(self, aov):
         """Emit a signal that the supplied AOV has been updated."""
@@ -1308,6 +1310,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         super(AOVGroupInfoDialog, self).__init__(parent)
 
         self._group = group
+        self._edit_dialog = None
 
         self.setWindowTitle("View AOV Group Info")
 
@@ -1435,14 +1438,14 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         parent = hou.qt.mainWindow()
 
-        self.dialog = EditGroupDialog(
+        self._edit_dialog = EditGroupDialog(
             self.group,
             parent
         )
 
-        self.dialog.group_updated_signal.connect(self.emit_group_updated)
+        self._edit_dialog.group_updated_signal.connect(self.emit_group_updated)
 
-        self.dialog.show()
+        self._edit_dialog.show()
 
     def emit_group_updated(self, group):
         """Emit a signal that the supplied group has been updated."""

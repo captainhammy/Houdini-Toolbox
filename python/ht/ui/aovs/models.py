@@ -11,7 +11,7 @@ from PySide2 import QtCore, QtGui
 from ht.sohohooks.aovs import manager
 from ht.sohohooks.aovs.aov import AOV, IntrinsicAOVGroup
 from ht.ui.aovs import utils
-import ht.ui.icons  # pylint: disable=unused-import # noqa: F401
+import ht.ui.icons  # noqa: F401 # pylint: disable=unused-import
 
 # Houdini Imports
 import hou
