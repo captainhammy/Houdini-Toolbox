@@ -6,9 +6,9 @@
 manager_widget = None
 
 def onCreateInterface():
-    global manager_widget
+    global manager_widget  # pylint: disable=global-statement
     manager_widget = ht.ui.aovs.widgets.AOVManagerWidget()
-    
+
     return manager_widget
 ]]></script>
     <help><![CDATA[ ]]></help>

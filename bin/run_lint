@@ -69,6 +69,187 @@ class _BaseLintable(object):
         return self._path
 
 
+class ExtractedOperator(_BaseLintable):
+    """Class representing an extracted digital asset.
+
+    :param name: The name of the operator.
+    :type name: str
+    :param path: The path to the operator specific folder.
+    :type path: str
+
+    """
+
+    def __init__(self, name, path):
+        super(ExtractedOperator, self).__init__(path, disabled_checks=None)
+
+        self._name = name
+        self._files_to_lint = []
+
+        self._gather_files()
+
+    def __repr__(self):
+        return "<ExtractedOperator {} ({})>".format(self.name, self.path)
+
+    # -------------------------------------------------------------------------
+    # NON-PUBLIC METHODS
+    # -------------------------------------------------------------------------
+
+    def _gather_files(self):
+        """Gather all operator related files.
+
+        This includes any Python sections or shelf tools.
+
+        :return:
+
+        """
+        self._find_python_sections()
+
+        shelf_path = os.path.join(self.path, "Tools.shelf")
+
+        if os.path.exists(shelf_path):
+            self.files_to_lint.append(LintableShelfFile(shelf_path))
+
+    def _find_python_sections(self):
+        """Build a list of all Python related section files to lint.
+
+        This list will include any section files with IsPython in ExtraFileOptions
+        and the PythonCook section if it exists.
+
+        :return:
+
+        """
+        # The file options file.
+        extra_options = os.path.join(self.path, "ExtraFileOptions")
+
+        if os.path.exists(extra_options):
+            with open(extra_options) as handle:
+                data = json.load(handle)
+
+            for key, values in data.items():
+                if "IsPython" in key:
+                    value = values["value"]
+
+                    if value:
+                        script_name = key.split('/')[0]
+                        section_path = os.path.join(self.path, script_name)
+
+                        output_section_path = os.path.join(self.path, script_name)
+
+                        self.files_to_lint.append(
+                            LintableFile(section_path, output_section_path)
+                        )
+
+        # PythonCook sections are implicitly Python so check for them manually.
+        python_cook_path = os.path.join(self.path, "PythonCook")
+
+        if os.path.exists(python_cook_path):
+            output_section_path = os.path.join(self.path, "PythonCook")
+
+            self.files_to_lint.append(
+                LintableFile(python_cook_path, output_section_path, ["missing-docstring"])
+            )
+
+    # -------------------------------------------------------------------------
+    # PROPERTIES
+    # -------------------------------------------------------------------------
+
+    @property
+    def files_to_lint(self):
+        """list(str): A list of operator files to lint."""
+        return self._files_to_lint
+
+    @property
+    def name(self):
+        """str: The name of the operator."""
+        return self._name
+
+    # -------------------------------------------------------------------------
+    # METHODS
+    # -------------------------------------------------------------------------
+
+    def lint(self, temp_dir, py3k):
+        """Lint the operator files.
+
+        :param temp_dir: Temporary directory for test files.
+        :type temp_dir: str
+        :param py3k: Check Python 3 compatibility.
+        :type py3k: bool
+        :return: Whether or not the tests where successful.
+        :rtype: bool
+
+        """
+        clean_code = True
+
+        for file_to_lint in self._files_to_lint:
+            clean_code &= file_to_lint.lint(temp_dir, py3k)
+
+        return clean_code
+
+
+class ExtractedOtl(object):
+    """Class representing an extracted otl file.
+
+    :param directory_path: The path to the extracted otl.
+    :type directory_path: str
+
+    """
+
+    def __init__(self, directory_path):
+        self._operators = []
+        self._path = directory_path
+
+        sections_list = os.path.join(self.path, "Sections.list")
+
+        if not os.path.exists(sections_list):
+            raise RuntimeError("Could not find Sections.list in extracted otl folder")
+
+        self._build_operator_list(sections_list)
+
+    # -------------------------------------------------------------------------
+    # NON-PUBLIC METHODS
+    # -------------------------------------------------------------------------
+
+    def _build_operator_list(self, sections_list):
+        """Build a list of operators in the extracted library.
+
+        :param sections_list: The path to the Sections.list file inside the library.
+        :type sections_list: str
+        :return: A list of operators inside the library.
+        :rtype:
+
+        """
+        with open(sections_list) as handle:
+            data = handle.readlines()
+
+        results = []
+
+        for line in data:
+            components = line.split()
+
+            if components:
+                if os.path.isdir(os.path.join(self.path, components[0])):
+                    results.append(components)
+
+        for definition in results:
+            operator = ExtractedOperator(definition[1], os.path.join(self.path, definition[0]))
+
+            self.operators.append(operator)
+
+    # -------------------------------------------------------------------------
+    # PROPERTIES
+    # -------------------------------------------------------------------------
+
+    @property
+    def operators(self):
+        """list(ExtractedOperator): list of operators inside the library """
+        return self._operators
+
+    @property
+    def path(self):
+        """str: The path to the operator folder."""
+        return self._path
+
+
 class LintableDirectory(_BaseLintable):
     """Class representing a lintable directory.
 
@@ -315,6 +496,75 @@ class LintableMenuFile(LintableFile):
         return clean_code
 
 
+class LintablePythonPanelFile(LintableFile):
+    """A lintable python panel file.
+
+    :param path: The python panel path.
+    :type path: str
+    :param display_name: Optional display name.
+    :type display_name: str
+
+    """
+
+    def __init__(self, path, display_name=None):
+
+        disabled_checks = [
+            "missing-final-newline",
+            "invalid-name",
+            "missing-docstring",
+            "undefined-variable"
+        ]
+
+        super(LintablePythonPanelFile, self).__init__(path, display_name, disabled_checks)
+
+    # -------------------------------------------------------------------------
+    # METHODS
+    # -------------------------------------------------------------------------
+
+    def lint(self, temp_dir, py3k):
+        """Lint the file.
+
+        :param temp_dir: Temporary directory for test files.
+        :type temp_dir: str
+        :param py3k: Check Python 3 compatibility.
+        :type py3k: bool
+        :return: Whether or not the tests where successful.
+        :rtype: bool
+
+        """
+        clean_code = True
+
+        tree = ElementTree.parse(self.path)
+
+        root = tree.getroot()
+        for interface in root:
+            script = interface.find("script")
+
+            if script is None:
+                continue
+
+            script_code = script.text
+
+            interface_name = interface.get("name")
+
+            file_name = "{}.py".format(interface_name)
+
+            temp_path = os.path.join(temp_dir, file_name)
+
+            with open(temp_path, 'w') as handle:
+                handle.write(script_code)
+                handle.flush()
+
+            clean = _lint_path(temp_path, disabled_checks=self.disabled_checks, py3k=py3k)
+
+            if not clean:
+                six.print_("{}: {} ({})".format(self.path, interface_name, temp_path))
+
+            clean_code &= clean
+
+        return clean_code
+
+
 class LintableShelfFile(LintableFile):
     """A lintable xml shelf file.
 
@@ -370,7 +620,6 @@ class LintableShelfFile(LintableFile):
 
             script_code = script.text
 
-            # if tool_name is None:
             tool_name = tool.get("name")
 
             file_name = "{}.py".format(tool_name)
@@ -389,187 +638,6 @@ class LintableShelfFile(LintableFile):
             clean_code &= clean
 
         return clean_code
-
-
-class ExtractedOperator(_BaseLintable):
-    """Class representing an extracted digital asset.
-
-    :param name: The name of the operator.
-    :type name: str
-    :param path: The path to the operator specific folder.
-    :type path: str
-
-    """
-
-    def __init__(self, name, path):
-        super(ExtractedOperator, self).__init__(path, disabled_checks=None)
-
-        self._name = name
-        self._files_to_lint = []
-
-        self._gather_files()
-
-    def __repr__(self):
-        return "<ExtractedOperator {} ({})>".format(self.name, self.path)
-
-    # -------------------------------------------------------------------------
-    # NON-PUBLIC METHODS
-    # -------------------------------------------------------------------------
-
-    def _gather_files(self):
-        """Gather all operator related files.
-
-        This includes any Python sections or shelf tools.
-
-        :return:
-
-        """
-        self._find_python_sections()
-
-        shelf_path = os.path.join(self.path, "Tools.shelf")
-
-        if os.path.exists(shelf_path):
-            self.files_to_lint.append(LintableShelfFile(shelf_path))
-
-    def _find_python_sections(self):
-        """Build a list of all Python related section files to lint.
-
-        This list will include any section files with IsPython in ExtraFileOptions
-        and the PythonCook section if it exists.
-
-        :return:
-
-        """
-        # The file options file.
-        extra_options = os.path.join(self.path, "ExtraFileOptions")
-
-        if os.path.exists(extra_options):
-            with open(extra_options) as handle:
-                data = json.load(handle)
-
-            for key, values in data.items():
-                if "IsPython" in key:
-                    value = values["value"]
-
-                    if value:
-                        script_name = key.split('/')[0]
-                        section_path = os.path.join(self.path, script_name)
-
-                        output_section_path = os.path.join(self.path, script_name)
-
-                        self.files_to_lint.append(
-                            LintableFile(section_path, output_section_path)
-                        )
-
-        # PythonCook sections are implicitly Python so check for them manually.
-        python_cook_path = os.path.join(self.path, "PythonCook")
-
-        if os.path.exists(python_cook_path):
-            output_section_path = os.path.join(self.path, "PythonCook")
-
-            self.files_to_lint.append(
-                LintableFile(python_cook_path, output_section_path, ["missing-docstring"])
-            )
-
-    # -------------------------------------------------------------------------
-    # PROPERTIES
-    # -------------------------------------------------------------------------
-
-    @property
-    def files_to_lint(self):
-        """list(str): A list of operator files to lint."""
-        return self._files_to_lint
-
-    @property
-    def name(self):
-        """str: The name of the operator."""
-        return self._name
-
-    # -------------------------------------------------------------------------
-    # METHODS
-    # -------------------------------------------------------------------------
-
-    def lint(self, temp_dir, py3k):
-        """Lint the operator files.
-
-        :param temp_dir: Temporary directory for test files.
-        :type temp_dir: str
-        :param py3k: Check Python 3 compatibility.
-        :type py3k: bool
-        :return: Whether or not the tests where successful.
-        :rtype: bool
-
-        """
-        clean_code = True
-
-        for file_to_lint in self._files_to_lint:
-            clean_code &= file_to_lint.lint(temp_dir, py3k)
-
-        return clean_code
-
-
-class ExtractedOtl(object):
-    """Class representing an extracted otl file.
-
-    :param directory_path: The path to the extracted otl.
-    :type directory_path: str
-
-    """
-
-    def __init__(self, directory_path):
-        self._operators = []
-        self._path = directory_path
-
-        sections_list = os.path.join(self.path, "Sections.list")
-
-        if not os.path.exists(sections_list):
-            raise RuntimeError("Could not find Sections.list in extracted otl folder")
-
-        self._build_operator_list(sections_list)
-
-    # -------------------------------------------------------------------------
-    # NON-PUBLIC METHODS
-    # -------------------------------------------------------------------------
-
-    def _build_operator_list(self, sections_list):
-        """Build a list of operators in the extracted library.
-
-        :param sections_list: The path to the Sections.list file inside the library.
-        :type sections_list: str
-        :return: A list of operators inside the library.
-        :rtype:
-
-        """
-        with open(sections_list) as handle:
-            data = handle.readlines()
-
-        results = []
-
-        for line in data:
-            components = line.split()
-
-            if components:
-                if os.path.isdir(os.path.join(self.path, components[0])):
-                    results.append(components)
-
-        for definition in results:
-            operator = ExtractedOperator(definition[1], os.path.join(self.path, definition[0]))
-
-            self.operators.append(operator)
-
-    # -------------------------------------------------------------------------
-    # PROPERTIES
-    # -------------------------------------------------------------------------
-
-    @property
-    def operators(self):
-        """list(ExtractedOperator): list of operators inside the library """
-        return self._operators
-
-    @property
-    def path(self):
-        """str: The path to the operator folder."""
-        return self._path
 
 
 class OtlFile(ExtractedOtl):
@@ -675,7 +743,29 @@ def _get_houdini_items(houdini_root, temp_dir):
 
     _get_menu_items(houdini_root)
 
+    panel_path = os.path.join(houdini_root, "python_panels")
+
+    if os.path.exists(panel_path):
+        items_to_lint.extend(_get_python_panel_items(panel_path))
+
     return items_to_lint
+
+
+def _get_python_panel_items(toolbar_path):
+    """Get a list of shelf items to lint.
+
+    :param toolbar_path: The path to the shelf file folder.
+    :type toolbar_path: str
+    :return: A list of shelf tool items to lint.
+    :rtype: list(LintableShelfFile)
+
+    """
+    shelf_files = []
+
+    for shelf_file in glob.glob(os.path.join(toolbar_path, "*.pypanel")):
+        shelf_files.append(LintablePythonPanelFile(shelf_file))
+
+    return shelf_files
 
 
 def _get_tool_items(toolbar_path):

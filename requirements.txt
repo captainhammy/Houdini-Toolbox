@@ -1,4 +1,5 @@
 enum34
+flake8
 humanfriendly
 jinja2
 numpy
