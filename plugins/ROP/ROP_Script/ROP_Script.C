@@ -17,6 +17,7 @@
 #include <OP/OP_Operator.h>
 #include <OP/OP_OperatorTable.h>
 #include <PRM/PRM_Include.h>
+#include <PRM/PRM_SpareData.h>
 #include <PY/PY_Python.h>
 #include <ROP/ROP_Templates.h>
 #include <UT/UT_DSOVersion.h>
@@ -47,7 +48,7 @@ static PRM_Name names[] =
 static PRM_Default defaults[] =
 {
     PRM_Default(0, ""),
-    PRM_Default(0, "hscript"),
+    PRM_Default(0, "python"),
 };
 
 static PRM_Name languages[] =
@@ -78,11 +79,12 @@ getTemplates()
 
     // String parameter containing the code to run.  Horizontally
     // joined to the next parm.
-    theTemplate[1] = PRM_Template(PRM_STRING, 1, &names[1], &defaults[0]);
+    theTemplate[1] = PRM_Template(PRM_STRING, 1, &names[1], &defaults[0], 0, 0, 0, &PRM_SpareData::stringEditor);
     theTemplate[1].setJoinNext(true);
+    theTemplate[1].getSparePtr()->addTokenValue(PRM_SPARE_EDITOR_LANG_TOKEN, defaults[1].getString());
 
     // String menu to select the code language.
-    theTemplate[2] = PRM_Template(PRM_STRING, 1, &names[2], &defaults[1], &languageMenu);
+    theTemplate[2] = PRM_Template(PRM_STRING, 1, &names[2], &defaults[1], &languageMenu, 0, &ROP_Script::langChangeCallback);
     theTemplate[2].setTypeExtended(PRM_TYPE_NO_LABEL);
 
     // Separator between the code parm and the render scripts.
@@ -91,18 +93,22 @@ getTemplates()
     theTemplate[4] = theRopTemplates[ROP_TPRERENDER_TPLATE];
     theTemplate[5] = theRopTemplates[ROP_PRERENDER_TPLATE];
     theTemplate[6] = theRopTemplates[ROP_LPRERENDER_TPLATE];
+    theTemplate[6].setFactoryDefaults(&defaults[1]);
 
     theTemplate[7] = theRopTemplates[ROP_TPREFRAME_TPLATE];
     theTemplate[8] = theRopTemplates[ROP_PREFRAME_TPLATE];
     theTemplate[9] = theRopTemplates[ROP_LPREFRAME_TPLATE];
+    theTemplate[9].setFactoryDefaults(&defaults[1]);
 
     theTemplate[10] = theRopTemplates[ROP_TPOSTFRAME_TPLATE];
     theTemplate[11] = theRopTemplates[ROP_POSTFRAME_TPLATE];
     theTemplate[12] = theRopTemplates[ROP_LPOSTFRAME_TPLATE];
+    theTemplate[12].setFactoryDefaults(&defaults[1]);
 
     theTemplate[13] = theRopTemplates[ROP_TPOSTRENDER_TPLATE];
     theTemplate[14] = theRopTemplates[ROP_POSTRENDER_TPLATE];
     theTemplate[15] = theRopTemplates[ROP_LPOSTRENDER_TPLATE];
+    theTemplate[15].setFactoryDefaults(&defaults[1]);
 
     theTemplate[16] = PRM_Template();
 
@@ -148,6 +154,28 @@ ROP_Script::ROP_Script(OP_Network *net,
                        const char *name,
                        OP_Operator *entry):
     ROP_Node(net, name, entry) {}
+
+
+int
+ROP_Script::langChangeCallback(void *data, int index, fpreal time, const PRM_Template *)
+{
+    PRM_Parm                    *command_parm;
+    PRM_Template                *command_template;
+    ROP_Script                  *me;
+    UT_String                   language;
+
+    me = (ROP_Script *) data;
+    me->evalString(language, "language", 0, time);
+
+//    std::cout << "Setting language to " << language << std::endl;
+
+    command_parm = me->getParmPtr("command");
+    command_template = command_parm->getTemplatePtr();
+    command_template->getSparePtr()->addTokenValue(PRM_SPARE_EDITOR_LANG_TOKEN, language);
+
+    return 1;
+}
+
 
 int
 ROP_Script::startRender(int /*nframes*/, fpreal tstart, fpreal tend)

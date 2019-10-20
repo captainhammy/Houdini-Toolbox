@@ -27,6 +27,7 @@ public:
 					       OP_Operator *);
     static OP_TemplatePair	*getTemplatePair();
     static OP_VariablePair	*getVariablePair();
+    static int                  langChangeCallback(void *data, int index, fpreal time, const PRM_Template *);
 
 protected:
 				ROP_Script(OP_Network *,
