@@ -26,6 +26,23 @@ init-build:
 	mkdir -p ${CURDIR}/plugins/build
 	cd ${CURDIR}/plugins/build && hcmake ..
 
+.PHONY: run-flake run-lint run-lint-py3k
+
+# Run all linting targets
+run-all-linting: run-flake run-lint run-lint-py3k
+
+# Run flake8 linting
+run-flake:
+	flake8
+
+# Run python linting
+run-lint:
+	bin/run_lint
+
+# Run python linting against Python 3 compatibility
+run-lint-py3k:
+	bin/run_lint --py3k
+
 # Run Python unit tests
 run-tests:
 	hython bin/run_tests.py

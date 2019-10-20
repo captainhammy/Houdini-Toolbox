@@ -1,0 +1,858 @@
+#!/usr/bin/env python
+"""Script to lint the project."""
+
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Standard Library Imports
+import argparse
+import glob
+import json
+import os
+import subprocess
+import sys
+import tempfile
+from xml.etree import ElementTree
+
+# Third Party Imports
+from pylint import lint
+from pylint.reporters.text import TextReporter
+import six
+from six.moves import StringIO
+
+
+# =============================================================================
+# GLOBALS
+# =============================================================================
+
+_LINT_RC = '.pylint.rc'
+
+
+# =============================================================================
+# CLASSES
+# =============================================================================
+
+class _BaseLintable(object):
+    """Base class for a lintable thing.
+
+    :param path: The path for the lintable object.
+    :type path: str
+    :param disabled_checks: Any checks to disable.
+    :type disabled_checks: list(str)
+
+    """
+
+    def __init__(self, path, disabled_checks=None):
+        self._disabled_checks = disabled_checks
+        self._path = path
+
+    def __repr__(self):
+        return "<{} {}>".format(self.__class__.__name__, self.path)
+
+    # -------------------------------------------------------------------------
+    # PROPERTIES
+    # -------------------------------------------------------------------------
+
+    @property
+    def disabled_checks(self):
+        """list(str): List of disabled checks"""
+        return self._disabled_checks
+
+    # -------------------------------------------------------------------------
+    # METHODS
+    # -------------------------------------------------------------------------
+
+    @property
+    def path(self):
+        """str: The path on disk."""
+        return self._path
+
+
+class LintableDirectory(_BaseLintable):
+    """Class representing a lintable directory.
+
+    :param path: The path for the lintable object.
+    :type path: str
+    :param check_for_python: Whether or not to check if a file in the directory is Python via #!
+    :type check_for_python: bool
+    :param disabled_checks: Any checks to disable.
+    :type disabled_checks: list(str)
+
+    """
+
+    def __init__(self, path, check_for_python=False, disabled_checks=None):
+        super(LintableDirectory, self).__init__(path, disabled_checks=disabled_checks)
+
+        self._check_for_python = check_for_python
+
+    def __repr__(self):
+        return "<{} {} check={}>".format(self.__class__.__name__, self.path, self.check_for_python)
+
+    # -------------------------------------------------------------------------
+    # PROPERTIES
+    # -------------------------------------------------------------------------
+
+    @property
+    def check_for_python(self):
+        """bool:  Whether or not to check if a file in the directory is Python via #!"""
+        return self._check_for_python
+
+    # -------------------------------------------------------------------------
+    # METHODS
+    # -------------------------------------------------------------------------
+
+    def lint(self, temp_dir, py3k):  # pylint: disable=unused-argument
+        """Lint the directory.
+
+        :param temp_dir: Temporary directory for test files.
+        :type temp_dir: str
+        :param py3k: Check Python 3 compatibility.
+        :type py3k: bool
+        :return: Whether or not the tests where successful.
+        :rtype: bool
+
+        """
+        clean_code = True
+
+        for directory_name, sub_directories, file_names in os.walk(self.path):   # pylint: disable=unused-variable
+
+            basename = os.path.basename(directory_name)
+
+            # skip things like .svn
+            if not basename[0].isalpha():
+                continue
+
+            # run lint on all python files within dir.
+            for filename in file_names:
+                if filename.endswith('~'):
+                    continue
+
+                file_path = os.path.join(directory_name, filename)
+
+                if os.path.splitext(filename)[1] == '.py':
+                    clean_code &= _lint_path(file_path, disabled_checks=self.disabled_checks, py3k=py3k)
+
+                elif self.check_for_python:
+                    is_python = False
+
+                    with open(file_path) as handle:
+                        first_line = handle.readline()
+
+                        # Look for shebangs
+                        if first_line.startswith('#') and 'python' in first_line:
+                            is_python = True
+
+                    if is_python:
+                        clean_code &= _lint_path(file_path, disabled_checks=self.disabled_checks, py3k=py3k)
+
+        return clean_code
+
+
+class LintablePythonProject(LintableDirectory):
+    """Class representing a lintable Python project directory."""
+
+    def lint(self, temp_dir, py3k):
+        """Lint the project.
+
+        :param temp_dir: Temporary directory for test files.
+        :type temp_dir: str
+        :param py3k: Check Python 3 compatibility.
+        :type py3k: bool
+        :return: Whether or not the tests where successful.
+        :rtype: bool
+
+        """
+        return _lint_path(self.path, disabled_checks=self.disabled_checks, py3k=py3k)
+
+
+class LintableFile(_BaseLintable):
+    """Class representing a lintable file..
+
+    :param path: The path for the lintable object.
+    :type path: str
+    :param display_name: Optional display name for test output.
+    :type display_name: str
+    :param disabled_checks: Any checks to disable.
+    :type disabled_checks: list(str)
+
+    """
+    def __init__(self, path, display_name=None, disabled_checks=None):
+        super(LintableFile, self).__init__(path, disabled_checks=disabled_checks)
+
+        self._display_name = display_name
+
+    def __repr__(self):
+        if self.display_name is not None:
+            path = self.display_name
+
+        else:
+            path = self.path
+
+        return "<{} {}>".format(
+            self.__class__.__name__,
+            path
+        )
+
+    # -------------------------------------------------------------------------
+    # PROPERTIES
+    # -------------------------------------------------------------------------
+
+    @property
+    def display_name(self):
+        """str: Display name for test output."""
+        return self._display_name
+
+    @display_name.setter
+    def display_name(self, display_name):
+        self._display_name = display_name
+
+    # -------------------------------------------------------------------------
+    # METHODS
+    # -------------------------------------------------------------------------
+
+    def lint(self, temp_dir, py3k):  # pylint: disable=unused-argument
+        """Lint the file.
+
+        :param temp_dir: Temporary directory for test files.
+        :type temp_dir: str
+        :param py3k: Check Python 3 compatibility.
+        :type py3k: bool
+        :return: Whether or not the tests where successful.
+        :rtype: bool
+
+        """
+        clean = _lint_path(self.path, disabled_checks=self.disabled_checks, py3k=py3k)
+
+        if not clean:
+            if self.display_name is not None:
+                six.print_(self.display_name)
+
+            else:
+                six.print_(self.path)
+
+        return clean
+
+
+class LintableMenuFile(LintableFile):
+    """A lintable xml menu file."""
+
+    # -------------------------------------------------------------------------
+    # NON-PUBLIC METHODS
+    # -------------------------------------------------------------------------
+
+    def _lint_code_section(self, text, temp_dir, base_file_name, disabled_checks=None, py3k=False):
+        """Lint the file.
+
+        :param text: The section text to lint.
+        :type text: str
+        :param temp_dir: Temporary directory for test files.
+        :type temp_dir: str
+        :param base_file_name: The source file name.
+        :type: str
+        :param disabled_checks: Any checks to disable.
+        :type disabled_checks: list(str)
+        :param py3k: Check Python 3 compatibility.
+        :type py3k: bool
+        :return: Whether or not the tests where successful.
+        :rtype: bool
+
+        """
+        file_name = "{}.py".format(base_file_name)
+
+        temp_path = os.path.join(temp_dir, file_name)
+
+        with open(temp_path, 'w') as handle:
+            handle.write(text)
+            handle.flush()
+
+        if disabled_checks is None:
+            disabled_checks = []
+
+        disabled_checks.extend(["missing-docstring"])
+
+        clean = _lint_path(temp_path, disabled_checks=disabled_checks, py3k=py3k)
+
+        if not clean:
+            six.print_("{}: {} ({})".format(self.path, base_file_name, temp_path))
+
+        return clean
+
+    # -------------------------------------------------------------------------
+    # METHODS
+    # -------------------------------------------------------------------------
+
+    def lint(self, temp_dir, py3k):
+        """Lint the file.
+
+        :param temp_dir: Temporary directory for test files.
+        :type temp_dir: str
+        :param py3k: Check Python 3 compatibility.
+        :type py3k: bool
+        :return: Whether or not the tests where successful.
+        :rtype: bool
+
+        """
+        clean_code = True
+
+        tree = ElementTree.parse(self.path)
+
+        for script_item in tree.iter(tag="scriptItem"):
+            code = script_item.find("scriptCode")
+
+            clean_code &= self._lint_code_section(code.text, temp_dir, script_item.get("id"), py3k=py3k)
+
+            context = script_item.find("context/expression")
+
+            if context is not None:
+                clean_code &= self._lint_code_section(
+                    context.text,
+                    temp_dir,
+                    "{}.context".format(script_item.get("id")),
+                    disabled_checks=["return-outside-function", "missing-docstring"]
+                )
+
+        return clean_code
+
+
+class LintableShelfFile(LintableFile):
+    """A lintable xml shelf file.
+
+    :param path: The shelf file path.
+    :type path: str
+    :param display_name: Optional display name.
+    :type display_name: str
+
+    """
+
+    def __init__(self, path, display_name=None):
+
+        disabled_checks = [
+            "missing-final-newline",
+            "invalid-name",
+            "missing-docstring",
+            "undefined-variable"
+        ]
+
+        super(LintableShelfFile, self).__init__(path, display_name, disabled_checks)
+
+    # -------------------------------------------------------------------------
+    # METHODS
+    # -------------------------------------------------------------------------
+
+    def lint(self, temp_dir, py3k):
+        """Lint the file.
+
+        :param temp_dir: Temporary directory for test files.
+        :type temp_dir: str
+        :param py3k: Check Python 3 compatibility.
+        :type py3k: bool
+        :return: Whether or not the tests where successful.
+        :rtype: bool
+
+        """
+        clean_code = True
+
+        tree = ElementTree.parse(self.path)
+
+        root = tree.getroot()
+
+        for tool in root:
+            script = tool.find("script")
+
+            if script is None:
+                continue
+
+            language = script.get("scriptType")
+
+            if language != "python":
+                continue
+
+            script_code = script.text
+
+            # if tool_name is None:
+            tool_name = tool.get("name")
+
+            file_name = "{}.py".format(tool_name)
+
+            temp_path = os.path.join(temp_dir, file_name)
+
+            with open(temp_path, 'w') as handle:
+                handle.write(script_code)
+                handle.flush()
+
+            clean = _lint_path(temp_path, disabled_checks=self.disabled_checks, py3k=py3k)
+
+            if not clean:
+                six.print_("{}: {} ({})".format(self.path, tool_name, temp_path))
+
+            clean_code &= clean
+
+        return clean_code
+
+
+class ExtractedOperator(_BaseLintable):
+    """Class representing an extracted digital asset.
+
+    :param name: The name of the operator.
+    :type name: str
+    :param path: The path to the operator specific folder.
+    :type path: str
+
+    """
+
+    def __init__(self, name, path):
+        super(ExtractedOperator, self).__init__(path, disabled_checks=None)
+
+        self._name = name
+        self._files_to_lint = []
+
+        self._gather_files()
+
+    def __repr__(self):
+        return "<ExtractedOperator {} ({})>".format(self.name, self.path)
+
+    # -------------------------------------------------------------------------
+    # NON-PUBLIC METHODS
+    # -------------------------------------------------------------------------
+
+    def _gather_files(self):
+        """Gather all operator related files.
+
+        This includes any Python sections or shelf tools.
+
+        :return:
+
+        """
+        self._find_python_sections()
+
+        shelf_path = os.path.join(self.path, "Tools.shelf")
+
+        if os.path.exists(shelf_path):
+            self.files_to_lint.append(LintableShelfFile(shelf_path))
+
+    def _find_python_sections(self):
+        """Build a list of all Python related section files to lint.
+
+        This list will include any section files with IsPython in ExtraFileOptions
+        and the PythonCook section if it exists.
+
+        :return:
+
+        """
+        # The file options file.
+        extra_options = os.path.join(self.path, "ExtraFileOptions")
+
+        if os.path.exists(extra_options):
+            with open(extra_options) as handle:
+                data = json.load(handle)
+
+            for key, values in data.items():
+                if "IsPython" in key:
+                    value = values["value"]
+
+                    if value:
+                        script_name = key.split('/')[0]
+                        section_path = os.path.join(self.path, script_name)
+
+                        output_section_path = os.path.join(self.path, script_name)
+
+                        self.files_to_lint.append(
+                            LintableFile(section_path, output_section_path)
+                        )
+
+        # PythonCook sections are implicitly Python so check for them manually.
+        python_cook_path = os.path.join(self.path, "PythonCook")
+
+        if os.path.exists(python_cook_path):
+            output_section_path = os.path.join(self.path, "PythonCook")
+
+            self.files_to_lint.append(
+                LintableFile(python_cook_path, output_section_path, ["missing-docstring"])
+            )
+
+    # -------------------------------------------------------------------------
+    # PROPERTIES
+    # -------------------------------------------------------------------------
+
+    @property
+    def files_to_lint(self):
+        """list(str): A list of operator files to lint."""
+        return self._files_to_lint
+
+    @property
+    def name(self):
+        """str: The name of the operator."""
+        return self._name
+
+    # -------------------------------------------------------------------------
+    # METHODS
+    # -------------------------------------------------------------------------
+
+    def lint(self, temp_dir, py3k):
+        """Lint the operator files.
+
+        :param temp_dir: Temporary directory for test files.
+        :type temp_dir: str
+        :param py3k: Check Python 3 compatibility.
+        :type py3k: bool
+        :return: Whether or not the tests where successful.
+        :rtype: bool
+
+        """
+        clean_code = True
+
+        for file_to_lint in self._files_to_lint:
+            clean_code &= file_to_lint.lint(temp_dir, py3k)
+
+        return clean_code
+
+
+class ExtractedOtl(object):
+    """Class representing an extracted otl file.
+
+    :param directory_path: The path to the extracted otl.
+    :type directory_path: str
+
+    """
+
+    def __init__(self, directory_path):
+        self._operators = []
+        self._path = directory_path
+
+        sections_list = os.path.join(self.path, "Sections.list")
+
+        if not os.path.exists(sections_list):
+            raise RuntimeError("Could not find Sections.list in extracted otl folder")
+
+        self._build_operator_list(sections_list)
+
+    # -------------------------------------------------------------------------
+    # NON-PUBLIC METHODS
+    # -------------------------------------------------------------------------
+
+    def _build_operator_list(self, sections_list):
+        """Build a list of operators in the extracted library.
+
+        :param sections_list: The path to the Sections.list file inside the library.
+        :type sections_list: str
+        :return: A list of operators inside the library.
+        :rtype:
+
+        """
+        with open(sections_list) as handle:
+            data = handle.readlines()
+
+        results = []
+
+        for line in data:
+            components = line.split()
+
+            if components:
+                if os.path.isdir(os.path.join(self.path, components[0])):
+                    results.append(components)
+
+        for definition in results:
+            operator = ExtractedOperator(definition[1], os.path.join(self.path, definition[0]))
+
+            self.operators.append(operator)
+
+    # -------------------------------------------------------------------------
+    # PROPERTIES
+    # -------------------------------------------------------------------------
+
+    @property
+    def operators(self):
+        """list(ExtractedOperator): list of operators inside the library """
+        return self._operators
+
+    @property
+    def path(self):
+        """str: The path to the operator folder."""
+        return self._path
+
+
+class OtlFile(ExtractedOtl):
+    """Class representing an otl file that will be extracted for testing.
+
+    :param file_path: The path to the library file.
+    :type file_path: str
+    :param temp_dir: The path to the testing temp dir.
+    :type temp_dir: str
+
+    """
+
+    def __init__(self, file_path, temp_dir):
+        self._file_path = file_path
+
+        file_name = os.path.basename(file_path)
+
+        target_folder = os.path.join(temp_dir, file_name)
+
+        proc = subprocess.Popen(
+            ["hotl", "-t", target_folder, file_path],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+
+        proc.wait()
+
+        super(OtlFile, self).__init__(target_folder)
+
+        self._post_process_operators()
+
+    # -------------------------------------------------------------------------
+    # NON-PUBLIC METHODS
+    # -------------------------------------------------------------------------
+
+    def _post_process_operators(self):
+        """Post process operators after creation.
+
+        This method is used to update display names based on the source file.
+
+        :return:
+
+        """
+        for operator in self.operators:
+            for op_file in operator.files_to_lint:
+                op_path = op_file.path
+                base_name = os.path.basename(op_path)
+
+                op_file.display_name = "{}?{}/{}".format(
+                    self._file_path,
+                    operator.name,
+                    base_name
+                )
+
+
+# =============================================================================
+# NON-PUBLIC FUNCTIONS
+# =============================================================================
+
+def _build_parser():
+    """Build an argument parser for the script args.
+
+    :return: The constructed parser.
+    :rtype: argparse.ArgumentParser
+
+    """
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--py3k", action="store_true",
+    )
+
+    return parser
+
+
+def _get_houdini_items(houdini_root, temp_dir):
+    """Get Houdini-related items to lint.
+
+    :param houdini_root: The root houdini directory.
+    :type houdini_root: str
+    :param temp_dir: The test temp directory.
+    :type temp_dir: str
+    :return: The items to lint.
+
+    """
+    items_to_lint = []
+
+    dirs_to_lint = ("python2.7libs", "soho", "scripts")
+
+    for directory in dirs_to_lint:
+        dir_path = os.path.join(houdini_root, directory)
+
+        items_to_lint.append(LintableDirectory(dir_path))
+
+    otl_path = os.path.join(houdini_root, "otls")
+
+    if os.path.exists(otl_path):
+        items_to_lint.extend(_get_otl_items(otl_path, temp_dir))
+
+    toolbar_path = os.path.join(houdini_root, "toolbar")
+
+    if os.path.exists(toolbar_path):
+        items_to_lint.extend(_get_tool_items(toolbar_path))
+
+    _get_menu_items(houdini_root)
+
+    return items_to_lint
+
+
+def _get_tool_items(toolbar_path):
+    """Get a list of shelf items to lint.
+
+    :param toolbar_path: The path to the shelf file folder.
+    :type toolbar_path: str
+    :return: A list of shelf tool items to lint.
+    :rtype: list(LintableShelfFile)
+
+    """
+    shelf_files = []
+
+    for shelf_file in glob.glob(os.path.join(toolbar_path, "*.shelf")):
+        shelf_files.append(LintableShelfFile(shelf_file))
+
+    return shelf_files
+
+
+def _get_menu_items(houdini_root):
+    """Get a list of shelf items to lint.
+
+    :param houdini_root: The path to the houdini folder.
+    :type houdini_root: str
+    :return: A list of menu items to lint.
+    :rtype: list(LintableMenuFile)
+
+    """
+    menu_files = []
+
+    for menu_file in glob.glob(os.path.join(houdini_root, "*.xml")):
+        menu_files.append(LintableMenuFile(menu_file))
+
+    return menu_files
+
+
+def _get_otl_items(otl_path, temp_dir):
+    """Get a list of shelf items to lint.
+
+    :param otl_path: The path to the otls folder.
+    :type otl_path: str
+    :param temp_dir: The test temp directory.
+    :type temp_dir: str
+    :return: A list of menu items to lint.
+    :rtype: list(LintableMenuFile)
+
+    """
+    operators = []
+
+    for otl_folder in os.listdir(otl_path):
+        otl_folder_path = os.path.join(otl_path, otl_folder)
+
+        if os.path.isdir(otl_folder_path):
+            # clean_code &= _lint_extracted_otl(otl_folder_path, temp_dir)
+            try:
+                extracted_otl = ExtractedOtl(otl_folder_path)
+
+            # We might not be able to instantiate an object for all folders due to things
+            # like backup folders and whatnot.
+            except RuntimeError:
+                continue
+
+            operators.extend(extracted_otl.operators)
+
+        else:
+            extension = os.path.splitext(otl_folder_path)[1]
+
+            if extension in (".hda", ".otl"):
+                otl_file = OtlFile(otl_folder_path, temp_dir)
+                operators.extend(otl_file.operators)
+
+    return operators
+
+
+def _lint_path(path, disabled_checks=None, py3k=False):
+    """Lint a path.
+
+    :param path: Tge path to lint.
+    :type path: str
+    :param disabled_checks: Optional list of checks to disable.
+    :type disabled_checks: list(str)
+    :param py3k: Check Python 3 compatibility.
+    :type py3k: bool
+    :return: Whether or not the clint passed.
+    :rtype: bool
+
+    """
+    # Lint runner args.
+    args = [
+        '--rcfile=' + _LINT_RC,
+    ]
+
+    if disabled_checks is not None:
+        args.append("--disable={}".format(",".join(disabled_checks)))
+
+    if py3k:
+        args.append('--py3k')
+
+    # A string buffer to capture output.
+    buf = StringIO()
+
+    # Run the test.
+    lint.Run([path] + args, reporter=TextReporter(buf), exit=False)
+
+    # Print any output.
+    stdout = buf.getvalue()
+    sys.stdout.write(stdout)
+
+    # If there was any output then the test failed.
+    return len(stdout) == 0
+
+
+# =============================================================================
+# FUNCTIONS
+# =============================================================================
+
+def main():
+    """Perform the linting.
+
+    :return:
+
+    """
+    parser = _build_parser()
+
+    results = parser.parse_args()
+
+    cwd = os.getcwd()
+
+    # Create a temp directory where we can store temporary test files.
+    run_temp_dir = tempfile.mkdtemp()
+
+    # The list of things which will be linted.
+    items_to_lint = []
+
+    # Lint the primary Python package code.
+    package_path = os.path.join(cwd, 'python', "ht")
+    items_to_lint.append(LintablePythonProject(package_path))
+
+    # Lint various Houdini related Python files.
+    houdini_root = os.path.join(cwd, "houdini")
+    items_to_lint.extend(_get_houdini_items(houdini_root, run_temp_dir))
+
+    # A list of additional directories to lint. The 2nd arg is whether
+    # or not to check each file in there as being a Python script (#!..python)
+    directories_to_lint = [
+        ("bin", True)
+    ]
+
+    for directory in directories_to_lint:
+        directory_path = os.path.join(cwd, directory[0])
+        items_to_lint.append(LintableDirectory(directory_path, directory[1]))
+
+    # A list of additional files to lint.
+    files_to_lint = [
+        "houdini/pyfilter/ht-pyfilter.py"
+    ]
+
+    for file_name in files_to_lint:
+        file_path = os.path.join(cwd, file_name)
+        items_to_lint.append(LintableFile(file_path))
+
+    # Whether or not all the items pass linting.
+    clean = True
+
+    # Lint each item.
+    for item in items_to_lint:
+        clean &= item.lint(run_temp_dir, results.py3k)
+
+    if not clean:
+        six.print_('Your code is not clean')
+        sys.exit(1)
+
+    else:
+        six.print_('Your code is clean, congrats!')
+
+
+# =============================================================================
+
+if __name__ == "__main__":
+    main()

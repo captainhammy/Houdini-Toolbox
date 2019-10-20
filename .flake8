@@ -1,0 +1,22 @@
+[flake8]
+exclude = 
+    docs/*
+    icons/*
+    python/ht/machinery/argparser.py
+    python/ht/ui/icons.py
+
+max-line-length = 120
+
+per-file-ignores =
+    houdini/pyfilter/ht-pyfilter.py:E402
+    houdini/python2.7libs/pythonrc.py:E402
+    houdini/scripts/*scenesave.py:F821
+    houdini/scripts/On*.py:F821
+    houdini/scripts/PreFirstCreate.py:F821
+    houdini/scripts/PostLastDelete.py:F821
+    houdini/scripts/SyncNodeVersion.py:F821
+    python/ht/events/__init__.py:F401
+    python/ht/logging/__init__.py:F401
+    python/ht/inline/lib.py:E122
+    python/ht/nodes/styles/__init__.py:F401
+    tests/*:E501
