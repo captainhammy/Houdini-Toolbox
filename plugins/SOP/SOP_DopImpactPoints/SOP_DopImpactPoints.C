@@ -169,9 +169,13 @@ OP_ERROR SOP_DopImpactPoints::cookMySop(OP_Context &context)
     const SIM_Query             *query;
 
     UT_String                   doppath, objpattern, objmask;
+
+#if SYS_VERSION_MAJOR_INT>=18
+    UT_OptionEntryPtr           raw_pos, raw_n;
+#else
     UT_OptionEntry              *raw_pos, *raw_n;
     UT_OptionVector3            *pos, *normal;
-
+#endif
     now = context.getTime();
 
     // Clear the detail to remove previous points.
@@ -330,6 +334,8 @@ OP_ERROR SOP_DopImpactPoints::cookMySop(OP_Context &context)
                         {
                             continue;
                         }
+                        // Create a point for this record.
+                        pt = gdp->appendPointOffset();
 
                         // To get the position and normal vectors we have to
                         // extract the vectors by getting their raw data as
@@ -337,17 +343,22 @@ OP_ERROR SOP_DopImpactPoints::cookMySop(OP_Context &context)
                         // UT_OptionVector3.  This allows us to get the data
                         // as a UT_Vector3.
                         query->getFieldRaw("Impacts", rec, "position", raw_pos);
-                        pos = (UT_OptionVector3 *)raw_pos;
 
-                        // Create a point for this record.
-                        pt = gdp->appendPointOffset();
+#if SYS_VERSION_MAJOR_INT>=18
+                        const UT_Vector3D pos = raw_pos->getOptionV3();
 
                         // Set the position.
+                        gdp->setPos3(pt, pos);
+#else
+                        pos = (UT_OptionVector3 *)raw_pos;
+
+                       // Set the position.
                         gdp->setPos3(pt, pos->getValue());
 
                         // We need to delete the UT_OptionEntry objects since
                         // they were created by SIM_Query::getFieldRaw.
                         delete raw_pos;
+#endif
 
                         // The normal handle will be valid if we said to store
                         // the normal value.
@@ -356,13 +367,19 @@ OP_ERROR SOP_DopImpactPoints::cookMySop(OP_Context &context)
                             // Like the position, get the normal information
                             // from the query.
                             query->getFieldRaw("Impacts", rec, "normal", raw_n);
-                            normal = (UT_OptionVector3 *)raw_n;
+
+#if SYS_VERSION_MAJOR_INT>=18
+                            const UT_Vector3D normal = raw_n->getOptionV3();
 
                             // Set the attribute value.
+                            n_h.set(pt, normal);
+#else
+                            normal = (UT_OptionVector3 *)raw_n;
                             n_h.set(pt, normal->getValue());
 
                             // Delete the entry.
                             delete raw_n;
+#endif
                         }
 
                         // Store the impulse value if necessary.

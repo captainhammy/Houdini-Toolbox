@@ -16,6 +16,7 @@ build-plugin:
 # Clean built plugins.
 clean-plugins:
 	cd ${CURDIR}/plugins/build && make clean
+	rm -rf ${CURDIR}/plugins/build
 
 # List all available plugins
 list-targets:
