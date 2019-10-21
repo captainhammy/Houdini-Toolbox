@@ -1,5 +1,5 @@
 Custom nodes shapes for the Houdini network editor.
 
-NOTE: classis.json and classic_rounded.json are copies of the shipped squared.json and rect.json shapes, respectfully, which have their node flags straightened to be completely vertical (like in previous versions.)
+NOTE: classic.json and classic_rounded.json are copies of the shipped squared.json and rect.json shapes, respectfully, which have their node flags straightened to be completely vertical (like in previous versions.)
 
 NOTE: In this repository rect.json and squared.json are actually renamed copies of the classic and classic_rounded shapes as to override Houdini's default shapes to have straight flags.  REMOVE these to get the shipped shapes back while keeping the classic*.json files for the copies with straight flags.
