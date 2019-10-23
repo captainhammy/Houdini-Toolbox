@@ -19,6 +19,37 @@ import inlinecpp
 
 _FUNCTION_SOURCES = [
 """
+void clearCacheByName(const char* cache_name)
+{
+    UT_Cache                    *cache;
+    UT_ValArray<UT_Cache *>     caches;
+
+    caches = UT_Cache::utGetCacheList();
+
+    for (int i=0; i<caches.entries(); ++i)
+    {
+        // Get the current cache.
+        cache = caches(i);
+
+        // Check for not empty string.
+        if (UT_String(cache_name).length())
+        {
+            // Check if the name to clear matches this cache name exactly.
+            if (strcmp(cache->utGetCacheName(), cache_name) == 0)
+            {
+                cache->utClearCache();
+            }
+        }
+        
+        // Empty string means clear all caches
+        else {
+            cache->utClearCache();
+        }
+    }
+}
+""",
+
+"""
 FloatArray
 point_instance_transform(const GU_Detail *gdp, int ptnum)
 {

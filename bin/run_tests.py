@@ -1,5 +1,4 @@
-"""Discover and run unittests, with coverage."""
-
+"""Discover and run unit tests, with coverage."""
 
 # =============================================================================
 # IMPORTS

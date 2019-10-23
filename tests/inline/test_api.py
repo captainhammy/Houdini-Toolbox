@@ -57,6 +57,31 @@ class Test__assert_prim_vertex_index(object):
 
 # Functions
 
+class Test_clear_caches(object):
+    """Test ht.inline.api.clear_caches."""
+
+    def test_default_none(self, mocker):
+        """Test with the default arg of None."""
+        mock_clear = mocker.patch("ht.inline.api._cpp_methods.clearCacheByName")
+
+        api.clear_caches()
+
+        mock_clear.assert_called_with("")
+
+    def test_args(self, mocker):
+        """Test with the default arg of None."""
+        mock_clear = mocker.patch("ht.inline.api._cpp_methods.clearCacheByName")
+
+        mock_name1 = mocker.MagicMock(spec=str)
+        mock_name2 = mocker.MagicMock(spec=str)
+
+        api.clear_caches([mock_name1, mock_name2])
+
+        mock_clear.assert_has_calls(
+            [mocker.call(mock_name1), mocker.call(mock_name2)]
+        )
+
+
 def test_is_rendering(mocker):
     """Test ht.inline.api.is_rendering."""
     mock_rendering = mocker.patch("ht.inline.api._cpp_methods.isRendering")

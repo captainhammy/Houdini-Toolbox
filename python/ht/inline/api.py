@@ -64,6 +64,27 @@ def _assert_prim_vertex_index(prim, index):
 # FUNCTIONS
 # =============================================================================
 
+def clear_caches(cache_names=None):
+    """Clear internal Houdini caches.
+
+    Cache names match those displayed in the Cache Manager window.
+
+    If cache_names is None then all caches will be cleared.
+
+    :param cache_names: Optional list of caches to clear.
+    :type cache_names: list(str)
+    :return:
+
+    """
+    # If the value is None then we will pass an empty string to clear all the
+    # caches.
+    if cache_names is None:
+        cache_names = [""]
+
+    for cache_name in cache_names:
+        _cpp_methods.clearCacheByName(cache_name)
+
+
 def is_rendering():
     """Check if Houdini is rendering or not.
 
