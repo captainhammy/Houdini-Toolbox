@@ -105,6 +105,7 @@ def _build_parsers():
     download.add_argument("--no-install", action="store_true", help="Download but don't install", dest="no_install")
     download.add_argument("--remove", action="store_true", help="Remove archive after install", dest="remove")
     download.add_argument("version", nargs="?", help="The version to download")
+    download.add_argument("--product", nargs="?", default="houdini", help="The version to download")
 
     # Install sub parser
     install = subparsers.add_parser("install", help="Install things")
@@ -137,12 +138,12 @@ def _display_versions():
     for build in _BUILD_MANAGER.installed:
         if build == default_build:
             # Run the message through the style function.
-            msg = colored(str(build), "cyan")
+            msg = colored(build.display_name, "cyan")
 
             output.append(msg)
 
         else:
-            output.append(str(build))
+            output.append(build.display_name)
 
     six.print_('\t' + ' '.join(output))
 
@@ -157,10 +158,16 @@ def _download_handler(args):
     :return:
 
     """
+    product = args.product
+
     if args.list_builds:
         six.print_("Houdini builds available to download:\n")
 
-        ht.machinery.sidefx_web_api.list_builds(version=args.version, only_production=args.only_production)
+        ht.machinery.sidefx_web_api.list_builds(
+            version=args.version,
+            product=product,
+            only_production=args.only_production
+        )
 
         return
 
@@ -169,7 +176,7 @@ def _download_handler(args):
 
         return
 
-    downloaded_archives = _BUILD_MANAGER.download_builds([args.version])
+    downloaded_archives = _BUILD_MANAGER.download_builds([args.version], product=product)
 
     if not args.no_install:
         for archive in downloaded_archives:
@@ -257,7 +264,7 @@ def _print_local_build_list(build_list, message):
     """
     six.print_(message)
 
-    six.print_('\t' + " ".join([str(build) for build in build_list]))
+    six.print_('\t' + " ".join([build.display_name for build in build_list]))
 
     six.print_()
 

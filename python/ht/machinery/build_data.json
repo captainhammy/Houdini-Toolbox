@@ -1,5 +1,5 @@
 {
-    "file_template": "houdini-{version}-{arch}.{ext}",
+    "file_template": "{product}-{version}-{arch}.{ext}",
 
     "types": {
         "Linux": {

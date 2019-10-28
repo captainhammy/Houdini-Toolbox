@@ -46,16 +46,17 @@ class HoudiniBase(object):
 
     """
 
-    def __init__(self, path, version):
+    def __init__(self, path, version, product=None):
         self._path = path
 
         self._major, self._minor, self._build, self._candidate = version
 
+        self._product = product
         self._plugin_path = None
 
         if _SETTINGS_MANAGER.system.plugins is not None:
             plugin_folder = self.format_string(
-                _SETTINGS_MANAGER.system.plugins.folder
+                _SETTINGS_MANAGER.system.plugins.folder,
             )
 
             # Generate the path to install the build to.
@@ -115,7 +116,7 @@ class HoudiniBase(object):
     def __repr__(self):
         return "<{} {} @ {}>".format(
             self.__class__.__name__,
-            str(self),
+            self.display_name,
             self.path
         )
 
@@ -149,6 +150,16 @@ class HoudiniBase(object):
         return self._candidate
 
     @property
+    def display_name(self):
+        """str: The name to display ({version}{-product})."""
+        value = str(self)
+
+        if self.product is not None:
+            value = "{}-{}".format(value, self.product)
+
+        return value
+
+    @property
     def major(self):
         """int: The major number for this build. """
         return self._major
@@ -175,6 +186,11 @@ class HoudiniBase(object):
             return None
 
         return os.path.expandvars(self._plugin_path)
+
+    @property
+    def product(self):
+        """str: The optional extra product."""
+        return self._product
 
     @property
     def version(self):
@@ -208,6 +224,12 @@ class HoudiniBase(object):
             "build": self.build,
             "candidate": self.candidate,
         }
+
+        if self.product is not None:
+            args["product"] = "-{}".format(self.product)
+
+        else:
+            args["product"] = ""
 
         return value.format(**args)
 
@@ -341,6 +363,7 @@ class HoudiniBuildManager(object):
         archive_template = _SETTINGS_MANAGER.build_data.file_template
 
         glob_string = archive_template.format(
+            product="houdini*",
             version="*",
             arch="*",
             ext=archive_ext
@@ -371,6 +394,7 @@ class HoudiniBuildManager(object):
 
         format_args = {
             "version": "*",
+            "product": "*"
         }
 
         # Generate the path to glob with.
@@ -434,7 +458,7 @@ class HoudiniBuildManager(object):
                 package.install(create_symlink)
 
     @staticmethod
-    def download_builds(build_numbers):
+    def download_builds(build_numbers, product="houdini"):
         """Download and a list of builds.
 
         Build numbers can be explicit numbers or major.minor versions.
@@ -453,7 +477,7 @@ class HoudiniBuildManager(object):
             # Get the build file name for the current day
             version, build = _get_build_to_download(build_number)
 
-            downloaded_path = sidefx_web_api.download_build(download_dir, version, build)
+            downloaded_path = sidefx_web_api.download_build(download_dir, version, build, product=product)
 
             archive_paths.append(downloaded_path)
 
@@ -623,6 +647,7 @@ class HoudiniInstallFile(HoudiniBase):
         archive_ext = _SETTINGS_MANAGER.build_data.get_archive_extension()
 
         pattern = archive_template.format(
+            product="houdini(-[a-z0-9]+)*",
             version="([0-9\\.]*)",
             arch=".+",
             ext=archive_ext
@@ -630,7 +655,12 @@ class HoudiniInstallFile(HoudiniBase):
 
         result = re.match(pattern, os.path.basename(path))
 
-        version_string = result.group(1)
+        product = result.group(1)
+
+        if product is not None:
+            product = product.lstrip("-")
+
+        version_string = result.group(2)
 
         # Get the build number components.
         components = [int(val) for val in version_string.split(".")]
@@ -640,7 +670,7 @@ class HoudiniInstallFile(HoudiniBase):
         if len(components) == 3:
             components.append(None)
 
-        super(HoudiniInstallFile, self).__init__(path, components)
+        super(HoudiniInstallFile, self).__init__(path, components, product=product)
 
         self._install_target = _SETTINGS_MANAGER.system.installation.target
         self._install_folder = _SETTINGS_MANAGER.system.installation.folder
@@ -744,7 +774,7 @@ class HoudiniInstallFile(HoudiniBase):
         # Check to see if the build is already installed.  If it is
         # we throw an exception.
         if os.path.exists(install_path):
-            raise BuildAlreadyInstalledError(str(self))
+            raise BuildAlreadyInstalledError(self.display_name)
 
         system = platform.system()
 
@@ -758,7 +788,7 @@ class HoudiniInstallFile(HoudiniBase):
             raise UnsupportedOSError("OS X is not supported")
 
         # Notify that the build installation has completed.
-        six.print_("Installation of Houdini {} complete.".format(self))
+        six.print_("Installation of Houdini {} complete.".format(self.display_name))
 
 
 class HoudiniInstallationSettings(object):
@@ -975,12 +1005,19 @@ class InstalledHoudiniBuild(HoudiniBase):
         folder_name = _SETTINGS_MANAGER.system.installation.folder
 
         # Replace
-        pattern = folder_name.format(version="([0-9\\.]*)")
+        pattern = folder_name.format(
+            version="([0-9\\.]*)",
+            product="(-[a-z0-9]*)*"
+        )
 
         result = re.match(pattern, os.path.basename(path))
 
         # Extract the build version numbers from the directory name.
         version_string = result.group(1)
+        product = result.group(2)
+
+        if product is not None:
+            product = product.lstrip("-")
 
         # Get the build number components.
         components = [int(val) for val in version_string.split(".")]
@@ -990,7 +1027,7 @@ class InstalledHoudiniBuild(HoudiniBase):
         if len(components) == 3:
             components.append(None)
 
-        super(InstalledHoudiniBuild, self).__init__(path, components)
+        super(InstalledHoudiniBuild, self).__init__(path, components, product=product)
 
     # -------------------------------------------------------------------------
     # METHODS
@@ -1196,10 +1233,16 @@ def find_matching_builds(match_string, builds):
     :rtype: InstalledHoudiniBuild or None
 
     """
+    version = match_string
+    product = None
+
+    if '-' in match_string:
+        version, product = match_string.split('-')
+
     # Filter all installed builds that match the build version
     # string.
     matching = [build for build in builds
-                if str(build).startswith(match_string)]
+                if str(build).startswith(version) and build.product == product]
 
     # If there are any that match, use the latest/only one.
     if matching:
