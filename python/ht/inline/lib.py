@@ -40,7 +40,7 @@ void clearCacheByName(const char* cache_name)
                 cache->utClearCache();
             }
         }
-        
+
         // Empty string means clear all caches
         else {
             cache->utClearCache();
