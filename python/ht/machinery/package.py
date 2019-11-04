@@ -583,12 +583,13 @@ class HoudiniEnvironmentSettings(object):
         if "TEMP" not in os.environ:
             _set_variable("TEMP", tempfile.gettempdir())
 
-        # Only set LD_LIBRARY_PATH if it already exists.  This makes sure
-        # HDSO is always searched first.
+        # Only set LD_LIBRARY_PATH if it already exists.
         if "LD_LIBRARY_PATH" in os.environ:
+            # We want to have HDSO at the end so that libs which may be
+            # included in HDSO are found last.
             _set_variable(
                 "LD_LIBRARY_PATH",
-                (os.environ["HDSO"], os.environ["LD_LIBRARY_PATH"])
+                (os.environ["LD_LIBRARY_PATH"], os.environ["HDSO"])
             )
 
         # Set variables with the version information.
