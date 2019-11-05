@@ -5,6 +5,8 @@ exclude =
     python/ht/machinery/argparser.py
     python/ht/ui/icons.py
 
+builtins = unicode
+
 max-line-length = 120
 
 per-file-ignores =
