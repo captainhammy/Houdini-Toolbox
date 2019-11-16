@@ -479,7 +479,8 @@ class HoudiniBuildManager(object):
 
             downloaded_path = sidefx_web_api.download_build(download_dir, version, build, product=product)
 
-            archive_paths.append(downloaded_path)
+            if downloaded_path is not None:
+                archive_paths.append(downloaded_path)
 
         return archive_paths
 
@@ -1172,19 +1173,25 @@ def _get_build_to_download(build):
 
     :param build: The target build number.
     :type build: str
-    :return: The build string to download.
-    :rtype: str
+    :return: The target build information.
+    :rtype: tuple(str)
 
     """
     components = build.split(".")
 
-    if len(components) == 1:
+    num_components = len(components)
+
+    if num_components == 1:
         components.append("0")
 
-    if len(components) == 2:
+    if num_components == 2:
         return '.'.join(components), None
 
-    return "{}.{}".format(components[0], components[1]), ".".join(components[2:])
+    # Always treat the last component as the 'build'.  Unlike Houdini itself
+    # which would treat a release candidate version as part of the build number
+    # the web api will treat the candidate version as the build number and the
+    # the 3 main components as the version.
+    return ".".join(components[:num_components-1]), components[-1]
 
 
 def _set_variable(name, value):
