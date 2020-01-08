@@ -1,11 +1,15 @@
 """Tests for ht.nodes.badges module."""
-
+# flake8: noqa
 # =============================================================================
 # IMPORTS
 # =============================================================================
 
+# Third Party Imports
+import pytest
+
 # Houdini Toolbox Imports
-from ht.nodes import badges
+badges = pytest.importorskip("ht.nodes.badges")
+
 
 # Houdini Imports
 import hou
