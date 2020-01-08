@@ -31,13 +31,14 @@ import hou
 _MULTIPARM_FOLDER_TYPES = (
     hou.folderType.MultiparmBlock,
     hou.folderType.ScrollingMultiparmBlock,
-    hou.folderType.TabbedMultiparmBlock
+    hou.folderType.TabbedMultiparmBlock,
 )
 
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
+
 
 def _assert_prim_vertex_index(prim, index):
     """Validate that a vertex index is valid for a primitive.
@@ -63,6 +64,7 @@ def _assert_prim_vertex_index(prim, index):
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
 
 def clear_caches(cache_names=None):
     """Clear internal Houdini caches.
@@ -353,19 +355,13 @@ def sort_geometry_by_attribute(geometry, attribute, tuple_index=0, reverse=False
     attrib_name = attribute.name()
 
     if attrib_type == hou.attribType.Global:
-        raise ValueError(
-            "Attribute type must be point, primitive or vertex."
-        )
+        raise ValueError("Attribute type must be point, primitive or vertex.")
 
     # Get the corresponding attribute type id.
     attrib_owner = utils.get_attrib_owner(attrib_type)
 
     _cpp_methods.sortGeometryByAttribute(
-        geometry,
-        attrib_owner,
-        attrib_name,
-        tuple_index,
-        reverse
+        geometry, attrib_owner, attrib_name, tuple_index, reverse
     )
 
 
@@ -392,9 +388,7 @@ def sort_geometry_along_axis(geometry, geometry_type, axis):
         raise ValueError("Invalid axis: {}".format(axis))
 
     if geometry_type not in (hou.geometryType.Points, hou.geometryType.Primitives):
-        raise ValueError(
-            "Geometry type must be points or primitives."
-        )
+        raise ValueError("Geometry type must be points or primitives.")
 
     attrib_owner = utils.get_attrib_owner_from_geometry_type(geometry_type)
 
@@ -464,9 +458,7 @@ def sort_geometry_randomly(geometry, geometry_type, seed=0.0):
         raise hou.GeometryPermissionError()
 
     if not isinstance(seed, (float, int)):
-        raise TypeError(
-            "Got '{}', expected 'float'.".format(type(seed).__name__)
-        )
+        raise TypeError("Got '{}', expected 'float'.".format(type(seed).__name__))
 
     if geometry_type not in (hou.geometryType.Points, hou.geometryType.Primitives):
         raise ValueError("Geometry type must be points or primitives.")
@@ -496,9 +488,7 @@ def shift_geometry_elements(geometry, geometry_type, offset):
         raise hou.GeometryPermissionError()
 
     if not isinstance(offset, int):
-        raise TypeError(
-            "Got '{}', expected 'int'.".format(type(offset).__name__)
-        )
+        raise TypeError("Got '{}', expected 'int'.".format(type(offset).__name__))
 
     if geometry_type not in (hou.geometryType.Points, hou.geometryType.Primitives):
         raise ValueError("Geometry type must be points or primitives.")
@@ -800,15 +790,20 @@ def copy_attribute_values(source_element, source_attribs, target_element):
         source_entity_num = 0
 
     # Get the attribute owners from the elements.
-    target_owner = utils.get_attrib_owner_from_geometry_entity_type(type(target_element))
-    source_owner = utils.get_attrib_owner_from_geometry_entity_type(type(source_element))
+    target_owner = utils.get_attrib_owner_from_geometry_entity_type(
+        type(target_element)
+    )
+    source_owner = utils.get_attrib_owner_from_geometry_entity_type(
+        type(source_element)
+    )
 
     # Get the attribute names, ensuring we only use attributes on the
     # source's geometry.
     attrib_names = [
-        attrib.name() for attrib in source_attribs
-        if utils.get_attrib_owner(attrib.type()) == source_owner and
-        attrib.geometry().sopNode() == source_geometry.sopNode()
+        attrib.name()
+        for attrib in source_attribs
+        if utils.get_attrib_owner(attrib.type()) == source_owner
+        and attrib.geometry().sopNode() == source_geometry.sopNode()
     ]
 
     # Construct a ctypes string array to pass the strings.
@@ -822,7 +817,7 @@ def copy_attribute_values(source_element, source_attribs, target_element):
         source_owner,
         source_entity_num,
         c_values,
-        len(c_values)
+        len(c_values),
     )
 
 
@@ -916,11 +911,12 @@ def referencing_vertices(point):
 
     # Construct a list of vertex strings.  Each element has the format:
     # {prim_num}v{vertex_index}.
-    vertex_strings = ["{}v{}".format(prim, idx)
-                      for prim, idx in zip(result.prims, result.indices)]
+    vertex_strings = [
+        "{}v{}".format(prim, idx) for prim, idx in zip(result.prims, result.indices)
+    ]
 
     # Glob for the vertices and return them.
-    return geometry.globVertices(' '.join(vertex_strings))
+    return geometry.globVertices(" ".join(vertex_strings))
 
 
 def string_table_indices(attrib):
@@ -942,7 +938,11 @@ def string_table_indices(attrib):
     # Get the corresponding attribute type id.
     attrib_owner = utils.get_attrib_owner(attrib.type())
 
-    return tuple(_cpp_methods.getStringTableIndices(attrib.geometry(), attrib_owner, attrib.name()))
+    return tuple(
+        _cpp_methods.getStringTableIndices(
+            attrib.geometry(), attrib_owner, attrib.name()
+        )
+    )
 
 
 def vertex_string_attrib_values(geometry, name):
@@ -998,12 +998,7 @@ def set_vertex_string_attrib_values(geometry, name, values):
     # Construct a ctypes string array to pass the strings.
     c_values = utils.build_c_string_array(values)
 
-    _cpp_methods.setVertexStringAttribValues(
-        geometry,
-        name,
-        c_values,
-        len(c_values)
-    )
+    _cpp_methods.setVertexStringAttribValues(geometry, name, c_values, len(c_values))
 
 
 def set_shared_point_string_attrib(geometry, name, value, group=None):
@@ -1044,11 +1039,7 @@ def set_shared_point_string_attrib(geometry, name, value, group=None):
         group_name = 0
 
     _cpp_methods.setSharedStringAttrib(
-        geometry,
-        utils.get_attrib_owner(attribute.type()),
-        name,
-        value,
-        group_name
+        geometry, utils.get_attrib_owner(attribute.type()), name, value, group_name
     )
 
 
@@ -1090,11 +1081,7 @@ def set_shared_prim_string_attrib(geometry, name, value, group=None):
         group_name = 0
 
     _cpp_methods.setSharedStringAttrib(
-        geometry,
-        utils.get_attrib_owner(attribute.type()),
-        name,
-        value,
-        group_name
+        geometry, utils.get_attrib_owner(attribute.type()), name, value, group_name
     )
 
 
@@ -1113,10 +1100,7 @@ def face_has_edge(face, point1, point2):
     """
     # Test for the edge.
     return _cpp_methods.faceHasEdge(
-        face.geometry(),
-        face.number(),
-        point1.number(),
-        point2.number()
+        face.geometry(), face.number(), point1.number(), point2.number()
     )
 
 
@@ -1337,7 +1321,9 @@ def check_minimum_polygon_vertex_count(geometry, minimum_vertices, ignore_open=T
     :rtype: bool
 
     """
-    return _cpp_methods.check_minimum_polygon_vertex_count(geometry, minimum_vertices, ignore_open)
+    return _cpp_methods.check_minimum_polygon_vertex_count(
+        geometry, minimum_vertices, ignore_open
+    )
 
 
 def primitive_bounding_box(prim):
@@ -1356,12 +1342,7 @@ def primitive_bounding_box(prim):
     # Intrinsic values are out of order for hou.BoundingBox so they need to
     # be shuffled.
     return hou.BoundingBox(
-        bounds[0],
-        bounds[2],
-        bounds[4],
-        bounds[1],
-        bounds[3],
-        bounds[5],
+        bounds[0], bounds[2], bounds[4], bounds[1], bounds[3], bounds[5],
     )
 
 
@@ -1541,9 +1522,7 @@ def destroy_empty_groups(geometry, attrib_type):
         raise hou.GeometryPermissionError()
 
     if attrib_type == hou.attribType.Global:
-        raise ValueError(
-            "Attribute type must be point, primitive or vertex."
-        )
+        raise ValueError("Attribute type must be point, primitive or vertex.")
 
     # Get the corresponding attribute type id.
     attrib_owner = utils.get_attrib_owner(attrib_type)
@@ -1646,12 +1625,7 @@ def rename_group(group, new_name):
 
     group_type = utils.get_group_type(group)
 
-    success = _cpp_methods.renameGroup(
-        geometry,
-        group.name(),
-        new_name,
-        group_type
-    )
+    success = _cpp_methods.renameGroup(geometry, group.name(), new_name, group_type)
 
     if success:
         return utils.find_group(geometry, group_type, new_name)
@@ -1671,11 +1645,7 @@ def group_bounding_box(group):
     group_type = utils.get_group_type(group)
 
     # Calculate the bounds for the group.
-    bounds = _cpp_methods.groupBoundingBox(
-        group.geometry(),
-        group_type,
-        group.name()
-    )
+    bounds = _cpp_methods.groupBoundingBox(group.geometry(), group_type, group.name())
 
     return hou.BoundingBox(*bounds)
 
@@ -1716,10 +1686,7 @@ def toggle_point_in_group(group, point):
     group_type = utils.get_group_type(group)
 
     _cpp_methods.toggleGroupMembership(
-        geometry,
-        group.name(),
-        group_type,
-        point.number()
+        geometry, group.name(), group_type, point.number()
     )
 
 
@@ -1745,10 +1712,7 @@ def toggle_prim_in_group(group, prim):
     group_type = utils.get_group_type(group)
 
     _cpp_methods.toggleGroupMembership(
-        geometry,
-        group.name(),
-        group_type,
-        prim.number()
+        geometry, group.name(), group_type, prim.number()
     )
 
 
@@ -1800,9 +1764,7 @@ def copy_group(group, new_group_name):
     # Check for an existing group of the same name.
     if utils.find_group(geometry, group_type, new_group_name) is not None:
         # If one exists, raise an exception.
-        raise hou.OperationFailed(
-            "Group '{}' already exists.".format(new_group_name)
-        )
+        raise hou.OperationFailed("Group '{}' already exists.".format(new_group_name))
 
     attrib_owner = utils.get_group_attrib_owner(group)
 
@@ -1838,7 +1800,9 @@ def groups_share_elements(group1, group2):
     if group1_type != group2_type:
         raise TypeError("Groups are not the same types.")
 
-    return _cpp_methods.groupsShareElements(group1_geometry, group1.name(), group2.name(), group1_type)
+    return _cpp_methods.groupsShareElements(
+        group1_geometry, group1.name(), group2.name(), group1_type
+    )
 
 
 def convert_prim_to_point_group(prim_group, new_group_name=None, destroy=True):
@@ -1872,12 +1836,7 @@ def convert_prim_to_point_group(prim_group, new_group_name=None, destroy=True):
         raise hou.OperationFailed("Group already exists.")
 
     # Convert the group.
-    _cpp_methods.primToPointGroup(
-        geometry,
-        prim_group.name(),
-        new_group_name,
-        destroy
-    )
+    _cpp_methods.primToPointGroup(geometry, prim_group.name(), new_group_name, destroy)
 
     # Return the new group.
     return geometry.findPointGroup(new_group_name)
@@ -1914,12 +1873,7 @@ def convert_point_to_prim_group(point_group, new_group_name=None, destroy=True):
         raise hou.OperationFailed("Group already exists.")
 
     # Convert the group.
-    _cpp_methods.pointToPrimGroup(
-        geometry,
-        point_group.name(),
-        new_group_name,
-        destroy
-    )
+    _cpp_methods.pointToPrimGroup(geometry, point_group.name(), new_group_name, destroy)
 
     # Return the new group.
     return geometry.findPrimGroup(new_group_name)
@@ -2288,10 +2242,7 @@ def get_multiparm_instances_per_item(parm):
     if isinstance(parm, hou.Parm):
         parm = parm.tuple()
 
-    return _cpp_methods.getMultiParmInstancesPerItem(
-        parm.node(),
-        parm.name()
-    )
+    return _cpp_methods.getMultiParmInstancesPerItem(parm.node(), parm.name())
 
 
 def get_multiparm_start_offset(parm):
@@ -2332,10 +2283,7 @@ def get_multiparm_instance_index(parm):
     if isinstance(parm, hou.Parm):
         parm = parm.tuple()
 
-    result = _cpp_methods.getMultiParmInstanceIndex(
-        parm.node(),
-        parm.name()
-    )
+    result = _cpp_methods.getMultiParmInstanceIndex(parm.node(), parm.name())
 
     return tuple(result)
 
@@ -2452,7 +2400,7 @@ def eval_multiparm_instance(node, name, index):
     :rtype: type
 
     """
-    if name.count('#') != 1:
+    if name.count("#") != 1:
         raise ValueError("Name {} must contain a single '#' value".format(name))
 
     ptg = node.parmTemplateGroup()
@@ -2460,7 +2408,9 @@ def eval_multiparm_instance(node, name, index):
     parm_template = ptg.find(name)
 
     if parm_template is None:
-        raise ValueError("Name {} does not map to a parameter on {}".format(name, node.path()))
+        raise ValueError(
+            "Name {} does not map to a parameter on {}".format(name, node.path())
+        )
 
     containing_folder = ptg.containingFolder(name)
 
@@ -2484,13 +2434,25 @@ def eval_multiparm_instance(node, name, index):
 
     for component_index in range(parm_template.numComponents()):
         if data_type == hou.parmData.Float:
-            values.append(_cpp_methods.eval_multiparm_instance_float(node, name, component_index, index, start_offset))
+            values.append(
+                _cpp_methods.eval_multiparm_instance_float(
+                    node, name, component_index, index, start_offset
+                )
+            )
 
         elif data_type == hou.parmData.Int:
-            values.append(_cpp_methods.eval_multiparm_instance_int(node, name, component_index, index, start_offset))
+            values.append(
+                _cpp_methods.eval_multiparm_instance_int(
+                    node, name, component_index, index, start_offset
+                )
+            )
 
         elif data_type == hou.parmData.String:
-            values.append(_cpp_methods.eval_multiparm_instance_string(node, name, component_index, index, start_offset))
+            values.append(
+                _cpp_methods.eval_multiparm_instance_string(
+                    node, name, component_index, index, start_offset
+                )
+            )
 
         else:
             raise TypeError("Invalid parm data type {}".format(data_type))
@@ -2666,7 +2628,7 @@ def node_author_name(node):
     author = _cpp_methods.getNodeAuthor(node)
 
     # Remove any machine name from the user name.
-    return author.split('@')[0]
+    return author.split("@")[0]
 
 
 def set_node_type_icon(node_type, icon_name):
@@ -2887,7 +2849,9 @@ def get_oriented_point_transform(point):
 
         # If the primitive is a Face of Surface we can't do anything.
         if isinstance(prim, (hou.Face, hou.Surface)):
-            raise hou.OperationFailed("Point {} is bound to raw geometry".format(point.number()))
+            raise hou.OperationFailed(
+                "Point {} is bound to raw geometry".format(point.number())
+            )
 
         # Get the primitive's rotation matrix.
         rot_matrix = prim.transform()
@@ -2915,10 +2879,17 @@ def point_instance_transform(point):
     return hou.Matrix4(result)
 
 
-def build_instance_matrix(position, direction=hou.Vector3(0, 0, 1), pscale=1,  # pylint: disable=too-many-arguments
-                          scale=hou.Vector3(1, 1, 1), up_vector=hou.Vector3(0, 1, 0),
-                          rot=hou.Quaternion(0, 0, 0, 1), trans=hou.Vector3(0, 0, 0),
-                          pivot=hou.Vector3(0, 0, 0), orient=None):
+def build_instance_matrix(
+    position,
+    direction=hou.Vector3(0, 0, 1),
+    pscale=1,  # pylint: disable=too-many-arguments
+    scale=hou.Vector3(1, 1, 1),
+    up_vector=hou.Vector3(0, 1, 0),
+    rot=hou.Quaternion(0, 0, 0, 1),
+    trans=hou.Vector3(0, 0, 0),
+    pivot=hou.Vector3(0, 0, 0),
+    orient=None,
+):
     """Compute a transform to orient to a given direction.
 
     The transform can be computed for an optional position and scale.
@@ -3072,5 +3043,5 @@ def is_dummy_definition(definition):
     return _cpp_methods.isDummyDefinition(
         definition.libraryFilePath(),
         definition.nodeTypeCategory().name(),
-        definition.nodeTypeName()
+        definition.nodeTypeName(),
     )
