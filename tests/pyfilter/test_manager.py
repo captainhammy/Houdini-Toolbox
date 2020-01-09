@@ -281,10 +281,7 @@ class Test__find_operation_files(object):
     """Test ht.pyfilter.manager._find_operation_files."""
 
     def test_no_files(self, patch_hou, mock_hou_exceptions):
-        # Because we are tucking the hou import in the function we need to patch in the
-        # original hou.OperationFailed so that the test will execute correctly.
-        # patch_hou["hou"].OperationFailed = patch_hou["original_hou"].OperationFailed
-        patch_hou["hou"].findFiles.side_effect = mock_hou_exceptions.OperationFailed
+        patch_hou.hou.findFiles.side_effect = mock_hou_exceptions.OperationFailed
 
         result = manager._find_operation_files()
 
@@ -293,7 +290,7 @@ class Test__find_operation_files(object):
     def test(self, patch_hou):
         result = manager._find_operation_files()
 
-        assert result == patch_hou["hou"].findFiles.return_value
+        assert result == patch_hou.hou.findFiles.return_value
 
 
 class Test__get_class(object):

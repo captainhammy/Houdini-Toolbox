@@ -192,7 +192,6 @@ class Test_HoudiniLoggerAdapter(object):
         mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=mocker.PropertyMock(return_value=None))
         mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=mocker.PropertyMock(return_value=False))
         mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=mocker.PropertyMock(return_value=False))
-        mocker.patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
 
         mock_message = mocker.MagicMock(spec=str)
 
@@ -215,7 +214,6 @@ class Test_HoudiniLoggerAdapter(object):
         mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=mocker.PropertyMock(return_value=None))
         mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=mocker.PropertyMock(return_value=True))
         mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=mocker.PropertyMock(return_value=True))
-        mocker.patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
 
         mock_message = mocker.MagicMock(spec=str)
         mock_title = mocker.MagicMock(spec=str)
@@ -239,7 +237,6 @@ class Test_HoudiniLoggerAdapter(object):
         mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=mocker.PropertyMock(return_value=None))
         mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=mocker.PropertyMock(return_value=True))
         mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=mocker.PropertyMock(return_value=False))
-        mocker.patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
 
         mock_message = mocker.MagicMock(spec=str)
         mock_arg = mocker.MagicMock(spec=str)
@@ -262,7 +259,6 @@ class Test_HoudiniLoggerAdapter(object):
         mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=mocker.PropertyMock(return_value=None))
         mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=mocker.PropertyMock(return_value=False))
         mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=mocker.PropertyMock(return_value=False))
-        mocker.patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
         mocker.patch("ht.logging.adapters.hou.hipFile.basename")
 
         mock_message = mocker.MagicMock(spec=str)
@@ -286,7 +282,6 @@ class Test_HoudiniLoggerAdapter(object):
         mock_node_prop = mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "node", new_callable=mocker.PropertyMock)
         mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "dialog", new_callable=mocker.PropertyMock(return_value=False))
         mocker.patch.object(ht.logging.adapters.HoudiniLoggerAdapter, "status_bar", new_callable=mocker.PropertyMock(return_value=False))
-        mocker.patch("ht.logging.adapters.hou.isUIAvailable", return_value=True)
         mocker.patch("ht.logging.adapters.hou.hipFile.basename")
 
         mock_message = mocker.MagicMock(spec=str)

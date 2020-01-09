@@ -20,7 +20,7 @@ def mock_hou_exceptions(mocker):
     """Fixture to support dealing with hou.Error exceptions.
 
     Since hou.Error and all derived exceptions are not actual Exception objects
-    pytest will not list this.  If your code throws an uncaught exception it will
+    pytest will not like this.  If your code throws an uncaught exception it will
     confuse pytest and it will basically error, but not error.  The test execution
     will halt but your test will not fail.
 
@@ -146,8 +146,16 @@ def mock_hou_exceptions(mocker):
 
 @pytest.fixture
 def mock_hou_ui(mocker):
-    """Mock the hou.ui module which isn't available when running tests via Hython."""
+    """Mock the hou.ui module which isn't available when running tests via Hython.
+
+    This fixture will also mock hou.isUIAvailable() to return True.
+
+    """
     mock_ui = mocker.MagicMock()
+
+    # If we are going to be mocking the hou.ui module we should patch
+    # hou.isUIAvailable so that it reflects we have hou.ui.
+    mocker.patch("hou.isUIAvailable", return_value=True)
 
     hou.ui = mock_ui
 
@@ -160,14 +168,18 @@ def mock_hou_ui(mocker):
 def patch_hou(mocker):
     """Mock importing of the hou module.
 
-    The mocked module is available via the 'hou' key.
+    The mocked module is available via the 'hou' attribute on the fixture object.
 
-    The original hou module is available via the 'original_hou' key.
+    The original hou module is available via the 'original_hou' attribute.
 
     This is useful for dealing with tucked hou imports.
 
     """
     mock_hou = mocker.MagicMock()
+
+    class MockHou(object):
+        original_hou = hou
+        hou = mock_hou
 
     modules = {
         "hou": mock_hou,
@@ -176,7 +188,7 @@ def patch_hou(mocker):
 
     mocker.patch.dict("sys.modules", modules)
 
-    yield modules
+    yield MockHou
 
 
 @pytest.fixture

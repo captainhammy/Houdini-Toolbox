@@ -22,11 +22,7 @@ class Test_build_pyfilter_command(object):
         mock_logger = mocker.patch("ht.pyfilter.utils._logger")
         mock_exists = mocker.patch("os.path.exists")
 
-        # Because we are tucking the hou import in the function we need to patch in the
-        # original hou.OperationFailed so that the test will execute correctly.
-        # patch_hou["hou"].OperationFailed = patch_hou["original_hou"].OperationFailed
-
-        patch_hou["hou"].findFile.side_effect = mock_hou_exceptions.OperationFailed
+        patch_hou.hou.findFile.side_effect = mock_hou_exceptions.OperationFailed
 
         result = utils.build_pyfilter_command()
 
@@ -42,16 +38,16 @@ class Test_build_pyfilter_command(object):
         with pytest.raises(OSError):
             utils.build_pyfilter_command()
 
-        mock_exists.assert_called_with(patch_hou["hou"].findFile.return_value)
+        mock_exists.assert_called_with(patch_hou.hou.findFile.return_value)
 
     def test_found_script_no_args(self, mocker, patch_hou):
         mock_exists = mocker.patch("os.path.exists", return_value=True)
 
         result = utils.build_pyfilter_command()
 
-        assert result == '-P "{} "'.format(patch_hou["hou"].findFile.return_value)
+        assert result == '-P "{} "'.format(patch_hou.hou.findFile.return_value)
 
-        mock_exists.assert_called_with(patch_hou["hou"].findFile.return_value)
+        mock_exists.assert_called_with(patch_hou.hou.findFile.return_value)
 
     def test_manual_path(self, mocker, patch_hou):
         mock_exists = mocker.patch("os.path.exists", return_value=True)
@@ -62,7 +58,7 @@ class Test_build_pyfilter_command(object):
 
         assert result == '-P "{} "'.format(mock_path)
 
-        patch_hou["hou"].findFile.assert_not_called()
+        patch_hou.hou.findFile.assert_not_called()
         mock_exists.assert_called_with(mock_path)
 
     def test_manual_path_args(self, mocker, patch_hou):
@@ -76,5 +72,5 @@ class Test_build_pyfilter_command(object):
 
         assert result == '-P "{} {}"'.format(mock_path, " ".join(args))
 
-        patch_hou["hou"].findFile.assert_not_called()
+        patch_hou.hou.findFile.assert_not_called()
         mock_exists.assert_called_with(mock_path)
