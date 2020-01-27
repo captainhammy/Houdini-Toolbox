@@ -1342,7 +1342,7 @@ def primitive_bounding_box(prim):
     # Intrinsic values are out of order for hou.BoundingBox so they need to
     # be shuffled.
     return hou.BoundingBox(
-        bounds[0], bounds[2], bounds[4], bounds[1], bounds[3], bounds[5],
+        bounds[0], bounds[2], bounds[4], bounds[1], bounds[3], bounds[5]
     )
 
 
@@ -2879,10 +2879,10 @@ def point_instance_transform(point):
     return hou.Matrix4(result)
 
 
-def build_instance_matrix(
+def build_instance_matrix(  # pylint: disable=too-many-arguments
     position,
     direction=hou.Vector3(0, 0, 1),
-    pscale=1,  # pylint: disable=too-many-arguments
+    pscale=1,
     scale=hou.Vector3(1, 1, 1),
     up_vector=hou.Vector3(0, 1, 0),
     rot=hou.Quaternion(0, 0, 0, 1),

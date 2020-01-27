@@ -12,6 +12,7 @@ import hou
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
+
 def _valid_to_convert_to_absolute_reference(parm):
     """Check if a parameter is valid to convert to an absolute reference.
 
@@ -95,6 +96,7 @@ def _valid_to_convert_to_relative_reference(parm):
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
 
 def convert_absolute_to_relative_path_context(scriptargs):
     """Context script for converting any absolute node paths to relative paths.
@@ -221,8 +223,14 @@ def promote_parameter_to_node(scriptargs):  # pylint: disable=too-many-locals
         # should prompt to use it.
         if target_node.parmTuple(parm_tuple.name()) is not None:
             choice = hou.ui.displayMessage(
-                "Parameter already exists on {}.  Link to existing parameter?".format(target_node.path()),
-                buttons=("Yes and keep current value", "Yes and update value", "Cancel"),
+                "Parameter already exists on {}.  Link to existing parameter?".format(
+                    target_node.path()
+                ),
+                buttons=(
+                    "Yes and keep current value",
+                    "Yes and update value",
+                    "Cancel",
+                ),
                 severity=hou.severityType.ImportantMessage,
             )
 

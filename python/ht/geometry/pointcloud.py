@@ -16,6 +16,7 @@ import hou
 # CLASSES
 # =============================================================================
 
+
 class PointCloud(object):
     """A wrapper around scipy.spatial.KDTree to represent point positions.
 
@@ -97,9 +98,7 @@ class PointCloud(object):
         # If we have a point map set up we need to index into that and then
         # convert to string.
         if self._point_map:
-            pattern = " ".join(
-                [str(self._point_map[index]) for index in indexes]
-            )
+            pattern = " ".join([str(self._point_map[index]) for index in indexes])
 
         # Just convert the indexes to strings.
         else:
@@ -178,8 +177,9 @@ class PointCloud(object):
             # then more than 1 point was found.
             if isinstance(distances, numpy.ndarray):
                 # Filter the index list to remove those too far away.
-                indexes = [index for dist, index in zip(distances, indexes)
-                           if dist < maxdist]
+                indexes = [
+                    index for dist, index in zip(distances, indexes) if dist < maxdist
+                ]
 
                 # There are some points within the max distance so get them.
                 if indexes:
@@ -192,7 +192,7 @@ class PointCloud(object):
             else:
                 # If the point is within the distances, glob and return it.
                 if distances < maxdist:
-                    near_points = self._get_result_points((indexes, ))
+                    near_points = self._get_result_points((indexes,))
 
                 else:
                     near_points = ()
@@ -205,7 +205,7 @@ class PointCloud(object):
 
             else:
                 # We found a single point, so pass it along in a tuple..
-                near_points = self._get_result_points((indexes, ))
+                near_points = self._get_result_points((indexes,))
 
         # Return the tuple of points.
         return near_points

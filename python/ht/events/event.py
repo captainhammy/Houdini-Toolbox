@@ -13,6 +13,7 @@ from ht.events.stats import HoudiniEventStats
 # CLASSES
 # =============================================================================
 
+
 class HoudiniEventFactory(object):
     """Class responsible for determining event classes."""
 

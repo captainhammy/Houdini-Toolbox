@@ -31,6 +31,7 @@ import hou
 
 # Create/Edit Dialogs
 
+
 class _BaseHoudiniStyleDialog(QtWidgets.QDialog):
     """Base dialog for Houdini related dialogs.  Automatically sets the Houdini
     Qt stylesheet and custom sheets.
@@ -42,9 +43,7 @@ class _BaseHoudiniStyleDialog(QtWidgets.QDialog):
 
         self.setProperty("houdiniStyle", True)
 
-        self.setStyleSheet(
-            uidata.TOOLTIP_STYLE
-        )
+        self.setStyleSheet(uidata.TOOLTIP_STYLE)
 
 
 class _BaseAOVDialog(_BaseHoudiniStyleDialog):
@@ -99,11 +98,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         for entry in uidata.VEXTYPE_MENU_ITEMS:
             icon = utils.get_icon_for_vex_type(entry[0])
 
-            self.type_box.addItem(
-                icon,
-                entry[1],
-                entry[0]
-            )
+            self.type_box.addItem(icon, entry[1], entry[0])
 
         row += 1
 
@@ -150,9 +145,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         grid_layout.addWidget(QtWidgets.QLabel("Pixel Filter"), row, 0)
 
-        self.pfilter_widget = widgets.MenuField(
-            uidata.PFILTER_MENU_ITEMS
-        )
+        self.pfilter_widget = widgets.MenuField(uidata.PFILTER_MENU_ITEMS)
         grid_layout.addWidget(self.pfilter_widget, row, 1)
 
         row += 1
@@ -165,11 +158,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # ---------------------------------------------------------------------
 
-        grid_layout.addWidget(
-            QtWidgets.QLabel("Exclude from DCM"),
-            row,
-            0
-        )
+        grid_layout.addWidget(QtWidgets.QLabel("Exclude from DCM"), row, 0)
 
         self.exclude_from_dcm = hou.qt.createCheckBox()
         grid_layout.addWidget(self.exclude_from_dcm, row, 1)
@@ -327,9 +316,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
         self.comment = QtWidgets.QLineEdit()
         grid_layout.addWidget(self.comment, row, 1)
 
-        self.comment.setToolTip(
-            "Optional comment, eg. 'This AOV represents X'."
-        )
+        self.comment.setToolTip("Optional comment, eg. 'This AOV represents X'.")
 
         row += 1
 
@@ -450,7 +437,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         intrinsics = self.intrinsics.text()
 
-        aov_data[consts.INTRINSICS_KEY] = intrinsics.replace(',', ' ').split()
+        aov_data[consts.INTRINSICS_KEY] = intrinsics.replace(",", " ").split()
 
         # ---------------------------------------------------------------------
 
@@ -517,7 +504,9 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
             self.channel_name.setText(aov.channel)
 
         if aov.quantize is not None:
-            self.quantize_box.setCurrentIndex(utils.get_quantize_menu_index(aov.quantize))
+            self.quantize_box.setCurrentIndex(
+                utils.get_quantize_menu_index(aov.quantize)
+            )
 
         if aov.sfilter is not None:
             self.sfilter_box.setCurrentIndex(utils.get_sfilter_menu_index(aov.sfilter))
@@ -535,7 +524,9 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
                 self.components.setText(" ".join(aov.components))
 
         if aov.lightexport is not None:
-            self.lightexport.setCurrentIndex(utils.get_light_export_menu_index(aov.lightexport))
+            self.lightexport.setCurrentIndex(
+                utils.get_light_export_menu_index(aov.lightexport)
+            )
 
             self.light_mask.setText(aov.lightexport_scope)
             self.light_select.setText(aov.lightexport_select)
@@ -639,16 +630,13 @@ class NewAOVDialog(_BaseAOVDialog):
             priority = self.priority.value()
 
             if priority > aov.priority:
-                msg = "This definition will have priority for {}".format(
-                    variable_name,
-                )
+                msg = "This definition will have priority for {}".format(variable_name)
 
                 self.status_widget.add_info(0, msg)
 
             else:
                 msg = "Variable {} already exists with priority {}".format(
-                    variable_name,
-                    aov.priority
+                    variable_name, aov.priority
                 )
 
                 self.status_widget.add_warning(0, msg)
@@ -669,29 +657,29 @@ class NewAOVDialog(_BaseAOVDialog):
         # Open file for writing.
         aov_file = manager.AOVFile(aov.path)
 
-#        if aov_file.exists:
-#                if aov_file.containsAOV(new_aov):
+        #        if aov_file.exists:
+        #                if aov_file.containsAOV(new_aov):
 
-#                    existing_aov = aov_file.aovs[aov_file.aovs.index(new_aov)]
+        #                    existing_aov = aov_file.aovs[aov_file.aovs.index(new_aov)]
 
-#                    choice = hou.ui.displayMessage(
-#                        "{} already exists in file, overwrite?".format(new_aov.variable),
-#                        buttons=("Cancel", "OK"),
-#                        severity=hou.severityType.Warning,
-#                        details=str(existing_aov.as_data()),
-#                        details_expanded=True,
-#                    )
-#
-#                    if choice == 0:
-#                        return
+        #                    choice = hou.ui.displayMessage(
+        #                        "{} already exists in file, overwrite?".format(new_aov.variable),
+        #                        buttons=("Cancel", "OK"),
+        #                        severity=hou.severityType.Warning,
+        #                        details=str(existing_aov.as_data()),
+        #                        details_expanded=True,
+        #                    )
+        #
+        #                    if choice == 0:
+        #                        return
 
-#                    aov_file.replace_aov(new_aov)
+        #                    aov_file.replace_aov(new_aov)
 
-#                else:
-#                    aov_file.add_aov(new_aov)
+        #                else:
+        #                    aov_file.add_aov(new_aov)
 
-#            else:
-#                aov_file.add_aov(new_aov)
+        #            else:
+        #                aov_file.add_aov(new_aov)
 
         aov_file.add_aov(aov)
 
@@ -826,9 +814,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
         self.comment = QtWidgets.QLineEdit()
         grid_layout.addWidget(self.comment, 3, 1)
 
-        self.comment.setToolTip(
-            "Optional comment, eg. 'This group is for X'."
-        )
+        self.comment.setToolTip("Optional comment, eg. 'This group is for X'.")
 
         # ---------------------------------------------------------------------
 
@@ -1026,16 +1012,13 @@ class NewGroupDialog(_BaseGroupDialog):
             priority = self.priority.value()
 
             if priority > group.priority:
-                msg = "This definition will have priority for {}".format(
-                    group_name,
-                )
+                msg = "This definition will have priority for {}".format(group_name)
 
                 self.status_widget.add_info(0, msg)
 
             else:
                 msg = "Group {} already exists with priority {}".format(
-                    group_name,
-                    group.priority
+                    group_name, group.priority
                 )
 
                 self.status_widget.add_warning(0, msg)
@@ -1143,6 +1126,7 @@ class EditGroupDialog(_BaseGroupDialog):
 
 # Info Dialogs
 
+
 class AOVInfoDialog(_BaseHoudiniStyleDialog):
     """Dialog for displaying information about an AOV."""
 
@@ -1178,9 +1162,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
                 label = available_aov.variable
 
             self.aov_chooser.addItem(
-                utils.get_icon_for_vex_type(available_aov.vextype),
-                label,
-                available_aov
+                utils.get_icon_for_vex_type(available_aov.vextype), label, available_aov
             )
 
             # The AOV matches our start AOV so set the start index.
@@ -1199,17 +1181,12 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
 
         # ---------------------------------------------------------------------
 
-        self.button_box = QtWidgets.QDialogButtonBox(
-            QtWidgets.QDialogButtonBox.Ok
-        )
+        self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok)
         layout.addWidget(self.button_box)
 
         self.button_box.accepted.connect(self.accept)
 
-        edit_button = QtWidgets.QPushButton(
-            hou.qt.createIcon("BUTTONS_edit"),
-            "Edit"
-        )
+        edit_button = QtWidgets.QPushButton(hou.qt.createIcon("BUTTONS_edit"), "Edit")
 
         edit_button.setToolTip("Edit this AOV.")
 
@@ -1219,8 +1196,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         # ---------------------------------------------------------------------
 
         delete_button = QtWidgets.QPushButton(
-            hou.qt.createIcon("COMMON_delete"),
-            "Delete"
+            hou.qt.createIcon("COMMON_delete"), "Delete"
         )
 
         self.button_box.addButton(delete_button, QtWidgets.QDialogButtonBox.ResetRole)
@@ -1273,7 +1249,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
             severity=hou.severityType.Warning,
             close_choice=0,
             help="This action cannot be undone.",
-            title="Confirm AOV Deletion"
+            title="Confirm AOV Deletion",
         )
 
         if choice == 1:
@@ -1331,7 +1307,9 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         for idx, available_group in enumerate(sorted(manager.MANAGER.groups.values())):
             label = available_group.name
 
-            self.group_chooser.addItem(utils.get_icon_for_group(available_group), label, available_group)
+            self.group_chooser.addItem(
+                utils.get_icon_for_group(available_group), label, available_group
+            )
 
             # The group matches our start group so set the start index.
             if available_group == self.group:
@@ -1354,17 +1332,14 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         # ---------------------------------------------------------------------
 
-        self.button_box = QtWidgets.QDialogButtonBox(
-            QtWidgets.QDialogButtonBox.Ok
-        )
+        self.button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok)
         layout.addWidget(self.button_box)
 
         self.button_box.accepted.connect(self.accept)
 
         # Button to launch the Edit dialog on the current group.
         self.edit_button = QtWidgets.QPushButton(
-            hou.qt.createIcon("BUTTONS_edit"),
-            "Edit"
+            hou.qt.createIcon("BUTTONS_edit"), "Edit"
         )
 
         self.edit_button.setToolTip("Edit this group.")
@@ -1376,11 +1351,12 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         # ---------------------------------------------------------------------
 
         self.delete_button = QtWidgets.QPushButton(
-            hou.qt.createIcon("COMMON_delete"),
-            "Delete"
+            hou.qt.createIcon("COMMON_delete"), "Delete"
         )
 
-        self.button_box.addButton(self.delete_button, QtWidgets.QDialogButtonBox.HelpRole)
+        self.button_box.addButton(
+            self.delete_button, QtWidgets.QDialogButtonBox.HelpRole
+        )
 
         self.delete_button.setToolTip("Delete this group.")
         self.delete_button.clicked.connect(self.delete)
@@ -1421,7 +1397,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
             severity=hou.severityType.Warning,
             close_choice=0,
             help="This action cannot be undone.",
-            title="Confirm Group Deletion"
+            title="Confirm Group Deletion",
         )
 
         if choice == 1:
@@ -1438,10 +1414,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 
         parent = hou.qt.mainWindow()
 
-        self._edit_dialog = EditGroupDialog(
-            self.group,
-            parent
-        )
+        self._edit_dialog = EditGroupDialog(self.group, parent)
 
         self._edit_dialog.group_updated_signal.connect(self.emit_group_updated)
 
@@ -1488,6 +1461,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
 # FUNCTIONS
 # =============================================================================
 
+
 def create_new_aov(aov=None):
     """Display the Create AOV dialog."""
     parent = hou.qt.mainWindow()
@@ -1497,9 +1471,7 @@ def create_new_aov(aov=None):
     if aov is not None:
         dialog.initialize_from_aov(aov)
 
-    dialog.new_aov_signal.connect(
-        manager.MANAGER.add_aov
-    )
+    dialog.new_aov_signal.connect(manager.MANAGER.add_aov)
 
     dialog.show()
 
@@ -1513,8 +1485,6 @@ def create_new_group(aovs=()):
     if aovs:
         new_group_dialog.set_selected_aovs(aovs)
 
-    new_group_dialog.new_aov_group_signal.connect(
-        manager.MANAGER.add_group
-    )
+    new_group_dialog.new_aov_group_signal.connect(manager.MANAGER.add_group)
 
     new_group_dialog.show()

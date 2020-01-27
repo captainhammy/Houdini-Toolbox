@@ -15,6 +15,7 @@ _logger = logging.getLogger(__name__)
 # FUNCTIONS
 # =============================================================================
 
+
 def build_pyfilter_command(pyfilter_args=None, pyfilter_path=None):
     """Build a PyFilter -P command.
 

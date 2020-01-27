@@ -37,6 +37,7 @@ _DEFAULTS = {
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def init_operation(mocker):
     """Fixture to initialize an operation."""
@@ -106,6 +107,7 @@ def properties(mocker):
 # =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class Test_IpOverrides(object):
     """Test the ht.pyfilter.operations.ipoverrides.IpOverride class."""
@@ -285,17 +287,53 @@ class Test_IpOverrides(object):
         ipoverrides.IpOverrides.register_parser_args(mock_parser)
 
         calls = [
-            mocker.call("--ip-res-scale", default=None, type=float, dest="ip_res_scale"),
-            mocker.call("--ip-sample-scale", default=None, type=float, dest="ip_sample_scale"),
-            mocker.call("--ip-disable-blur", action="store_true", dest="ip_disable_blur"),
-            mocker.call("--ip-disable-aovs", action="store_true", dest="ip_disable_aovs"),
-            mocker.call("--ip-disable-deep", action="store_true", dest="ip_disable_deep"),
-            mocker.call("--ip-disable-displacement", action="store_true", dest="ip_disable_displacement"),
-            mocker.call("--ip-disable-subd", action="store_true", dest="ip_disable_subd"),
-            mocker.call("--ip-disable-tilecallback", action="store_true", dest="ip_disable_tilecallback"),
-            mocker.call("--ip-disable-matte", action="store_true", dest="ip_disable_matte"),
-            mocker.call("--ip-bucket-size", nargs="?", default=None, type=int, action="store", dest="ip_bucket_size"),
-            mocker.call("--ip-transparent-samples", nargs="?", default=None, type=int, action="store", dest="ip_transparent_samples")
+            mocker.call(
+                "--ip-res-scale", default=None, type=float, dest="ip_res_scale"
+            ),
+            mocker.call(
+                "--ip-sample-scale", default=None, type=float, dest="ip_sample_scale"
+            ),
+            mocker.call(
+                "--ip-disable-blur", action="store_true", dest="ip_disable_blur"
+            ),
+            mocker.call(
+                "--ip-disable-aovs", action="store_true", dest="ip_disable_aovs"
+            ),
+            mocker.call(
+                "--ip-disable-deep", action="store_true", dest="ip_disable_deep"
+            ),
+            mocker.call(
+                "--ip-disable-displacement",
+                action="store_true",
+                dest="ip_disable_displacement",
+            ),
+            mocker.call(
+                "--ip-disable-subd", action="store_true", dest="ip_disable_subd"
+            ),
+            mocker.call(
+                "--ip-disable-tilecallback",
+                action="store_true",
+                dest="ip_disable_tilecallback",
+            ),
+            mocker.call(
+                "--ip-disable-matte", action="store_true", dest="ip_disable_matte"
+            ),
+            mocker.call(
+                "--ip-bucket-size",
+                nargs="?",
+                default=None,
+                type=int,
+                action="store",
+                dest="ip_bucket_size",
+            ),
+            mocker.call(
+                "--ip-transparent-samples",
+                nargs="?",
+                default=None,
+                type=int,
+                action="store",
+                dest="ip_transparent_samples",
+            ),
         ]
         mock_parser.add_argument.assert_has_calls(calls)
 
@@ -303,9 +341,13 @@ class Test_IpOverrides(object):
 
     # filter_camera
 
-    def test_filter_camera__res_scale(self, patch_operation_logger, init_operation, properties, mocker):
+    def test_filter_camera__res_scale(
+        self, patch_operation_logger, init_operation, properties, mocker
+    ):
         """Test 'filter_camera' when scaling the resolution."""
-        mock_scale = mocker.patch("ht.pyfilter.operations.ipoverrides._scale_resolution")
+        mock_scale = mocker.patch(
+            "ht.pyfilter.operations.ipoverrides._scale_resolution"
+        )
 
         op = init_operation({"res_scale": int}, as_properties=True)
 
@@ -313,9 +355,13 @@ class Test_IpOverrides(object):
 
         properties.mock_get.assert_called_with("image:resolution")
         mock_scale.assert_called_with(properties.mock_get.return_value, op.res_scale)
-        properties.mock_set.assert_called_with("image:resolution", mock_scale.return_value)
+        properties.mock_set.assert_called_with(
+            "image:resolution", mock_scale.return_value
+        )
 
-    def test_filter_camera__sample_scale(self, init_operation, properties, patch_operation_logger, mocker):
+    def test_filter_camera__sample_scale(
+        self, init_operation, properties, patch_operation_logger, mocker
+    ):
         """Test 'filter_camera' when scaling the samples."""
         mock_scale = mocker.patch("ht.pyfilter.operations.ipoverrides._scale_samples")
 
@@ -329,7 +375,9 @@ class Test_IpOverrides(object):
 
         properties.mock_set.assert_called_with("image:samples", mock_scale.return_value)
 
-    def test_filter_camera__bucket_size(self, init_operation, properties, patch_operation_logger):
+    def test_filter_camera__bucket_size(
+        self, init_operation, properties, patch_operation_logger
+    ):
         """Test 'filter_camera' when setting the bucket size."""
         op = init_operation({"bucket_size": int}, as_properties=True)
 
@@ -337,7 +385,9 @@ class Test_IpOverrides(object):
 
         properties.mock_set.assert_called_with("image:bucket", op.bucket_size)
 
-    def test_filter_camera__disable_blur(self, init_operation, properties, patch_operation_logger, mocker):
+    def test_filter_camera__disable_blur(
+        self, init_operation, properties, patch_operation_logger, mocker
+    ):
         """Test 'filter_camera' when disabling motion blur."""
         op = init_operation({"disable_blur": True}, as_properties=True)
 
@@ -346,11 +396,13 @@ class Test_IpOverrides(object):
         properties.mock_set.has_calls(
             [
                 mocker.call("renderer:blurquality", 0),
-                mocker.call("renderer:rayblurquality", 0)
+                mocker.call("renderer:rayblurquality", 0),
             ]
         )
 
-    def test_filter_camera__disable_deep(self, init_operation, properties, patch_operation_logger):
+    def test_filter_camera__disable_deep(
+        self, init_operation, properties, patch_operation_logger
+    ):
         """Test 'filter_camera' when disabling motion deep images."""
         op = init_operation({"disable_deep": True}, as_properties=True)
 
@@ -358,7 +410,9 @@ class Test_IpOverrides(object):
 
         properties.mock_set.assert_called_with("image:deepresolver", [])
 
-    def test_filter_camera__disable_tilecallback(self, init_operation, properties, patch_operation_logger):
+    def test_filter_camera__disable_tilecallback(
+        self, init_operation, properties, patch_operation_logger
+    ):
         """Test 'filter_camera' when disabling the tile callback."""
         op = init_operation({"disable_tilecallback": True}, as_properties=True)
 
@@ -366,17 +420,23 @@ class Test_IpOverrides(object):
 
         properties.mock_set.assert_called_with("render:tilecallback", "")
 
-    def test_filter_camera__transparent_samples(self, init_operation, properties, patch_operation_logger):
+    def test_filter_camera__transparent_samples(
+        self, init_operation, properties, patch_operation_logger
+    ):
         """Test 'filter_camera' when setting the transparent samples."""
         op = init_operation({"transparent_samples": int}, as_properties=True)
 
         op.filter_camera()
 
-        properties.mock_set.assert_any_call("image:transparentsamples", op.transparent_samples)
+        properties.mock_set.assert_any_call(
+            "image:transparentsamples", op.transparent_samples
+        )
 
     # filter_instance
 
-    def test_filter_instance__disable_displacement(self, init_operation, patch_operation_logger, properties):
+    def test_filter_instance__disable_displacement(
+        self, init_operation, patch_operation_logger, properties
+    ):
         """Test 'filter_instance' when disabling displacements."""
         op = init_operation({"disable_displacement": True}, as_properties=True)
 
@@ -384,7 +444,9 @@ class Test_IpOverrides(object):
 
         properties.mock_set.assert_called_with("object:displace", [])
 
-    def test_filter_instance__disable_subd(self, init_operation, properties, patch_operation_logger):
+    def test_filter_instance__disable_subd(
+        self, init_operation, properties, patch_operation_logger
+    ):
         """Test 'filter_instance' when disabling subd's."""
         op = init_operation({"disable_subd": True}, as_properties=True)
 
@@ -392,17 +454,16 @@ class Test_IpOverrides(object):
 
         properties.mock_set.assert_called_with("object:rendersubd", 0)
 
-    def test_filter_instance__disable_matte_matte_object(self, init_operation, properties, patch_operation_logger):
+    def test_filter_instance__disable_matte_matte_object(
+        self, init_operation, properties, patch_operation_logger
+    ):
         """Test 'filter_instance' when disabling matte on an object which
         is rendering as a matte object.
 
         """
         op = init_operation({"disable_matte": True}, as_properties=True)
 
-        values = {
-            "object:matte": True,
-            "object:phantom": False,
-        }
+        values = {"object:matte": True, "object:phantom": False}
 
         properties.mock_get.side_effect = lambda name: values.get(name)
 
@@ -411,31 +472,29 @@ class Test_IpOverrides(object):
         properties.mock_get.assert_called_with("object:matte")
         properties.mock_set.assert_called_with("object:renderable", False)
 
-    def test_filter_instance__disable_matte_phantom_object(self, init_operation, properties, patch_operation_logger, mocker):
+    def test_filter_instance__disable_matte_phantom_object(
+        self, init_operation, properties, patch_operation_logger, mocker
+    ):
         """Test 'filter_instance' when disabling matte on an object which
         is rendering as a phantom object.
 
         """
         op = init_operation({"disable_matte": True}, as_properties=True)
 
-        values = {
-            "object:matte": False,
-            "object:phantom": True,
-        }
+        values = {"object:matte": False, "object:phantom": True}
 
         properties.mock_get.side_effect = lambda name: values.get(name)
 
         op.filter_instance()
 
         properties.mock_get.assert_has_calls(
-            [
-                mocker.call("object:matte"),
-                mocker.call("object:phantom")
-            ]
+            [mocker.call("object:matte"), mocker.call("object:phantom")]
         )
         properties.mock_set.assert_called_with("object:renderable", False)
 
-    def test_filter_instance__disable_matte_surface_matte(self, init_operation, properties, patch_operation_logger, mocker):
+    def test_filter_instance__disable_matte_surface_matte(
+        self, init_operation, properties, patch_operation_logger, mocker
+    ):
         """Test 'filter_instance' when disabling matte on an object which
         is has a matte shader applied.
 
@@ -445,7 +504,7 @@ class Test_IpOverrides(object):
         values = {
             "object:matte": False,
             "object:phantom": False,
-            "object:surface": "opdef:/Shop/v_matte"
+            "object:surface": "opdef:/Shop/v_matte",
         }
 
         properties.mock_get.side_effect = lambda name: values.get(name)
@@ -456,12 +515,14 @@ class Test_IpOverrides(object):
             [
                 mocker.call("object:matte"),
                 mocker.call("object:phantom"),
-                mocker.call("object:surface")
+                mocker.call("object:surface"),
             ]
         )
         properties.mock_set.assert_called_with("object:renderable", False)
 
-    def test_filter_instance__disable_matte_noop(self, init_operation, properties, patch_operation_logger, mocker):
+    def test_filter_instance__disable_matte_noop(
+        self, init_operation, properties, patch_operation_logger, mocker
+    ):
         """Test 'filter_instance' when disabling matte when the object is
         not a matte.
 
@@ -471,7 +532,7 @@ class Test_IpOverrides(object):
         values = {
             "object:matte": False,
             "object:phantom": False,
-            "object:surface": "opdef:/Shop/v_thing"
+            "object:surface": "opdef:/Shop/v_thing",
         }
 
         properties.mock_get.side_effect = lambda name: values.get(name)
@@ -482,14 +543,16 @@ class Test_IpOverrides(object):
             [
                 mocker.call("object:matte"),
                 mocker.call("object:phantom"),
-                mocker.call("object:surface")
+                mocker.call("object:surface"),
             ]
         )
         properties.mock_set.assert_not_called()
 
     # filter_material
 
-    def test_filter_material__disable_displacement(self, init_operation, properties, patch_operation_logger):
+    def test_filter_material__disable_displacement(
+        self, init_operation, properties, patch_operation_logger
+    ):
         """Test 'filter_material' when disabling displacement."""
         op = init_operation({"disable_displacement": True}, as_properties=True)
 
@@ -497,7 +560,9 @@ class Test_IpOverrides(object):
 
         properties.mock_set.assert_called_with("object:displace", [])
 
-    def test_filter_material__no_disable(self, init_operation, properties, patch_operation_logger):
+    def test_filter_material__no_disable(
+        self, init_operation, properties, patch_operation_logger
+    ):
         """Test 'filter_material' when not disabling displacement."""
         op = init_operation({"disable_displacement": False}, as_properties=True)
 
@@ -507,7 +572,9 @@ class Test_IpOverrides(object):
 
     # filter_plane
 
-    def test_filter_plane__noop(self, init_operation, properties, patch_operation_logger):
+    def test_filter_plane__noop(
+        self, init_operation, properties, patch_operation_logger
+    ):
         """Test 'filter_plane' when not disabling."""
         op = init_operation()
 
@@ -516,7 +583,9 @@ class Test_IpOverrides(object):
         properties.mock_get.assert_not_called()
         properties.mock_set.assert_not_called()
 
-    def test_filter_plane__disable_aovs(self, init_operation, properties, patch_operation_logger, mocker):
+    def test_filter_plane__disable_aovs(
+        self, init_operation, properties, patch_operation_logger, mocker
+    ):
         """Test 'filter_plane' when disabling a plane which can be disabled."""
         properties.mock_get.return_value = mocker.MagicMock(spec=str)
 
@@ -526,7 +595,9 @@ class Test_IpOverrides(object):
 
         properties.mock_set.assert_called_with("plane:disable", 1)
 
-    def test_filter_plane__disable_aovs_cf(self, init_operation, properties, patch_operation_logger):
+    def test_filter_plane__disable_aovs_cf(
+        self, init_operation, properties, patch_operation_logger
+    ):
         """Test 'filter_plane' when disabling just a 'Cf' plane."""
         properties.mock_get.return_value = "Cf"
 
@@ -536,7 +607,9 @@ class Test_IpOverrides(object):
 
         properties.mock_set.assert_called_with("plane:disable", 1)
 
-    def test_filter_plane__disable_aovs_cf_af(self, init_operation, properties, patch_operation_logger):
+    def test_filter_plane__disable_aovs_cf_af(
+        self, init_operation, properties, patch_operation_logger
+    ):
         """Test 'filter_plane' when disabling just a 'Cf+Af' plane."""
         properties.mock_get.return_value = "Cf+Af"
 
@@ -659,8 +732,8 @@ class Test_IpOverrides(object):
     [
         ((1920, 1080), 1.0, [1920, 1080]),
         ((1920, 1080), 0.5, [960, 540]),
-        ((1920, 1080), 0.333, [639, 360])
-    ]
+        ((1920, 1080), 0.333, [639, 360]),
+    ],
 )
 def test__scale_resolution(resolution, scale, expected):
     """Test the ht.pyfilter.operations.ipoverrides._scale_resolution."""
@@ -669,11 +742,7 @@ def test__scale_resolution(resolution, scale, expected):
 
 @pytest.mark.parametrize(
     "samples,scale,expected",
-    [
-        ((10, 10), 1.0, [10, 10]),
-        ((10, 10), 0.5, [5, 5]),
-        ((10, 10), 0.333, [4, 4]),
-    ]
+    [((10, 10), 1.0, [10, 10]), ((10, 10), 0.5, [5, 5]), ((10, 10), 0.333, [4, 4])],
 )
 def test__scale_sample_value(samples, scale, expected):
     """Test the ht.pyfilter.operations.ipoverrides._scale_sample_value."""
@@ -684,7 +753,9 @@ class Test_build_arg_string_from_node(object):
     """Test the ht.pyfilter.operations.ipoverrides.build_arg_string_from_node."""
 
     def test(self, mocker):
-        mock_build = mocker.patch("ht.pyfilter.operations.ipoverrides.IpOverrides.build_arg_string")
+        mock_build = mocker.patch(
+            "ht.pyfilter.operations.ipoverrides.IpOverrides.build_arg_string"
+        )
 
         mock_node = mocker.MagicMock()
         mock_node.evalParm.return_value = 0
@@ -710,7 +781,9 @@ class Test_build_arg_string_from_node(object):
 
         mock_node.evalParm.side_effect = lambda name: parm_data[name]
 
-        assert ipoverrides.build_arg_string_from_node(mock_node) == mock_build.return_value
+        assert (
+            ipoverrides.build_arg_string_from_node(mock_node) == mock_build.return_value
+        )
 
         mock_build.assert_called_with(
             res_scale=parm_data["ip_res_fraction"],
@@ -727,7 +800,9 @@ class Test_build_arg_string_from_node(object):
         )
 
     def test_no_scales(self, mocker):
-        mock_build = mocker.patch("ht.pyfilter.operations.ipoverrides.IpOverrides.build_arg_string")
+        mock_build = mocker.patch(
+            "ht.pyfilter.operations.ipoverrides.IpOverrides.build_arg_string"
+        )
 
         mock_node = mocker.MagicMock()
         mock_node.evalParm.return_value = 0
@@ -751,7 +826,9 @@ class Test_build_arg_string_from_node(object):
 
         mock_node.evalParm.side_effect = lambda name: parm_data[name]
 
-        assert ipoverrides.build_arg_string_from_node(mock_node) == mock_build.return_value
+        assert (
+            ipoverrides.build_arg_string_from_node(mock_node) == mock_build.return_value
+        )
 
         mock_build.assert_called_with(
             res_scale=None,
@@ -764,7 +841,7 @@ class Test_build_arg_string_from_node(object):
             disable_tilecallback=parm_data["ip_disable_tilecallback"],
             bucket_size=parm_data["ip_bucket_size"],
             transparent_samples=None,
-            disable_matte=parm_data["ip_disable_matte"]
+            disable_matte=parm_data["ip_disable_matte"],
         )
 
 
@@ -804,17 +881,16 @@ class Test_build_resolution_scale_display(object):
         mock_node.parm.assert_called_with("camera")
 
     def test_no_override(self, mocker):
-        mock_scale = mocker.patch("ht.pyfilter.operations.ipoverrides._scale_resolution")
+        mock_scale = mocker.patch(
+            "ht.pyfilter.operations.ipoverrides._scale_resolution"
+        )
 
         mock_scale.return_value = (960, 540)
 
         mock_camera = mocker.MagicMock(spec=hou.ObjNode)
         mock_camera.evalParmTuple.return_value = (1920, 1080)
 
-        parm_values = {
-            "override_camerares": False,
-            "ip_res_fraction": "0.5",
-        }
+        parm_values = {"override_camerares": False, "ip_res_fraction": "0.5"}
 
         mock_node = mocker.MagicMock(spec=hou.RopNode)
         mock_node.parm.return_value.evalAsNode.return_value = mock_camera
@@ -830,7 +906,9 @@ class Test_build_resolution_scale_display(object):
         mock_scale.assert_called_with((1920, 1080), 0.5)
 
     def test_override_specific(self, mocker):
-        mock_scale = mocker.patch("ht.pyfilter.operations.ipoverrides._scale_resolution")
+        mock_scale = mocker.patch(
+            "ht.pyfilter.operations.ipoverrides._scale_resolution"
+        )
         mock_scale.return_value = (250, 250)
 
         mock_camera = mocker.MagicMock(spec=hou.ObjNode)
@@ -856,7 +934,9 @@ class Test_build_resolution_scale_display(object):
         mock_scale.assert_called_with((1000, 1000), 0.25)
 
     def test_override_scaled(self, mocker):
-        mock_scale = mocker.patch("ht.pyfilter.operations.ipoverrides._scale_resolution")
+        mock_scale = mocker.patch(
+            "ht.pyfilter.operations.ipoverrides._scale_resolution"
+        )
         mock_scale.side_effect = ((960, 540), (480, 270))
 
         mock_camera = mocker.MagicMock(spec=hou.ObjNode)
@@ -879,25 +959,30 @@ class Test_build_resolution_scale_display(object):
 
         mock_node.parm.assert_called_with("camera")
 
-        calls = [
-            mocker.call((1920, 1080), 0.5),
-            mocker.call((960, 540), 0.5)
-
-        ]
+        calls = [mocker.call((1920, 1080), 0.5), mocker.call((960, 540), 0.5)]
         mock_scale.assert_has_calls(calls)
 
 
 def test_build_pyfilter_command_from_node(mocker):
     """Test the ht.pyfilter.operations.ipoverrides.build_pyfilter_command_from_node."""
-    mock_build_arg = mocker.patch("ht.pyfilter.operations.ipoverrides.build_arg_string_from_node")
-    mock_build_command = mocker.patch("ht.pyfilter.operations.ipoverrides.build_pyfilter_command")
+    mock_build_arg = mocker.patch(
+        "ht.pyfilter.operations.ipoverrides.build_arg_string_from_node"
+    )
+    mock_build_command = mocker.patch(
+        "ht.pyfilter.operations.ipoverrides.build_pyfilter_command"
+    )
 
     mock_node = mocker.MagicMock(spec=hou.RopNode)
 
-    assert ipoverrides.build_pyfilter_command_from_node(mock_node) == mock_build_command.return_value
+    assert (
+        ipoverrides.build_pyfilter_command_from_node(mock_node)
+        == mock_build_command.return_value
+    )
 
     mock_build_arg.assert_called_with(mock_node)
-    mock_build_command.assert_called_with(mock_build_arg.return_value.split.return_value)
+    mock_build_command.assert_called_with(
+        mock_build_arg.return_value.split.return_value
+    )
 
 
 def test_set_mantra_command(mocker):

@@ -17,6 +17,7 @@ from ht.pyfilter.utils import build_pyfilter_command
 # CLASSES
 # =============================================================================
 
+
 class IpOverrides(PyFilterOperation):
     """Operation to set overrides when rendering to ip.
 
@@ -104,11 +105,19 @@ class IpOverrides(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def build_arg_string(res_scale=None, sample_scale=None,  # pylint: disable=arguments-differ,too-many-arguments
-                         disable_blur=False, disable_aovs=False, disable_deep=False,
-                         disable_displacement=False, disable_subd=False,
-                         disable_tilecallback=False, bucket_size=None,
-                         transparent_samples=None, disable_matte=False):
+    def build_arg_string(  # pylint: disable=arguments-differ,too-many-arguments
+        res_scale=None,
+        sample_scale=None,
+        disable_blur=False,
+        disable_aovs=False,
+        disable_deep=False,
+        disable_displacement=False,
+        disable_subd=False,
+        disable_tilecallback=False,
+        bucket_size=None,
+        transparent_samples=None,
+        disable_matte=False,
+    ):
         """Build an argument string for this operation.
 
         :param res_scale: The resolution scale.
@@ -183,30 +192,62 @@ class IpOverrides(PyFilterOperation):
         :return:
 
         """
-        parser.add_argument("--ip-res-scale", default=None, type=float, dest="ip_res_scale")
-
-        parser.add_argument("--ip-sample-scale", default=None, type=float, dest="ip_sample_scale")
-
-        parser.add_argument("--ip-disable-blur", action="store_true", dest="ip_disable_blur")
-
-        parser.add_argument("--ip-disable-aovs", action="store_true", dest="ip_disable_aovs")
-
-        parser.add_argument("--ip-disable-deep", action="store_true", dest="ip_disable_deep")
-
-        parser.add_argument("--ip-disable-displacement", action="store_true", dest="ip_disable_displacement")
-
-        parser.add_argument("--ip-disable-subd", action="store_true", dest="ip_disable_subd")
-
-        parser.add_argument("--ip-disable-tilecallback", action="store_true", dest="ip_disable_tilecallback")
-
-        parser.add_argument("--ip-disable-matte", action="store_true", dest="ip_disable_matte")
-
         parser.add_argument(
-            "--ip-bucket-size", nargs="?", default=None, type=int, dest="ip_bucket_size", action="store"
+            "--ip-res-scale", default=None, type=float, dest="ip_res_scale"
         )
 
         parser.add_argument(
-            "--ip-transparent-samples", nargs="?", default=None, type=int, action="store", dest="ip_transparent_samples"
+            "--ip-sample-scale", default=None, type=float, dest="ip_sample_scale"
+        )
+
+        parser.add_argument(
+            "--ip-disable-blur", action="store_true", dest="ip_disable_blur"
+        )
+
+        parser.add_argument(
+            "--ip-disable-aovs", action="store_true", dest="ip_disable_aovs"
+        )
+
+        parser.add_argument(
+            "--ip-disable-deep", action="store_true", dest="ip_disable_deep"
+        )
+
+        parser.add_argument(
+            "--ip-disable-displacement",
+            action="store_true",
+            dest="ip_disable_displacement",
+        )
+
+        parser.add_argument(
+            "--ip-disable-subd", action="store_true", dest="ip_disable_subd"
+        )
+
+        parser.add_argument(
+            "--ip-disable-tilecallback",
+            action="store_true",
+            dest="ip_disable_tilecallback",
+        )
+
+        parser.add_argument(
+            "--ip-disable-matte", action="store_true", dest="ip_disable_matte"
+        )
+
+        parser.add_argument(
+            "--ip-bucket-size",
+            nargs="?",
+            default=None,
+            type=int,
+            dest="ip_bucket_size",
+            action="store",
+        )
+
+        parser.add_argument(
+            "--ip-transparent-samples",
+            nargs="?",
+            default=None,
+            type=int,
+            action="store",
+            dest="ip_transparent_samples",
         )
 
     # -------------------------------------------------------------------------
@@ -355,6 +396,7 @@ class IpOverrides(PyFilterOperation):
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
+
 def _scale_resolution(resolution, scale):
     """Scale a resolution value.
 
@@ -364,7 +406,9 @@ def _scale_resolution(resolution, scale):
     :rtype: list(int)
 
     """
-    return [int(round(value * scale)) for value in resolution]  # pylint: disable=round-builtin
+    return [
+        int(round(value * scale)) for value in resolution
+    ]  # pylint: disable=round-builtin
 
 
 def _scale_samples(samples, scale):
@@ -382,6 +426,7 @@ def _scale_samples(samples, scale):
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
 
 def build_arg_string_from_node(node):
     """Build an argument string from a Mantra node.
@@ -415,8 +460,7 @@ def build_arg_string_from_node(node):
         disable_tilecallback=node.evalParm("ip_disable_tilecallback"),
         bucket_size=node.evalParm("ip_bucket_size"),
         transparent_samples=transparent_samples,
-        disable_matte=node.evalParm("ip_disable_matte")
-
+        disable_matte=node.evalParm("ip_disable_matte"),
     )
 
 

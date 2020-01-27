@@ -26,6 +26,7 @@ _logger = logging.getLogger(__name__)
 # CLASSES
 # =============================================================================
 
+
 class RopRenderEvent(HoudiniEventGroup):
     """Event to run on ROP render script events."""
 
@@ -130,7 +131,9 @@ class RopRenderEvent(HoudiniEventGroup):
 
         """
         if "path" in scriptargs:
-            _logger.info("Wrote frame %s to %s", scriptargs["frame"], scriptargs["path"])
+            _logger.info(
+                "Wrote frame %s to %s", scriptargs["frame"], scriptargs["path"]
+            )
 
         else:
             _logger.info("Wrote frame %s", scriptargs["frame"])
@@ -139,6 +142,7 @@ class RopRenderEvent(HoudiniEventGroup):
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
+
 
 def _get_target_file(node):
     """Attempt to determine the target output file:
@@ -186,12 +190,15 @@ def _print_frame_write(scriptargs):
             pass
 
         else:
-            _logger.info("Wrote frame %s to %s", scriptargs["frame"], scriptargs["path"])
+            _logger.info(
+                "Wrote frame %s to %s", scriptargs["frame"], scriptargs["path"]
+            )
 
 
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
 
 def build_scriptargs(node=None):
     """Build relevant scriptargs for this action.

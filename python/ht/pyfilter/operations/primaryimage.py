@@ -18,6 +18,7 @@ _logger = logging.getLogger(__name__)
 # CLASSES
 # =============================================================================
 
+
 class SetPrimaryImage(PyFilterOperation):
     """Operation to modify the primary image path.
 
@@ -51,7 +52,9 @@ class SetPrimaryImage(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def build_arg_string(primary_image_path=None, disable_primary_image=False):  # pylint: disable=arguments-differ
+    def build_arg_string(
+        primary_image_path=None, disable_primary_image=False
+    ):  # pylint: disable=arguments-differ
         """Build an argument string for this operation.
 
         :param primary_image_path: The primary image path to set.
@@ -84,9 +87,7 @@ class SetPrimaryImage(PyFilterOperation):
         parser.add_argument("--primary-image-path", dest="primary_image_path")
 
         parser.add_argument(
-            "--disable-primary-image",
-            action="store_true",
-            dest="disable_primary_image"
+            "--disable-primary-image", action="store_true", dest="disable_primary_image"
         )
 
     # -------------------------------------------------------------------------

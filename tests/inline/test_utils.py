@@ -21,6 +21,7 @@ import hou
 # CLASSES
 # =============================================================================
 
+
 def test_build_c_double_array():
     """Test ht.inline.utils.build_c_double_array."""
     values = [float(val) for val in range(5)]
@@ -232,9 +233,7 @@ class Test_get_attrib_owner_from_geometry_entity_type(object):
         mock_entity_type = mocker.MagicMock()
         mock_owner_value = mocker.MagicMock(spec=int)
 
-        data = {
-            mock_entity_type: mock_owner_value
-        }
+        data = {mock_entity_type: mock_owner_value}
 
         mocker.patch("ht.inline.utils._GEOMETRY_ATTRIB_MAP", data)
 
@@ -248,9 +247,7 @@ class Test_get_attrib_owner_from_geometry_entity_type(object):
 
         mock_owner_value = mocker.MagicMock(spec=int)
 
-        data = {
-            mock_parent_type: mock_owner_value
-        }
+        data = {mock_parent_type: mock_owner_value}
 
         mocker.patch("ht.inline.utils._GEOMETRY_ATTRIB_MAP", data)
 
@@ -261,9 +258,7 @@ class Test_get_attrib_owner_from_geometry_entity_type(object):
     def test_invalid_type(self, mocker):
         mock_owner_value = mocker.MagicMock(spec=int)
 
-        data = {
-            mocker.MagicMock: mock_owner_value
-        }
+        data = {mocker.MagicMock: mock_owner_value}
 
         mocker.patch("ht.inline.utils._GEOMETRY_ATTRIB_MAP", data)
 
@@ -385,9 +380,7 @@ def test_get_nodes_from_paths(mocker):
 
     assert result == (mock_hou_node.return_value, mock_hou_node.return_value)
 
-    mock_hou_node.assert_has_calls(
-        [mocker.call(mock_path2), mocker.call(mock_path3)]
-    )
+    mock_hou_node.assert_has_calls([mocker.call(mock_path2), mocker.call(mock_path3)])
 
 
 class Test_get_points_from_list(object):
@@ -410,7 +403,9 @@ class Test_get_points_from_list(object):
 
         assert result == mock_geometry.globPoints.return_value
 
-        mock_geometry.globPoints.assert_called_with("{} {}".format(mock_int1, mock_int2))
+        mock_geometry.globPoints.assert_called_with(
+            "{} {}".format(mock_int1, mock_int2)
+        )
 
 
 class Test_get_prims_from_list(object):

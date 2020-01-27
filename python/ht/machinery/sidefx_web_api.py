@@ -25,20 +25,15 @@ from termcolor import colored, cprint
 # GLOBALS
 # =============================================================================
 
-_RELEASE_TYPE_MAP = {
-    "devel": ("Daily", "white"),
-    "gold": ("Production", "blue")
-}
+_RELEASE_TYPE_MAP = {"devel": ("Daily", "white"), "gold": ("Production", "blue")}
 
-_STATUS_MAP = {
-    "good": "white",
-    "bad": "red"
-}
+_STATUS_MAP = {"good": "white", "bad": "red"}
 
 
 # =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class _Service(object):
     """Class representing a connection to the SideFX Web API."""
@@ -49,9 +44,7 @@ class _Service(object):
 
         # Get the access token information based on those credentials.
         access_token, access_token_expiry_time = _get_access_token_and_expiry_time(
-            data["access_token_url"],
-            data["client_id"],
-            data["client_secret"]
+            data["access_token_url"], data["client_id"], data["client_secret"]
         )
 
         self.access_token = access_token
@@ -61,7 +54,9 @@ class _Service(object):
     def __getattr__(self, attr_name):
         return _APIFunction(attr_name, self)
 
-    def get_available_builds(self, product, version=None, platform=None, only_production=None):
+    def get_available_builds(
+        self, product, version=None, platform=None, only_production=None
+    ):
         """Get a list of available builds matching the criteria.
 
         :param product: The name of the product to download.
@@ -77,10 +72,7 @@ class _Service(object):
 
         """
         releases_list = self.download.get_daily_builds_list(
-            product,
-            version=version,
-            platform=platform,
-            only_production=only_production
+            product, version=version, platform=platform, only_production=only_production
         )
 
         # Sort the release list by integer version/build since it will be sorted by string
@@ -138,13 +130,14 @@ class _APIFunction(object):
             self.service.access_token,
             self.function_name,
             args,
-            kwargs
+            kwargs,
         )
 
 
 # =============================================================================
 # EXCEPTIONS
 # =============================================================================
+
 
 class APIError(Exception):
     """Raised from the client if the server generated an error while calling
@@ -172,6 +165,7 @@ class AuthorizationError(Exception):
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
+
 def _get_access_token_and_expiry_time(access_token_url, client_id, client_secret_key):
     """Given an API client (id and secret key) that is allowed to make API
     calls, return an access token that can be used to make calls.
@@ -190,14 +184,19 @@ def _get_access_token_and_expiry_time(access_token_url, client_id, client_secret
         access_token_url,
         headers={
             "Authorization": u"Basic {}".format(
-                base64.b64encode("{}:{}".format(client_id, client_secret_key).encode()).decode('utf-8')
-            ),
-        }
+                base64.b64encode(
+                    "{}:{}".format(client_id, client_secret_key).encode()
+                ).decode("utf-8")
+            )
+        },
     )
 
     if response.status_code != 200:
         raise AuthorizationError(
-            response.status_code, "{}: {}".format(response.status_code, _extract_traceback_from_response(response))
+            response.status_code,
+            "{}: {}".format(
+                response.status_code, _extract_traceback_from_response(response)
+            ),
         )
 
     response_json = response.json()
@@ -206,7 +205,9 @@ def _get_access_token_and_expiry_time(access_token_url, client_id, client_secret
     return response_json["access_token"], access_token_expiry_time
 
 
-def _call_api_with_access_token(endpoint_url, access_token, function_name, args, kwargs):
+def _call_api_with_access_token(
+    endpoint_url, access_token, function_name, args, kwargs
+):
     """Call into the API using an access token.
 
     :param endpoint_url: The service endpoint url.
@@ -227,7 +228,7 @@ def _call_api_with_access_token(endpoint_url, access_token, function_name, args,
     response = requests.post(
         endpoint_url,
         headers={"Authorization": "Bearer " + access_token},
-        data=dict(json=json.dumps([function_name, args, kwargs]),)
+        data=dict(json=json.dumps([function_name, args, kwargs])),
     )
 
     if response.status_code == 200:
@@ -266,8 +267,14 @@ def _extract_traceback_from_response(response):
     return str(six.moves.html_parser.HTMLParser().unescape(traceback))
 
 
-def _get_build_to_download(version, build=None, product="houdini", platform="linux", only_production=False,
-                           allow_bad=False):
+def _get_build_to_download(
+    version,
+    build=None,
+    product="houdini",
+    platform="linux",
+    only_production=False,
+    allow_bad=False,
+):
     """Determine the build to actually download.
 
     :param version: The major.minor version to download.
@@ -291,10 +298,7 @@ def _get_build_to_download(version, build=None, product="houdini", platform="lin
 
     # Get a list of builds which match the criteria.
     releases_list = service.get_available_builds(
-        product,
-        version=version,
-        platform=platform,
-        only_production=only_production
+        product, version=version, platform=platform, only_production=only_production
     )
 
     # A filtered list of builds.
@@ -356,20 +360,28 @@ def _verify_file_checksum(file_path, hash_value):
     # Verify the file checksum is matching
     file_hash = hashlib.md5()
 
-    with open(file_path, 'rb') as handle:
-        for chunk in iter(lambda: handle.read(4096), b''):
+    with open(file_path, "rb") as handle:
+        for chunk in iter(lambda: handle.read(4096), b""):
             file_hash.update(chunk)
 
     if file_hash.hexdigest() != hash_value:
-        raise Exception('Checksum does not match!')
+        raise Exception("Checksum does not match!")
 
 
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
 
-def download_build(download_path, version, build=None, product="houdini",  # pylint: disable=too-many-locals
-                   platform="linux", only_production=False, allow_bad=False):
+
+def download_build(  # pylint: disable=too-many-locals
+    download_path,
+    version,
+    build=None,
+    product="houdini",
+    platform="linux",
+    only_production=False,
+    allow_bad=False,
+):
     """Download a build to target path.
 
     :param download_path: The path to download the build to.
@@ -390,7 +402,9 @@ def download_build(download_path, version, build=None, product="houdini",  # pyl
     :rtype: str
 
     """
-    release_info = _get_build_to_download(version, build, product, platform, only_production, allow_bad)
+    release_info = _get_build_to_download(
+        version, build, product, platform, only_production, allow_bad
+    )
 
     if release_info is None:
         build_str = version
@@ -408,18 +422,24 @@ def download_build(download_path, version, build=None, product="houdini",  # pyl
     if not os.path.isdir(download_path):
         os.makedirs(download_path)
 
-    target_path = os.path.join(download_path, release_info['filename'])
+    target_path = os.path.join(download_path, release_info["filename"])
 
-    request = requests.get(release_info['download_url'], stream=True)
+    request = requests.get(release_info["download_url"], stream=True)
 
     if request.status_code == 200:
         six.print_("Downloading to {}".format(target_path))
-        six.print_("\tFile size: {}".format(humanfriendly.format_size(file_size, binary=True)))
-        six.print_("\tDownload chunk size: {}\n".format(humanfriendly.format_size(chunk_size, binary=True)))
+        six.print_(
+            "\tFile size: {}".format(humanfriendly.format_size(file_size, binary=True))
+        )
+        six.print_(
+            "\tDownload chunk size: {}\n".format(
+                humanfriendly.format_size(chunk_size, binary=True)
+            )
+        )
 
         total = 0
 
-        with open(target_path, 'wb') as handle:
+        with open(target_path, "wb") as handle:
             sys.stdout.write("0% complete")
             sys.stdout.flush()
 
@@ -436,7 +456,7 @@ def download_build(download_path, version, build=None, product="houdini",  # pyl
         six.print_("\n\nDownload complete")
 
     else:
-        raise Exception('Error downloading file!')
+        raise Exception("Error downloading file!")
 
     # Verify the file checksum is matching
     _verify_file_checksum(target_path, release_info["hash"])
@@ -444,7 +464,9 @@ def download_build(download_path, version, build=None, product="houdini",  # pyl
     return target_path
 
 
-def list_builds(version=None, product="houdini", platform="linux", only_production=False):
+def list_builds(
+    version=None, product="houdini", platform="linux", only_production=False
+):
     """Display a table of builds available to download.
 
     Dates which care colored green indicate they are today's build.
@@ -464,10 +486,7 @@ def list_builds(version=None, product="houdini", platform="linux", only_producti
 
     # Get a list of builds which match the criteria.
     releases_list = service.get_available_builds(
-        product,
-        version=version,
-        platform=platform,
-        only_production=only_production,
+        product, version=version, platform=platform, only_production=only_production
     )
 
     headers = ["Build", "Date", "Type"]
@@ -487,7 +506,10 @@ def list_builds(version=None, product="houdini", platform="linux", only_producti
             build_date = colored(build_date, "green")
 
         row = [
-            colored("{}.{}".format(release["version"], release["build"]), _STATUS_MAP[release["status"]]),
+            colored(
+                "{}.{}".format(release["version"], release["build"]),
+                _STATUS_MAP[release["status"]],
+            ),
             build_date,
             colored(release_type, release_color),
         ]

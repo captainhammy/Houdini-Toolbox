@@ -37,6 +37,7 @@ _PYFILTER_MANAGER = None
 # FUNCTIONS
 # =============================================================================
 
+
 def filterCamera():
     """Modify image related properties.
 
@@ -80,7 +81,9 @@ def filterError(level, message, prefix):
     This function allows you to disable the printing of messages.
 
     """
-    result = _PYFILTER_MANAGER.run_operations_for_stage("filter_error", level, message, prefix)
+    result = _PYFILTER_MANAGER.run_operations_for_stage(
+        "filter_error", level, message, prefix
+    )
 
     return result
 

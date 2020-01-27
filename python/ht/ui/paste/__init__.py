@@ -16,6 +16,7 @@ import hou
 # FUNCTIONS
 # ==============================================================================
 
+
 def copy_item(item):
     """Copy a single item to a target file."""
     items = (item,)
@@ -109,7 +110,9 @@ def paste_items(scriptargs=None):
     pos = current_pane.cursorPosition()
 
     # Run the paste dialog.
-    dialog = dialogs.PasteItemsDialog(current_pane, pos, pos, parent=hou.qt.mainWindow())
+    dialog = dialogs.PasteItemsDialog(
+        current_pane, pos, pos, parent=hou.qt.mainWindow()
+    )
     dialog.exec_()
 
 

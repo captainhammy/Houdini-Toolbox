@@ -24,6 +24,7 @@ imp.reload(ht.nodes.styles.event)
 # CLASSES
 # =============================================================================
 
+
 class Test_StyleNodeEvent(object):
     """Test ht.nodes.styles.event.StyleNodeEvent class."""
 
@@ -41,7 +42,9 @@ class Test_StyleNodeEvent(object):
     # Methods
 
     def test_style_node_by_name(self, mocker):
-        mocker.patch.object(ht.nodes.styles.event.StyleNodeEvent, "__init__", lambda x: None)
+        mocker.patch.object(
+            ht.nodes.styles.event.StyleNodeEvent, "__init__", lambda x: None
+        )
         mock_manager = mocker.patch("ht.nodes.styles.event.MANAGER", autospec=True)
 
         mock_node = mocker.MagicMock(spec=hou.Node)
@@ -55,7 +58,9 @@ class Test_StyleNodeEvent(object):
         mock_manager.style_node_by_name.assert_called_with(mock_node)
 
     def test_style_node_on_creation(self, mocker):
-        mocker.patch.object(ht.nodes.styles.event.StyleNodeEvent, "__init__", lambda x: None)
+        mocker.patch.object(
+            ht.nodes.styles.event.StyleNodeEvent, "__init__", lambda x: None
+        )
         mock_manager = mocker.patch("ht.nodes.styles.event.MANAGER", autospec=True)
 
         mock_node = mocker.MagicMock(spec=hou.Node)

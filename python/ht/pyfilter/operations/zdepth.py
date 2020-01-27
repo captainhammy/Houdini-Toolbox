@@ -13,6 +13,7 @@ from ht.pyfilter.property import get_property, set_property
 # CLASSES
 # =============================================================================
 
+
 class ZDepthPass(PyFilterOperation):
     """Force the render to only contain C and Pz planes.
 
@@ -74,10 +75,7 @@ class ZDepthPass(PyFilterOperation):
         :return:
 
         """
-        parser.add_argument(
-            "--zdepth",
-            action="store_true"
-        )
+        parser.add_argument("--zdepth", action="store_true")
 
     # -------------------------------------------------------------------------
     # METHODS
@@ -139,7 +137,7 @@ class ZDepthPass(PyFilterOperation):
             self.data["set_pz"] = True
 
         # Disable any other planes.
-        elif channel not in ("C", ):
+        elif channel not in ("C",):
             set_property("plane:disable", True)
 
     def process_parsed_args(self, filter_args):

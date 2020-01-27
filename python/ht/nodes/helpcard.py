@@ -22,7 +22,9 @@ import hou
 # GLOBALS
 # =============================================================================
 
-_PATH = os.path.join(os.path.expandvars("$TOOLBOXDIR"), "resources", "help_template.yaml")
+_PATH = os.path.join(
+    os.path.expandvars("$TOOLBOXDIR"), "resources", "help_template.yaml"
+)
 
 with open(_PATH) as handle:
     _TEMPLATES = yaml.safe_load(handle)
@@ -35,15 +37,13 @@ _MULTIPARM_TYPES = (
 )
 
 # Parameter types to ignore.
-_TEMPLATES_TO_IGNORE = (
-    hou.SeparatorParmTemplate,
-    hou.LabelParmTemplate,
-)
+_TEMPLATES_TO_IGNORE = (hou.SeparatorParmTemplate, hou.LabelParmTemplate)
 
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
+
 
 def _add_inputs(string_buf, node):
     """Create the INPUTS section.
@@ -86,7 +86,9 @@ def _add_using_section(string_buf, node_type):
 
     tool_tab = None
 
-    tool_name = hou.shelves.defaultToolName(node_type.category().name(), node_type.name())
+    tool_name = hou.shelves.defaultToolName(
+        node_type.category().name(), node_type.name()
+    )
     tool = hou.shelves.tool(tool_name)
 
     if tool is not None:
@@ -100,11 +102,7 @@ def _add_using_section(string_buf, node_type):
 
     string_buf.write(
         template.render(
-            {
-                "label": node_type.description(),
-                "icon": icon,
-                "tool_tab": tool_tab
-            }
+            {"label": node_type.description(), "icon": icon, "tool_tab": tool_tab}
         )
     )
 
@@ -132,7 +130,9 @@ def _add_folder_help(parm_template, items, in_multiparm=False):
     if parm_template.folderType() in _MULTIPARM_TYPES:
         in_multiparm = True
 
-    _process_parm_templates(folder_items, parm_template.parmTemplates(), in_multiparm=in_multiparm)
+    _process_parm_templates(
+        folder_items, parm_template.parmTemplates(), in_multiparm=in_multiparm
+    )
 
     if isinstance(items, OrderedDict):
         items[result] = folder_items
@@ -155,10 +155,7 @@ def _add_help_for_parameter(parm_template, items, in_multiparm=False):
     :return:
 
     """
-    args = {
-        "label": parm_template.label(),
-        "id": parm_template.name()
-    }
+    args = {"label": parm_template.label(), "id": parm_template.name()}
 
     template = _get_template("parameter_template", in_multiparm)
 
@@ -197,7 +194,9 @@ def _add_parameters_section(string_buf, node_type):
 
     parameter_items = []
 
-    _process_parm_templates(parameter_items, node_type.parmTemplateGroup().parmTemplates())
+    _process_parm_templates(
+        parameter_items, node_type.parmTemplateGroup().parmTemplates()
+    )
 
     # Convert the items to strings and add them to the buffer.
     _get_help_text(string_buf, parameter_items, 0)
@@ -220,7 +219,7 @@ def _create_header(string_buf, node_type):
             {
                 "context": node_type.category().name(),
                 "internal": node_type.name(),
-                "icon": _resolve_icon(node_type.icon(), node_type)
+                "icon": _resolve_icon(node_type.icon(), node_type),
             }
         )
     )
@@ -229,13 +228,7 @@ def _create_header(string_buf, node_type):
 
     header = _get_template("header_template")
 
-    string_buf.write(
-        header.render(
-            {
-                "label": node_type.description()
-            }
-        )
-    )
+    string_buf.write(header.render({"label": node_type.description()}))
 
     string_buf.write("\n\n")
 
@@ -278,7 +271,7 @@ def _get_help_text(string_buf, items, indent):
     """
     if isinstance(items, OrderedDict):
         for key, value in items.items():
-            for line in key.split('\n'):
+            for line in key.split("\n"):
                 string_buf.write("{}{}\n".format("    " * indent, line))
 
             string_buf.write("\n")
@@ -290,7 +283,7 @@ def _get_help_text(string_buf, items, indent):
             _get_help_text(string_buf, value, indent)
 
     else:
-        for line in items.split('\n'):
+        for line in items.split("\n"):
             string_buf.write("{}{}\n".format("    " * indent, line))
 
         string_buf.write("\n")
@@ -315,7 +308,9 @@ def _process_parm_templates(items, templates, in_multiparm=False):
         if isinstance(parm_template, _TEMPLATES_TO_IGNORE):
             continue
 
-        if not isinstance(parm_template, (hou.FolderParmTemplate, hou.FolderSetParmTemplate)):
+        if not isinstance(
+            parm_template, (hou.FolderParmTemplate, hou.FolderSetParmTemplate)
+        ):
             _add_help_for_parameter(parm_template, items, in_multiparm)
 
         else:
@@ -352,6 +347,7 @@ def _resolve_icon(icon, node_type):
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
 
 def generate_help_card(node, inputs=False, related=False, using=False):
     """Generate help card text for a node.

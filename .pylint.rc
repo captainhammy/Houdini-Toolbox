@@ -1,7 +1,7 @@
 
 [MASTER]
 
-extension-pkg-whitelist=PySide2
+extension-pkg-whitelist=PySide2,PySide2.QtGui
 
 ignore=CVS
 ignore-patterns=icons.py
@@ -22,9 +22,11 @@ disable=import-error,
 	no-absolute-import,
 	duplicate-code,
 	fixme,
-	too-many-lines
+	too-many-lines,
+	bad-continuation
 
-enable=c-extension-no-member
+enable=c-extension-no-member,
+    no-else-return
 
 [REPORTS]
 
@@ -153,7 +155,7 @@ ignored-classes=optparse.Values,
 # (useful for modules/projects where namespaces are manipulated during runtime
 # and thus existing member attributes cannot be deduced by static analysis. It
 # supports qualified module names, as well as Unix pattern matching.
-ignored-modules=
+ignored-modules=PySide2
 
 # Show a hint with possible names when a member name was not found. The aspect
 # of finding the hint is based on edit distance.

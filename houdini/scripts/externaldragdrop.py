@@ -15,6 +15,7 @@ from ht.events import SceneEvents, run_event
 # FUNCTIONS
 # =============================================================================
 
+
 def dropAccept(file_paths):  # pylint: disable=invalid-name
     """Accept a list of files.
 
@@ -27,7 +28,13 @@ def dropAccept(file_paths):  # pylint: disable=invalid-name
 
     """
     # Let Houdini handle dropping .hip files.
-    if any([file_path for file_path in file_paths if os.path.splitext(file_path)[1] == ".hip"]):
+    if any(
+        [
+            file_path
+            for file_path in file_paths
+            if os.path.splitext(file_path)[1] == ".hip"
+        ]
+    ):
         return False
 
     scriptargs = {"file_paths": file_paths}

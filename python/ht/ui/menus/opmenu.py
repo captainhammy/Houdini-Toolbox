@@ -12,6 +12,7 @@ from ht.ui.paste import copy_item
 # FUNCTIONS
 # =============================================================================
 
+
 def create_absolute_reference_copy(scriptargs):
     """Create an absolute reference copy of a node.
 
@@ -20,9 +21,11 @@ def create_absolute_reference_copy(scriptargs):
     :return:
 
     """
-    node = scriptargs['node']
+    node = scriptargs["node"]
 
-    node.parent().copyItems([node], channel_reference_originals=True, relative_references=False)
+    node.parent().copyItems(
+        [node], channel_reference_originals=True, relative_references=False
+    )
 
 
 def save_item_to_file(scriptargs):
@@ -33,4 +36,4 @@ def save_item_to_file(scriptargs):
     :return:
 
     """
-    copy_item(scriptargs['node'])
+    copy_item(scriptargs["node"])

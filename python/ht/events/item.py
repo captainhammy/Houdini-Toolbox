@@ -12,6 +12,7 @@ from ht.events.stats import HoudiniEventItemStats
 # IMPORTS
 # =============================================================================
 
+
 class HoudiniEventItem(object):
     """Class responsible for calling callable methods.
 
@@ -79,9 +80,7 @@ class HoudiniEventItem(object):
 
     def __repr__(self):
         return "<{} {} ({} callables)>".format(
-            self.__class__.__name__,
-            self.name,
-            len(self.callables)
+            self.__class__.__name__, self.name, len(self.callables)
         )
 
     # -------------------------------------------------------------------------
@@ -146,7 +145,9 @@ class ExclusiveHoudiniEventItem(HoudiniEventItem):
     _exclusive_map = {}
 
     def __init__(self, callables, name, priority=1, stat_tags=None):
-        super(ExclusiveHoudiniEventItem, self).__init__(callables, name, priority, stat_tags)
+        super(ExclusiveHoudiniEventItem, self).__init__(
+            callables, name, priority, stat_tags
+        )
 
         # Get the current entry (or add this item if one isn't set.)
         exclusive_item = self._exclusive_map.setdefault(name, self)

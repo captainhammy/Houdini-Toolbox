@@ -15,6 +15,7 @@ from ht.pyfilter import utils
 # CLASSES
 # =============================================================================
 
+
 class Test_build_pyfilter_command(object):
     """Test ht.pyfilter.utils.build_pyfilter_command"""
 
@@ -68,7 +69,9 @@ class Test_build_pyfilter_command(object):
 
         args = ["-arg1=1", "-arg2"]
 
-        result = utils.build_pyfilter_command(pyfilter_args=args, pyfilter_path=mock_path)
+        result = utils.build_pyfilter_command(
+            pyfilter_args=args, pyfilter_path=mock_path
+        )
 
         assert result == '-P "{} {}"'.format(mock_path, " ".join(args))
 

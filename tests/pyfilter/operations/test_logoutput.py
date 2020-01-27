@@ -15,6 +15,7 @@ from ht.pyfilter.operations import logoutput
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def init_operation(mocker):
     """Fixture to initialize an operation."""
@@ -35,6 +36,7 @@ def patch_logger(mocker):
 # =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class Test_LogOutput(object):
     """Test the ht.pyfilter.operations.logoutput.LogOutput object."""
@@ -57,7 +59,7 @@ class Test_LogOutput(object):
 
         assert op.filter_error(level, mock_message, mock_prefix)
 
-        mock_message.split.assert_called_with('\n')
+        mock_message.split.assert_called_with("\n")
 
         patch_logger.error.assert_has_calls(
             [mocker.call(mock_message1), mocker.call(mock_message2)]
@@ -77,7 +79,7 @@ class Test_LogOutput(object):
 
         assert op.filter_error(level, mock_message, mock_prefix)
 
-        mock_message.split.assert_called_with('\n')
+        mock_message.split.assert_called_with("\n")
 
         patch_logger.warning.assert_called_with(mock_message)
 
@@ -94,7 +96,7 @@ class Test_LogOutput(object):
 
         assert op.filter_error(level, mock_message, mock_prefix)
 
-        mock_message.split.assert_called_with('\n')
+        mock_message.split.assert_called_with("\n")
 
         patch_logger.info.assert_called_with(mock_message)
 
@@ -111,6 +113,6 @@ class Test_LogOutput(object):
 
         assert op.filter_error(level, mock_message, mock_prefix)
 
-        mock_message.split.assert_called_with('\n')
+        mock_message.split.assert_called_with("\n")
 
         patch_logger.debug.assert_called_with(mock_message)

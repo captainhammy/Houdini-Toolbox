@@ -12,6 +12,7 @@ from ht.pyfilter import property as prop
 # CLASSES
 # =============================================================================
 
+
 class Test__parse_string_for_bool(object):
     """Test ht.pyfilter.property._parse_string_for_bool."""
 

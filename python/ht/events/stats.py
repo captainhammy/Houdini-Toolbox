@@ -20,6 +20,7 @@ _logger = logging.getLogger(__name__)
 # CLASSES
 # =============================================================================
 
+
 class _StatsMeta(type):
     """Metaclass for HoudiniEventStats objects.
 
@@ -115,10 +116,7 @@ class HoudiniEventStats(object):
 
     def __repr__(self):
         return "<{}: {} run_count={} total_time={:0.3f}>".format(
-            self.__class__.__name__,
-            self.name,
-            self.run_count,
-            self.total_time,
+            self.__class__.__name__, self.name, self.run_count, self.total_time
         )
 
     def __enter__(self):
@@ -210,7 +208,9 @@ class HoudiniEventItemStats(HoudiniEventStats):
     """
 
     def __init__(self, name, tags=None, post_report=False):
-        super(HoudiniEventItemStats, self).__init__(name, tags=tags, post_report=post_report)
+        super(HoudiniEventItemStats, self).__init__(
+            name, tags=tags, post_report=post_report
+        )
 
         self._item_stats = OrderedDict()
 
@@ -278,6 +278,7 @@ class HoudiniEventItemStats(HoudiniEventStats):
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
+
 def _get_matching_stats(stats, tags):
     """Filter a list of stats for ones which match the tags.
 
@@ -306,6 +307,7 @@ def _get_matching_stats(stats, tags):
 # FUNCTIONS
 # =============================================================================
 
+
 def get_event_stats(matching_tags=None):
     """Get a list of event item related stats, optionally filtered by tag.
 
@@ -315,7 +317,9 @@ def get_event_stats(matching_tags=None):
     :rtype: tuple(HoudiniEventStats)
 
     """
-    all_stats = _StatsMeta._instances.get(HoudiniEventStats, {}).values()  # pylint: disable=protected-access
+    all_stats = _StatsMeta._instances.get(  # pylint: disable=protected-access
+        HoudiniEventStats, {}
+    ).values()
 
     if matching_tags is None:
         return tuple(all_stats)
@@ -332,7 +336,9 @@ def get_item_stats(matching_tags=None):
     :rtype: tuple(HoudiniEventItemStats)
 
     """
-    all_stats = _StatsMeta._instances.get(HoudiniEventItemStats, {}).values()  # pylint: disable=protected-access
+    all_stats = _StatsMeta._instances.get(  # pylint: disable=protected-access
+        HoudiniEventItemStats, {}
+    ).values()
 
     if matching_tags is None:
         return tuple(all_stats)

@@ -24,6 +24,7 @@ import hou
 # CLASSES
 # =============================================================================
 
+
 class AOVManager(object):
     """This class is for managing and applying AOVs at render time."""
 
@@ -39,10 +40,7 @@ class AOVManager(object):
     # -------------------------------------------------------------------------
 
     def __repr__(self):
-        return "<AOVManager AOVs:{} groups:{}>".format(
-            len(self.aovs),
-            len(self.groups),
-        )
+        return "<AOVManager AOVs:{} groups:{}>".format(len(self.aovs), len(self.groups))
 
     # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
@@ -217,18 +215,8 @@ class AOVManager(object):
 
         # The parameter that defines which automatic aovs to add.
         parms = {
-            "enable": soho.SohoParm(
-                "enable_auto_aovs",
-                "int",
-                [1],
-                skipdefault=False
-            ),
-            "auto_aovs": soho.SohoParm(
-                "auto_aovs",
-                "str",
-                [""],
-                skipdefault=False
-            ),
+            "enable": soho.SohoParm("enable_auto_aovs", "int", [1], skipdefault=False),
+            "auto_aovs": soho.SohoParm("auto_aovs", "str", [""], skipdefault=False),
         }
 
         # Attempt to evaluate the parameter.
@@ -292,10 +280,10 @@ class AOVManager(object):
         """
         result = []
 
-        aov_str = aov_str.replace(',', ' ')
+        aov_str = aov_str.replace(",", " ")
 
         for name in aov_str.split():
-            if name.startswith('@'):
+            if name.startswith("@"):
                 name = name[1:]
 
                 if name in self.groups:
@@ -597,13 +585,14 @@ class AOVFile(object):
         if path is None:
             path = self.path
 
-        with open(path, 'w') as handle:
+        with open(path, "w") as handle:
             json.dump(data, handle, indent=4)
 
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
+
 
 def _find_aov_files():
     """Find any .json files that should be read.
@@ -656,13 +645,13 @@ def _get_aov_path_folders():
 
     # If '&' is in the path then following Houdini path conventions we'll
     # search through the HOUDINI_PATH as well.
-    if '&' in search_path:
+    if "&" in search_path:
         # Find any config/aovs folders in HOUDINI_PATH.
         directories = _find_houdinipath_aov_folders()
 
         # If there are any then we replace the '&' with those paths.
         if directories:
-            search_path = search_path.replace('&', ':'.join(directories))
+            search_path = search_path.replace("&", ":".join(directories))
 
     return tuple(search_path.split(":"))
 
@@ -670,6 +659,7 @@ def _get_aov_path_folders():
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
 
 def build_menu_script():
     """Build a menu script for choosing AOVs and groups.
@@ -720,9 +710,7 @@ def load_json_files():
 
     """
     result = hou.ui.selectFile(
-        pattern="*.json",
-        chooser_mode=hou.fileChooserMode.Read,
-        multiple_select=True,
+        pattern="*.json", chooser_mode=hou.fileChooserMode.Read, multiple_select=True
     )
 
     paths = result.split(" ; ")

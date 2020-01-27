@@ -18,6 +18,7 @@ _logger = logging.getLogger("mantra")
 # CLASSES
 # =============================================================================
 
+
 class LogOutput(PyFilterOperation):
     """Operation to log Mantra output."""
 
@@ -40,7 +41,7 @@ class LogOutput(PyFilterOperation):
 
         """
         # Split message by newlines so we can log each line.
-        messages = message.split('\n')
+        messages = message.split("\n")
 
         for msg in messages:
             # Verbosity of 0 is always for errors.

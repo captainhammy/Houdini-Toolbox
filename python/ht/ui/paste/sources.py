@@ -27,6 +27,7 @@ import hou
 # CLASSES
 # ==============================================================================
 
+
 class SourceManager(object):
     """Manager class for all source objects."""
 
@@ -41,6 +42,7 @@ class SourceManager(object):
     def sources(self):
         """list(ht.ui.paste.sources.CopyPasteSource): List of all available sources."""
         return self._sources
+
 
 # Sources
 
@@ -185,7 +187,7 @@ class HomeToolDirSource(CopyPasteSource):
         """
         sidecar_path = base_path.replace(self._extension, ".json")
 
-        with open(sidecar_path, 'w') as handle:
+        with open(sidecar_path, "w") as handle:
             json.dump(data, handle, indent=4)
 
         return sidecar_path
@@ -238,9 +240,13 @@ class HomeToolDirSource(CopyPasteSource):
         :rtype: ht.ui.paste.helpers.HomeToolDirItemsCopyHelperWidget
 
         """
-        return ht.ui.paste.helpers.HomeToolDirItemsCopyHelperWidget(self, *args, **kwargs)
+        return ht.ui.paste.helpers.HomeToolDirItemsCopyHelperWidget(
+            self, *args, **kwargs
+        )
 
-    def create_source(self, context, name, description=None):  # pylint: disable=arguments-differ
+    def create_source(
+        self, context, name, description=None
+    ):  # pylint: disable=arguments-differ
         """Create a new item source.
 
         :param context: The operator context of the source.
@@ -265,7 +271,7 @@ class HomeToolDirSource(CopyPasteSource):
             "author": getpass.getuser(),
             "name": name,
             "context": context,
-            "date": ht.ui.paste.utils.date_to_string(datetime.datetime.now())
+            "date": ht.ui.paste.utils.date_to_string(datetime.datetime.now()),
         }
 
         if description is not None:
@@ -312,7 +318,9 @@ class HomeToolDirSource(CopyPasteSource):
         :rtype: ht.ui.paste.helpers.HomeToolDirItemsPasteHelperWidget
 
         """
-        return ht.ui.paste.helpers.HomeToolDirItemsPasteHelperWidget(self, *args, **kwargs)
+        return ht.ui.paste.helpers.HomeToolDirItemsPasteHelperWidget(
+            self, *args, **kwargs
+        )
 
     def refresh(self):
         """Refresh the internal sources.

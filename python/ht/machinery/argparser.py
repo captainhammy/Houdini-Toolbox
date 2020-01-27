@@ -13,6 +13,7 @@ import argparse
 # CLASSES
 # =============================================================================
 
+
 class ArgumentParser(argparse.ArgumentParser):
     """HoudiniToolbox version of the standard Python argument parser.
 
@@ -26,15 +27,19 @@ class ArgumentParser(argparse.ArgumentParser):
 
     """
 
-    def __init__(self, description=None, epilog=None, add_help=True, allow_abbrev=True, *args, **kwargs):  # pylint: disable=keyword-arg-before-vararg
+    def __init__(
+        self,
+        description=None,
+        epilog=None,
+        add_help=True,
+        allow_abbrev=True,
+        *args,
+        **kwargs
+    ):  # pylint: disable=keyword-arg-before-vararg
         # Construct the base ArgumentParser object.  We don't want to allow
         # help since it will use flags we don't want.
         super(ArgumentParser, self).__init__(
-            add_help=False,
-            description=description,
-            epilog=epilog,
-            *args,
-            **kwargs
+            add_help=False, description=description, epilog=epilog, *args, **kwargs
         )
 
         # Store abbreviation information.
@@ -43,10 +48,11 @@ class ArgumentParser(argparse.ArgumentParser):
         # Add help using our own flags.
         if add_help:
             self.add_argument(
-                "-help", "--help",
+                "-help",
+                "--help",
                 action="help",
                 default=argparse.SUPPRESS,
-                help="show this help message and exit"
+                help="show this help message and exit",
             )
 
     # =========================================================================
@@ -73,8 +79,8 @@ class ArgumentParser(argparse.ArgumentParser):
             return None
 
         # if the option string before the "=" is present, return the action
-        if '=' in arg_string:
-            option_string, explicit_arg = arg_string.split('=', 1)
+        if "=" in arg_string:
+            option_string, explicit_arg = arg_string.split("=", 1)
             if option_string in self._option_string_actions:
                 action = self._option_string_actions[option_string]
                 return action, option_string, explicit_arg
@@ -87,16 +93,21 @@ class ArgumentParser(argparse.ArgumentParser):
 
             # if multiple actions match, the option string was ambiguous
             if len(option_tuples) > 1:
-                options = ', '.join(
-                    [option_string for action, option_string, explicit_arg in option_tuples]
+                options = ", ".join(
+                    [
+                        option_string
+                        for action, option_string, explicit_arg in option_tuples
+                    ]
                 )
                 tup = arg_string, options
-                self.error('ambiguous option: %s could match %s' % tup)
+                self.error("ambiguous option: %s could match %s" % tup)
 
             # if exactly one action matched, this segmentation is good,
             # so return the parsed action
             elif len(option_tuples) == 1:
-                option_tuple, = option_tuples  # pylint: disable=unbalanced-tuple-unpacking
+                option_tuple, = (  # pylint: disable=unbalanced-tuple-unpacking
+                    option_tuples
+                )
                 return option_tuple
 
         # if it was not found as an option, but it looks like a negative
@@ -107,7 +118,7 @@ class ArgumentParser(argparse.ArgumentParser):
                 return None
 
         # if it contains a space, it was meant to be a positional
-        if ' ' in arg_string:
+        if " " in arg_string:
             return None
 
         # it was meant to be an optional but there is no such option

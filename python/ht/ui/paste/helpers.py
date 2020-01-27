@@ -15,8 +15,18 @@ from ht.ui.paste import widgets
 # CLASSES
 # ==============================================================================
 
+
 class _BaseCopyHelperWidget(QtWidgets.QWidget):
-    """A default widget for additional copy related options."""
+    """A default widget for additional copy related options.
+
+    :param source: The source item.
+    :type source: ht.ui.paste.sources.CopyPasteSource
+    :param context: The operator context.
+    :type context: str
+    :param parent: Optional parent.
+    :type parent: QtCore.QWidget
+
+    """
 
     def __init__(self, source, context, parent=None):
         super(_BaseCopyHelperWidget, self).__init__(parent)
@@ -25,26 +35,53 @@ class _BaseCopyHelperWidget(QtWidgets.QWidget):
         self.source = source
 
     def get_source(self):
-        """Get the source item."""
+        """Get the source item.
+
+        :return:
+
+        """
         pass
 
 
 class _BasePasteHelperWidget(QtWidgets.QWidget):
-    """A default widget for additional paste related options."""
+    """A default widget for additional paste related options.
+
+    :param source: The source item.
+    :type source: ht.ui.paste.sources.CopyPasteSource
+    :param context: The operator context.
+    :type context: str
+    :param parent: Optional parent.
+    :type parent: QtCore.QWidget
+
+    """
 
     def __init__(self, source, context, parent=None):
+
         super(_BasePasteHelperWidget, self).__init__(parent)
 
         self.context = context
         self.source = source
 
     def get_sources(self):
-        """Get sources."""
+        """Get sources.
+
+        :return:
+
+        """
         pass
 
 
 class HomeToolDirItemsCopyHelperWidget(_BaseCopyHelperWidget):
-    """Widget for copying items to the ~/tooldev folder."""
+    """Widget for copying items to the ~/tooldev folder.
+
+    :param source: The source item.
+    :type source: ht.ui.paste.sources.CopyPasteSource
+    :param context: The operator context.
+    :type context: str
+    :param parent: Optional parent.
+    :type parent: QtCore.QWidget
+
+    """
 
     valid_source_signal = QtCore.Signal(bool)
 
@@ -72,8 +109,15 @@ class HomeToolDirItemsCopyHelperWidget(_BaseCopyHelperWidget):
         self.name_widget.valid_source_signal.connect(self.valid_source_signal.emit)
         self.table.valid_sources_signal.connect(self.valid_source_signal.emit)
 
+    @QtCore.Slot(int)
     def _mode_changed(self, index):
-        """Handle the NewOrExisting widget being changed."""
+        """Handle the NewOrExisting widget being changed.
+
+        :param index: The index which is changing.
+        :type index: int
+        :return:
+
+        """
         if index == 0:
             self.table.setEnabled(False)
             self.table.clearSelection()
@@ -87,7 +131,12 @@ class HomeToolDirItemsCopyHelperWidget(_BaseCopyHelperWidget):
             self.valid_source_signal.emit(False)
 
     def get_source(self):
-        """Get the selected source."""
+        """Get the selected source.
+
+        :return: The selected source item.
+        :rtype: ht.ui.paste.sources.CopyPasteSource
+
+        """
         mode = self.new_or_existing.currentIndex()
 
         if mode == 0:
@@ -106,7 +155,16 @@ class HomeToolDirItemsCopyHelperWidget(_BaseCopyHelperWidget):
 
 
 class HomeToolDirItemsPasteHelperWidget(_BasePasteHelperWidget):
-    """Widget for pasting items from the ~/tooldev folder."""
+    """Widget for pasting items from the ~/tooldev folder.
+
+    :param source: The source item.
+    :type source: ht.ui.paste.sources.CopyPasteSource
+    :param context: The operator context.
+    :type context: str
+    :param parent: Optional parent.
+    :type parent: QtCore.QWidget
+
+    """
 
     perform_operation_signal = QtCore.Signal()
     valid_sources_signal = QtCore.Signal(bool)
@@ -123,7 +181,7 @@ class HomeToolDirItemsPasteHelperWidget(_BasePasteHelperWidget):
             context,
             selection_mode=QtWidgets.QAbstractItemView.ExtendedSelection,
             allow_delete=True,
-            allow_double_click=True
+            allow_double_click=True,
         )
         layout.addWidget(self.table)
 
@@ -131,5 +189,10 @@ class HomeToolDirItemsPasteHelperWidget(_BasePasteHelperWidget):
         self.table.valid_sources_signal.connect(self.valid_sources_signal.emit)
 
     def get_sources(self):
-        """Get a list of selected sources to operate on."""
+        """Get a list of selected sources to operate on.
+
+        :return: The selected source item.
+        :rtype: list(ht.ui.paste.sources.CopyPasteSource)
+
+        """
         return self.table.get_selected_sources()

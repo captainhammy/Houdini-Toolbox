@@ -19,6 +19,7 @@ from ht.pyfilter.operations import primaryimage
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def init_operation(mocker):
     """Fixture to initialize an operation."""
@@ -34,12 +35,15 @@ def init_operation(mocker):
 # CLASSES
 # =============================================================================
 
+
 class Test_SetPrimaryImage(object):
     """Test the ht.pyfilter.operations.primaryimage.SetPrimaryImage object."""
 
     def test___init__(self, mocker):
         """Test object initialization."""
-        mock_super_init = mocker.patch.object(primaryimage.PyFilterOperation, "__init__")
+        mock_super_init = mocker.patch.object(
+            primaryimage.PyFilterOperation, "__init__"
+        )
 
         mock_manager = mocker.MagicMock(spec=PyFilterManager)
 
@@ -79,10 +83,14 @@ class Test_SetPrimaryImage(object):
 
         mock_value = mocker.MagicMock(spec=str)
 
-        result = primaryimage.SetPrimaryImage.build_arg_string(primary_image_path=mock_value)
+        result = primaryimage.SetPrimaryImage.build_arg_string(
+            primary_image_path=mock_value
+        )
         assert result == "--primary-image-path={}".format(mock_value)
 
-        result = primaryimage.SetPrimaryImage.build_arg_string(disable_primary_image=True)
+        result = primaryimage.SetPrimaryImage.build_arg_string(
+            disable_primary_image=True
+        )
         assert result == "--disable-primary-image"
 
     def test_register_parser_args(self, mocker):
@@ -93,7 +101,11 @@ class Test_SetPrimaryImage(object):
 
         calls = [
             mocker.call("--primary-image-path", dest="primary_image_path"),
-            mocker.call("--disable-primary-image", action="store_true", dest="disable_primary_image")
+            mocker.call(
+                "--disable-primary-image",
+                action="store_true",
+                dest="disable_primary_image",
+            ),
         ]
         mock_parser.add_argument.assert_has_calls(calls)
 
@@ -113,10 +125,14 @@ class Test_SetPrimaryImage(object):
 
         mock_set.assert_not_called()
 
-    def test_filter_camera__disable(self, init_operation, patch_operation_logger, mocker):
+    def test_filter_camera__disable(
+        self, init_operation, patch_operation_logger, mocker
+    ):
         """Test 'filter_camera' when disabling the image."""
         mock_set = mocker.patch("ht.pyfilter.operations.primaryimage.set_property")
-        mock_logger = mocker.patch("ht.pyfilter.operations.primaryimage._logger", autospec=True)
+        mock_logger = mocker.patch(
+            "ht.pyfilter.operations.primaryimage._logger", autospec=True
+        )
 
         op = init_operation()
         op._disable_primary_image = True

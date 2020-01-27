@@ -19,6 +19,7 @@ from ht.pyfilter.operations import zdepth
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def init_operation(mocker):
     """Fixture to initialize an operation."""
@@ -56,6 +57,7 @@ def properties(mocker):
 # =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class Test_ZDepthPass(object):
     """Test the ht.pyfilter.operations.zdepth.ZDepthPass class."""
@@ -99,16 +101,16 @@ class Test_ZDepthPass(object):
 
         zdepth.ZDepthPass.register_parser_args(mock_parser)
 
-        calls = [
-            mocker.call("--zdepth", action="store_true")
-        ]
+        calls = [mocker.call("--zdepth", action="store_true")]
         mock_parser.add_argument.assert_has_calls(calls)
 
     # Methods
 
     # filter_instance
 
-    def test_filter_instance__obj_matte(self, init_operation, properties, mocker, patch_soho):
+    def test_filter_instance__obj_matte(
+        self, init_operation, properties, mocker, patch_soho
+    ):
         properties.mock_get.side_effect = (True, False, "")
 
         op = init_operation()
@@ -117,12 +119,14 @@ class Test_ZDepthPass(object):
 
         calls = [
             mocker.call("object:overridedetail", True),
-            mocker.call("object:phantom", 1)
+            mocker.call("object:phantom", 1),
         ]
 
         properties.mock_set.asset_has_calls(calls)
 
-    def test_filter_instance__obj_phantom(self, init_operation, properties, mocker, patch_soho):
+    def test_filter_instance__obj_phantom(
+        self, init_operation, properties, mocker, patch_soho
+    ):
         properties.mock_get.side_effect = (False, True, "")
 
         op = init_operation()
@@ -131,12 +135,14 @@ class Test_ZDepthPass(object):
 
         calls = [
             mocker.call("object:overridedetail", True),
-            mocker.call("object:phantom", 1)
+            mocker.call("object:phantom", 1),
         ]
 
         properties.mock_set.asset_has_calls(calls)
 
-    def test_filter_instance__surface_matte(self, init_operation, properties, mocker, patch_soho):
+    def test_filter_instance__surface_matte(
+        self, init_operation, properties, mocker, patch_soho
+    ):
         properties.mock_get.side_effect = (False, False, "matte")
 
         op = init_operation()
@@ -145,12 +151,14 @@ class Test_ZDepthPass(object):
 
         calls = [
             mocker.call("object:overridedetail", True),
-            mocker.call("object:phantom", 1)
+            mocker.call("object:phantom", 1),
         ]
 
         properties.mock_set.asset_has_calls(calls)
 
-    def test_filter_instance__set_shader(self, init_operation, properties, mocker, patch_soho):
+    def test_filter_instance__set_shader(
+        self, init_operation, properties, mocker, patch_soho
+    ):
         properties.mock_get.side_effect = (False, False, "")
 
         op = init_operation()
@@ -160,7 +168,7 @@ class Test_ZDepthPass(object):
         calls = [
             mocker.call("object:overridedetail", True),
             mocker.call("object:surface", op.CONST_SHADER.split()),
-            mocker.call("object:displace", None)
+            mocker.call("object:displace", None),
         ]
 
         properties.mock_set.asset_has_calls(calls)
@@ -189,7 +197,7 @@ class Test_ZDepthPass(object):
 
         properties.mock_set.assert_called_with("plane:disable", True)
 
-    def test_filter_plane__no_pz_c(self,  init_operation, properties, patch_soho):
+    def test_filter_plane__no_pz_c(self, init_operation, properties, patch_soho):
         properties.mock_get.return_value = "C"
 
         op = init_operation()
@@ -201,7 +209,7 @@ class Test_ZDepthPass(object):
 
         properties.mock_set.assert_not_called()
 
-    def test_filter_plane__no_pz_of(self,  init_operation, properties, patch_soho):
+    def test_filter_plane__no_pz_of(self, init_operation, properties, patch_soho):
         properties.mock_get.return_value = "Of"
 
         op = init_operation()
@@ -213,7 +221,9 @@ class Test_ZDepthPass(object):
 
         properties.mock_set.assert_called_with("plane:disable", True)
 
-    def test_filter_plane__not_set_misc_channel(self, init_operation, properties, mocker, patch_soho):
+    def test_filter_plane__not_set_misc_channel(
+        self, init_operation, properties, mocker, patch_soho
+    ):
         properties.mock_get.return_value = "channel1"
 
         op = init_operation()

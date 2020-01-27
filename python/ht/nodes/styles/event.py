@@ -15,6 +15,7 @@ from ht.nodes.styles.manager import MANAGER
 # CLASSES
 # =============================================================================
 
+
 class StyleNodeEvent(HoudiniEventGroup):
     """Event to style Houdini nodes based on events."""
 

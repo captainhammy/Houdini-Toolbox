@@ -36,6 +36,7 @@ _PACKAGE_CONFIG_FILE = "houdini_package_config.json"
 # CLASSES
 # =============================================================================
 
+
 class HoudiniBase(object):
     """This class represents a Houdini build on disk.
 
@@ -55,14 +56,11 @@ class HoudiniBase(object):
         self._plugin_path = None
 
         if _SETTINGS_MANAGER.system.plugins is not None:
-            plugin_folder = self.format_string(
-                _SETTINGS_MANAGER.system.plugins.folder,
-            )
+            plugin_folder = self.format_string(_SETTINGS_MANAGER.system.plugins.folder)
 
             # Generate the path to install the build to.
             self._plugin_path = os.path.join(
-                _SETTINGS_MANAGER.system.plugins.target,
-                plugin_folder
+                _SETTINGS_MANAGER.system.plugins.target, plugin_folder
             )
 
     # -------------------------------------------------------------------------
@@ -115,23 +113,14 @@ class HoudiniBase(object):
 
     def __repr__(self):
         return "<{} {} @ {}>".format(
-            self.__class__.__name__,
-            self.display_name,
-            self.path
+            self.__class__.__name__, self.display_name, self.path
         )
 
     def __str__(self):
-        version = "{}.{}.{}".format(
-            self.major,
-            self.minor,
-            self.build
-        )
+        version = "{}.{}.{}".format(self.major, self.minor, self.build)
 
         if self.candidate is not None:
-            version = "{}.{}".format(
-                version,
-                self.candidate
-            )
+            version = "{}.{}".format(version, self.candidate)
 
         return version
 
@@ -300,9 +289,7 @@ class HoudiniBuildData(object):
         all_args = []
 
         # Try to get any installer args for the current system.
-        all_args.extend(
-            _flatten_items(self._types[system].get("installer_args", ()))
-        )
+        all_args.extend(_flatten_items(self._types[system].get("installer_args", ())))
 
         # Look for major.minor specific installer args.
         if major_minor is not None:
@@ -314,9 +301,7 @@ class HoudiniBuildData(object):
                 # and system.
                 if "installer_args" in version_data:
                     all_args.extend(
-                        _flatten_items(
-                            version_data["installer_args"].get(system, ())
-                        )
+                        _flatten_items(version_data["installer_args"].get(system, ()))
                     )
 
         return tuple(all_args)
@@ -363,18 +348,12 @@ class HoudiniBuildManager(object):
         archive_template = _SETTINGS_MANAGER.build_data.file_template
 
         glob_string = archive_template.format(
-            product="houdini*",
-            version="*",
-            arch="*",
-            ext=archive_ext
+            product="houdini*", version="*", arch="*", ext=archive_ext
         )
 
         # We need to glob in each directory for houdini installation packages.
         for directory in _SETTINGS_MANAGER.system.locations:
-            search_path = os.path.join(
-                directory,
-                glob_string
-            )
+            search_path = os.path.join(directory, glob_string)
 
             # Add any found files to the list.
             files += glob.glob(os.path.expandvars(search_path))
@@ -392,15 +371,11 @@ class HoudiniBuildManager(object):
 
         """
 
-        format_args = {
-            "version": "*",
-            "product": "*"
-        }
+        format_args = {"version": "*", "product": "*"}
 
         # Generate the path to glob with.
         glob_string = os.path.join(
-            self._install_target,
-            self._install_folder.format(**format_args)
+            self._install_target, self._install_folder.format(**format_args)
         )
 
         # Glob in the install location for installed Houdini builds.
@@ -408,8 +383,9 @@ class HoudiniBuildManager(object):
 
         # Convert all the install directories to InstalledHoudiniBuild objects
         # if they are not symlinks.
-        self._installed = [InstalledHoudiniBuild(path) for path in paths
-                           if not os.path.islink(path)]
+        self._installed = [
+            InstalledHoudiniBuild(path) for path in paths if not os.path.islink(path)
+        ]
 
         self.installed.sort(key=attrgetter("version"))
 
@@ -451,7 +427,9 @@ class HoudiniBuildManager(object):
             # Get the build file name for the current day
             version, build = _get_build_to_download(build_number)
 
-            downloaded_path = sidefx_web_api.download_build(download_dir, version, build)
+            downloaded_path = sidefx_web_api.download_build(
+                download_dir, version, build
+            )
 
             if downloaded_path is not None:
                 package = HoudiniInstallFile(downloaded_path)
@@ -477,7 +455,9 @@ class HoudiniBuildManager(object):
             # Get the build file name for the current day
             version, build = _get_build_to_download(build_number)
 
-            downloaded_path = sidefx_web_api.download_build(download_dir, version, build, product=product)
+            downloaded_path = sidefx_web_api.download_build(
+                download_dir, version, build, product=product
+            )
 
             if downloaded_path is not None:
                 archive_paths.append(downloaded_path)
@@ -589,8 +569,7 @@ class HoudiniEnvironmentSettings(object):
             # We want to have HDSO at the end so that libs which may be
             # included in HDSO are found last.
             _set_variable(
-                "LD_LIBRARY_PATH",
-                (os.environ["LD_LIBRARY_PATH"], os.environ["HDSO"])
+                "LD_LIBRARY_PATH", (os.environ["LD_LIBRARY_PATH"], os.environ["HDSO"])
             )
 
         # Set variables with the version information.
@@ -600,10 +579,7 @@ class HoudiniEnvironmentSettings(object):
         _set_variable("HOUDINI_VERSION", installed_build)
 
         # Insert the Houdini bin directories at the head of the PATH.
-        _set_variable(
-            "PATH",
-            (os.environ["HB"], os.environ["HSB"], os.environ["PATH"])
-        )
+        _set_variable("PATH", (os.environ["HB"], os.environ["HSB"], os.environ["PATH"]))
 
     # -------------------------------------------------------------------------
     # METHODS
@@ -652,7 +628,7 @@ class HoudiniInstallFile(HoudiniBase):
             product="houdini(-[a-z0-9]+)*",
             version="([0-9\\.]*)",
             arch=".+",
-            ext=archive_ext
+            ext=archive_ext,
         )
 
         result = re.match(pattern, os.path.basename(path))
@@ -695,12 +671,7 @@ class HoudiniInstallFile(HoudiniBase):
         # Let our system tell us where we can store the temp files.
         temp_path = tempfile.gettempdir()
 
-        six.print_(
-            "Extracting {} to {}".format(
-                self.path,
-                temp_path
-            )
-        )
+        six.print_("Extracting {} to {}".format(self.path, temp_path))
 
         # Open the tar file that this object represents and extract
         # everything to our temp directory, closing the file afterwards.
@@ -761,16 +732,14 @@ class HoudiniInstallFile(HoudiniBase):
         """
         # Generate the path to install the build to.
         install_path = os.path.join(
-            self._install_target,
-            self.format_string(self._install_folder)
+            self._install_target, self.format_string(self._install_folder)
         )
 
         link_path = None
 
         if create_symlink:
             link_path = os.path.join(
-                self._install_target,
-                self.format_string(self._link_name)
+                self._install_target, self.format_string(self._link_name)
             )
 
         # Check to see if the build is already installed.  If it is
@@ -887,40 +856,28 @@ class HoudiniSettingsManager(object):
         # If no user config was found look for the look for the package.json
         # file in the same directory as this module.
         if config_path is None:
-            config_path = os.path.join(
-                os.path.dirname(__file__),
-                _PACKAGE_CONFIG_FILE
-            )
+            config_path = os.path.join(os.path.dirname(__file__), _PACKAGE_CONFIG_FILE)
 
         # Couldn't find any valid files so we have nothing left to do.
         if not os.path.exists(config_path):
-            raise IOError(
-                "Could not find houdini package configuration file"
-            )
+            raise IOError("Could not find houdini package configuration file")
 
         with open(config_path) as handle:
             # Get the json data.
             data = json.load(handle)
 
             # Construct settings objects for available data.
-            self._environment = HoudiniEnvironmentSettings(
-                data["environment"]
-            )
+            self._environment = HoudiniEnvironmentSettings(data["environment"])
 
             self._system = HoudiniSystemSettings(data["system"])
 
         # Path to the build data config file.  This file should always be
         # alongside this module.
-        build_config_path = os.path.join(
-            os.path.dirname(__file__),
-            _BUILD_DATA_FILE
-        )
+        build_config_path = os.path.join(os.path.dirname(__file__), _BUILD_DATA_FILE)
 
         # Couldn't find any valid files so we have nothing left to do.
         if not os.path.exists(build_config_path):
-            raise IOError(
-                "Could not find houdini build configuration file"
-            )
+            raise IOError("Could not find houdini build configuration file")
 
         with open(build_config_path) as handle:
             data = json.load(handle)
@@ -1007,10 +964,7 @@ class InstalledHoudiniBuild(HoudiniBase):
         folder_name = _SETTINGS_MANAGER.system.installation.folder
 
         # Replace
-        pattern = folder_name.format(
-            version="([0-9\\.]*)",
-            product="(-[a-z0-9]*)*"
-        )
+        pattern = folder_name.format(version="([0-9\\.]*)", product="(-[a-z0-9]*)*")
 
         result = re.match(pattern, os.path.basename(path))
 
@@ -1071,8 +1025,7 @@ class InstalledHoudiniBuild(HoudiniBase):
 
         # Construct the symlink path to check for.
         link_path = os.path.join(
-            parent,
-            self.format_string(_SETTINGS_MANAGER.system.installation.link_name)
+            parent, self.format_string(_SETTINGS_MANAGER.system.installation.link_name)
         )
 
         # Check if the link exists and if it points to this build.  If so, try
@@ -1095,11 +1048,7 @@ class InstalledHoudiniBuild(HoudiniBase):
         # If there are plugins, remove them.
         if self.plugin_path is not None:
             if os.path.isdir(self.plugin_path):
-                six.print_(
-                    "Removing compiled operators in {}".format(
-                        self.plugin_path
-                    )
-                )
+                six.print_("Removing compiled operators in {}".format(self.plugin_path))
 
                 shutil.rmtree(self.plugin_path)
 
@@ -1107,6 +1056,7 @@ class InstalledHoudiniBuild(HoudiniBase):
 # =============================================================================
 # EXCEPTIONS
 # =============================================================================
+
 
 class HoudiniPackageError(Exception):
     """Base class for Houdini package related errors."""
@@ -1143,6 +1093,7 @@ class UnsupportedOSError(HoudiniPackageError):
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
+
 
 def _flatten_items(items):
     """Flatten a list of items.
@@ -1185,13 +1136,13 @@ def _get_build_to_download(build):
         components.append("0")
 
     if num_components == 2:
-        return '.'.join(components), None
+        return ".".join(components), None
 
     # Always treat the last component as the 'build'.  Unlike Houdini itself
     # which would treat a release candidate version as part of the build number
     # the web api will treat the candidate version as the build number and the
     # the 3 main components as the version.
-    return ".".join(components[:num_components-1]), components[-1]
+    return ".".join(components[: num_components - 1]), components[-1]
 
 
 def _set_variable(name, value):
@@ -1230,6 +1181,7 @@ def _set_variable(name, value):
 # FUNCTIONS
 # =============================================================================
 
+
 def find_matching_builds(match_string, builds):
     """Find a matching build given a string and list of builds.
 
@@ -1244,13 +1196,16 @@ def find_matching_builds(match_string, builds):
     version = match_string
     product = None
 
-    if '-' in match_string:
-        version, product = match_string.split('-')
+    if "-" in match_string:
+        version, product = match_string.split("-")
 
     # Filter all installed builds that match the build version
     # string.
-    matching = [build for build in builds
-                if str(build).startswith(version) and build.product == product]
+    matching = [
+        build
+        for build in builds
+        if str(build).startswith(version) and build.product == product
+    ]
 
     # If there are any that match, use the latest/only one.
     if matching:

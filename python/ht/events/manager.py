@@ -21,6 +21,7 @@ from ht.events.item import HoudiniEventItem
 # CLASSES
 # =============================================================================
 
+
 class HoudiniEventManager(object):
     """Manager and execute events in Houdini."""
 
@@ -139,7 +140,9 @@ class HoudiniEventManager(object):
 
         """
         if not isinstance(event_group, HoudiniEventGroup):
-            raise TypeError("Expected HoudiniEventGroup, got {}".format(type(event_group)))
+            raise TypeError(
+                "Expected HoudiniEventGroup, got {}".format(type(event_group))
+            )
 
         event_mappings = event_group.event_map
 
@@ -201,6 +204,7 @@ class HoudiniEventManager(object):
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
 
 def register_event_group(event_group):
     """Register a HoudiniEvent.

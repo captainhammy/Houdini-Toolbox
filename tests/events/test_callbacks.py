@@ -19,6 +19,7 @@ imp.reload(callbacks)
 # CLASSES
 # =============================================================================
 
+
 def test_atexit_callback(mocker):
     """Test ht.events.callbacks._atexit_callback."""
     mock_run = mocker.patch("ht.events.callbacks.run_event")
@@ -54,7 +55,9 @@ class Test__hip_event_callback(object):
         mocker.patch("ht.events.callbacks.HipFileEvents", mock_event)
         callbacks._hip_event_callback(mock_event_type)
 
-        mock_run.assert_called_with(mock_name_value, {"hip_file_event_type": mock_event_type})
+        mock_run.assert_called_with(
+            mock_name_value, {"hip_file_event_type": mock_event_type}
+        )
 
     def test_no_event_name(self, mocker):
         mock_run = mocker.patch("ht.events.callbacks.run_event")
@@ -83,7 +86,9 @@ def test_register_when_ui_available(mocker):
     callbacks._register_when_ui_available()
 
     # Ensure we passed the _emit_ui_available method to the exec function.
-    mock_hdefereval.executeDeferredAfterWaiting.assert_called_once_with(callbacks._emit_ui_available, 1)
+    mock_hdefereval.executeDeferredAfterWaiting.assert_called_once_with(
+        callbacks._emit_ui_available, 1
+    )
 
 
 class Test_register_callbacks(object):

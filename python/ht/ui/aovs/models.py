@@ -21,6 +21,7 @@ import hou
 # TREE NODES
 # =============================================================================
 
+
 class TreeNode(object):
     """The base tree node class for use in AOV and group display.
 
@@ -252,20 +253,14 @@ class AOVNode(AOVBaseNode):
             lines.append("Pixel Filter: {}".format(aov.pfilter))
 
         if aov.exclude_from_dcm is not None:
-            lines.append(
-                "Exclude from DCM: {}".format(aov.exclude_from_dcm)
-            )
+            lines.append("Exclude from DCM: {}".format(aov.exclude_from_dcm))
 
         if aov.componentexport:
             lines.append(
-                "\nExport variable for each component: {}".format(
-                    aov.componentexport
-                )
+                "\nExport variable for each component: {}".format(aov.componentexport)
             )
 
-            lines.append(
-                "Export Components: {}".format(", ".join(aov.components))
-            )
+            lines.append("Export Components: {}".format(", ".join(aov.components)))
 
         if aov.lightexport is not None:
             lines.append("\nLight Exports: {}".format(aov.lightexport))
@@ -281,7 +276,7 @@ class AOVNode(AOVBaseNode):
         if aov.path is not None:
             lines.append("\n{}".format(aov.path))
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
 
 class AOVGroupNode(AOVBaseNode):
@@ -343,7 +338,7 @@ class AOVGroupNode(AOVBaseNode):
         if group.path is not None:
             lines.append("\n{}".format(group.path))
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
 
 class IntrinsicAOVGroupNode(AOVGroupNode):
@@ -361,6 +356,7 @@ class IntrinsicAOVGroupNode(AOVGroupNode):
 # =============================================================================
 # PROXY MODELS
 # =============================================================================
+
 
 class LeafFilterProxyModel(QtCore.QSortFilterProxyModel):
     """Custom QSortFilterProxyModel designed to filter based on various
@@ -409,8 +405,7 @@ class LeafFilterProxyModel(QtCore.QSortFilterProxyModel):
     def filter_accepts_row_itself(self, row_num, source_parent):
         """Check if this filter accepts this row."""
         return super(LeafFilterProxyModel, self).filterAcceptsRow(
-            row_num,
-            source_parent
+            row_num, source_parent
         )
 
     def has_accepted_children(self, row_num, parent):
@@ -435,14 +430,13 @@ class LeafFilterProxyModel(QtCore.QSortFilterProxyModel):
 
     def remove_index(self, index):
         """Remove the row at an index."""
-        return self.sourceModel().remove_index(
-            self.mapToSource(index)
-        )
+        return self.sourceModel().remove_index(self.mapToSource(index))
 
 
 # =============================================================================
 # TREE MODELS
 # =============================================================================
+
 
 class BaseAOVTreeModel(QtCore.QAbstractItemModel):
     """Base model for tree views."""
@@ -652,7 +646,11 @@ class AOVSelectModel(BaseAOVTreeModel):
         if isinstance(parent, AOVGroupNode):
             return QtCore.Qt.ItemIsEnabled
 
-        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsDragEnabled
+        return (
+            QtCore.Qt.ItemIsEnabled
+            | QtCore.Qt.ItemIsSelectable
+            | QtCore.Qt.ItemIsDragEnabled
+        )
 
     def insert_aov(self, aov):
         """Insert an AOV into the tree."""
@@ -671,10 +669,7 @@ class AOVSelectModel(BaseAOVTreeModel):
                 existing_index = self.index(row, 0, index)
 
                 # Signal the internal data changed.
-                self.dataChanged.emit(
-                    existing_index,
-                    existing_index
-                )
+                self.dataChanged.emit(existing_index, existing_index)
 
                 # We're done here.
                 break
@@ -708,10 +703,7 @@ class AOVSelectModel(BaseAOVTreeModel):
                 existing_index = self.index(row, 0, index)
 
                 # Signal the internal data changed.
-                self.dataChanged.emit(
-                    existing_index,
-                    existing_index
-                )
+                self.dataChanged.emit(existing_index, existing_index)
 
                 # We're done here.
                 break
@@ -857,7 +849,9 @@ class AOVsToAddModel(BaseAOVTreeModel):
             index = self.index(row, 0, parent)
             self.remove_index(index)
 
-    def dropMimeData(self, data, action, row, column, parent):  # pylint: disable=unused-argument
+    def dropMimeData(
+        self, data, action, row, column, parent
+    ):  # pylint: disable=unused-argument
         """Handle dropping mime data on the view."""
         if not utils.has_aov_mime_data(data):
             return False
@@ -875,7 +869,11 @@ class AOVsToAddModel(BaseAOVTreeModel):
         parent = node.parent
 
         if parent == self.root:
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsDragEnabled
+            return (
+                QtCore.Qt.ItemIsEnabled
+                | QtCore.Qt.ItemIsSelectable
+                | QtCore.Qt.ItemIsDragEnabled
+            )
 
         if isinstance(parent, AOVGroupNode):
             return QtCore.Qt.ItemIsEnabled
@@ -977,8 +975,7 @@ class AOVGroupEditListModel(QtCore.QAbstractListModel):
 
     def checked_aovs(self):
         """Returns a list of AOVs which are checked."""
-        return [aov for checked, aov in zip(self._checked, self.aovs)
-                if checked]
+        return [aov for checked, aov in zip(self._checked, self.aovs) if checked]
 
     def data(self, index, role):
         """Get item data."""
@@ -1027,6 +1024,7 @@ class AOVGroupEditListModel(QtCore.QAbstractListModel):
 # =============================================================================
 # Info Dialog Models
 # =============================================================================
+
 
 class InfoTableModel(QtCore.QAbstractTableModel):
     """Base class for information table models."""

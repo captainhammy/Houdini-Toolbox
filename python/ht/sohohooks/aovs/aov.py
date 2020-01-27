@@ -20,10 +20,10 @@ ALLOWABLE_VALUES = {
     consts.LIGHTEXPORT_KEY: (
         consts.LIGHTEXPORT_PER_CATEGORY_KEY,
         consts.LIGHTEXPORT_PER_LIGHT_KEY,
-        consts.LIGHTEXPORT_SINGLE_KEY
+        consts.LIGHTEXPORT_SINGLE_KEY,
     ),
     consts.QUANTIZE_KEY: ("8", "16", "half", "float"),
-    consts.VEXTYPE_KEY: ("float", "unitvector", "vector", "vector4")
+    consts.VEXTYPE_KEY: ("float", "unitvector", "vector", "vector4"),
 }
 
 _DEFAULT_AOV_DATA = {
@@ -50,6 +50,7 @@ _DEFAULT_AOV_DATA = {
 # =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class AOV(object):
     """This class represents an AOV to be exported.
@@ -133,10 +134,7 @@ class AOV(object):
         if self.lightexport is not None:
             # Get a list of lights matching our mask and selection.
             lights = cam.objectList(
-                "objlist:light",
-                now,
-                self.lightexport_scope,
-                self.lightexport_select
+                "objlist:light", now, self.lightexport_scope, self.lightexport_select
             )
 
             base_channel = data[consts.CHANNEL_KEY]
@@ -371,10 +369,7 @@ class AOV(object):
         :rtype: dict
 
         """
-        data = {
-            consts.VARIABLE_KEY: self.variable,
-            consts.VEXTYPE_KEY: self.vextype,
-        }
+        data = {consts.VARIABLE_KEY: self.variable, consts.VEXTYPE_KEY: self.vextype}
 
         if self.channel:
             data[consts.CHANNEL_KEY] = self.channel
@@ -473,11 +468,8 @@ class AOV(object):
             if not components:
                 parms = {
                     "vm_exportcomponents": soho.SohoParm(
-                        "vm_exportcomponents",
-                        "str",
-                        [""],
-                        skipdefault=False
-                    ),
+                        "vm_exportcomponents", "str", [""], skipdefault=False
+                    )
                 }
 
                 plist = cam.wrangle(wrangler, parms, now)
@@ -499,6 +491,7 @@ class AOV(object):
             data[consts.CHANNEL_KEY] = channel
 
             self._light_export_planes(data, wrangler, cam, now)
+
 
 # =============================================================================
 
@@ -563,9 +556,7 @@ class AOVGroup(object):
 
     def __repr__(self):
         return "<{} {} ({} AOVs)>".format(
-            self.__class__.__name__,
-            self.name,
-            len(self.aovs)
+            self.__class__.__name__, self.name, len(self.aovs)
         )
 
     # -------------------------------------------------------------------------
@@ -660,9 +651,7 @@ class AOVGroup(object):
 
         includes.extend([aov.variable for aov in self.aovs])
 
-        data = {
-            consts.GROUP_INCLUDE_KEY: includes,
-        }
+        data = {consts.GROUP_INCLUDE_KEY: includes}
 
         if self.comment:
             data[consts.COMMENT_KEY] = self.comment
@@ -707,8 +696,10 @@ class IntrinsicAOVGroup(AOVGroup):
 # EXCEPTIONS
 # =============================================================================
 
+
 class AOVError(Exception):  # pragma: no cover
     """AOV exception base class."""
+
     pass
 
 
@@ -730,9 +721,7 @@ class InvalidAOVValueError(AOVError):  # pragma: no cover
 
     def __str__(self):
         return "Invalid value '{}' in '{}': Must be one of {}".format(
-            self.value,
-            self.name,
-            ALLOWABLE_VALUES[self.name],
+            self.value, self.name, ALLOWABLE_VALUES[self.name]
         )
 
 
@@ -757,14 +746,13 @@ class MissingVexTypeError(AOVError):  # pragma: no cover
         self.variable = variable
 
     def __str__(self):
-        return "Cannot create AOV {}: missing 'vextype'.".format(
-            self.variable
-        )
+        return "Cannot create AOV {}: missing 'vextype'.".format(self.variable)
 
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
+
 
 def _build_category_map(lights, now):
     """Build a mapping of category names to lights.
@@ -794,7 +782,7 @@ def _build_category_map(lights, now):
 
         # Since the categories value can be space or comma
         # separated we replace the commas with spaces then split.
-        categories = categories.replace(',', ' ')
+        categories = categories.replace(",", " ")
         categories = categories.split()
 
         # If the categories list was empty, put the light in a fake
@@ -839,7 +827,7 @@ def _call_post_defplane(data, wrangler, cam, now):
         cam,
         now,
         data.get(consts.PLANEFILE_KEY),
-        data.get(consts.LIGHTEXPORT_KEY)
+        data.get(consts.LIGHTEXPORT_KEY),
     )
 
 
@@ -869,7 +857,7 @@ def _call_pre_defplane(data, wrangler, cam, now):
         cam,
         now,
         data.get(consts.PLANEFILE_KEY),
-        data.get(consts.LIGHTEXPORT_KEY)
+        data.get(consts.LIGHTEXPORT_KEY),
     )
 
 
@@ -958,7 +946,7 @@ def _write_light(light, base_channel, data, wrangler, cam, now):
 
     # Try and find the suffix using the 'vm_export_suffix'
     # parameter.  If it doesn't exist, use an empty string.
-    suffix = light.getDefaultedString("vm_export_suffix", now, [''])[0]
+    suffix = light.getDefaultedString("vm_export_suffix", now, [""])[0]
 
     prefix = []
 
@@ -966,7 +954,7 @@ def _write_light(light, base_channel, data, wrangler, cam, now):
     # the light's name and replace the '/' with '_'.  The
     # default value of 'vm_export_prefix' is usually $OS.
     if not light.evalString("vm_export_prefix", now, prefix):
-        prefix = [light.getName()[1:].replace('/', '_')]
+        prefix = [light.getName()[1:].replace("/", "_")]
 
     # If there is a prefix we construct the channel name using
     # it and the suffix.
@@ -1016,7 +1004,9 @@ def _write_per_category(lights, base_channel, data, wrangler, cam, now):
     for category, category_lights in category_map.items():
         # Construct the export string to contain all the member
         # lights.
-        data[consts.LIGHTEXPORT_KEY] = ' '.join([light.getName() for light in category_lights])
+        data[consts.LIGHTEXPORT_KEY] = " ".join(
+            [light.getName() for light in category_lights]
+        )
 
         if category is not None:
             # The channel is the regular channel named prefixed with
@@ -1048,7 +1038,7 @@ def _write_single_channel(lights, data, wrangler, cam, now):
     """
     # Take all the light names and join them together.
     if lights:
-        lightexport = ' '.join([light.getName() for light in lights])
+        lightexport = " ".join([light.getName() for light in lights])
 
     # If there are no lights, we can't pass in an empty string
     # since then mantra will think that light exports are

@@ -25,10 +25,13 @@ imp.reload(ht.events.manager)
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def init_manager(mocker):
     """Fixture to initialize a manager."""
-    mocker.patch.object(ht.events.manager.HoudiniEventManager, "__init__", lambda x: None)
+    mocker.patch.object(
+        ht.events.manager.HoudiniEventManager, "__init__", lambda x: None
+    )
 
     def _create():
         return ht.events.manager.HoudiniEventManager()
@@ -39,6 +42,7 @@ def init_manager(mocker):
 # =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class Test_HoudiniEventManager(object):
     """Test ht.events.manager.HoudiniEventManager class."""
@@ -76,7 +80,11 @@ class Test_HoudiniEventManager(object):
 
     def test__disable_events__all(self, init_manager, mocker):
         """Test disabling all events."""
-        mock_events = mocker.patch.object(ht.events.manager.HoudiniEventManager, "events", new_callable=mocker.PropertyMock)
+        mock_events = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager,
+            "events",
+            new_callable=mocker.PropertyMock,
+        )
 
         mock_event1 = mocker.MagicMock(spec=HoudiniEvent)
 
@@ -108,7 +116,11 @@ class Test_HoudiniEventManager(object):
 
     def test__disable_events__specific_names(self, init_manager, mocker):
         """Test disabling specific events."""
-        mock_events = mocker.patch.object(ht.events.manager.HoudiniEventManager, "events", new_callable=mocker.PropertyMock)
+        mock_events = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager,
+            "events",
+            new_callable=mocker.PropertyMock,
+        )
 
         mock_event1 = mocker.MagicMock(spec=HoudiniEvent)
 
@@ -142,7 +154,11 @@ class Test_HoudiniEventManager(object):
 
     def test__restore_events(self, init_manager, mocker):
         """Test restoring disabled events."""
-        mock_events = mocker.patch.object(ht.events.manager.HoudiniEventManager, "events", new_callable=mocker.PropertyMock)
+        mock_events = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager,
+            "events",
+            new_callable=mocker.PropertyMock,
+        )
 
         mock_event1 = mocker.MagicMock(spec=HoudiniEvent)
         mock_enabled1 = mocker.PropertyMock(return_value=False)
@@ -175,7 +191,11 @@ class Test_HoudiniEventManager(object):
 
     def test_create_event(self, init_manager, mocker):
         """Test creating an event."""
-        mock_events = mocker.patch.object(ht.events.manager.HoudiniEventManager, "events", new_callable=mocker.PropertyMock)
+        mock_events = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager,
+            "events",
+            new_callable=mocker.PropertyMock,
+        )
         mock_factory = mocker.patch("ht.events.manager.HoudiniEventFactory")
 
         mock_event = mocker.MagicMock(spec=HoudiniEvent)
@@ -197,8 +217,12 @@ class Test_HoudiniEventManager(object):
     def test_event_disabler(self, init_manager, mocker):
         """Test the event_disabler context manager."""
 
-        mock_disable = mocker.patch.object(ht.events.manager.HoudiniEventManager, "_disable_events")
-        mock_restore = mocker.patch.object(ht.events.manager.HoudiniEventManager, "_restore_events")
+        mock_disable = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager, "_disable_events"
+        )
+        mock_restore = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager, "_restore_events"
+        )
 
         manager = init_manager()
 
@@ -224,8 +248,14 @@ class Test_HoudiniEventManager(object):
 
     def test_register_event_group__single_items(self, init_manager, mocker):
         """Test registering a group where no event of that name has been created."""
-        mock_events = mocker.patch.object(ht.events.manager.HoudiniEventManager, "events", new_callable=mocker.PropertyMock)
-        mock_create = mocker.patch.object(ht.events.manager.HoudiniEventManager, "create_event")
+        mock_events = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager,
+            "events",
+            new_callable=mocker.PropertyMock,
+        )
+        mock_create = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager, "create_event"
+        )
 
         mock_item1 = mocker.MagicMock(spec=HoudiniEventItem)
         mock_item2 = mocker.MagicMock(spec=HoudiniEventItem)
@@ -233,10 +263,7 @@ class Test_HoudiniEventManager(object):
         mock_event_name1 = mocker.MagicMock(spec=str)
         mock_event_name2 = mocker.MagicMock(spec=str)
 
-        event_map = {
-            mock_event_name1: mock_item1,
-            mock_event_name2: mock_item2
-        }
+        event_map = {mock_event_name1: mock_item1, mock_event_name2: mock_item2}
 
         mock_group = mocker.MagicMock(spec=HoudiniEventGroup)
         type(mock_group).event_map = mocker.PropertyMock(return_value=event_map)
@@ -261,8 +288,14 @@ class Test_HoudiniEventManager(object):
 
     def test_register_event_group__item_lists(self, init_manager, mocker):
         """Test registering a group where no event of that name has been created."""
-        mock_events = mocker.patch.object(ht.events.manager.HoudiniEventManager, "events", new_callable=mocker.PropertyMock)
-        mock_create = mocker.patch.object(ht.events.manager.HoudiniEventManager, "create_event")
+        mock_events = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager,
+            "events",
+            new_callable=mocker.PropertyMock,
+        )
+        mock_create = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager, "create_event"
+        )
 
         mock_item1 = mocker.MagicMock(spec=HoudiniEventItem)
         mock_item2 = mocker.MagicMock(spec=HoudiniEventItem)
@@ -270,10 +303,7 @@ class Test_HoudiniEventManager(object):
         mock_event_name1 = mocker.MagicMock(spec=str)
         mock_event_name2 = mocker.MagicMock(spec=str)
 
-        event_map = {
-            mock_event_name1: [mock_item1],
-            mock_event_name2: [mock_item2]
-        }
+        event_map = {mock_event_name1: [mock_item1], mock_event_name2: [mock_item2]}
 
         mock_group = mocker.MagicMock(spec=HoudiniEventGroup)
         type(mock_group).event_map = mocker.PropertyMock(return_value=event_map)
@@ -308,8 +338,14 @@ class Test_HoudiniEventManager(object):
             manager.register_item(None, mocker.MagicMock(spec=str))
 
     def test_register_item__new_event(self, init_manager, mocker):
-        mock_events = mocker.patch.object(ht.events.manager.HoudiniEventManager, "events", new_callable=mocker.PropertyMock)
-        mock_create = mocker.patch.object(ht.events.manager.HoudiniEventManager, "create_event")
+        mock_events = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager,
+            "events",
+            new_callable=mocker.PropertyMock,
+        )
+        mock_create = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager, "create_event"
+        )
 
         mock_event_name = mocker.MagicMock(spec=str)
 
@@ -331,8 +367,14 @@ class Test_HoudiniEventManager(object):
         mock_event.register_item.assert_called_with(mock_item)
 
     def test_register_item__existing_event(self, init_manager, mocker):
-        mock_events = mocker.patch.object(ht.events.manager.HoudiniEventManager, "events", new_callable=mocker.PropertyMock)
-        mock_create = mocker.patch.object(ht.events.manager.HoudiniEventManager, "create_event")
+        mock_events = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager,
+            "events",
+            new_callable=mocker.PropertyMock,
+        )
+        mock_create = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager, "create_event"
+        )
 
         mock_event_name = mocker.MagicMock(spec=str)
 
@@ -353,7 +395,11 @@ class Test_HoudiniEventManager(object):
 
     def test_run_event__no_event(self, init_manager, mocker):
         """Test running an event where there are no matching events."""
-        mock_events = mocker.patch.object(ht.events.manager.HoudiniEventManager, "events", new_callable=mocker.PropertyMock)
+        mock_events = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager,
+            "events",
+            new_callable=mocker.PropertyMock,
+        )
 
         mock_event_name = mocker.MagicMock(spec=str)
 
@@ -369,7 +415,11 @@ class Test_HoudiniEventManager(object):
 
     def test_run_event__no_scriptargs(self, init_manager, mocker):
         """Test running an event with no particular args."""
-        mock_events = mocker.patch.object(ht.events.manager.HoudiniEventManager, "events", new_callable=mocker.PropertyMock)
+        mock_events = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager,
+            "events",
+            new_callable=mocker.PropertyMock,
+        )
 
         mock_event_name = mocker.MagicMock(spec=str)
 
@@ -381,15 +431,17 @@ class Test_HoudiniEventManager(object):
 
         manager.run_event(mock_event_name)
 
-        scriptargs = {
-            "_manager_": manager,
-        }
+        scriptargs = {"_manager_": manager}
 
         mock_event.run.assert_called_with(scriptargs)
 
     def test_run_event__scriptargs(self, init_manager, mocker):
         """Test running an event while passing in args."""
-        mock_events = mocker.patch.object(ht.events.manager.HoudiniEventManager, "events", new_callable=mocker.PropertyMock)
+        mock_events = mocker.patch.object(
+            ht.events.manager.HoudiniEventManager,
+            "events",
+            new_callable=mocker.PropertyMock,
+        )
 
         mock_event_name = mocker.MagicMock(spec=str)
 
@@ -403,10 +455,7 @@ class Test_HoudiniEventManager(object):
 
         manager.run_event(mock_event_name, scriptargs)
 
-        expected_scriptargs = {
-            "key": "value",
-            "_manager_": manager,
-        }
+        expected_scriptargs = {"key": "value", "_manager_": manager}
 
         mock_event.run.assert_called_with(expected_scriptargs)
 
@@ -434,7 +483,9 @@ class Test_register_function(object):
         mock_tags = mocker.MagicMock(spec=list)
 
         with pytest.raises(TypeError):
-            ht.events.manager.register_function(None, mock_event_name, mock_item_name, mock_priority, mock_tags)
+            ht.events.manager.register_function(
+                None, mock_event_name, mock_item_name, mock_priority, mock_tags
+            )
 
     def test(self, mocker):
         mock_cls = mocker.patch("ht.events.manager.HoudiniEventItem", autospec=True)
@@ -446,9 +497,13 @@ class Test_register_function(object):
         mock_priority = mocker.MagicMock(spec=int)
         mock_tags = mocker.MagicMock(spec=list)
 
-        ht.events.manager.register_function(mock_func, mock_event_name, mock_item_name, mock_priority, mock_tags)
+        ht.events.manager.register_function(
+            mock_func, mock_event_name, mock_item_name, mock_priority, mock_tags
+        )
 
-        mock_cls.assert_called_with((mock_func, ), mock_item_name, mock_priority, stat_tags=mock_tags)
+        mock_cls.assert_called_with(
+            (mock_func,), mock_item_name, mock_priority, stat_tags=mock_tags
+        )
 
         mock_register_item.assert_called_with(mock_cls.return_value, mock_event_name)
 

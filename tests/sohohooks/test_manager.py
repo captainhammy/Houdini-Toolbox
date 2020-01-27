@@ -22,6 +22,7 @@ imp.reload(manager)
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def init_manager(mocker):
     """Fixture to initialize a manager."""
@@ -36,6 +37,7 @@ def init_manager(mocker):
 # =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class Test_SohoHookManager(object):
     """Test ht.sohohooks.manager.SohoHookManager object."""
@@ -62,7 +64,9 @@ class Test_SohoHookManager(object):
 
     def test_call_hook__func_result_true(self, init_manager, mocker, patch_soho):
         """Test when a function returns a value that is equivalent to bool(value) == True."""
-        mock_hooks = mocker.patch.object(manager.SohoHookManager, "hooks", new_callable=mocker.PropertyMock)
+        mock_hooks = mocker.patch.object(
+            manager.SohoHookManager, "hooks", new_callable=mocker.PropertyMock
+        )
 
         mock_hook_name = mocker.MagicMock(spec=str)
         mock_hook = mocker.MagicMock()
@@ -83,7 +87,9 @@ class Test_SohoHookManager(object):
 
     def test_call_hook__func_no_result(self, init_manager, mocker, patch_soho):
         """Test when a function returns no value."""
-        mock_hooks = mocker.patch.object(manager.SohoHookManager, "hooks", new_callable=mocker.PropertyMock)
+        mock_hooks = mocker.patch.object(
+            manager.SohoHookManager, "hooks", new_callable=mocker.PropertyMock
+        )
 
         mock_hook_name = mocker.MagicMock(spec=str)
         mock_hook = mocker.MagicMock()
@@ -104,7 +110,9 @@ class Test_SohoHookManager(object):
 
     def test_call_hook__error(self, init_manager, mocker, patch_soho):
         """Test when calling a hook generates an exception."""
-        mock_hooks = mocker.patch.object(manager.SohoHookManager, "hooks", new_callable=mocker.PropertyMock)
+        mock_hooks = mocker.patch.object(
+            manager.SohoHookManager, "hooks", new_callable=mocker.PropertyMock
+        )
 
         mock_hook_name = mocker.MagicMock(spec=str)
         mock_hook = mocker.MagicMock()
@@ -129,7 +137,9 @@ class Test_SohoHookManager(object):
 
     def test_register_hook(self, init_manager, mocker):
         """Test registering hooks."""
-        mock_hooks = mocker.patch.object(manager.SohoHookManager, "hooks", new_callable=mocker.PropertyMock)
+        mock_hooks = mocker.patch.object(
+            manager.SohoHookManager, "hooks", new_callable=mocker.PropertyMock
+        )
 
         hooks = {}
         mock_hooks.return_value = hooks
@@ -149,7 +159,7 @@ class Test_SohoHookManager(object):
 
         expected = {
             mock_hook_name1: [mock_hook1, mock_hook2],
-            mock_hook_name3: [mock_hook3]
+            mock_hook_name3: [mock_hook3],
         }
 
         assert hooks == expected

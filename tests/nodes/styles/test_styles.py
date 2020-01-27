@@ -25,6 +25,7 @@ imp.reload(styles)
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def init_constant_rule(mocker):
     """Fixture to initialize a style constant."""
@@ -62,6 +63,7 @@ def init_style_rule(mocker):
 # CLASSES
 # =============================================================================
 
+
 class Test_StyleConstant(object):
     """Test ht.nodes.styles.styles.StyleConstant."""
 
@@ -73,7 +75,9 @@ class Test_StyleConstant(object):
         mock_shape = mocker.MagicMock(spec=str)
         mock_file_path = mocker.MagicMock(spec=str)
 
-        constant = styles.StyleConstant(mock_name, mock_color, mock_color_type, mock_shape, mock_file_path)
+        constant = styles.StyleConstant(
+            mock_name, mock_color, mock_color_type, mock_shape, mock_file_path
+        )
 
         assert constant._name == mock_name
         assert constant._color == mock_color
@@ -83,7 +87,9 @@ class Test_StyleConstant(object):
 
     def test___eq__(self, init_style_constant, mocker):
         """Test the equality operator."""
-        mock_name_prop = mocker.patch.object(styles.StyleConstant, "name", new_callable=mocker.PropertyMock)
+        mock_name_prop = mocker.patch.object(
+            styles.StyleConstant, "name", new_callable=mocker.PropertyMock
+        )
 
         mock_name_prop.return_value = "name1"
 
@@ -104,7 +110,9 @@ class Test_StyleConstant(object):
 
     def test___hash__(self, init_style_constant, mocker):
         """Test the hash operator."""
-        mocker.patch.object(styles.StyleConstant, "name", new_callable=mocker.PropertyMock)
+        mocker.patch.object(
+            styles.StyleConstant, "name", new_callable=mocker.PropertyMock
+        )
 
         constant = init_style_constant()
 
@@ -184,8 +192,12 @@ class Test_StyleConstant(object):
 
     def test_apply_to_node__both(self, init_style_constant, mocker):
         """Test applying everything to a node."""
-        mock_color_prop = mocker.patch.object(styles.StyleConstant, "color", new_callable=mocker.PropertyMock)
-        mock_shape_prop = mocker.patch.object(styles.StyleConstant, "shape", new_callable=mocker.PropertyMock)
+        mock_color_prop = mocker.patch.object(
+            styles.StyleConstant, "color", new_callable=mocker.PropertyMock
+        )
+        mock_shape_prop = mocker.patch.object(
+            styles.StyleConstant, "shape", new_callable=mocker.PropertyMock
+        )
 
         mock_node = mocker.MagicMock(spec=hou.Node)
 
@@ -194,12 +206,22 @@ class Test_StyleConstant(object):
         constant.apply_to_node(mock_node)
 
         mock_node.setColor.assert_called_with(mock_color_prop.return_value)
-        mock_node.setUserData.assert_called_with("nodeshape", mock_shape_prop.return_value)
+        mock_node.setUserData.assert_called_with(
+            "nodeshape", mock_shape_prop.return_value
+        )
 
     def test_apply_to_node__none(self, init_style_constant, mocker):
         """Test applying to a node when no values will be set."""
-        mocker.patch.object(styles.StyleConstant, "color", new_callable=mocker.PropertyMock(return_value=None))
-        mocker.patch.object(styles.StyleConstant, "shape", new_callable=mocker.PropertyMock(return_value=None))
+        mocker.patch.object(
+            styles.StyleConstant,
+            "color",
+            new_callable=mocker.PropertyMock(return_value=None),
+        )
+        mocker.patch.object(
+            styles.StyleConstant,
+            "shape",
+            new_callable=mocker.PropertyMock(return_value=None),
+        )
 
         mock_node = mocker.MagicMock(spec=hou.Node)
 
@@ -222,7 +244,9 @@ class Test_StyleRule(object):
         mock_shape = mocker.MagicMock(spec=str)
         mock_file_path = mocker.MagicMock(spec=str)
 
-        rule = styles.StyleRule(mock_name, mock_color, mock_color_type, mock_shape, mock_file_path)
+        rule = styles.StyleRule(
+            mock_name, mock_color, mock_color_type, mock_shape, mock_file_path
+        )
 
         assert rule._name == mock_name
         assert rule._color == mock_color
@@ -232,7 +256,11 @@ class Test_StyleRule(object):
 
     def test___eq__(self, init_style_rule, mocker):
         """Test the equality operator."""
-        mocker.patch.object(styles.StyleRule, "name", new_callable=mocker.PropertyMock(return_value="name"))
+        mocker.patch.object(
+            styles.StyleRule,
+            "name",
+            new_callable=mocker.PropertyMock(return_value="name"),
+        )
 
         rule = init_style_rule()
 
@@ -249,7 +277,11 @@ class Test_StyleRule(object):
 
     def test___hash__(self, init_style_rule, mocker):
         """Test the hash operator."""
-        mocker.patch.object(styles.StyleRule, "name", new_callable=mocker.PropertyMock(return_value="name"))
+        mocker.patch.object(
+            styles.StyleRule,
+            "name",
+            new_callable=mocker.PropertyMock(return_value="name"),
+        )
 
         rule = init_style_rule()
 
@@ -342,8 +374,14 @@ class Test_StyleRule(object):
 
     def test__get_typed_color_value(self, init_style_rule, mocker):
         """Test getting a typed color value."""
-        mock_color_prop = mocker.patch.object(styles.StyleRule, "color", new_callable=mocker.PropertyMock)
-        mocker.patch.object(styles.StyleRule, "color_type", new_callable=mocker.PropertyMock(return_value="HSV"))
+        mock_color_prop = mocker.patch.object(
+            styles.StyleRule, "color", new_callable=mocker.PropertyMock
+        )
+        mocker.patch.object(
+            styles.StyleRule,
+            "color_type",
+            new_callable=mocker.PropertyMock(return_value="HSV"),
+        )
 
         mock_color = mocker.MagicMock(spec=hou.Color)
         mock_color_prop.return_value = mock_color
@@ -357,8 +395,12 @@ class Test_StyleRule(object):
 
     def test_apply_to_node__both(self, init_style_rule, mocker):
         """Test applying everything to a node."""
-        mock_color_prop = mocker.patch.object(styles.StyleRule, "color", new_callable=mocker.PropertyMock)
-        mock_shape_prop = mocker.patch.object(styles.StyleRule, "shape", new_callable=mocker.PropertyMock)
+        mock_color_prop = mocker.patch.object(
+            styles.StyleRule, "color", new_callable=mocker.PropertyMock
+        )
+        mock_shape_prop = mocker.patch.object(
+            styles.StyleRule, "shape", new_callable=mocker.PropertyMock
+        )
         mock_node = mocker.MagicMock(spec=hou.Node)
 
         rule = init_style_rule()
@@ -366,12 +408,22 @@ class Test_StyleRule(object):
         rule.apply_to_node(mock_node)
 
         mock_node.setColor.assert_called_with(mock_color_prop.return_value)
-        mock_node.setUserData.assert_called_with("nodeshape", mock_shape_prop.return_value)
+        mock_node.setUserData.assert_called_with(
+            "nodeshape", mock_shape_prop.return_value
+        )
 
     def test_apply_to_node__none(self, init_style_rule, mocker):
         """Test applying to a node when no values will be set."""
-        mocker.patch.object(styles.StyleRule, "color", new_callable=mocker.PropertyMock(return_value=None))
-        mocker.patch.object(styles.StyleRule, "shape", new_callable=mocker.PropertyMock(return_value=None))
+        mocker.patch.object(
+            styles.StyleRule,
+            "color",
+            new_callable=mocker.PropertyMock(return_value=None),
+        )
+        mocker.patch.object(
+            styles.StyleRule,
+            "shape",
+            new_callable=mocker.PropertyMock(return_value=None),
+        )
 
         mock_node = mocker.MagicMock(spec=hou.Node)
 
@@ -400,7 +452,9 @@ class Test_ConstantRule(object):
 
     def test___eq__(self, init_constant_rule, mocker):
         """Test the equality operator."""
-        mock_name_prop = mocker.patch.object(styles.ConstantRule, "name", new_callable=mocker.PropertyMock)
+        mock_name_prop = mocker.patch.object(
+            styles.ConstantRule, "name", new_callable=mocker.PropertyMock
+        )
 
         constant = init_constant_rule()
 
@@ -421,8 +475,12 @@ class Test_ConstantRule(object):
 
     def test___hash__(self, init_constant_rule, mocker):
         """Test the hash operator."""
-        mocker.patch.object(styles.ConstantRule, "name", new_callable=mocker.PropertyMock)
-        mocker.patch.object(styles.ConstantRule, "constant_name", new_callable=mocker.PropertyMock)
+        mocker.patch.object(
+            styles.ConstantRule, "name", new_callable=mocker.PropertyMock
+        )
+        mocker.patch.object(
+            styles.ConstantRule, "constant_name", new_callable=mocker.PropertyMock
+        )
 
         constant = init_constant_rule()
 

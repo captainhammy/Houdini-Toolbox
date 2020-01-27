@@ -15,6 +15,7 @@ import hou
 # FUNCTIONS
 # ==============================================================================
 
+
 def date_from_string(value):
     """Convert a string value into a datetime object.
 
@@ -64,9 +65,11 @@ def find_current_pane_tab(scriptargs):
         # in that case we look for a pane tab that is current and has a selection.
         if pane is None:
             # Find all displayed NetworkEditor panes
-            network_panes = [pane_tab for pane_tab in desktop.paneTabs()
-                             if isinstance(pane_tab, hou.NetworkEditor) and
-                             pane_tab.isCurrentTab()]
+            network_panes = [
+                pane_tab
+                for pane_tab in desktop.paneTabs()
+                if isinstance(pane_tab, hou.NetworkEditor) and pane_tab.isCurrentTab()
+            ]
 
             # Look for any panes with a selection.
             for network_pane in network_panes:

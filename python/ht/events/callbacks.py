@@ -19,6 +19,7 @@ import hou
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
+
 def _atexit_callback(*args, **kwargs):  # pylint: disable=unused-argument
     """Run SceneEvents.Exit events.
 
@@ -72,6 +73,7 @@ def _register_when_ui_available():
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
 
 def register_callbacks():
     """Register any dynamic callback functions.

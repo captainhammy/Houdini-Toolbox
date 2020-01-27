@@ -23,6 +23,7 @@ _logger = logging.getLogger(__name__)
 # CLASSES
 # =============================================================================
 
+
 class PropertySetterManager(object):
     """Class for creating and managing PropertySetters."""
 
@@ -54,7 +55,9 @@ class PropertySetterManager(object):
                     # Get the rendertype name.
                     rendertype = property_name.split(":")[1]
 
-                    _process_rendertype_block(properties, stage_name, rendertype, property_block)
+                    _process_rendertype_block(
+                        properties, stage_name, rendertype, property_block
+                    )
 
                 # Normal data.
                 else:
@@ -140,6 +143,7 @@ class PropertySetter(object):
 
         if self.find_file:
             import hou
+
             self._value = hou.findFile(self.value)
 
     # -------------------------------------------------------------------------
@@ -242,10 +246,7 @@ class MaskedPropertySetter(PropertySetter):
             value = "'{}'".format(value)
 
         return "<{} {}={} mask='{}'>".format(
-            self.__class__.__name__,
-            self.name,
-            value,
-            self.mask
+            self.__class__.__name__, self.name, value, self.mask
         )
 
     # -------------------------------------------------------------------------
@@ -314,7 +315,9 @@ class SetProperties(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def build_arg_string(properties=None, properties_file=None):  # pylint: disable=arguments-differ
+    def build_arg_string(
+        properties=None, properties_file=None
+    ):  # pylint: disable=arguments-differ
         """Build an argument string for this operation.
 
         'properties' should be a json compatible dictionary.
@@ -331,9 +334,7 @@ class SetProperties(PyFilterOperation):
 
         if properties is not None:
             args.append(
-                '--properties="{}"'.format(
-                    json.dumps(properties).replace('"', '\\"')
-                )
+                '--properties="{}"'.format(json.dumps(properties).replace('"', '\\"'))
             )
 
         if properties_file is not None:
@@ -350,17 +351,10 @@ class SetProperties(PyFilterOperation):
         :return:
 
         """
-        parser.add_argument(
-            "--properties",
-            nargs=1,
-            action="store",
-        )
+        parser.add_argument("--properties", nargs=1, action="store")
 
         parser.add_argument(
-            "--properties-file",
-            nargs="*",
-            action="store",
-            dest="properties_file"
+            "--properties-file", nargs="*", action="store", dest="properties_file"
         )
 
     # -------------------------------------------------------------------------
@@ -426,6 +420,7 @@ class SetProperties(PyFilterOperation):
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
+
 def _create_property_setter(property_name, property_block, stage_name):
     """Create a PropertySetter based on data.
 
@@ -443,25 +438,19 @@ def _create_property_setter(property_name, property_block, stage_name):
     if "mask" in property_block:
         # Filter a plane.
         if stage_name == "plane":
-            return MaskedPropertySetter(
-                property_name,
-                property_block,
-                "plane:variable"
-            )
+            return MaskedPropertySetter(property_name, property_block, "plane:variable")
 
         # Something involving an actual object.
         elif stage_name in ("fog", "light", "instance"):
-            return MaskedPropertySetter(
-                property_name,
-                property_block,
-                "object:name"
-            )
+            return MaskedPropertySetter(property_name, property_block, "object:name")
 
         # If masking is specified but we don't know how to handle it, log a
         # warning message.  We will still return a regular PropertySetter
         # object though.
         else:
-            _logger.warning("No masking available for %s:%s.", stage_name, property_name)
+            _logger.warning(
+                "No masking available for %s:%s.", stage_name, property_name
+            )
 
     # Generic property setter.
     return PropertySetter(property_name, property_block)
@@ -492,11 +481,7 @@ def _process_block(properties, stage_name, name, block):
     if isinstance(block, Iterable):
         # Process any properties in the block.
         for property_elem in block:
-            prop = _create_property_setter(
-                name,
-                property_elem,
-                stage_name
-            )
+            prop = _create_property_setter(name, property_elem, stage_name)
 
             properties.append(prop)
 
@@ -532,6 +517,4 @@ def _process_rendertype_block(properties, stage_name, rendertype, property_block
             raise TypeError("Must be dict or list, got {}".format(type(block)))
 
         # Process the child data block.
-        _process_block(
-            properties, stage_name, name, block
-        )
+        _process_block(properties, stage_name, name, block)

@@ -18,6 +18,7 @@ _logger = logging.getLogger(__name__)
 # CLASSES
 # =============================================================================
 
+
 class SetDeepImage(PyFilterOperation):
     """Operation to modify deep image generation.
 
@@ -155,11 +156,20 @@ class SetDeepImage(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def build_arg_string(disable_deep_image=None,  # pylint: disable=arguments-differ,too-many-arguments
-                         deep_all_passes=None, deep_image_path=None, resolver=None,
-                         compositing=None, compression=None, depth_planes=None,
-                         mipmaps=None, ofsize=None, ofstorage=None, pzstorage=None,
-                         zbias=None):
+    def build_arg_string(  # pylint: disable=arguments-differ,too-many-arguments
+        disable_deep_image=None,
+        deep_all_passes=None,
+        deep_image_path=None,
+        resolver=None,
+        compositing=None,
+        compression=None,
+        depth_planes=None,
+        mipmaps=None,
+        ofsize=None,
+        ofstorage=None,
+        pzstorage=None,
+        zbias=None,
+    ):
         """Build an argument string for this operation.
 
         :param disable_deep_image: Whether or not to disable the deep image.
@@ -245,11 +255,17 @@ class SetDeepImage(PyFilterOperation):
         """
         parser.add_argument("--deep-image-path", dest="deep_image_path")
 
-        parser.add_argument("--deep-all-passes", action="store_true", dest="deep_all_passes")
+        parser.add_argument(
+            "--deep-all-passes", action="store_true", dest="deep_all_passes"
+        )
 
-        parser.add_argument("--disable-deep-image", action="store_true", dest="disable_deep_image")
+        parser.add_argument(
+            "--disable-deep-image", action="store_true", dest="disable_deep_image"
+        )
 
-        parser.add_argument("--deep-resolver", choices=("camera", "shadow"), dest="deep_resolver")
+        parser.add_argument(
+            "--deep-resolver", choices=("camera", "shadow"), dest="deep_resolver"
+        )
 
         parser.add_argument("--deep-compression", type=int, dest="deep_compression")
 
@@ -257,20 +273,24 @@ class SetDeepImage(PyFilterOperation):
 
         parser.add_argument("--deep-depth-planes", dest="deep_depth_planes")
 
-        parser.add_argument("--deep-mipmaps", type=int, choices=(0, 1), dest="deep_mipmaps")
+        parser.add_argument(
+            "--deep-mipmaps", type=int, choices=(0, 1), dest="deep_mipmaps"
+        )
 
-        parser.add_argument("--deep-ofsize", type=int, choices=(1, 3), dest="deep_ofsize")
+        parser.add_argument(
+            "--deep-ofsize", type=int, choices=(1, 3), dest="deep_ofsize"
+        )
 
         parser.add_argument(
             "--deep-ofstorage",
             choices=("real16", "real32", "real64"),
-            dest="deep_ofstorage"
+            dest="deep_ofstorage",
         )
 
         parser.add_argument(
             "--deep-pzstorage",
             choices=("real16", "real32", "real64"),
-            dest="deep_pzstorage"
+            dest="deep_pzstorage",
         )
 
         parser.add_argument("--deep-zbias", type=float, dest="deep_zbias")
@@ -317,7 +337,8 @@ class SetDeepImage(PyFilterOperation):
             self._modify_deep_args(deep_args)
 
             _logger.debug(
-                "Setting 'image:deepresolver': %s", " ".join([str(arg) for arg in deep_args])
+                "Setting 'image:deepresolver': %s",
+                " ".join([str(arg) for arg in deep_args]),
             )
 
             set_property("image:deepresolver", deep_args)
@@ -390,6 +411,6 @@ class SetDeepImage(PyFilterOperation):
                 self.ofsize is not None,
                 self.ofstorage,
                 self.pzstorage,
-                self.zbias is not None
+                self.zbias is not None,
             )
         )

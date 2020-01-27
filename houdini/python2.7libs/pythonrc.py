@@ -13,6 +13,7 @@
 # Shell panes.  We explicitly provide an alternate stream handler for output
 # to only these pane tabs.
 import ht.logging
+
 ht.logging.init_config()
 
 import ht.events

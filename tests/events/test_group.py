@@ -20,6 +20,7 @@ imp.reload(ht.events.group)
 # CLASSES
 # =============================================================================
 
+
 class Test_HoudiniEventGroup(object):
     """Test ht.events.group.HoudiniEventGroup class."""
 
@@ -34,7 +35,9 @@ class Test_HoudiniEventGroup(object):
 
     def test_data(self, mocker):
         """Test the 'data' property."""
-        mocker.patch.object(ht.events.group.HoudiniEventGroup, "__init__", lambda x: None)
+        mocker.patch.object(
+            ht.events.group.HoudiniEventGroup, "__init__", lambda x: None
+        )
         group = ht.events.group.HoudiniEventGroup()
 
         mock_value = mocker.MagicMock(spec=dict)
@@ -43,7 +46,9 @@ class Test_HoudiniEventGroup(object):
 
     def test_event_map(self, mocker):
         """Test 'event_map' property."""
-        mocker.patch.object(ht.events.group.HoudiniEventGroup, "__init__", lambda x: None)
+        mocker.patch.object(
+            ht.events.group.HoudiniEventGroup, "__init__", lambda x: None
+        )
         group = ht.events.group.HoudiniEventGroup()
 
         mock_value = mocker.MagicMock(spec=dict)

@@ -16,6 +16,7 @@ import six
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
+
 def _parse_string_for_bool(value):
     """Process a string value, converting string booleans to real booleans.
 
@@ -128,6 +129,7 @@ def _transform_values(values):
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
 
 def get_property(name):
     """Get a property value.

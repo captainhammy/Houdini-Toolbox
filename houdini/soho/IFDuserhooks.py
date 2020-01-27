@@ -12,6 +12,7 @@ from ht.sohohooks.manager import MANAGER
 # FUNCTIONS
 # =============================================================================
 
+
 def call(hook_name="", *args, **kwargs):  # pylint: disable=keyword-arg-before-vararg
     """Hook callback function.
 

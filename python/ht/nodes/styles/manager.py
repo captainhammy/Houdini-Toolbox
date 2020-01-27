@@ -24,6 +24,7 @@ import hou
 # CLASSES
 # =============================================================================
 
+
 class StyleManager(object):
     """Manage and apply Houdini node styles."""
 
@@ -91,11 +92,7 @@ class StyleManager(object):
 
                     # Store the constant under its name.
                     self.constants[name] = StyleConstant(
-                        name,
-                        color,
-                        color_type,
-                        shape,
-                        path
+                        name, color, color_type, shape, path
                     )
 
     def _build_rules_from_data(self, all_data):
@@ -144,13 +141,17 @@ class StyleManager(object):
                 if node_type.isManager():
                     # Check for a manager rule under the category.
                     if constants.MANAGER_TYPE_KEY in category_rules:
-                        return self._resolve_rule(category_rules[constants.MANAGER_TYPE_KEY])
+                        return self._resolve_rule(
+                            category_rules[constants.MANAGER_TYPE_KEY]
+                        )
 
                 # The node type is a generator.
                 elif node_type.isGenerator():
                     # Check for a generator rule under the category.
                     if constants.GENERATOR_TYPE_KEY in category_rules:
-                        return self._resolve_rule(category_rules[constants.GENERATOR_TYPE_KEY])
+                        return self._resolve_rule(
+                            category_rules[constants.GENERATOR_TYPE_KEY]
+                        )
 
                 else:
                     raise ValueError(
@@ -351,6 +352,7 @@ class StyleManager(object):
 # EXCEPTIONS
 # =============================================================================
 
+
 class ConstantDoesNotExistError(Exception):
     """Exception raised when a color attempts to reference a non-existent
     constant.
@@ -368,6 +370,7 @@ class InvalidColorTypeError(Exception):
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
+
 
 def _build_category_rules(rules, category_map, path, constant_map):
     """Build constant and style rules.
@@ -398,11 +401,7 @@ def _build_category_rules(rules, category_map, path, constant_map):
             if constant_name not in constant_map:
                 raise ConstantDoesNotExistError(constant_name)
 
-            rule = ConstantRule(
-                rule_name,
-                constant_name,
-                path
-            )
+            rule = ConstantRule(rule_name, constant_name, path)
 
         # Handle styles.
         else:
@@ -411,13 +410,7 @@ def _build_category_rules(rules, category_map, path, constant_map):
             shape = _build_shape(rule_data)
 
             # Add a StyleRule to the list.
-            rule = StyleRule(
-                rule_name,
-                color,
-                color_type,
-                shape,
-                path
-            )
+            rule = StyleRule(rule_name, color, color_type, shape, path)
 
         # Add the rule to the map.
         category_map[rule_name] = rule
@@ -526,8 +519,7 @@ def _get_tool_menu_locations(node_type):
     # Figure out what the tool name should be for the give node type
     # information.
     tool_name = hou.shelves.defaultToolName(
-        node_type.category().name(),
-        node_type.name()
+        node_type.category().name(), node_type.name()
     )
 
     # Check the tool name corresponds to a valid tool.

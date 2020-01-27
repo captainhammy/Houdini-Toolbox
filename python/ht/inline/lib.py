@@ -18,7 +18,7 @@ import inlinecpp
 # =============================================================================
 
 _FUNCTION_SOURCES = [
-"""
+    """
 void clearCacheByName(const char* cache_name)
 {
     UT_Cache                    *cache;
@@ -48,8 +48,7 @@ void clearCacheByName(const char* cache_name)
     }
 }
 """,
-
-"""
+    """
 FloatArray
 point_instance_transform(const GU_Detail *gdp, int ptnum)
 {
@@ -77,8 +76,7 @@ point_instance_transform(const GU_Detail *gdp, int ptnum)
     return result;
 }
 """,
-
-"""
+    """
 bool
 isRendering()
 {
@@ -87,8 +85,7 @@ isRendering()
     return manager && manager->isActive();
 }
 """,
-
-"""
+    """
 StringArray
 getGlobalVariableNames(int dirty=0)
 {
@@ -122,8 +119,7 @@ getGlobalVariableNames(int dirty=0)
     return result;
 }
 """,
-
-"""
+    """
 char *
 getVariableValue(const char *name)
 {
@@ -143,8 +139,7 @@ getVariableValue(const char *name)
     return strdup(value.buffer());
 }
 """,
-
-"""
+    """
 StringArray
 getVariableNames(int dirty=0)
 {
@@ -175,8 +170,7 @@ getVariableNames(int dirty=0)
     return result;
 }
 """,
-
-"""
+    """
 void
 setVariable(const char *name, const char *value, int local)
 {
@@ -192,8 +186,7 @@ setVariable(const char *name, const char *value, int local)
     cmd->setVariable(name, value, local);
 }
 """,
-
-"""
+    """
 void
 unsetVariable(const char *name)
 {
@@ -209,8 +202,7 @@ unsetVariable(const char *name)
     cmd->unsetVariable(name);
 }
 """,
-
-"""
+    """
 void
 emitVarChange()
 {
@@ -280,8 +272,7 @@ emitVarChange()
     cmd->clearDirtyVariables();
 }
 """,
-
-"""
+    """
 int
 addNumToRange(int num, int sec, void *data)
 {
@@ -297,8 +288,7 @@ addNumToRange(int num, int sec, void *data)
     return 1;
 }
 """,
-
-"""
+    """
 IntArray
 expandRange(const char *pattern)
 {
@@ -324,8 +314,7 @@ expandRange(const char *pattern)
     return values;
 }
 """,
-
-"""
+    """
 const char *
 getNodeAuthor(OP_Node *node)
 {
@@ -333,8 +322,7 @@ getNodeAuthor(OP_Node *node)
     return stat.getAuthor();
 }
 """,
-
-"""
+    """
 void
 packGeometry(GU_Detail *source, GU_Detail *target)
 {
@@ -349,8 +337,7 @@ packGeometry(GU_Detail *source, GU_Detail *target)
     );
 }
 """,
-
-"""
+    """
 void
 sortGeometryByAttribute(GU_Detail *gdp,
                 int attribute_type,
@@ -376,8 +363,7 @@ sortGeometryByAttribute(GU_Detail *gdp,
     }
 }
 """,
-
-"""
+    """
 void
 sortGeometryAlongAxis(GU_Detail *gdp, int attribute_type, int axis)
 {
@@ -398,8 +384,7 @@ sortGeometryAlongAxis(GU_Detail *gdp, int attribute_type, int axis)
     }
 }
 """,
-
-"""
+    """
 void
 sortGeometryRandomly(GU_Detail *gdp, int attribute_type, float seed)
 {
@@ -417,8 +402,7 @@ sortGeometryRandomly(GU_Detail *gdp, int attribute_type, float seed)
     }
 }
 """,
-
-"""
+    """
 void
 shiftGeometry(GU_Detail *gdp, int attribute_type, int offset)
 {
@@ -436,8 +420,7 @@ shiftGeometry(GU_Detail *gdp, int attribute_type, int offset)
     }
 }
 """,
-
-"""
+    """
 void
 reverseSortGeometry(GU_Detail *gdp, int attribute_type)
 {
@@ -455,8 +438,7 @@ reverseSortGeometry(GU_Detail *gdp, int attribute_type)
     }
 }
 """,
-
-"""
+    """
 void
 sortGeometryByProximity(GU_Detail *gdp, int attribute_type, const UT_Vector3D *point)
 {
@@ -476,16 +458,14 @@ sortGeometryByProximity(GU_Detail *gdp, int attribute_type, const UT_Vector3D *p
     }
 }
 """,
-
-"""
+    """
 void
 sortGeometryByVertexOrder(GU_Detail *gdp)
 {
     gdp->sortByVertexOrder();
 }
 """,
-
-"""
+    """
 void
 sortGeometryByValues(GU_Detail *gdp, int attribute_type, fpreal *values)
 {
@@ -503,40 +483,35 @@ sortGeometryByValues(GU_Detail *gdp, int attribute_type, fpreal *values)
     }
 }
 """,
-
-"""
+    """
 void
 setNodeTypeIcon(OP_Operator *op, const char *icon_name)
 {
     op->setIconName(icon_name);
 }
 """,
-
-"""
+    """
 void
 setNodeTypeDefaultIcon(OP_Operator *op)
 {
     op->setDefaultIconName();
 }
 """,
-
-"""
+    """
 bool
 isNodeTypeSubnetType(OP_Operator *op)
 {
     return op->getIsPrimarySubnetType();
 }
 """,
-
-"""
+    """
 bool
 isNodeTypePythonType(OP_Operator *op)
 {
     return op->getScriptIsPython();
 }
 """,
-
-"""
+    """
 void
 createPointAtPosition(GU_Detail *gdp, UT_Vector3D *position)
 {
@@ -550,8 +525,7 @@ createPointAtPosition(GU_Detail *gdp, UT_Vector3D *position)
 
 }
 """,
-
-"""
+    """
 void
 createNPoints(GU_Detail *gdp, int npoints)
 {
@@ -561,8 +535,7 @@ createNPoints(GU_Detail *gdp, int npoints)
     ptOff = gdp->appendPointBlock(npoints);
 }
 """,
-
-"""
+    """
 void
 mergePointGroup(GU_Detail *gdp, const GU_Detail *src, const char *group_name)
 {
@@ -573,8 +546,7 @@ mergePointGroup(GU_Detail *gdp, const GU_Detail *src, const char *group_name)
     gdp->mergePoints(*src, GA_Range(*group));
 }
 """,
-
-"""
+    """
 void
 mergePoints(GU_Detail *gdp, const GU_Detail *src, int *vals, int num_vals)
 {
@@ -588,8 +560,7 @@ mergePoints(GU_Detail *gdp, const GU_Detail *src, int *vals, int num_vals)
     gdp->mergePoints(*src, GA_Range(src->getPointMap(), points));
 }
 """,
-
-"""
+    """
 void
 mergePrimGroup(GU_Detail *gdp, const GU_Detail *src, const char *group_name)
 {
@@ -600,8 +571,7 @@ mergePrimGroup(GU_Detail *gdp, const GU_Detail *src, const char *group_name)
     gdp->mergePrimitives(*src, GA_Range(*group));
 }
 """,
-
-"""
+    """
 void
 mergePrims(GU_Detail *gdp, const GU_Detail *src, int *vals, int num_vals)
 {
@@ -615,8 +585,7 @@ mergePrims(GU_Detail *gdp, const GU_Detail *src, int *vals, int num_vals)
     gdp->mergePrimitives(*src, GA_Range(src->getPrimitiveMap(), prims));
 }
 """,
-
-"""
+    """
 void
 copyAttributeValues(GU_Detail *dest_gdp,
                     int dest_entity_type,
@@ -718,8 +687,7 @@ copyAttributeValues(GU_Detail *dest_gdp,
     hmap.copyValue(dest_owner, dest_off, src_owner, src_off);
 }
 """,
-
-"""
+    """
 void
 copyPointAttributeValues(GU_Detail *dest_gdp,
                          int dest_pt,
@@ -770,8 +738,7 @@ copyPointAttributeValues(GU_Detail *dest_gdp,
     hmap.copyValue(GA_ATTRIB_POINT, destOff, GA_ATTRIB_POINT, srcOff);
 }
 """,
-
-"""
+    """
 void
 copyPrimAttributeValues(GU_Detail *dest_gdp,
                         int dest_pr,
@@ -822,8 +789,7 @@ copyPrimAttributeValues(GU_Detail *dest_gdp,
     hmap.copyValue(GA_ATTRIB_PRIMITIVE, destOff, GA_ATTRIB_PRIMITIVE, srcOff);
 }
 """,
-
-"""
+    """
 IntArray
 pointAdjacentPolygons(const GU_Detail *gdp, int prim_num)
 {
@@ -848,8 +814,7 @@ pointAdjacentPolygons(const GU_Detail *gdp, int prim_num)
     return prim_nums;
 }
 """,
-
-"""
+    """
 IntArray
 edgeAdjacentPolygons(const GU_Detail *gdp, int prim_num)
 {
@@ -874,8 +839,7 @@ edgeAdjacentPolygons(const GU_Detail *gdp, int prim_num)
     return prim_nums;
 }
 """,
-
-"""
+    """
 IntArray
 connectedPrims(const GU_Detail *gdp, int pt_num)
 {
@@ -900,8 +864,7 @@ connectedPrims(const GU_Detail *gdp, int pt_num)
     return prim_nums;
 }
 """,
-
-"""
+    """
 IntArray
 connectedPoints(const GU_Detail *gdp, int pt_num)
 {
@@ -946,8 +909,7 @@ connectedPoints(const GU_Detail *gdp, int pt_num)
     return pt_nums;
 }
 """,
-
-"""
+    """
 VertexMap
 referencingVertices(const GU_Detail *gdp, int pt_num)
 {
@@ -989,8 +951,7 @@ referencingVertices(const GU_Detail *gdp, int pt_num)
     return vert_map;
 }
 """,
-
-"""
+    """
 IntArray
 getStringTableIndices(const GU_Detail *gdp, int attribute_type, const char *attrib_name)
 {
@@ -1037,8 +998,7 @@ getStringTableIndices(const GU_Detail *gdp, int attribute_type, const char *attr
     return result;
 }
 """,
-
-"""
+    """
 StringArray
 vertexStringAttribValues(const GU_Detail *gdp, const char *attrib_name)
 {
@@ -1064,8 +1024,7 @@ vertexStringAttribValues(const GU_Detail *gdp, const char *attrib_name)
     return result;
 }
 """,
-
-"""
+    """
 void
 setVertexStringAttribValues(GU_Detail *gdp,
                       const char *attrib_name,
@@ -1095,8 +1054,7 @@ setVertexStringAttribValues(GU_Detail *gdp,
     }
 }
 """,
-
-"""
+    """
 void
 setSharedStringAttrib(GU_Detail *gdp,
                       int attribute_type,
@@ -1165,8 +1123,7 @@ setSharedStringAttrib(GU_Detail *gdp,
     s_t->setString(attrib, range, value, 0);
 }
 """,
-
-"""
+    """
 bool
 faceHasEdge(const GU_Detail *gdp,
         unsigned prim_num,
@@ -1188,8 +1145,7 @@ faceHasEdge(const GU_Detail *gdp,
     return face->hasEdge(edge);
 }
 """,
-
-"""
+    """
 void
 insertVertex(GU_Detail *gdp,
              unsigned prim_num,
@@ -1207,8 +1163,7 @@ insertVertex(GU_Detail *gdp,
     face->insertVertex(ptOff, idx);
 }
 """,
-
-"""
+    """
 void
 deleteVertexFromFace(GU_Detail *gdp, unsigned prim_num, unsigned idx)
 {
@@ -1219,8 +1174,7 @@ deleteVertexFromFace(GU_Detail *gdp, unsigned prim_num, unsigned idx)
     face->deleteVertex(idx);
 }
 """,
-
-"""
+    """
 void
 setFaceVertexPoint(GU_Detail *gdp, unsigned prim_num, unsigned idx, unsigned pt_num)
 {
@@ -1234,8 +1188,7 @@ setFaceVertexPoint(GU_Detail *gdp, unsigned prim_num, unsigned idx, unsigned pt_
     prim->setPointOffset(idx, ptOff);
 }
 """,
-
-"""
+    """
 Position3D
 primitiveBaryCenter(const GU_Detail *gdp, unsigned prim_num)
 {
@@ -1256,8 +1209,7 @@ primitiveBaryCenter(const GU_Detail *gdp, unsigned prim_num)
     return pos;
 }
 """,
-
-"""
+    """
 void
 reversePrimitive(const GU_Detail *gdp, unsigned prim_num)
 {
@@ -1268,8 +1220,7 @@ reversePrimitive(const GU_Detail *gdp, unsigned prim_num)
     prim->reverse();
 }
 """,
-
-"""
+    """
 void
 makePrimitiveUnique(GU_Detail *gdp, unsigned prim_num)
 {
@@ -1280,8 +1231,7 @@ makePrimitiveUnique(GU_Detail *gdp, unsigned prim_num)
     gdp->uniquePrimitive(prim);
 }
 """,
-
-"""
+    """
 bool
 renameGroup(GU_Detail *gdp, const char *from_name, const char *to_name, int group_type)
 {
@@ -1292,8 +1242,7 @@ renameGroup(GU_Detail *gdp, const char *from_name, const char *to_name, int grou
     return table->renameGroup(from_name, to_name);
 }
 """,
-
-"""
+    """
 FloatArray
 groupBoundingBox(const GU_Detail *gdp, int group_type, const char *group_name)
 {
@@ -1336,8 +1285,7 @@ groupBoundingBox(const GU_Detail *gdp, int group_type, const char *group_name)
     return result;
 }
 """,
-
-"""
+    """
 bool
 addNormalAttribute(GU_Detail *gdp)
 {
@@ -1355,8 +1303,7 @@ addNormalAttribute(GU_Detail *gdp)
     return false;
 }
 """,
-
-"""
+    """
 bool
 addVelocityAttribute(GU_Detail *gdp)
 {
@@ -1374,8 +1321,7 @@ addVelocityAttribute(GU_Detail *gdp)
     return false;
 }
 """,
-
-"""
+    """
 bool
 addDiffuseAttribute(GU_Detail *gdp, int attribute_type)
 {
@@ -1395,24 +1341,21 @@ addDiffuseAttribute(GU_Detail *gdp, int attribute_type)
     return false;
 }
 """,
-
-"""
+    """
 void
 computePointNormals(GU_Detail *gdp)
 {
     gdp->normal();
 }
 """,
-
-"""
+    """
 void
 convexPolygons(GU_Detail *gdp, unsigned maxpts=3)
 {
     gdp->convex(maxpts);
 }
 """,
-
-"""
+    """
 void
 destroyEmptyGroups(GU_Detail *gdp, int attribute_type)
 {
@@ -1421,8 +1364,7 @@ destroyEmptyGroups(GU_Detail *gdp, int attribute_type)
     gdp->destroyEmptyGroups(owner);
 }
 """,
-
-"""
+    """
 void
 destroyUnusedPoints(GU_Detail *gdp, const char *group_name)
 {
@@ -1437,8 +1379,7 @@ destroyUnusedPoints(GU_Detail *gdp, const char *group_name)
     gdp->destroyUnusedPoints(group);
 }
 """,
-
-"""
+    """
 void
 consolidatePoints(GU_Detail *gdp, double distance, const char *group_name)
 {
@@ -1452,16 +1393,14 @@ consolidatePoints(GU_Detail *gdp, double distance, const char *group_name)
     gdp->fastConsolidatePoints(distance, group);
 }
 """,
-
-"""
+    """
 void
 uniquePoints(GU_Detail *gdp, const char *group_name)
 {
     gdp->uniquePoints(gdp->findPointGroup(group_name));
 }
 """,
-
-"""
+    """
 int
 groupSize(const GU_Detail *gdp, const char *group_name, int group_type)
 {
@@ -1490,8 +1429,7 @@ groupSize(const GU_Detail *gdp, const char *group_name, int group_type)
     return group->entries();
 }
 """,
-
-"""
+    """
 void
 toggleGroupMembership(GU_Detail *gdp,
                  const char *group_name,
@@ -1519,8 +1457,7 @@ toggleGroupMembership(GU_Detail *gdp,
     group->toggleOffset(elem_offset);
 }
 """,
-
-"""
+    """
 void
 toggleGroupEntries(GU_Detail *gdp, const char *group_name, int group_type)
 {
@@ -1548,8 +1485,7 @@ toggleGroupEntries(GU_Detail *gdp, const char *group_name, int group_type)
     }
 }
 """,
-
-"""
+    """
 void
 copyGroup(GU_Detail *gdp,
           int group_type,
@@ -1572,8 +1508,7 @@ copyGroup(GU_Detail *gdp,
     new_group->copyMembership(*group);
 }
 """,
-
-"""
+    """
 bool
 groupsShareElements(const GU_Detail *gdp,
             const char *group_name,
@@ -1609,8 +1544,7 @@ groupsShareElements(const GU_Detail *gdp,
     return group->containsAny(range);
 }
 """,
-
-"""
+    """
 void
 primToPointGroup(GU_Detail *gdp,
                  const char *group_name,
@@ -1650,8 +1584,7 @@ primToPointGroup(GU_Detail *gdp,
     }
 }
 """,
-
-"""
+    """
 void
 pointToPrimGroup(GU_Detail *gdp,
                  const char *group_name,
@@ -1692,8 +1625,7 @@ pointToPrimGroup(GU_Detail *gdp,
     }
 }
 """,
-
-"""
+    """
 bool
 hasUngroupedPoints(const GU_Detail *gdp)
 {
@@ -1709,8 +1641,7 @@ hasUngroupedPoints(const GU_Detail *gdp)
     return all->entries() < gdp->getNumPoints();
 }
 """,
-
-"""
+    """
 void
 groupUngroupedPoints(GU_Detail *gdp, const char *ungrouped_name)
 {
@@ -1733,8 +1664,7 @@ groupUngroupedPoints(GU_Detail *gdp, const char *ungrouped_name)
     }
 }
 """,
-
-"""
+    """
 bool
 hasUngroupedPrims(const GU_Detail *gdp)
 {
@@ -1750,8 +1680,7 @@ hasUngroupedPrims(const GU_Detail *gdp)
     return all->entries() < gdp->getNumPrimitives();
 }
 """,
-
-"""
+    """
 void
 groupUngroupedPrims(GU_Detail *gdp, const char *ungrouped_name)
 {
@@ -1774,8 +1703,7 @@ groupUngroupedPrims(GU_Detail *gdp, const char *ungrouped_name)
     }
 }
 """,
-
-"""
+    """
 bool
 check_minimum_polygon_vertex_count(const GU_Detail *gdp, int count, bool ignore_open)
 {
@@ -1805,8 +1733,7 @@ check_minimum_polygon_vertex_count(const GU_Detail *gdp, int count, bool ignore_
     return true;
 }
 """,
-
-"""
+    """
 void
 clipGeometry(GU_Detail *gdp,
      UT_DMatrix4 *xform,
@@ -1845,80 +1772,70 @@ clipGeometry(GU_Detail *gdp,
     gdp->transform(mat);
 }
 """,
-
-"""
+    """
 bool
 boundingBoxisInside(const UT_BoundingBoxD *bbox1, const UT_BoundingBoxD *bbox2)
 {
     return bbox1->isInside(*bbox2);
 }
 """,
-
-"""
+    """
 bool
 boundingBoxesIntersect(UT_BoundingBoxD *bbox1, const UT_BoundingBoxD *bbox2)
 {
     return bbox1->intersects(*bbox2);
 }
 """,
-
-"""
+    """
 bool
 computeBoundingBoxIntersection(UT_BoundingBoxD *bbox1, const UT_BoundingBoxD *bbox2)
 {
     return bbox1->computeIntersection(*bbox2);
 }
 """,
-
-"""
+    """
 void
 expandBoundingBoxBounds(UT_BoundingBoxD *bbox, float dltx, float dlty, float dltz)
 {
     bbox->expandBounds(dltx, dlty, dltz);
 }
 """,
-
-"""
+    """
 void
 addToBoundingBoxMin(UT_BoundingBoxD *bbox, const UT_Vector3D *vec)
 {
     bbox->addToMin(*vec);
 }
 """,
-
-"""
+    """
 void
 addToBoundingBoxMax(UT_BoundingBoxD *bbox, const UT_Vector3D *vec)
 {
     bbox->addToMax(*vec);
 }
 """,
-
-"""
+    """
 double
 boundingBoxArea(const UT_BoundingBoxD *bbox)
 {
     return bbox->area();
 }
 """,
-
-"""
+    """
 double
 boundingBoxVolume(const UT_BoundingBoxD *bbox)
 {
     return bbox->volume();
 }
 """,
-
-"""
+    """
 void
 disconnectAllOutputs(OP_Node *node)
 {
     node->disconnectAllOutputs();
 }
 """,
-
-"""
+    """
 int
 getMultiParmInstancesPerItem(OP_Node *node, const char *parm_name)
 {
@@ -1933,8 +1850,7 @@ getMultiParmInstancesPerItem(OP_Node *node, const char *parm_name)
     return instances;
 }
 """,
-
-"""
+    """
 IntArray
 getMultiParmInstanceIndex(OP_Node *node, const char *parm_name)
 {
@@ -1954,8 +1870,7 @@ getMultiParmInstanceIndex(OP_Node *node, const char *parm_name)
     return result;
 }
 """,
-
-"""
+    """
 StringTuple
 getMultiParmInstances(OP_Node *node, const char *parm_name)
 {
@@ -1999,8 +1914,7 @@ getMultiParmInstances(OP_Node *node, const char *parm_name)
     return blocks;
 }
 """,
-
-"""
+    """
 float
 eval_multiparm_instance_float(OP_Node *node, const char *parm_name, int component_index, int index, int start_offset)
 {
@@ -2018,8 +1932,7 @@ eval_multiparm_instance_float(OP_Node *node, const char *parm_name, int componen
     return result;
 }
 """,
-
-"""
+    """
 int
 eval_multiparm_instance_int(OP_Node *node, const char *parm_name, int component_index, int index, int start_offset)
 {
@@ -2037,8 +1950,7 @@ eval_multiparm_instance_int(OP_Node *node, const char *parm_name, int component_
     return result;
 }
 """,
-
-"""
+    """
 const char *
 eval_multiparm_instance_string(OP_Node *node, const char *parm_name, int component_index, int index, int start_offset)
 {
@@ -2057,8 +1969,7 @@ eval_multiparm_instance_string(OP_Node *node, const char *parm_name, int compone
     return value.toStdString().c_str();
 }
 """,
-
-"""
+    """
 void
 buildLookatMatrix(UT_DMatrix3 *mat,
             const UT_Vector3D *from,
@@ -2068,16 +1979,14 @@ buildLookatMatrix(UT_DMatrix3 *mat,
     mat->lookat(*from, *to, *up);
 }
 """,
-
-"""
+    """
 void
 vector3GetDual(const UT_Vector3D *vec, UT_DMatrix3 *mat)
 {
     vec->getDual(*mat);
 }
 """,
-
-"""
+    """
 const char *
 getMetaSourceForPath(const char *filename)
 {
@@ -2100,8 +2009,7 @@ getMetaSourceForPath(const char *filename)
     return "";
 }
 """,
-
-"""
+    """
 bool
 removeMetaSource(const char *metasrc)
 {
@@ -2112,8 +2020,7 @@ removeMetaSource(const char *metasrc)
     return manager.removeMetaSource(metasrc);
 }
 """,
-
-"""
+    """
 StringArray
 getLibrariesInMetaSource(const char *metasrc)
 {
@@ -2144,8 +2051,7 @@ getLibrariesInMetaSource(const char *metasrc)
     return result;
 }
 """,
-
-"""
+    """
 bool
 isDummyDefinition(const char *filename,
                   const char *tablename,
@@ -2180,7 +2086,7 @@ isDummyDefinition(const char *filename,
     // Couldn't find the library or definition inside is, so return false.
     return false;
 }
-"""
+""",
 ]
 
 # Create the library as a private object.
@@ -2276,5 +2182,5 @@ void addDependencyOnParm(OP_Node *node, const UT_StringRef &name, int instance_i
         ("VertexMap", (("prims", "*i"), ("indices", "*i"))),
         ("Position3D", (("x", "d"), ("y", "d"), ("z", "d"))),
     ],
-    function_sources=_FUNCTION_SOURCES
+    function_sources=_FUNCTION_SOURCES,
 )

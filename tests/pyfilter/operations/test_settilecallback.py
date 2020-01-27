@@ -19,6 +19,7 @@ from ht.pyfilter.operations import settilecallback
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def init_operation(mocker):
     """Fixture to initialize an operation."""
@@ -34,12 +35,15 @@ def init_operation(mocker):
 # CLASSES
 # =============================================================================
 
+
 class Test_SetTileCallback(object):
     """Test the ht.pyfilter.operations.settilecallback.SetTileCallback object."""
 
     def test___init__(self, mocker):
         """Test object initialization."""
-        mock_super_init = mocker.patch.object(settilecallback.PyFilterOperation, "__init__")
+        mock_super_init = mocker.patch.object(
+            settilecallback.PyFilterOperation, "__init__"
+        )
 
         mock_manager = mocker.MagicMock(spec=PyFilterManager)
 
@@ -93,7 +97,9 @@ class Test_SetTileCallback(object):
 
         op.filter_camera()
 
-        mock_set.assert_called_with("render:tilecallback", mock_tilecallback.return_value)
+        mock_set.assert_called_with(
+            "render:tilecallback", mock_tilecallback.return_value
+        )
 
     def test_process_parsed_args__noop(self, init_operation, mocker):
         """Test processing the args when the tilecallback arg is None."""

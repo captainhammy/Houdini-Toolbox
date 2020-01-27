@@ -5,7 +5,7 @@
 # ==============================================================================
 
 # Third Party Imports
-from PySide2 import QtWidgets
+from PySide2 import QtCore, QtWidgets
 
 # Houdini Toolbox Imports
 from ht.ui.paste import utils, widgets
@@ -18,8 +18,18 @@ import hou
 # CLASSES
 # ==============================================================================
 
+
 class CopyItemsDialog(QtWidgets.QDialog):
-    """Dialog to copy items."""
+    """Dialog to copy items.
+
+    :param items: The items to copy.
+    :type items: list(hou.NetworkItem)
+    :param parent_node: The parent node.
+    :type parent_node: hou.Node
+    :param parent: Optional parent.
+    :type parent: QtCore.QWidget
+
+    """
 
     def __init__(self, items, parent_node, parent=None):
         super(CopyItemsDialog, self).__init__(parent)
@@ -64,10 +74,17 @@ class CopyItemsDialog(QtWidgets.QDialog):
 
             self.source_chooser.addWidget(widget)
 
-        self.source_menu.menu.currentIndexChanged.connect(self.source_chooser.setCurrentIndex)
+        self.source_menu.menu.currentIndexChanged.connect(
+            self.source_chooser.setCurrentIndex
+        )
 
+    @QtCore.Slot()
     def copy(self):
-        """Copy the selected items to a file based on the description."""
+        """Copy the selected items to a file based on the description.
+
+        :return:
+
+        """
         self.accept()
 
         file_source = self.source_chooser.currentWidget().get_source()
@@ -77,7 +94,18 @@ class CopyItemsDialog(QtWidgets.QDialog):
 
 
 class PasteItemsDialog(QtWidgets.QDialog):
-    """Dialog to paste items."""
+    """Dialog to paste items.
+
+    :param editor: The editor to paste the items into.
+    :type editor: hou.NetworkEditor
+    :param pos: The position to paste the items.
+    :type pos: hou.Vector2
+    :param mousepos: The position of the mouse.
+    :type mousepos: hou.Vector2
+    :param parent: Optional parent.
+    :type parent: QtCore.QWidget
+
+    """
 
     def __init__(self, editor, pos, mousepos, parent=None):
         super(PasteItemsDialog, self).__init__(parent)
@@ -106,7 +134,7 @@ class PasteItemsDialog(QtWidgets.QDialog):
 
         self.source_menu.menu.currentIndexChanged.connect(self._source_changed)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         self.button_box = widgets.PasteButtonBox()
 
@@ -115,25 +143,39 @@ class PasteItemsDialog(QtWidgets.QDialog):
         self.button_box.accepted.connect(self.paste)
         self.button_box.rejected.connect(self.reject)
 
-        # =====================================================================
+        # ---------------------------------------------------------------------
 
         # Add all source helper widgets to the stack.
         for source in self.source_menu.get_sources():
             widget = source.paste_helper_widget(context)
             widget.perform_operation_signal.connect(self.paste)
-            widget.valid_sources_signal.connect(self.button_box.accept_button.setEnabled)
+            widget.valid_sources_signal.connect(
+                self.button_box.accept_button.setEnabled
+            )
 
             self.source_chooser.addWidget(widget)
 
+    @QtCore.Slot(int)
     def _source_changed(self, index):
-        """Update the displayed widget to match the selected source."""
+        """Update the displayed widget to match the selected source.
+
+        :param index: The current index.
+        :type index: int
+        :return:
+
+        """
         self.source_chooser.setCurrentIndex(index)
 
         # Source was changed so disable the button.
         self.button_box.accept_button.setEnabled(False)
 
+    @QtCore.Slot()
     def paste(self):
-        """Paste the selected files into the scene."""
+        """Paste the selected files into the scene.
+
+        :return:
+
+        """
         self.accept()
 
         to_load = self.source_chooser.currentWidget().get_sources()

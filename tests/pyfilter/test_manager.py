@@ -19,6 +19,7 @@ from ht.pyfilter.operations.operation import PyFilterOperation
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def init_manager(mocker):
     """Fixture to initialize a manager."""
@@ -34,13 +35,20 @@ def init_manager(mocker):
 # CLASSES
 # =============================================================================
 
+
 class TestManager(object):
     """Test ht.pyfilter.manager.PyFilterManager object."""
 
     def test___init__(self, mocker):
-        mock_register = mocker.patch("ht.pyfilter.manager.PyFilterManager._register_operations")
-        mock_parse = mocker.patch("ht.pyfilter.manager.PyFilterManager._get_parsed_args")
-        mock_process = mocker.patch("ht.pyfilter.manager.PyFilterManager._process_parsed_args")
+        mock_register = mocker.patch(
+            "ht.pyfilter.manager.PyFilterManager._register_operations"
+        )
+        mock_parse = mocker.patch(
+            "ht.pyfilter.manager.PyFilterManager._get_parsed_args"
+        )
+        mock_process = mocker.patch(
+            "ht.pyfilter.manager.PyFilterManager._process_parsed_args"
+        )
 
         mgr = manager.PyFilterManager()
 
@@ -73,7 +81,9 @@ class TestManager(object):
 
     def test__get_parsed_args(self, init_manager, mocker):
         mock_build_parser = mocker.patch("ht.pyfilter.manager._build_parser")
-        mock_register_args = mocker.patch.object(manager.PyFilterManager, "_register_parser_args")
+        mock_register_args = mocker.patch.object(
+            manager.PyFilterManager, "_register_parser_args"
+        )
 
         mock_parser = mocker.MagicMock(argparse.ArgumentParser)
 
@@ -88,7 +98,9 @@ class TestManager(object):
         mock_register_args.assert_called_with(mock_parser)
 
     def test__process_parsed_args(self, init_manager, mocker):
-        mock_operations = mocker.patch.object(manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock)
+        mock_operations = mocker.patch.object(
+            manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
+        )
 
         mock_args = mocker.MagicMock(spec=argparse.Namespace)
 
@@ -110,7 +122,7 @@ class TestManager(object):
         mock_get_class = mocker.patch("ht.pyfilter.manager._get_class")
 
         mock_path = mocker.MagicMock(spec=str)
-        mock_find_files.return_value = (mock_path, )
+        mock_find_files.return_value = (mock_path,)
 
         data = {}
         mock_get_data.return_value = data
@@ -123,23 +135,23 @@ class TestManager(object):
         mock_get_class.assert_not_called()
 
     def test__register_operations__no_class(self, init_manager, mocker):
-        mock_operations = mocker.patch.object(manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock)
+        mock_operations = mocker.patch.object(
+            manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
+        )
         mock_find_files = mocker.patch("ht.pyfilter.manager._find_operation_files")
         mock_get_data = mocker.patch("ht.pyfilter.manager._get_operation_data")
-        mock_get_class = mocker.patch("ht.pyfilter.manager._get_class", return_value=None)
+        mock_get_class = mocker.patch(
+            "ht.pyfilter.manager._get_class", return_value=None
+        )
         mock_logger = mocker.patch("ht.pyfilter.manager._logger")
 
         mock_path = mocker.MagicMock(spec=str)
-        mock_find_files.return_value = (mock_path, )
+        mock_find_files.return_value = (mock_path,)
 
         mock_module_name = mocker.MagicMock(spec=str)
         mock_class_name = mocker.MagicMock(spec=str)
 
-        data = {
-            "operations": [
-                (mock_module_name, mock_class_name),
-            ]
-        }
+        data = {"operations": [(mock_module_name, mock_class_name)]}
         mock_get_data.return_value = data
 
         mgr = init_manager()
@@ -156,22 +168,20 @@ class TestManager(object):
         mock_logger.warning.assert_called()
 
     def test__register_operations(self, init_manager, mocker):
-        mock_operations = mocker.patch.object(manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock)
+        mock_operations = mocker.patch.object(
+            manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
+        )
         mock_find_files = mocker.patch("ht.pyfilter.manager._find_operation_files")
         mock_get_data = mocker.patch("ht.pyfilter.manager._get_operation_data")
         mock_get_class = mocker.patch("ht.pyfilter.manager._get_class")
 
         mock_path = mocker.MagicMock(spec=str)
-        mock_find_files.return_value = (mock_path, )
+        mock_find_files.return_value = (mock_path,)
 
         mock_module_name = mocker.MagicMock(spec=str)
         mock_class_name = mocker.MagicMock(spec=str)
 
-        data = {
-            "operations": [
-                (mock_module_name, mock_class_name),
-            ]
-        }
+        data = {"operations": [(mock_module_name, mock_class_name)]}
         mock_get_data.return_value = data
 
         mgr = init_manager()
@@ -188,7 +198,9 @@ class TestManager(object):
         mock_get_class.return_value.assert_called_with(mgr)
 
     def test__register_parser_args(self, init_manager, mocker):
-        mock_operations = mocker.patch.object(manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock)
+        mock_operations = mocker.patch.object(
+            manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
+        )
 
         mock_parser = mocker.MagicMock(spec=argparse.ArgumentParser)
 
@@ -205,7 +217,9 @@ class TestManager(object):
     # run_operations_for_stage
 
     def test_run_operations_for_stage__no_operations(self, init_manager, mocker):
-        mocker.patch.object(manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock)
+        mocker.patch.object(
+            manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
+        )
 
         mock_stage_name = mocker.MagicMock(spec=str)
 
@@ -216,7 +230,9 @@ class TestManager(object):
         assert not result
 
     def test_run_operations_for_stage__no_runnable(self, init_manager, mocker):
-        mock_operations = mocker.patch.object(manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock)
+        mock_operations = mocker.patch.object(
+            manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
+        )
 
         mock_stage_name = mocker.MagicMock(spec=str)
 
@@ -232,7 +248,9 @@ class TestManager(object):
         assert not result
 
     def test_run_operations_for_stage__no_matching_stage(self, init_manager, mocker):
-        mock_operations = mocker.patch.object(manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock)
+        mock_operations = mocker.patch.object(
+            manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
+        )
 
         stage_name = "stage_name"
 
@@ -248,7 +266,9 @@ class TestManager(object):
         assert not result
 
     def test_run_operations_for_stage(self, init_manager, mocker):
-        mock_operations = mocker.patch.object(manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock)
+        mock_operations = mocker.patch.object(
+            manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
+        )
 
         stage_name = "stage_name"
 

@@ -15,6 +15,7 @@ import hou
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def mock_hou_exceptions(mocker):
     """Fixture to support dealing with hou.Error exceptions.
@@ -181,10 +182,7 @@ def patch_hou(mocker):
         original_hou = hou
         hou = mock_hou
 
-    modules = {
-        "hou": mock_hou,
-        "original_hou": hou
-    }
+    modules = {"hou": mock_hou, "original_hou": hou}
 
     mocker.patch.dict("sys.modules", modules)
 

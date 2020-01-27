@@ -12,6 +12,7 @@ from ht.events import SceneEvents, run_event
 # FUNCTIONS
 # =============================================================================
 
+
 def main():
     """Main function."""
     run_event(SceneEvents.Load)

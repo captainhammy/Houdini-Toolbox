@@ -15,6 +15,7 @@ import hou
 # CLASSES
 # =============================================================================
 
+
 def test_create_absolute_reference_copy(mocker):
     """Test ht.ui.menus.opmenu.create_absolute_reference_copy."""
     mock_node = mocker.MagicMock(spec=hou.Node)
@@ -24,9 +25,7 @@ def test_create_absolute_reference_copy(mocker):
     ht.ui.menus.opmenu.create_absolute_reference_copy(scriptargs)
 
     mock_node.parent.return_value.copyItems.assert_called_with(
-        [mock_node],
-        channel_reference_originals=True,
-        relative_references=False
+        [mock_node], channel_reference_originals=True, relative_references=False
     )
 
 

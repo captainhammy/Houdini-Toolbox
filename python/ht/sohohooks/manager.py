@@ -12,6 +12,7 @@ import traceback
 # CLASSES
 # =============================================================================
 
+
 class SohoHookManager(object):
     """This class manages custom soho hooks."""
 
@@ -60,13 +61,11 @@ class SohoHookManager(object):
 
             # Catch any exceptions and 'log' them to the ifd via comments.
             except Exception as inst:  # pylint: disable=broad-except
-                ray_comment(
-                    "Hook Error[{}]: {}".format(name, inst)
-                )
+                ray_comment("Hook Error[{}]: {}".format(name, inst))
 
                 ray_comment(
                     "Traceback:\n# {}\n".format(
-                        "\n#".join(traceback.format_exc().split('\n'))
+                        "\n#".join(traceback.format_exc().split("\n"))
                     )
                 )
 

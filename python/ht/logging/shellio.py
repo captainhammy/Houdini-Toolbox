@@ -17,6 +17,7 @@ import hou
 # CLASSES
 # =============================================================================
 
+
 class PythonShellHandler(logging.StreamHandler):
     """Custom stream handler which outputs to the interactive Python shell
     when it is open.
@@ -51,7 +52,7 @@ class PythonShellHandler(logging.StreamHandler):
                 msg = self.format(record)
 
                 stream.write(msg)
-                stream.write('\n')
+                stream.write("\n")
                 stream.flush()
 
         except (KeyboardInterrupt, SystemExit):

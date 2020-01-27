@@ -20,6 +20,7 @@ DEFAULT_FMT = "{namespace}_{name}_v{iversion}_{opdigits}"
 # FUNCTIONS
 # =============================================================================
 
+
 def is_namespaced_type(node_type, require_version=True, require_namespace=True):
     """Determine if a node type is namespaced based on name components.
 

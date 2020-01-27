@@ -12,6 +12,7 @@ from enum import Enum
 # CLASSES
 # =============================================================================
 
+
 class HipFileEvents(Enum):
     """Events mapping to hou.hipFileEventType values."""
 
@@ -29,6 +30,7 @@ class NodeEvents(Enum):
     """Events related to node changes.  These correspond to node based event handler scripts.
 
     """
+
     OnCreated = "OnCreated"
     OnDeleted = "OnDeleted"
     OnInputChanged = "OnInputChanged"
@@ -44,6 +46,7 @@ class NodeEvents(Enum):
 
 class RopEvents(Enum):
     """Events related to ROP render event scripts."""
+
     PostFrame = "postframe"
     PostRender = "postrender"
     PostWrite = "postwrite"

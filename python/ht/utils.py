@@ -17,6 +17,7 @@ _logger = logging.getLogger(__name__)
 # FUNCTIONS
 # =============================================================================
 
+
 @contextlib.contextmanager
 def timer(label=None):
     """Context manager for outputting timing information.

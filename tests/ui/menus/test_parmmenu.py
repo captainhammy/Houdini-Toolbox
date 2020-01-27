@@ -18,6 +18,7 @@ import hou
 # CLASSES
 # =============================================================================
 
+
 class Test__valid_to_convert_to_absolute_reference(object):
     """Test ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference."""
 
@@ -125,7 +126,9 @@ class Test__valid_to_convert_to_absolute_reference(object):
     def test_not_node_reference(self, mocker):
         """Test when the string parameter is not a node reference."""
         mock_template = mocker.MagicMock(spec=hou.StringParmTemplate)
-        mock_template.stringType.return_value = mocker.MagicMock(spec=hou.stringParmType)
+        mock_template.stringType.return_value = mocker.MagicMock(
+            spec=hou.stringParmType
+        )
 
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.parmTemplate.return_value = mock_template
@@ -255,7 +258,9 @@ class Test__valid_to_convert_to_relative_reference(object):
     def test_not_node_reference(self, mocker):
         """Test when the string parameter is not a node reference."""
         mock_template = mocker.MagicMock(spec=hou.StringParmTemplate)
-        mock_template.stringType.return_value = mocker.MagicMock(spec=hou.stringParmType)
+        mock_template.stringType.return_value = mocker.MagicMock(
+            spec=hou.stringParmType
+        )
 
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.parmTemplate.return_value = mock_template
@@ -283,65 +288,70 @@ class Test_convert_absolute_to_relative_path_context(object):
 
     def test_none(self, mocker):
         """Test converting when no parms are suitable to convert."""
-        mock_valid = mocker.patch("ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference", return_value=False)
+        mock_valid = mocker.patch(
+            "ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference",
+            return_value=False,
+        )
 
         mock_parm1 = mocker.MagicMock(spec=hou.Parm)
         mock_parm2 = mocker.MagicMock(spec=hou.Parm)
 
-        scriptargs = {
-            "parms": (mock_parm1, mock_parm2)
-        }
+        scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
-        result = ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context(scriptargs)
+        result = ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context(
+            scriptargs
+        )
 
         assert not result
 
-        mock_valid.assert_has_calls(
-            [mocker.call(mock_parm1), mocker.call(mock_parm2)]
-        )
+        mock_valid.assert_has_calls([mocker.call(mock_parm1), mocker.call(mock_parm2)])
 
     def test_some(self, mocker):
         """Test converting when at least one parm is suitable to convert."""
-        mock_valid = mocker.patch("ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference", side_effect=(False, True))
+        mock_valid = mocker.patch(
+            "ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference",
+            side_effect=(False, True),
+        )
 
         mock_parm1 = mocker.MagicMock(spec=hou.Parm)
         mock_parm2 = mocker.MagicMock(spec=hou.Parm)
 
-        scriptargs = {
-            "parms": (mock_parm1, mock_parm2)
-        }
+        scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
-        result = ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context(scriptargs)
+        result = ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context(
+            scriptargs
+        )
 
         assert result
 
-        mock_valid.assert_has_calls(
-            [mocker.call(mock_parm1), mocker.call(mock_parm2)]
-        )
+        mock_valid.assert_has_calls([mocker.call(mock_parm1), mocker.call(mock_parm2)])
 
 
 def test_convert_absolute_to_relative_path(mocker):
     """Test converting an absolute to relative path."""
-    mock_valid = mocker.patch("ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference", side_effect=(False, True))
+    mock_valid = mocker.patch(
+        "ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference",
+        side_effect=(False, True),
+    )
 
     mock_parm1 = mocker.MagicMock(spec=hou.Parm)
     mock_parm2 = mocker.MagicMock(spec=hou.Parm)
 
-    scriptargs = {
-        "parms": (mock_parm1, mock_parm2)
-    }
+    scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
     ht.ui.menus.parmmenu.convert_absolute_to_relative_path(scriptargs)
 
-    mock_valid.assert_has_calls(
-        [mocker.call(mock_parm1), mocker.call(mock_parm2)]
-    )
+    mock_valid.assert_has_calls([mocker.call(mock_parm1), mocker.call(mock_parm2)])
 
     mock_parm1.evalAsNode.assert_not_called()
 
     mock_parm2.evalAsNode.assert_called()
-    mock_parm2.set.assert_called_with(mock_parm2.node.return_value.relativePathTo.return_value)
-    mock_parm2.node.return_value.relativePathTo.assert_called_with(mock_parm2.evalAsNode.return_value)
+    mock_parm2.set.assert_called_with(
+        mock_parm2.node.return_value.relativePathTo.return_value
+    )
+    mock_parm2.node.return_value.relativePathTo.assert_called_with(
+        mock_parm2.evalAsNode.return_value
+    )
 
 
 class Test_convert_relative_to_absolute_path_context(object):
@@ -349,64 +359,67 @@ class Test_convert_relative_to_absolute_path_context(object):
 
     def test_none(self, mocker):
         """Test converting when no parms are suitable to convert."""
-        mock_valid = mocker.patch("ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference", return_value=False)
+        mock_valid = mocker.patch(
+            "ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference",
+            return_value=False,
+        )
 
         mock_parm1 = mocker.MagicMock(spec=hou.Parm)
         mock_parm2 = mocker.MagicMock(spec=hou.Parm)
 
-        scriptargs = {
-            "parms": (mock_parm1, mock_parm2)
-        }
+        scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
-        result = ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context(scriptargs)
+        result = ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context(
+            scriptargs
+        )
 
         assert not result
 
-        mock_valid.assert_has_calls(
-            [mocker.call(mock_parm1), mocker.call(mock_parm2)]
-        )
+        mock_valid.assert_has_calls([mocker.call(mock_parm1), mocker.call(mock_parm2)])
 
     def test_some(self, mocker):
         """Test converting when at least one parm is suitable to convert."""
-        mock_valid = mocker.patch("ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference", side_effect=(False, True))
+        mock_valid = mocker.patch(
+            "ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference",
+            side_effect=(False, True),
+        )
 
         mock_parm1 = mocker.MagicMock(spec=hou.Parm)
         mock_parm2 = mocker.MagicMock(spec=hou.Parm)
 
-        scriptargs = {
-            "parms": (mock_parm1, mock_parm2)
-        }
+        scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
-        result = ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context(scriptargs)
+        result = ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context(
+            scriptargs
+        )
 
         assert result
 
-        mock_valid.assert_has_calls(
-            [mocker.call(mock_parm1), mocker.call(mock_parm2)]
-        )
+        mock_valid.assert_has_calls([mocker.call(mock_parm1), mocker.call(mock_parm2)])
 
 
 def test_convert_relative_to_absolute_path(mocker):
     """Test ht.ui.menus.parmmenu.convert_relative_to_absolute_path."""
-    mock_valid = mocker.patch("ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference", side_effect=(False, True))
+    mock_valid = mocker.patch(
+        "ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference",
+        side_effect=(False, True),
+    )
 
     mock_parm1 = mocker.MagicMock(spec=hou.Parm)
     mock_parm2 = mocker.MagicMock(spec=hou.Parm)
 
-    scriptargs = {
-        "parms": (mock_parm1, mock_parm2)
-    }
+    scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
     ht.ui.menus.parmmenu.convert_relative_to_absolute_path(scriptargs)
 
-    mock_valid.assert_has_calls(
-        [mocker.call(mock_parm1), mocker.call(mock_parm2)]
-    )
+    mock_valid.assert_has_calls([mocker.call(mock_parm1), mocker.call(mock_parm2)])
 
     mock_parm1.evalAsNode.assert_not_called()
 
     mock_parm2.evalAsNode.assert_called()
-    mock_parm2.set.assert_called_with(mock_parm2.evalAsNode.return_value.path.return_value)
+    mock_parm2.set.assert_called_with(
+        mock_parm2.evalAsNode.return_value.path.return_value
+    )
 
 
 class Test_promote_parameter_to_node(object):
@@ -427,14 +440,14 @@ class Test_promote_parameter_to_node(object):
 
         mock_hou_node.return_value = mock_node1
 
-        scriptargs = {
-            "parms": (mock_parm1, )
-        }
+        scriptargs = {"parms": (mock_parm1,)}
 
         with pytest.raises(mock_hou_exceptions.OperationFailed):
             ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
-        mock_hou_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
+        mock_hou_ui.selectNode.assert_called_with(
+            initial_node=mock_node1.parent.return_value
+        )
         mock_hou_node.assert_called_with(mock_hou_ui.selectNode.return_value)
 
     def test_parm_exists_no_set(self, mocker, mock_hou_ui, mock_hou_exceptions):
@@ -463,16 +476,18 @@ class Test_promote_parameter_to_node(object):
 
         mock_hou_ui.displayMessage.return_value = 0
 
-        scriptargs = {
-            "parms": (mock_parm1, )
-        }
+        scriptargs = {"parms": (mock_parm1,)}
 
         ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
-        mock_hou_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
+        mock_hou_ui.selectNode.assert_called_with(
+            initial_node=mock_node1.parent.return_value
+        )
         mock_hou_node.assert_called_with(mock_hou_ui.selectNode.return_value)
 
-        mock_target_node.parmTuple.assert_called_with(mock_parm_tuple1.name.return_value)
+        mock_target_node.parmTuple.assert_called_with(
+            mock_parm_tuple1.name.return_value
+        )
 
         mock_target_node.parm.assert_called_with(mock_parm1.name.return_value)
         mock_target_parm1.set.assert_not_called()
@@ -505,16 +520,18 @@ class Test_promote_parameter_to_node(object):
 
         mock_hou_ui.displayMessage.return_value = 1
 
-        scriptargs = {
-            "parms": (mock_parm1, )
-        }
+        scriptargs = {"parms": (mock_parm1,)}
 
         ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
-        mock_hou_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
+        mock_hou_ui.selectNode.assert_called_with(
+            initial_node=mock_node1.parent.return_value
+        )
         mock_hou_node.assert_called_with(mock_hou_ui.selectNode.return_value)
 
-        mock_target_node.parmTuple.assert_called_with(mock_parm_tuple1.name.return_value)
+        mock_target_node.parmTuple.assert_called_with(
+            mock_parm_tuple1.name.return_value
+        )
 
         mock_target_node.parm.assert_called_with(mock_parm1.name.return_value)
         mock_target_parm1.set.assert_called_with(mock_parm1.eval.return_value)
@@ -544,20 +561,24 @@ class Test_promote_parameter_to_node(object):
 
         mock_hou_ui.displayMessage.return_value = 2
 
-        scriptargs = {
-            "parms": (mock_parm1, )
-        }
+        scriptargs = {"parms": (mock_parm1,)}
 
         ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
-        mock_hou_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
+        mock_hou_ui.selectNode.assert_called_with(
+            initial_node=mock_node1.parent.return_value
+        )
         mock_hou_node.assert_called_with(mock_hou_ui.selectNode.return_value)
 
-        mock_target_node.parmTuple.assert_called_with(mock_parm_tuple1.name.return_value)
+        mock_target_node.parmTuple.assert_called_with(
+            mock_parm_tuple1.name.return_value
+        )
 
         mock_target_node.parm.assert_not_called()
 
-    def test_no_existing_single_component(self, mocker, mock_hou_ui, mock_hou_exceptions):
+    def test_no_existing_single_component(
+        self, mocker, mock_hou_ui, mock_hou_exceptions
+    ):
         """Test when there is no existing parm and we want to promote a single parm from the tuple."""
         mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
 
@@ -584,16 +605,18 @@ class Test_promote_parameter_to_node(object):
 
         mock_hou_node.return_value = mock_target_node
 
-        scriptargs = {
-            "parms": (mock_parm1, )
-        }
+        scriptargs = {"parms": (mock_parm1,)}
 
         ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
-        mock_hou_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
+        mock_hou_ui.selectNode.assert_called_with(
+            initial_node=mock_node1.parent.return_value
+        )
         mock_hou_node.assert_called_with(mock_hou_ui.selectNode.return_value)
 
-        mock_target_node.parmTuple.assert_called_with(mock_parm_tuple1.name.return_value)
+        mock_target_node.parmTuple.assert_called_with(
+            mock_parm_tuple1.name.return_value
+        )
 
         mock_parm_template1.setNumComponents.assert_called_with(1)
         mock_parm_template1.setName.assert_called_with(mock_parm1.name.return_value)
@@ -606,7 +629,9 @@ class Test_promote_parameter_to_node(object):
 
         mock_parm1.set.assert_called_with(mock_target_parm1)
 
-    def test_no_existing_multiple_components(self, mocker, mock_hou_ui, mock_hou_exceptions):
+    def test_no_existing_multiple_components(
+        self, mocker, mock_hou_ui, mock_hou_exceptions
+    ):
         """Test when there is no existing parm and we want to promote a full tuple."""
         mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
 
@@ -637,20 +662,26 @@ class Test_promote_parameter_to_node(object):
         mock_target_node = mocker.MagicMock(spec=hou.Node)
         mock_target_node.parmTemplateGroup.return_value = mock_ptg
         mock_target_node.parmTuple.return_value = None
-        mock_target_node.parm.side_effect = (mock_target_parm1, mock_target_parm2, mock_target_parm3)
+        mock_target_node.parm.side_effect = (
+            mock_target_parm1,
+            mock_target_parm2,
+            mock_target_parm3,
+        )
 
         mock_hou_node.return_value = mock_target_node
 
-        scriptargs = {
-            "parms": (mock_parm1, mock_parm2, mock_parm3)
-        }
+        scriptargs = {"parms": (mock_parm1, mock_parm2, mock_parm3)}
 
         ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
-        mock_hou_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
+        mock_hou_ui.selectNode.assert_called_with(
+            initial_node=mock_node1.parent.return_value
+        )
         mock_hou_node.assert_called_with(mock_hou_ui.selectNode.return_value)
 
-        mock_target_node.parmTuple.assert_called_with(mock_parm_tuple1.name.return_value)
+        mock_target_node.parmTuple.assert_called_with(
+            mock_parm_tuple1.name.return_value
+        )
 
         mock_parm_template1.setNumComponents.assert_not_called()
 
@@ -658,7 +689,11 @@ class Test_promote_parameter_to_node(object):
         mock_target_node.setParmTemplateGroup.assert_called_with(mock_ptg)
 
         mock_target_node.parm.assert_has_calls(
-            [mocker.call(mock_parm1.name.return_value), mocker.call(mock_parm2.name.return_value), mocker.call(mock_parm3.name.return_value)]
+            [
+                mocker.call(mock_parm1.name.return_value),
+                mocker.call(mock_parm2.name.return_value),
+                mocker.call(mock_parm3.name.return_value),
+            ]
         )
 
         mock_target_parm1.set.assert_called_with(mock_parm1.eval.return_value)
@@ -694,11 +729,11 @@ class Test_promote_parameter_to_node(object):
 
         mock_hou_node.return_value = None
 
-        scriptargs = {
-            "parms": (mock_parm1,)
-        }
+        scriptargs = {"parms": (mock_parm1,)}
 
         ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
-        mock_hou_ui.selectNode.assert_called_with(initial_node=mock_node1.parent.return_value)
+        mock_hou_ui.selectNode.assert_called_with(
+            initial_node=mock_node1.parent.return_value
+        )
         mock_hou_node.assert_called_with(mock_hou_ui.selectNode.return_value)

@@ -28,10 +28,13 @@ imp.reload(ht.events.events.rop_render)
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def init_event(mocker):
     """Fixture to initialize an event."""
-    mocker.patch.object(ht.events.events.rop_render.RopRenderEvent, "__init__", lambda x: None)
+    mocker.patch.object(
+        ht.events.events.rop_render.RopRenderEvent, "__init__", lambda x: None
+    )
 
     def _create():
         return ht.events.events.rop_render.RopRenderEvent()
@@ -42,6 +45,7 @@ def init_event(mocker):
 # =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class Test_RopRenderEvent(object):
     """Test ht.events.events.rop_render.RopRenderEvent class."""
@@ -93,7 +97,11 @@ class Test_RopRenderEvent(object):
 
         mock_time = mocker.MagicMock(spec=float)
 
-        frange = (mocker.MagicMock(spec=int), mocker.MagicMock(spec=int), mocker.MagicMock(spec=int))
+        frange = (
+            mocker.MagicMock(spec=int),
+            mocker.MagicMock(spec=int),
+            mocker.MagicMock(spec=int),
+        )
 
         scriptargs = {"time": mock_time, "frame_range": frange}
 
@@ -128,7 +136,10 @@ class Test_RopRenderEvent(object):
         event = init_event()
         event._frame_start = mocker.MagicMock(spec=float)
 
-        scriptargs = {"time": mocker.MagicMock(spec=float), "frame": mocker.MagicMock(spec=int)}
+        scriptargs = {
+            "time": mocker.MagicMock(spec=float),
+            "frame": mocker.MagicMock(spec=int),
+        }
 
         event.post_frame(scriptargs)
 
@@ -182,7 +193,10 @@ class Test_RopRenderEvent(object):
 
         event = init_event()
 
-        scriptargs = {"frame": mocker.MagicMock(spec=int), "path": mocker.MagicMock(spec=str)}
+        scriptargs = {
+            "frame": mocker.MagicMock(spec=int),
+            "path": mocker.MagicMock(spec=str),
+        }
 
         event.post_write(scriptargs)
 
@@ -330,7 +344,11 @@ class Test__print_frame_write(object):
         mock_node = mocker.MagicMock(spec=hou.Node)
         mock_node.parm.return_value = mock_parm
 
-        scriptargs = {"node": mock_node, "frame": mocker.MagicMock(spec=int), "path": mocker.MagicMock(spec=str)}
+        scriptargs = {
+            "node": mock_node,
+            "frame": mocker.MagicMock(spec=int),
+            "path": mocker.MagicMock(spec=str),
+        }
 
         ht.events.events.rop_render._print_frame_write(scriptargs)
 
@@ -352,7 +370,7 @@ class Test_build_scriptargs(object):
             "node": None,
             "frame": mock_frame.return_value,
             "frame_range": None,
-            "time":  mock_time.return_value,
+            "time": mock_time.return_value,
         }
 
         assert result == expected
@@ -401,7 +419,7 @@ class Test_build_scriptargs(object):
             "frame": mock_frame.return_value,
             "frame_range": None,
             "time": mock_time.return_value,
-            "path": mock_get.return_value
+            "path": mock_get.return_value,
         }
 
         assert result == expected
@@ -423,7 +441,7 @@ class Test_build_scriptargs(object):
             "frame": mock_frame.return_value,
             "frame_range": mock_node.evalParmTuple.return_value,
             "time": mock_time.return_value,
-            "path": mock_get.return_value
+            "path": mock_get.return_value,
         }
 
         assert result == expected
@@ -435,7 +453,9 @@ class Test_build_scriptargs(object):
         """Test where we actually get a frame range."""
         mock_time = mocker.patch("ht.events.events.rop_render.time.time")
         mock_frame = mocker.patch("ht.events.events.rop_render.hou.frame")
-        mock_get = mocker.patch("ht.events.events.rop_render._get_target_file", return_value=None)
+        mock_get = mocker.patch(
+            "ht.events.events.rop_render._get_target_file", return_value=None
+        )
 
         mock_node = mocker.MagicMock(spec=hou.Node)
 
@@ -448,7 +468,7 @@ class Test_build_scriptargs(object):
             "frame": mock_frame.return_value,
             "frame_range": mock_node.evalParmTuple.return_value,
             "time": mock_time.return_value,
-            "path": mock_get.return_value
+            "path": mock_get.return_value,
         }
 
         assert result == expected

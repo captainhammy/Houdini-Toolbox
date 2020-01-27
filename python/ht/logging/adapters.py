@@ -33,6 +33,7 @@ _TO_WRAP = {
 # CLASSES
 # ==============================================================================
 
+
 class HoudiniLoggerAdapter(logging.LoggerAdapter):
     """Custom LoggerAdapter for Houdini that allows automated addition of node
     paths and log display in dialogs, status bar, etc.  Also allows for
@@ -157,7 +158,9 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
                 if dialog:
                     title = extra.pop("title", None)
 
-                    hou.ui.displayMessage(houdini_message, severity=severity, title=title)
+                    hou.ui.displayMessage(
+                        houdini_message, severity=severity, title=title
+                    )
 
                 if status_bar:
                     hou.ui.setStatusMessage(houdini_message, severity=severity)
@@ -168,6 +171,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 # ==============================================================================
 # NON-PUBLIC FUNCTIONS
 # ==============================================================================
+
 
 def _wrap_logger(func, severity):
     """Function which wraps a logger method with custom code."""

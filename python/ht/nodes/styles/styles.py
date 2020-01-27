@@ -12,6 +12,7 @@ import re
 # CLASSES
 # =============================================================================
 
+
 class StyleConstant(object):
     """This class represents a named constant style.
 
@@ -67,6 +68,7 @@ class StyleConstant(object):
     def color(self):
         """hou.Color: The mapped color."""
         return self._color
+
     #
     # @color.setter
     # def color(self, color):
@@ -78,6 +80,7 @@ class StyleConstant(object):
     def color_type(self):
         """str: The mapped color type."""
         return self._color_type
+
     #
     # @color_type.setter
     # def color_type(self, color_type):
@@ -103,6 +106,7 @@ class StyleConstant(object):
     def shape(self):
         """str: The mapped shape."""
         return self._shape
+
     #
     # @shape.setter
     # def shape(self, shape):

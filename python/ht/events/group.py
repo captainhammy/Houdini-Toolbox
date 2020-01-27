@@ -5,6 +5,7 @@
 # CLASSES
 # =============================================================================
 
+
 class HoudiniEventGroup(object):
     """The Houdini event group class.
 

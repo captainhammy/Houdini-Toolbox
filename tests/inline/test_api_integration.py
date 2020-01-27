@@ -27,12 +27,17 @@ OBJ = hou.node("/obj")
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture(scope="module")
 def load_test_file():
     """Load the test hip file."""
     hou.hipFile.load(
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "test_api_integration.hipnc"),
-        ignore_load_warnings=True
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "data",
+            "test_api_integration.hipnc",
+        ),
+        ignore_load_warnings=True,
     )
 
     yield
@@ -47,6 +52,7 @@ pytestmark = pytest.mark.usefixtures("load_test_file")
 # =============================================================================
 # TEST FUNCTIONS
 # =============================================================================
+
 
 def test_get_variable_value():
     """Test ht.inline.api.get_variable_value."""
@@ -298,7 +304,9 @@ def test_sort_geometry_by_proximity_to_position():
     position = hou.Vector3(4, 1, 2)
 
     geo = get_obj_geo_copy("test_sort_geometry_by_proximity_to_position_points")
-    ht.inline.api.sort_geometry_by_proximity_to_position(geo, hou.geometryType.Points, position)
+    ht.inline.api.sort_geometry_by_proximity_to_position(
+        geo, hou.geometryType.Points, position
+    )
 
     values = [int(val) for val in geo.pointFloatAttribValues("id")]
 
@@ -309,7 +317,9 @@ def test_sort_geometry_by_proximity_to_position():
     position = hou.Vector3(3, -1, 2)
 
     geo = get_obj_geo_copy("test_sort_geometry_by_proximity_to_position_prims")
-    ht.inline.api.sort_geometry_by_proximity_to_position(geo, hou.geometryType.Primitives, position)
+    ht.inline.api.sort_geometry_by_proximity_to_position(
+        geo, hou.geometryType.Primitives, position
+    )
 
     values = [int(val) for val in geo.primFloatAttribValues("id")]
 
@@ -321,7 +331,7 @@ def test_sort_geometry_by_vertex_order():
     target = range(10)
 
     geo = get_obj_geo_copy("test_sort_geometry_by_vertex_order")
-    ht.inline.api.sort_geometry_by_vertex_order(geo, )
+    ht.inline.api.sort_geometry_by_vertex_order(geo)
 
     values = [int(val) for val in geo.pointFloatAttribValues("id")]
 
@@ -334,13 +344,17 @@ def test_sort_geometry_by_expression():
     target_geo = OBJ.node("test_sort_geometry_by_expression_points/RESULT").geometry()
     test_geo = OBJ.node("test_sort_geometry_by_expression_points/TEST").geometry()
 
-    assert test_geo.pointFloatAttribValues("id") == target_geo.pointFloatAttribValues("id")
+    assert test_geo.pointFloatAttribValues("id") == target_geo.pointFloatAttribValues(
+        "id"
+    )
 
     # Prims
     target_geo = OBJ.node("test_sort_geometry_by_expression_prims/RESULT").geometry()
     test_geo = OBJ.node("test_sort_geometry_by_expression_prims/TEST").geometry()
 
-    assert test_geo.primFloatAttribValues("id") == target_geo.primFloatAttribValues("id")
+    assert test_geo.primFloatAttribValues("id") == target_geo.primFloatAttribValues(
+        "id"
+    )
 
 
 def test_create_point_at_position():
@@ -676,14 +690,23 @@ def test_vertex_string_attrib_values():
     with pytest.raises(ValueError):
         assert ht.inline.api.vertex_string_attrib_values(geo, "not_string")
 
-    target = ('vertex0', 'vertex1', 'vertex2', 'vertex3', 'vertex4', 'vertex5', 'vertex6', 'vertex7')
+    target = (
+        "vertex0",
+        "vertex1",
+        "vertex2",
+        "vertex3",
+        "vertex4",
+        "vertex5",
+        "vertex6",
+        "vertex7",
+    )
 
     assert ht.inline.api.vertex_string_attrib_values(geo, "test") == target
 
 
 def test_set_vertex_string_attrib_values():
     """Test ht.inline.api.set_vertex_string_attrib_values."""
-    target = ('vertex0', 'vertex1', 'vertex2', 'vertex3', 'vertex4')
+    target = ("vertex0", "vertex1", "vertex2", "vertex3", "vertex4")
 
     # Read only
     geo = get_obj_geo("test_set_vertex_string_attrib_values")
@@ -712,7 +735,7 @@ def test_set_vertex_string_attrib_values():
         ht.inline.api.set_vertex_string_attrib_values(geo, "notstring", target)
 
     # Invalid attribute size
-    target = ('vertex0', 'vertex1', 'vertex2', 'vertex3')
+    target = ("vertex0", "vertex1", "vertex2", "vertex3")
 
     with pytest.raises(ValueError):
         ht.inline.api.set_vertex_string_attrib_values(geo, "test", target)
@@ -720,7 +743,7 @@ def test_set_vertex_string_attrib_values():
 
 def test_set_shared_point_string_attrib():
     """Test ht.inline.api.set_shared_point_string_attrib."""
-    target = ["point0"]*5
+    target = ["point0"] * 5
 
     geo = hou.Geometry()
 
@@ -748,7 +771,7 @@ def test_set_shared_point_string_attrib():
     assert values == target
 
     # Group
-    target = ["point0"]*5 + [""]*5
+    target = ["point0"] * 5 + [""] * 5
 
     geo = hou.Geometry()
 
@@ -771,7 +794,7 @@ def test_set_shared_point_string_attrib():
 
 def test_set_shared_prim_string_attrib():
     """Test ht.inline.api.set_shared_prim_string_attrib."""
-    target = ["value"]*5
+    target = ["value"] * 5
     geo = get_obj_geo_copy("test_set_shared_prim_string_attrib")
 
     frozen_geo = geo.freeze(True)
@@ -798,7 +821,7 @@ def test_set_shared_prim_string_attrib():
     assert values == target
 
     # Group
-    target = ["value"]*3 + ["", ""]
+    target = ["value"] * 3 + ["", ""]
 
     geo = get_obj_geo_copy("test_set_shared_prim_string_attrib")
 
@@ -1025,7 +1048,9 @@ def test_check_minimum_polygon_vertex_count():
 
     assert ht.inline.api.check_minimum_polygon_vertex_count(geo, 3)
 
-    assert not ht.inline.api.check_minimum_polygon_vertex_count(geo, 3, ignore_open=False)
+    assert not ht.inline.api.check_minimum_polygon_vertex_count(
+        geo, 3, ignore_open=False
+    )
 
     assert not ht.inline.api.check_minimum_polygon_vertex_count(geo, 5)
 
@@ -1552,14 +1577,26 @@ def test_groups_share_elements():
 
     assert ht.inline.api.groups_share_elements(group1, group2)
 
-    group1 = OBJ.node("test_point_group_contains_any_False/group1").geometry().pointGroups()[0]
-    group2 = OBJ.node("test_point_group_contains_any_False/group2").geometry().pointGroups()[0]
+    group1 = (
+        OBJ.node("test_point_group_contains_any_False/group1")
+        .geometry()
+        .pointGroups()[0]
+    )
+    group2 = (
+        OBJ.node("test_point_group_contains_any_False/group2")
+        .geometry()
+        .pointGroups()[0]
+    )
 
     with pytest.raises(ValueError):
         ht.inline.api.groups_share_elements(group1, group2)
 
     # Different types
-    group3 = OBJ.node("test_point_group_contains_any_False/group2").geometry().primGroups()[0]
+    group3 = (
+        OBJ.node("test_point_group_contains_any_False/group2")
+        .geometry()
+        .primGroups()[0]
+    )
 
     with pytest.raises(TypeError):
         ht.inline.api.groups_share_elements(group3, group2)
@@ -1573,8 +1610,12 @@ def test_groups_share_elements():
     assert ht.inline.api.groups_share_elements(group1, group2)
 
     # Different details
-    group1 = OBJ.node("test_prim_group_contains_any_False/group1").geometry().primGroups()[0]
-    group2 = OBJ.node("test_prim_group_contains_any_False/group2").geometry().primGroups()[0]
+    group1 = (
+        OBJ.node("test_prim_group_contains_any_False/group1").geometry().primGroups()[0]
+    )
+    group2 = (
+        OBJ.node("test_prim_group_contains_any_False/group2").geometry().primGroups()[0]
+    )
 
     with pytest.raises(ValueError):
         ht.inline.api.groups_share_elements(group1, group2)
@@ -1678,6 +1719,7 @@ def test_convert_point_to_prim_group():
 # UNGROUPED POINTS
 # =========================================================================
 
+
 def test_geometry_has_ungrouped_points():
     """Test ht.inline.api.geometry_has_ungrouped_points."""
     geo = get_obj_geo("test_has_ungrouped_points")
@@ -1727,6 +1769,7 @@ def test_group_ungrouped_points():
 # UNGROUPED PRIMS
 # =========================================================================
 
+
 def test_has_ungrouped_prims():
     """Test ht.inline.api.geometry_has_ungrouped_prims."""
     geo = get_obj_geo("test_has_ungrouped_prims")
@@ -1775,6 +1818,7 @@ def test_group_ungrouped_prims():
 # =========================================================================
 # BOUNDING BOXES
 # =========================================================================
+
 
 def test_bounding_box_is_inside():
     """Test ht.inline.api.bounding_box_is_inside."""
@@ -1860,6 +1904,7 @@ def test_bounding_box_volume():
 # =========================================================================
 # PARMS
 # =========================================================================
+
 
 def test_is_parm_tuple_vector():
     """Test ht.inline.api.is_parm_tuple_vector."""
@@ -1950,14 +1995,14 @@ def test_eval_parm_strip_as_string():
     node = OBJ.node("test_eval_as_strip/node")
     parm = node.parm("strip_normal")
 
-    target = ('bar',)
+    target = ("bar",)
 
     assert ht.inline.api.eval_parm_strip_as_string(parm) == target
 
     # Toggle strip.
     parm = node.parm("strip_toggle")
 
-    target = ('foo', 'hello', 'world')
+    target = ("foo", "hello", "world")
 
     assert ht.inline.api.eval_parm_strip_as_string(parm) == target
 
@@ -1965,6 +2010,7 @@ def test_eval_parm_strip_as_string():
 # =========================================================================
 # MULTIPARMS
 # =========================================================================
+
 
 def test_is_parm_multiparm():
     """Test ht.inline.api.is_parm_multiparm."""
@@ -2025,7 +2071,7 @@ def test_get_multiparm_start_offset():
 
 def test_get_multiparm_instance_index():
     """Test ht.inline.api.get_multiparm_instance_index."""
-    target = (2, )
+    target = (2,)
 
     node = OBJ.node("test_get_multiparm_instance_index/object_merge")
     parm = node.parm("objpath2")
@@ -2057,16 +2103,8 @@ def test_get_multiparm_instances():
         ht.inline.api.get_multiparm_instances(parm)
 
     target = (
-        (
-            node.parm("foo1"),
-            node.parmTuple("bar1"),
-            node.parm("hello1")
-        ),
-        (
-            node.parm("foo2"),
-            node.parmTuple("bar2"),
-            node.parm("hello2")
-        ),
+        (node.parm("foo1"), node.parmTuple("bar1"), node.parm("hello1")),
+        (node.parm("foo2"), node.parmTuple("bar2"), node.parm("hello2")),
     )
 
     parm = node.parm("things")
@@ -2091,18 +2129,7 @@ def test_get_multiparm_instance_values():
     with pytest.raises(ValueError):
         ht.inline.api.get_multiparm_instance_values(parm)
 
-    target = (
-        (
-            1,
-            (2.0, 3.0, 4.0),
-            "foo"
-        ),
-        (
-            5,
-            (6.0, 7.0, 8.0),
-            "bar"
-        ),
-    )
+    target = ((1, (2.0, 3.0, 4.0), "foo"), (5, (6.0, 7.0, 8.0), "bar"))
 
     parm = node.parm("things")
 
@@ -2156,6 +2183,7 @@ def test_eval_multiparm_instance():
 # =========================================================================
 # NODES AND NODE TYPES
 # =========================================================================
+
 
 def test_disconnect_all_outputs():
     """Test ht.inline.api.disconnect_all_inputs."""
@@ -2234,6 +2262,7 @@ def test_is_node_type_subnet():
 # VECTORS AND MATRICES
 # =========================================================================
 
+
 def test_vector_component_along():
     """Test ht.inline.api.vector_component_along."""
     vec = hou.Vector3(1, 2, 3)
@@ -2253,7 +2282,7 @@ def test_vector_project_along():
 
 def test_vector_contains_nans():
     """Test ht.inline.api.vector_contains_nans."""
-    nan = float('nan')
+    nan = float("nan")
 
     vec = hou.Vector2(nan, 1)
     assert ht.inline.api.vector_contains_nans(vec)
@@ -2315,14 +2344,12 @@ def test_build_lookat_matrix():
         (
             (0.70710678118654746, -0.0, 0.70710678118654746),
             (0.0, 1.0, 0.0),
-            (-0.70710678118654746, 0.0, 0.70710678118654746)
+            (-0.70710678118654746, 0.0, 0.70710678118654746),
         )
     )
 
     mat = ht.inline.api.build_lookat_matrix(
-        hou.Vector3(0, 0, 1),
-        hou.Vector3(1, 0, 0),
-        hou.Vector3(0, 1, 0)
+        hou.Vector3(0, 0, 1), hou.Vector3(1, 0, 0), hou.Vector3(0, 1, 0)
     )
 
     assert mat == target
@@ -2332,30 +2359,10 @@ def test_build_instance_matrix():
     """Test ht.inline.api.build_instance_matrix."""
     target = hou.Matrix4(
         (
-            (
-                1.0606601717798214,
-                -1.0606601717798214,
-                0.0,
-                0.0
-            ),
-            (
-                0.61237243569579436,
-                0.61237243569579436,
-                -1.2247448713915889,
-                0.0
-            ),
-            (
-                0.86602540378443882,
-                0.86602540378443882,
-                0.86602540378443882,
-                0.0
-            ),
-            (
-                -1.0,
-                2.0,
-                4.0,
-                1.0
-            )
+            (1.0606601717798214, -1.0606601717798214, 0.0, 0.0),
+            (0.61237243569579436, 0.61237243569579436, -1.2247448713915889, 0.0),
+            (0.86602540378443882, 0.86602540378443882, 0.86602540378443882, 0.0),
+            (-1.0, 2.0, 4.0, 1.0),
         )
     )
 
@@ -2363,7 +2370,7 @@ def test_build_instance_matrix():
         hou.Vector3(-1, 2, 4),
         hou.Vector3(1, 1, 1),
         pscale=1.5,
-        up_vector=hou.Vector3(1, 1, -1)
+        up_vector=hou.Vector3(1, 1, -1),
     )
 
     assert mat == target
@@ -2371,36 +2378,15 @@ def test_build_instance_matrix():
     # By orient
     target = hou.Matrix4(
         (
-            (
-                0.33212996389891691,
-                0.3465703971119134,
-                -0.87725631768953083,
-                0.0
-            ),
-            (
-                -0.53068592057761732,
-                0.83754512635379064,
-                0.1299638989169675,
-                0.0
-            ),
-            (
-                0.77978339350180514,
-                0.42238267148014441,
-                0.46209386281588438,
-                0.0
-            ),
-            (
-                -1.0,
-                2.0,
-                4.0,
-                1.0
-            )
+            (0.33212996389891691, 0.3465703971119134, -0.87725631768953083, 0.0),
+            (-0.53068592057761732, 0.83754512635379064, 0.1299638989169675, 0.0),
+            (0.77978339350180514, 0.42238267148014441, 0.46209386281588438, 0.0),
+            (-1.0, 2.0, 4.0, 1.0),
         )
     )
 
     mat = ht.inline.api.build_instance_matrix(
-        hou.Vector3(-1, 2, 4),
-        orient=hou.Quaternion(0.3, -1.7, -0.9, -2.7)
+        hou.Vector3(-1, 2, 4), orient=hou.Quaternion(0.3, -1.7, -0.9, -2.7)
     )
 
     assert mat == target
@@ -2409,6 +2395,7 @@ def test_build_instance_matrix():
 # =========================================================================
 # DIGITAL ASSETS
 # =========================================================================
+
 
 def test_get_node_message_nodes():
     """Test ht.inline.api.get_node_message_nodes."""
@@ -2497,6 +2484,7 @@ def test_is_dummy_definition():
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
 
 def get_obj_geo(node_path):
     """Get the geometry from the display node of a Geometry object."""

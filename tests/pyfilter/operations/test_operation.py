@@ -24,6 +24,7 @@ imp.reload(operation)
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def init_operation(mocker):
     """Fixture to initialize an operation."""
@@ -38,6 +39,7 @@ def init_operation(mocker):
 # =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class Test_PyFilterOperation(object):
     """Test the ht.pyfilter.operations.operation.PyFilterOperation object."""

@@ -19,6 +19,7 @@ _logger = logging.getLogger(__name__)
 # CLASSES
 # =============================================================================
 
+
 class PyFilterManager(object):
     """Manager class for PyFilter operations."""
 
@@ -99,7 +100,9 @@ class PyFilterManager(object):
                 cls = _get_class(module_name, class_name)
 
                 if cls is None:
-                    _logger.warning("Could not load %s from %s", class_name, module_name)
+                    _logger.warning(
+                        "Could not load %s from %s", class_name, module_name
+                    )
 
                     continue
 
@@ -164,6 +167,7 @@ class PyFilterManager(object):
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
+
 
 def _build_parser():
     """Build a default parser to be used.

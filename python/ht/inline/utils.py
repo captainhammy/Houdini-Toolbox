@@ -19,7 +19,7 @@ import hou
 _ALL_ATTRIB_DATA_TYPES = (
     hou.attribData.Float,
     hou.attribData.Int,
-    hou.attribData.String
+    hou.attribData.String,
 )
 
 # Tuple of all valid attribute types.
@@ -46,37 +46,26 @@ _ATTRIB_TYPE_MAP = {
 }
 
 # Mapping between geometry types and corresponding GA_AttributeOwner values.
-_GEOMETRY_ATTRIB_MAP = {
-    hou.Vertex: 0,
-    hou.Point: 1,
-    hou.Prim: 2,
-    hou.Geometry: 3
-}
+_GEOMETRY_ATTRIB_MAP = {hou.Vertex: 0, hou.Point: 1, hou.Prim: 2, hou.Geometry: 3}
 
 # Mapping between hou.geometryTypes and corresponding GA_AttributeOwner values.
 _GEOMETRY_TYPE_MAP = {
     hou.geometryType.Vertices: 0,
     hou.geometryType.Points: 1,
-    hou.geometryType.Primitives: 2
+    hou.geometryType.Primitives: 2,
 }
 
 # Mapping between group types and corresponding GA_AttributeOwner values.
-_GROUP_ATTRIB_MAP = {
-    hou.PointGroup: 1,
-    hou.PrimGroup: 2,
-}
+_GROUP_ATTRIB_MAP = {hou.PointGroup: 1, hou.PrimGroup: 2}
 
 # Mapping between group types and corresponding GA_GroupType values.
-_GROUP_TYPE_MAP = {
-    hou.PointGroup: 0,
-    hou.PrimGroup: 1,
-    hou.EdgeGroup: 2,
-}
+_GROUP_TYPE_MAP = {hou.PointGroup: 0, hou.PrimGroup: 1, hou.EdgeGroup: 2}
 
 
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
 
 def build_c_double_array(values):
     """Convert a list of numbers to a ctypes double array.
@@ -352,7 +341,7 @@ def get_points_from_list(geometry, point_list):
         return ()
 
     # Convert the list of integers to a space separated string.
-    point_str = ' '.join([str(i) for i in point_list])
+    point_str = " ".join([str(i) for i in point_list])
 
     # Glob for the specified points.
     return geometry.globPoints(point_str)
@@ -374,7 +363,7 @@ def get_prims_from_list(geometry, prim_list):
         return ()
 
     # Convert the list of integers to a space separated string.
-    prim_str = ' '.join([str(i) for i in prim_list])
+    prim_str = " ".join([str(i) for i in prim_list])
 
     # Glob for the specified prims.
     return geometry.globPrims(prim_str)

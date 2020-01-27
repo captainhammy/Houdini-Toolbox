@@ -13,6 +13,7 @@ from ht.pyfilter.property import set_property
 # CLASSES
 # =============================================================================
 
+
 class SetTileCallback(PyFilterOperation):
     """Operation to set a mantra tile callback.
 

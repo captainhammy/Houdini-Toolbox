@@ -16,6 +16,7 @@ import hou
 # FUNCTIONS
 # ==============================================================================
 
+
 def clear_generic_image_badge(node):
     """Clear the generic image badge from the node.
 
@@ -85,10 +86,7 @@ def set_generic_image_badge(node, image):
     """
     with hou.undos.disabler():
         # Set the user data.
-        node.setUserData(
-            _ht_generic_image_badge.get_generic_image_key(),
-            image
-        )
+        node.setUserData(_ht_generic_image_badge.get_generic_image_key(), image)
 
 
 def set_generic_text_badge(node, value, color=None):
@@ -105,10 +103,7 @@ def set_generic_text_badge(node, value, color=None):
     """
     with hou.undos.disabler():
         # Set the user data.
-        node.setUserData(
-            _ht_generic_text_badge.get_generic_text_key(),
-            value
-        )
+        node.setUserData(_ht_generic_text_badge.get_generic_text_key(), value)
 
         if color is not None:
             set_generic_text_badge_color(node, color)
@@ -131,5 +126,5 @@ def set_generic_text_badge_color(node, color):
         # Set the user data with a valid text -> color string.
         node.setUserData(
             _ht_generic_text_badge.get_generic_text_color_key(),
-            "rgb {} {} {}".format(*rgb_value)
+            "rgb {} {} {}".format(*rgb_value),
         )

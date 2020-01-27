@@ -31,6 +31,7 @@ _AOV_MIME_TYPE = "application/houdini-ht.aov"
 # CLASSES
 # =============================================================================
 
+
 class AOVViewerInterface(QtCore.QObject):
     """This class acts as an interface between viewer related UI elements
     and the AOVManager.
@@ -52,6 +53,7 @@ class AOVViewerInterface(QtCore.QObject):
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
+
 def _get_item_menu_index(items, item):
     """Function to determine which index an item represents."""
     idx = 0
@@ -68,6 +70,7 @@ def _get_item_menu_index(items, item):
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
+
 
 def apply_elements_as_parms(elements, nodes):
     """Apply a list of elements are multiparms."""
@@ -143,7 +146,7 @@ def build_aovs_from_multiparm(node):
     for idx in range(1, num_aovs + 1):
         aov_data = {
             "variable": node.evalParm("vm_variable_plane{}".format(idx)),
-            "vextype": node.evalParm("vm_vextype_plane{}".format(idx))
+            "vextype": node.evalParm("vm_vextype_plane{}".format(idx)),
         }
 
         channel = node.evalParm("vm_channel_plane{}".format(idx))
@@ -166,8 +169,12 @@ def build_aovs_from_multiparm(node):
 
         if lightexport:
             aov_data["lightexport"] = lightexport
-            aov_data["lightexport_scope"] = node.evalParm("vm_lightexport_scope{}".format(idx))
-            aov_data["lighexport_select"] = node.evalParm("vm_lightexport_select{}".format(idx))
+            aov_data["lightexport_scope"] = node.evalParm(
+                "vm_lightexport_scope{}".format(idx)
+            )
+            aov_data["lighexport_select"] = node.evalParm(
+                "vm_lightexport_select{}".format(idx)
+            )
 
         aovs.append(AOV(aov_data))
 
@@ -209,8 +216,7 @@ def get_selected_mantra_nodes():
 
     if not nodes:
         hou.ui.displayMessage(
-            "No mantra nodes selected.",
-            severity=hou.severityType.Error
+            "No mantra nodes selected.", severity=hou.severityType.Error
         )
 
     return tuple(nodes)
@@ -265,34 +271,22 @@ def get_icon_for_vex_type(vextype):
 
 def get_light_export_menu_index(lightexport):
     """Find the menu index of the lightexport value."""
-    return _get_item_menu_index(
-        uidata.LIGHTEXPORT_MENU_ITEMS,
-        lightexport
-    )
+    return _get_item_menu_index(uidata.LIGHTEXPORT_MENU_ITEMS, lightexport)
 
 
 def get_quantize_menu_index(quantize):
     """Find the menu index of the quantize value."""
-    return _get_item_menu_index(
-        uidata.QUANTIZE_MENU_ITEMS,
-        quantize
-    )
+    return _get_item_menu_index(uidata.QUANTIZE_MENU_ITEMS, quantize)
 
 
 def get_sfilter_menu_index(sfilter):
     """Find the menu index of the sfilter value."""
-    return _get_item_menu_index(
-        uidata.SFILTER_MENU_ITEMS,
-        sfilter
-    )
+    return _get_item_menu_index(uidata.SFILTER_MENU_ITEMS, sfilter)
 
 
 def get_vextype_menu_index(vextype):
     """Find the menu index of the vextype value."""
-    return _get_item_menu_index(
-        uidata.VEXTYPE_MENU_ITEMS,
-        vextype
-    )
+    return _get_item_menu_index(uidata.VEXTYPE_MENU_ITEMS, vextype)
 
 
 def has_aov_mime_data(mime_data):
@@ -350,10 +344,7 @@ def open_aov_editor(node):
 
     desktop = hou.ui.curDesktop()
 
-    tab = desktop.createFloatingPaneTab(
-        hou.paneTabType.PythonPanel,
-        size=(900, 800)
-    )
+    tab = desktop.createFloatingPaneTab(hou.paneTabType.PythonPanel, size=(900, 800))
 
     tab.showToolbar(False)
     tab.setActiveInterface(interface)

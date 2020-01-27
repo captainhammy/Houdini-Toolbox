@@ -19,6 +19,7 @@ from ht.pyfilter.operations import deepimage
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def init_operation(mocker):
     """Fixture to initialize an operation."""
@@ -63,6 +64,7 @@ def properties(mocker):
 # =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class Test_DeepImage(object):
     """Test the ht.pyfilter.operations.deepimage.DeepImage class."""
@@ -253,7 +255,9 @@ class Test_DeepImage(object):
         assert result == "--deep-depth-planes={}".format(mock_planes)
 
         # Test depth planes with string list.
-        result = deepimage.SetDeepImage.build_arg_string(depth_planes="zfront,zback".split(','))
+        result = deepimage.SetDeepImage.build_arg_string(
+            depth_planes="zfront,zback".split(",")
+        )
 
         assert result == "--deep-depth-planes={}".format("zfront,zback")
 
@@ -300,18 +304,33 @@ class Test_DeepImage(object):
 
         calls = [
             mocker.call("--deep-image-path", dest="deep_image_path"),
-            mocker.call("--deep-all-passes", action="store_true", dest="deep_all_passes"),
-            mocker.call("--disable-deep-image", action="store_true", dest="disable_deep_image"),
-            mocker.call("--deep-resolver", choices=("camera", "shadow"), dest="deep_resolver"),
+            mocker.call(
+                "--deep-all-passes", action="store_true", dest="deep_all_passes"
+            ),
+            mocker.call(
+                "--disable-deep-image", action="store_true", dest="disable_deep_image"
+            ),
+            mocker.call(
+                "--deep-resolver", choices=("camera", "shadow"), dest="deep_resolver"
+            ),
             mocker.call("--deep-compression", type=int, dest="deep_compression"),
             mocker.call("--deep-compositing", type=int, dest="deep_compositing"),
             mocker.call("--deep-depth-planes", dest="deep_depth_planes"),
-            mocker.call("--deep-mipmaps", type=int, choices=(0, 1), dest="deep_mipmaps"),
+            mocker.call(
+                "--deep-mipmaps", type=int, choices=(0, 1), dest="deep_mipmaps"
+            ),
             mocker.call("--deep-ofsize", type=int, choices=(1, 3), dest="deep_ofsize"),
-            mocker.call("--deep-ofstorage", choices=("real16", "real32", "real64"), dest="deep_ofstorage"),
-            mocker.call("--deep-pzstorage", choices=("real16", "real32", "real64"), dest="deep_pzstorage"),
+            mocker.call(
+                "--deep-ofstorage",
+                choices=("real16", "real32", "real64"),
+                dest="deep_ofstorage",
+            ),
+            mocker.call(
+                "--deep-pzstorage",
+                choices=("real16", "real32", "real64"),
+                dest="deep_pzstorage",
+            ),
             mocker.call("--deep-zbias", type=float, dest="deep_zbias"),
-
         ]
         mock_parser.add_argument.assert_has_calls(calls)
 
@@ -358,7 +377,9 @@ class Test_DeepImage(object):
 
     # filter_camera
 
-    def test_filter_camera__not_beauty(self, patch_logger, init_operation, properties, mocker):
+    def test_filter_camera__not_beauty(
+        self, patch_logger, init_operation, properties, mocker
+    ):
         """Test for non-beauty renders."""
         properties.mock_get.return_value = "shadow"
 
@@ -367,9 +388,13 @@ class Test_DeepImage(object):
 
         op.filter_camera()
 
-        patch_logger.warning.assert_called_with("Not a beauty render, skipping deepresolver")
+        patch_logger.warning.assert_called_with(
+            "Not a beauty render, skipping deepresolver"
+        )
 
-    def test_filter_camera__disable_deep_image(self, patch_logger, init_operation, properties, mocker):
+    def test_filter_camera__disable_deep_image(
+        self, patch_logger, init_operation, properties, mocker
+    ):
         """Try to disable deep image export."""
         properties.mock_get.return_value = "beauty"
 
@@ -382,15 +407,14 @@ class Test_DeepImage(object):
         properties.mock_set.assert_called_with("image:deepresolver", [])
         patch_logger.info.assert_called_with("Disabling deep resolver")
 
-    def test_filter_camera__no_deep_args_no_resolver(self, patch_logger, init_operation, properties,  mocker):
+    def test_filter_camera__no_deep_args_no_resolver(
+        self, patch_logger, init_operation, properties, mocker
+    ):
         """Try to set the resolver when there is no resolver already set and
         we don't provide enough data.
 
         """
-        data = {
-            "renderer:rendertype": "beauty",
-            "image:deepresolver": []
-        }
+        data = {"renderer:rendertype": "beauty", "image:deepresolver": []}
 
         properties.mock_get.side_effect = lambda arg: data[arg]
 
@@ -403,17 +427,18 @@ class Test_DeepImage(object):
 
         op.filter_camera()
 
-        patch_logger.error.assert_called_with("Cannot set deepresolver: deep output is not enabled")
+        patch_logger.error.assert_called_with(
+            "Cannot set deepresolver: deep output is not enabled"
+        )
 
-    def test_filter_camera__no_deep_args_no_file(self, patch_logger, init_operation, properties, mocker):
+    def test_filter_camera__no_deep_args_no_file(
+        self, patch_logger, init_operation, properties, mocker
+    ):
         """Try to set the resolver when there is no resolver already set and
         we don't provide enough data.
 
         """
-        data = {
-            "renderer:rendertype": "beauty",
-            "image:deepresolver": []
-        }
+        data = {"renderer:rendertype": "beauty", "image:deepresolver": []}
 
         properties.mock_get.side_effect = lambda arg: data[arg]
 
@@ -426,19 +451,20 @@ class Test_DeepImage(object):
 
         op.filter_camera()
 
-        patch_logger.error.assert_called_with("Cannot set deepresolver: deep output is not enabled")
+        patch_logger.error.assert_called_with(
+            "Cannot set deepresolver: deep output is not enabled"
+        )
 
-    def test_filter_camera__no_deep_args_resolver_and_file(self, patch_logger, init_operation, properties, mocker):
+    def test_filter_camera__no_deep_args_resolver_and_file(
+        self, patch_logger, init_operation, properties, mocker
+    ):
         """Try to set the resolver when there is no resolver already set and
         we don't provide enough data.
 
         """
         mock_modify = mocker.patch.object(deepimage.SetDeepImage, "_modify_deep_args")
 
-        data = {
-            "renderer:rendertype": "beauty",
-            "image:deepresolver": []
-        }
+        data = {"renderer:rendertype": "beauty", "image:deepresolver": []}
 
         properties.mock_get.side_effect = lambda arg: data[arg]
 
@@ -457,7 +483,9 @@ class Test_DeepImage(object):
 
         properties.mock_set.assert_called_with("image:deepresolver", ["shadow"])
 
-    def test_filter_camera__deep_args(self, patch_logger, init_operation, properties, mocker):
+    def test_filter_camera__deep_args(
+        self, patch_logger, init_operation, properties, mocker
+    ):
         """Try to set the resolver when there is no resolver already set and
         we don't provide enough data.
 
@@ -466,7 +494,7 @@ class Test_DeepImage(object):
 
         data = {
             "renderer:rendertype": "beauty",
-            "image:deepresolver": ["shadow", "filename", "/path/to/deep.exr"]
+            "image:deepresolver": ["shadow", "filename", "/path/to/deep.exr"],
         }
 
         properties.mock_get.side_effect = lambda arg: data[arg]
@@ -484,7 +512,9 @@ class Test_DeepImage(object):
 
         patch_logger.debug.assert_called()
 
-        properties.mock_set.assert_called_with("image:deepresolver", ["shadow", "filename", "/path/to/deep.exr"])
+        properties.mock_set.assert_called_with(
+            "image:deepresolver", ["shadow", "filename", "/path/to/deep.exr"]
+        )
 
     # process_parsed_args
 

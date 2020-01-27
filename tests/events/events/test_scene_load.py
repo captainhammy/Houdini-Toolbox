@@ -22,6 +22,7 @@ imp.reload(ht.events.events.scene_load)
 # CLASSES
 # =============================================================================
 
+
 class Test_SceneLoadEvent(object):
     """Test ht.events.events.scene_load.SceneLoadEvent class."""
 
@@ -29,7 +30,7 @@ class Test_SceneLoadEvent(object):
         event = ht.events.events.scene_load.SceneLoadEvent()
 
         expected_map = {
-            SceneEvents.Load: HoudiniEventItem((event.clear_session_settings,)),
+            SceneEvents.Load: HoudiniEventItem((event.clear_session_settings,))
         }
 
         assert event.event_map == expected_map
@@ -37,7 +38,9 @@ class Test_SceneLoadEvent(object):
     # Methods
 
     def test_clear_session_settings(self, mocker):
-        mocker.patch.object(ht.events.events.scene_load.SceneLoadEvent, "__init__", lambda x: None)
+        mocker.patch.object(
+            ht.events.events.scene_load.SceneLoadEvent, "__init__", lambda x: None
+        )
         mock_hscript = mocker.patch("ht.events.events.scene_load.hou.hscript")
 
         event = ht.events.events.scene_load.SceneLoadEvent()

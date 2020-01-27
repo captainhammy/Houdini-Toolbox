@@ -15,6 +15,7 @@ _logger = logging.getLogger(__name__)
 # CLASSES
 # =============================================================================
 
+
 class PyFilterOperation(object):
     """Base class of operations for PyFilter.
 
@@ -104,6 +105,7 @@ class PyFilterOperation(object):
 # FUNCTIONS
 # =============================================================================
 
+
 def log_filter_call(method_or_name):
     """Custom filter logging decorator.
 
@@ -119,8 +121,8 @@ def log_filter_call(method_or_name):
     :rtype: function
 
     """
-    def decorator(func):  # pylint: disable=missing-docstring
 
+    def decorator(func):  # pylint: disable=missing-docstring
         @wraps(func)
         def wrapper(*args, **kwargs):  # pylint: disable=missing-docstring
             func_name = func.__name__
@@ -131,10 +133,7 @@ def log_filter_call(method_or_name):
             if isinstance(method_or_name, str):
                 import mantra
 
-                msg = "{} ({})".format(
-                    msg,
-                    mantra.property(method_or_name)[0]
-                )
+                msg = "{} ({})".format(msg, mantra.property(method_or_name)[0])
 
             _logger.debug(msg)
 
