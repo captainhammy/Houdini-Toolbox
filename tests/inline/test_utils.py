@@ -18,7 +18,7 @@ import hou
 
 
 # =============================================================================
-# CLASSES
+# TESTS
 # =============================================================================
 
 
@@ -37,7 +37,6 @@ def test_build_c_double_array():
 
 def test_build_c_int_array():
     """Test ht.inline.utils.build_c_int_array."""
-
     values = range(5)
     values.reverse()
 

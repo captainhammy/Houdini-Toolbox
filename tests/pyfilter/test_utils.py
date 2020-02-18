@@ -10,48 +10,54 @@ import pytest
 # Houdini Toolbox Imports
 from ht.pyfilter import utils
 
+# Houdini Imports
+import hou
 
 # =============================================================================
-# CLASSES
+# TESTS
 # =============================================================================
 
 
 class Test_build_pyfilter_command(object):
     """Test ht.pyfilter.utils.build_pyfilter_command"""
 
-    def test_no_found_script(self, mocker, patch_hou, mock_hou_exceptions):
+    def test_no_found_script(self, mocker, fix_hou_exceptions):
+        mock_find = mocker.patch("hou.findFile", side_effect=hou.OperationFailed)
         mock_logger = mocker.patch("ht.pyfilter.utils._logger")
-        mock_exists = mocker.patch("os.path.exists")
-
-        patch_hou.hou.findFile.side_effect = mock_hou_exceptions.OperationFailed
+        mock_isfile = mocker.patch("os.path.isfile")
 
         result = utils.build_pyfilter_command()
 
         assert result == ""
 
+        mock_find.assert_called_with("pyfilter/ht-pyfilter.py")
+
         mock_logger.error.assert_called()
 
-        mock_exists.assert_not_called()
+        mock_isfile.assert_not_called()
 
-    def test_found_script_does_not_exists(self, mocker, patch_hou):
-        mock_exists = mocker.patch("os.path.exists", return_value=False)
+    def test_found_script_does_not_exists(self, mocker):
+        mock_find = mocker.patch("hou.findFile")
+        mock_isfile = mocker.patch("os.path.isfile", return_value=False)
 
         with pytest.raises(OSError):
             utils.build_pyfilter_command()
 
-        mock_exists.assert_called_with(patch_hou.hou.findFile.return_value)
+        mock_isfile.assert_called_with(mock_find.return_value)
 
-    def test_found_script_no_args(self, mocker, patch_hou):
-        mock_exists = mocker.patch("os.path.exists", return_value=True)
+    def test_found_script_no_args(self, mocker):
+        mock_find = mocker.patch("hou.findFile")
+        mock_isfile = mocker.patch("os.path.isfile", return_value=True)
 
         result = utils.build_pyfilter_command()
 
-        assert result == '-P "{} "'.format(patch_hou.hou.findFile.return_value)
+        assert result == '-P "{} "'.format(mock_find.return_value)
 
-        mock_exists.assert_called_with(patch_hou.hou.findFile.return_value)
+        mock_isfile.assert_called_with(mock_find.return_value)
 
-    def test_manual_path(self, mocker, patch_hou):
-        mock_exists = mocker.patch("os.path.exists", return_value=True)
+    def test_manual_path(self, mocker):
+        mock_find = mocker.patch("hou.findFile")
+        mock_isfile = mocker.patch("os.path.isfile", return_value=True)
 
         mock_path = mocker.MagicMock()
 
@@ -59,11 +65,12 @@ class Test_build_pyfilter_command(object):
 
         assert result == '-P "{} "'.format(mock_path)
 
-        patch_hou.hou.findFile.assert_not_called()
-        mock_exists.assert_called_with(mock_path)
+        mock_find.return_value.assert_not_called()
+        mock_isfile.assert_called_with(mock_path)
 
-    def test_manual_path_args(self, mocker, patch_hou):
-        mock_exists = mocker.patch("os.path.exists", return_value=True)
+    def test_manual_path_args(self, mocker):
+        mock_find = mocker.patch("hou.findFile")
+        mock_isfile = mocker.patch("os.path.isfile", return_value=True)
 
         mock_path = mocker.MagicMock()
 
@@ -75,5 +82,5 @@ class Test_build_pyfilter_command(object):
 
         assert result == '-P "{} {}"'.format(mock_path, " ".join(args))
 
-        patch_hou.hou.findFile.assert_not_called()
-        mock_exists.assert_called_with(mock_path)
+        mock_find.return_value.assert_not_called()
+        mock_isfile.assert_called_with(mock_path)

@@ -17,7 +17,7 @@ import hou
 
 
 @pytest.fixture
-def mock_hou_exceptions(mocker):
+def fix_hou_exceptions(monkeypatch):
     """Fixture to support dealing with hou.Error exceptions.
 
     Since hou.Error and all derived exceptions are not actual Exception objects
@@ -28,13 +28,13 @@ def mock_hou_exceptions(mocker):
     This fixture gets around this by patching all the hou.Error related exceptions
     with exceptions derived from Exception and the allowing you to catch those.
     When dealing testing code which involves hou exceptions you should include this
-    fixture and then use the supplied fake exception when checking for raised exceptions.
+    fixture.
 
     def foo():
         raise hou.OperationFailed()
 
-    def test_foo(mock_hou_exception):
-        with pytest.raises(mock_hou_exception.OperationFailed):
+    def test_foo(fix_hou_exceptions):
+        with pytest.raises(hou.OperationFailed):
             foo()
 
     """
@@ -99,50 +99,40 @@ def mock_hou_exceptions(mocker):
     class _HouValueError(_HouError):
         """Exception to emulate a hou.ValueError"""
 
-    mocker.patch("hou.Error", _HouError)
-    mocker.patch("hou.GeometryPermissionError", _HouGeometryPermissionError)
-    mocker.patch("hou.InitScriptFailed", _HouInitScriptFailed)
-    mocker.patch("hou.InvalidInput", _HouInvalidInput)
-    mocker.patch("hou.InvalidNodeType", _HouInvalidNodeType)
-    mocker.patch("hou.InvalidSize", _HouInvalidSize)
-    mocker.patch("hou.KeyframeValueNotSet", _HouKeyframeValueNotSet)
-    mocker.patch("hou.LoadWarning", _HouLoadWarning)
-    mocker.patch("hou.MatchDefinitionError", _HouMatchDefinitionError)
-    mocker.patch("hou.NameConflict", _HouNameConflict)
-    mocker.patch("hou.NodeError", _HouNodeError)
-    mocker.patch("hou.NodeWarning", _HouNodeWarning)
-    mocker.patch("hou.NotAvailable", _HouNotAvailable)
-    mocker.patch("hou.ObjectWasDeleted", _HouObjectWasDeleted)
-    mocker.patch("hou.OperationFailed", _HouOperationFailed)
-    mocker.patch("hou.OperationInterrupted", _HouOperationInterrupted)
-    mocker.patch("hou.PermissionError", _HouPermissionError)
-    mocker.patch("hou.SystemExit", _HouSystemExit)
-    mocker.patch("hou.TypeError", _HouTypeError)
-    mocker.patch("hou.ValueError", _HouValueError)
+    monkeypatch.setattr(hou, "Error", _HouError)
+    monkeypatch.setattr(hou, "GeometryPermissionError", _HouGeometryPermissionError)
+    monkeypatch.setattr(hou, "InitScriptFailed", _HouInitScriptFailed)
+    monkeypatch.setattr(hou, "InvalidInput", _HouInvalidInput)
+    monkeypatch.setattr(hou, "InvalidNodeType", _HouInvalidNodeType)
+    monkeypatch.setattr(hou, "InvalidSize", _HouInvalidSize)
+    monkeypatch.setattr(hou, "KeyframeValueNotSet", _HouKeyframeValueNotSet)
+    monkeypatch.setattr(hou, "LoadWarning", _HouLoadWarning)
+    monkeypatch.setattr(hou, "MatchDefinitionError", _HouMatchDefinitionError)
+    monkeypatch.setattr(hou, "NameConflict", _HouNameConflict)
+    monkeypatch.setattr(hou, "NodeError", _HouNodeError)
+    monkeypatch.setattr(hou, "NodeWarning", _HouNodeWarning)
+    monkeypatch.setattr(hou, "NotAvailable", _HouNotAvailable)
+    monkeypatch.setattr(hou, "ObjectWasDeleted", _HouObjectWasDeleted)
+    monkeypatch.setattr(hou, "OperationFailed", _HouOperationFailed)
+    monkeypatch.setattr(hou, "OperationInterrupted", _HouOperationInterrupted)
+    monkeypatch.setattr(hou, "PermissionError", _HouPermissionError)
+    monkeypatch.setattr(hou, "SystemExit", _HouSystemExit)
+    monkeypatch.setattr(hou, "TypeError", _HouTypeError)
+    monkeypatch.setattr(hou, "ValueError", _HouValueError)
 
-    class HouExceptions(object):
-        Error = _HouError
-        GeometryPermissionError = _HouGeometryPermissionError
-        InitScriptFailed = _HouInitScriptFailed
-        InvalidInput = _HouInvalidInput
-        InvalidNodeType = _HouInvalidNodeType
-        InvalidSize = _HouInvalidSize
-        KeyframeValueNotSet = _HouKeyframeValueNotSet
-        LoadWarning = _HouLoadWarning
-        MatchDefinitionError = _HouMatchDefinitionError
-        NameConflict = _HouNameConflict
-        NodeError = _HouNodeError
-        NodeWarning = _HouNodeWarning
-        NotAvailable = _HouNotAvailable
-        ObjectWasDeleted = _HouObjectWasDeleted
-        OperationFailed = _HouOperationFailed
-        OperationInterrupted = _HouOperationInterrupted
-        PermissionError = _HouPermissionError
-        SystemExit = _HouSystemExit
-        TypeError = _HouTypeError
-        ValueError = _HouValueError
 
-    yield HouExceptions
+@pytest.fixture
+def mock_hou_qt(mocker):
+    """Mock the hou.qt module which isn't available when running tests via Hython.
+
+    """
+    mock_qt = mocker.MagicMock()
+
+    hou.qt = mock_qt
+
+    yield mock_qt
+
+    del hou.qt
 
 
 @pytest.fixture
@@ -163,30 +153,6 @@ def mock_hou_ui(mocker):
     yield mock_ui
 
     del hou.ui
-
-
-@pytest.fixture
-def patch_hou(mocker):
-    """Mock importing of the hou module.
-
-    The mocked module is available via the 'hou' attribute on the fixture object.
-
-    The original hou module is available via the 'original_hou' attribute.
-
-    This is useful for dealing with tucked hou imports.
-
-    """
-    mock_hou = mocker.MagicMock()
-
-    class MockHou(object):
-        original_hou = hou
-        hou = mock_hou
-
-    modules = {"hou": mock_hou, "original_hou": hou}
-
-    mocker.patch.dict("sys.modules", modules)
-
-    yield MockHou
 
 
 @pytest.fixture

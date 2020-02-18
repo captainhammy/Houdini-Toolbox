@@ -49,7 +49,7 @@ def init_group(mocker):
 
 
 # =============================================================================
-# CLASSES
+# TESTS
 # =============================================================================
 
 
@@ -57,6 +57,7 @@ class Test_AOV(object):
     """Test ht.sohohooks.aovs.AOV object."""
 
     def test___init__(self, mocker):
+        """Test object initialization."""
         mock_copy = mocker.patch("ht.sohohooks.aovs.aov.copy.copy")
         mock_update = mocker.patch.object(aov.AOV, "update_data")
 

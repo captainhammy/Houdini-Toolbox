@@ -51,7 +51,7 @@ def init_manager(mocker):
 
 
 # =============================================================================
-# CLASSES
+# TESTS
 # =============================================================================
 
 
@@ -1377,9 +1377,9 @@ class Test__find_aov_files(object):
 class Test__find_houdinipath_aov_folders(object):
     """Test ht.sohohooks.aovs.manager._find_houdinipath_aov_folders."""
 
-    def test_no_dirs(self, mocker, mock_hou_exceptions):
+    def test_no_dirs(self, mocker, fix_hou_exceptions):
         mock_find = mocker.patch("ht.sohohooks.aovs.manager.hou.findDirectories")
-        mock_find.side_effect = mock_hou_exceptions.OperationFailed
+        mock_find.side_effect = hou.OperationFailed
 
         result = manager._find_houdinipath_aov_folders()
 

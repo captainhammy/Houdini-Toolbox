@@ -14,6 +14,9 @@ import pytest
 from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.operations import setproperties
 
+# Houdini Imports
+import hou
+
 
 # =============================================================================
 # FIXTURES
@@ -92,7 +95,7 @@ def properties(mocker):
 
 
 # =============================================================================
-# CLASSES
+# TESTS
 # =============================================================================
 
 
@@ -270,8 +273,10 @@ class Test_PropertySetter(object):
         assert not op._find_file
         assert op._rendertype == mock_rendertype
 
-    def test___init___findfile(self, patch_hou, mocker):
+    def test___init___findfile(self, mocker):
         """Test object initialization with finding a file."""
+        mock_find = mocker.patch("hou.findFile")
+
         mocker.patch.object(
             setproperties.PropertySetter,
             "find_file",
@@ -287,11 +292,11 @@ class Test_PropertySetter(object):
         op = setproperties.PropertySetter(mock_name, block)
 
         assert op._name == mock_name
-        assert op._value == patch_hou.hou.findFile.return_value
+        assert op._value == mock_find.return_value
         assert op._find_file
         assert op._rendertype is None
 
-        patch_hou.hou.findFile.assert_called_with(mock_value)
+        mock_find.assert_called_with(mock_value)
 
     # Properties
 
@@ -331,28 +336,24 @@ class Test_PropertySetter(object):
 
     # set_property
 
-    def test_set_property__rendertype_no_match(
-        self, init_setter, properties, mocker, patch_hou
-    ):
+    def test_set_property__rendertype_no_match(self, init_setter, properties, mocker):
         mock_rendertype = mocker.patch.object(
             setproperties.PropertySetter, "rendertype", new_callable=mocker.PropertyMock
         )
 
-        patch_hou.hou.patternMatch.return_value = False
+        mock_match = mocker.patch("hou.patternMatch", return_value=False)
 
         op = init_setter()
         op.set_property()
 
         properties.mock_get.assert_called_with("renderer:rendertype")
-        patch_hou.hou.patternMatch.assert_called_with(
+        mock_match.assert_called_with(
             mock_rendertype.return_value, properties.mock_get.return_value
         )
 
         properties.mock_set.assert_not_called()
 
-    def test_set_property__rendertype_match(
-        self, init_setter, properties, mocker, patch_hou
-    ):
+    def test_set_property__rendertype_match(self, init_setter, properties, mocker):
         mock_rendertype = mocker.patch.object(
             setproperties.PropertySetter, "rendertype", new_callable=mocker.PropertyMock
         )
@@ -363,13 +364,13 @@ class Test_PropertySetter(object):
             setproperties.PropertySetter, "value", new_callable=mocker.PropertyMock
         )
 
-        patch_hou.hou.patternMatch.return_value = True
+        mock_match = mocker.patch("hou.patternMatch", return_value=True)
 
         op = init_setter()
         op.set_property()
 
         properties.mock_get.assert_called_with("renderer:rendertype")
-        patch_hou.hou.patternMatch.assert_called_with(
+        mock_match.assert_called_with(
             mock_rendertype.return_value, properties.mock_get.return_value
         )
 
@@ -377,9 +378,7 @@ class Test_PropertySetter(object):
             mock_name.return_value, mock_value.return_value
         )
 
-    def test_set_property__no_rendertype(
-        self, init_setter, properties, mocker, patch_hou
-    ):
+    def test_set_property__no_rendertype(self, init_setter, properties, mocker):
         mocker.patch.object(
             setproperties.PropertySetter,
             "rendertype",
@@ -391,8 +390,6 @@ class Test_PropertySetter(object):
         mock_value = mocker.patch.object(
             setproperties.PropertySetter, "value", new_callable=mocker.PropertyMock
         )
-
-        patch_hou.hou.patternMatch.return_value = True
 
         op = init_setter()
         op.set_property()
@@ -443,7 +440,7 @@ class Test_MaskedPropertySetter(object):
 
     # set_property
 
-    def test_set_property__mask_no_match(self, init_masked_setter, mocker, patch_hou):
+    def test_set_property__mask_no_match(self, init_masked_setter, mocker):
         mock_super_set = mocker.patch.object(
             setproperties.PropertySetter, "set_property"
         )
@@ -458,19 +455,19 @@ class Test_MaskedPropertySetter(object):
 
         mock_get = mocker.patch("ht.pyfilter.operations.setproperties.get_property")
 
-        patch_hou.hou.patternMatch.return_value = False
+        mock_match = mocker.patch("hou.patternMatch", return_value=False)
 
         op = init_masked_setter()
         op.set_property()
 
         mock_get.assert_called_with(mock_mask_name.return_value)
-        patch_hou.hou.patternMatch.assert_called_with(
+        mock_match.assert_called_with(
             mock_mask.return_value, mock_get.return_value
         )
 
         mock_super_set.assert_not_called()
 
-    def test_set_property__mask_match(self, init_masked_setter, mocker, patch_hou):
+    def test_set_property__mask_match(self, init_masked_setter, mocker):
         mock_super_set = mocker.patch.object(
             setproperties.PropertySetter, "set_property"
         )
@@ -485,13 +482,13 @@ class Test_MaskedPropertySetter(object):
 
         mock_get = mocker.patch("ht.pyfilter.operations.setproperties.get_property")
 
-        patch_hou.hou.patternMatch.return_value = True
+        mock_match = mocker.patch("hou.patternMatch", return_value=True)
 
         op = init_masked_setter()
         op.set_property()
 
         mock_get.assert_called_with(mock_mask_name.return_value)
-        patch_hou.hou.patternMatch.assert_called_with(
+        mock_match.assert_called_with(
             mock_mask.return_value, mock_get.return_value
         )
 

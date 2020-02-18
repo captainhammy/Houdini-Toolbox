@@ -46,4 +46,5 @@ run-lint-py3k:
 
 # Run Python unit tests
 run-tests:
-	hython bin/run_tests.py
+	@coverage erase
+	hython -m pytest tests/

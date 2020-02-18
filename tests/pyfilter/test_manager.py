@@ -14,6 +14,8 @@ import pytest
 from ht.pyfilter import manager
 from ht.pyfilter.operations.operation import PyFilterOperation
 
+# Houdini Imports
+import hou
 
 # =============================================================================
 # FIXTURES
@@ -32,7 +34,7 @@ def init_manager(mocker):
 
 
 # =============================================================================
-# CLASSES
+# TESTS
 # =============================================================================
 
 
@@ -300,17 +302,19 @@ def test_build_parser():
 class Test__find_operation_files(object):
     """Test ht.pyfilter.manager._find_operation_files."""
 
-    def test_no_files(self, patch_hou, mock_hou_exceptions):
-        patch_hou.hou.findFiles.side_effect = mock_hou_exceptions.OperationFailed
+    def test_no_files(self, mocker, fix_hou_exceptions):
+        mocker.patch("hou.findFiles", side_effect=hou.OperationFailed)
 
         result = manager._find_operation_files()
 
         assert result == ()
 
-    def test(self, patch_hou):
+    def test(self, mocker):
+        mock_find = mocker.patch("hou.findFiles")
+
         result = manager._find_operation_files()
 
-        assert result == patch_hou.hou.findFiles.return_value
+        assert result == mock_find.return_value
 
 
 class Test__get_class(object):

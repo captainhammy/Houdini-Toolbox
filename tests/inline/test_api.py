@@ -15,7 +15,7 @@ import hou
 
 
 # =============================================================================
-# CLASSES
+# TESTS
 # =============================================================================
 
 # TODO: Test global dicts
@@ -328,7 +328,7 @@ def test_num_prim_vertices(mocker):
 class Test_pack_geometry(object):
     """Test ht.inline.api.pack_geometry."""
 
-    def test_geo_read_only(self, mocker, mock_hou_exceptions):
+    def test_geo_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -336,26 +336,26 @@ class Test_pack_geometry(object):
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_source = mocker.MagicMock(spec=hou.Geometry)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.pack_geometry(mock_geometry, mock_source)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_source_read_only(self, mocker, mock_hou_exceptions):
+    def test_source_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", side_effect=(False, True)
         )
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_source = mocker.MagicMock(spec=hou.Geometry)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.pack_geometry(mock_geometry, mock_source)
 
         mock_read_only.assert_has_calls(
             [mocker.call(mock_geometry), mocker.call(mock_source)]
         )
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -380,7 +380,7 @@ class Test_pack_geometry(object):
 class Test_sort_geometry_by_attribute(object):
     """Test ht.inline.api.sort_geometry_by_attribute."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -389,12 +389,12 @@ class Test_sort_geometry_by_attribute(object):
         mock_attribute = mocker.MagicMock(spec=hou.Attrib)
         mock_index = mocker.MagicMock(spec=int)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.sort_geometry_by_attribute(mock_geometry, mock_attribute, mock_index)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_index_out_of_range(self, mocker, mock_hou_exceptions):
+    def test_index_out_of_range(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -408,7 +408,7 @@ class Test_sort_geometry_by_attribute(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_global_attrib(self, mocker, mock_hou_exceptions):
+    def test_global_attrib(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -423,7 +423,7 @@ class Test_sort_geometry_by_attribute(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_default_arg(self, mocker, mock_hou_exceptions):
+    def test_default_arg(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -452,7 +452,7 @@ class Test_sort_geometry_by_attribute(object):
             False,
         )
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -487,7 +487,7 @@ class Test_sort_geometry_by_attribute(object):
 class Test_sort_geometry_along_axis(object):
     """Test ht.inline.api.sort_geometry_along_axis."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -496,12 +496,12 @@ class Test_sort_geometry_along_axis(object):
         mock_geometry_type = mocker.MagicMock(spec=hou.geometryType)
         mock_axis = mocker.MagicMock(spec=int)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.sort_geometry_along_axis(mock_geometry, mock_geometry_type, mock_axis)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_index_out_of_range(self, mocker, mock_hou_exceptions):
+    def test_index_out_of_range(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -514,7 +514,7 @@ class Test_sort_geometry_along_axis(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_invalid_type(self, mocker, mock_hou_exceptions):
+    def test_invalid_type(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -528,7 +528,7 @@ class Test_sort_geometry_along_axis(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_points(self, mocker, mock_hou_exceptions):
+    def test_points(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -549,7 +549,7 @@ class Test_sort_geometry_along_axis(object):
 
         mock_sort.assert_called_with(mock_geometry, mock_get_owner.return_value, index)
 
-    def test_prims(self, mocker, mock_hou_exceptions):
+    def test_prims(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -574,7 +574,7 @@ class Test_sort_geometry_along_axis(object):
 class Test_sort_geometry_by_values(object):
     """Test ht.inline.api.sort_geometry_by_values."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -583,12 +583,12 @@ class Test_sort_geometry_by_values(object):
         mock_geometry_type = mocker.MagicMock(spec=hou.geometryType)
         mock_values = mocker.MagicMock(spec=list)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.sort_geometry_by_values(mock_geometry, mock_geometry_type, mock_values)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_points_mismatch(self, mocker, mock_hou_exceptions):
+    def test_points_mismatch(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -599,14 +599,14 @@ class Test_sort_geometry_by_values(object):
 
         mock_values = mocker.MagicMock(spec=list)
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.sort_geometry_by_values(mock_geometry, geometry_type, mock_values)
 
         mock_read_only.assert_called_with(mock_geometry)
 
         mock_num_points.assert_called_with(mock_geometry)
 
-    def test_points(self, mocker, mock_hou_exceptions):
+    def test_points(self, mocker, fix_hou_exceptions):
         num_pt = 3
 
         mock_read_only = mocker.patch(
@@ -640,7 +640,7 @@ class Test_sort_geometry_by_values(object):
             mock_geometry, mock_get_owner.return_value, mock_build.return_value
         )
 
-    def test_prims_mismatch(self, mocker, mock_hou_exceptions):
+    def test_prims_mismatch(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -651,14 +651,14 @@ class Test_sort_geometry_by_values(object):
 
         mock_values = mocker.MagicMock(spec=list)
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.sort_geometry_by_values(mock_geometry, geometry_type, mock_values)
 
         mock_read_only.assert_called_with(mock_geometry)
 
         mock_num_prims.assert_called_with(mock_geometry)
 
-    def test_prims(self, mocker, mock_hou_exceptions):
+    def test_prims(self, mocker, fix_hou_exceptions):
         num_pr = 3
 
         mock_read_only = mocker.patch(
@@ -691,7 +691,7 @@ class Test_sort_geometry_by_values(object):
             mock_geometry, mock_get_owner.return_value, mock_build.return_value
         )
 
-    def test_invalid(self, mocker, mock_hou_exceptions):
+    def test_invalid(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -710,7 +710,7 @@ class Test_sort_geometry_by_values(object):
 class Test_sort_geometry_randomly(object):
     """Test ht.inline.api.sort_geometry_randomly."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -719,12 +719,12 @@ class Test_sort_geometry_randomly(object):
         geometry_type = mocker.MagicMock(spec=hou.geometryType)
         mock_seed = mocker.MagicMock(spec=int)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.sort_geometry_randomly(mock_geometry, geometry_type, mock_seed)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_invalid_seed_type(self, mocker, mock_hou_exceptions):
+    def test_invalid_seed_type(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -738,7 +738,7 @@ class Test_sort_geometry_randomly(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_invalid_geometry_type(self, mocker, mock_hou_exceptions):
+    def test_invalid_geometry_type(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -753,7 +753,7 @@ class Test_sort_geometry_randomly(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_points_int(self, mocker, mock_hou_exceptions):
+    def test_points_int(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -776,7 +776,7 @@ class Test_sort_geometry_randomly(object):
             mock_geometry, mock_get_owner.return_value, mock_seed
         )
 
-    def test_prims_float(self, mocker, mock_hou_exceptions):
+    def test_prims_float(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -803,7 +803,7 @@ class Test_sort_geometry_randomly(object):
 class Test_shift_geometry_elements(object):
     """Test ht.inline.api.shift_geometry_elements."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -812,12 +812,12 @@ class Test_shift_geometry_elements(object):
         geometry_type = mocker.MagicMock(spec=hou.geometryType)
         mock_offset = mocker.MagicMock(spec=int)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.shift_geometry_elements(mock_geometry, geometry_type, mock_offset)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_invalid_offset_type(self, mocker, mock_hou_exceptions):
+    def test_invalid_offset_type(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -831,7 +831,7 @@ class Test_shift_geometry_elements(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_invalid_geometry_type(self, mocker, mock_hou_exceptions):
+    def test_invalid_geometry_type(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -845,7 +845,7 @@ class Test_shift_geometry_elements(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_points(self, mocker, mock_hou_exceptions):
+    def test_points(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -868,7 +868,7 @@ class Test_shift_geometry_elements(object):
             mock_geometry, mock_get_owner.return_value, mock_offset
         )
 
-    def test_prims(self, mocker, mock_hou_exceptions):
+    def test_prims(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -895,7 +895,7 @@ class Test_shift_geometry_elements(object):
 class Test_reverse_sort_geometry(object):
     """Test ht.inline.api.reverse_sort_geometry."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -903,12 +903,12 @@ class Test_reverse_sort_geometry(object):
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         geometry_type = mocker.MagicMock(spec=hou.geometryType)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.reverse_sort_geometry(mock_geometry, geometry_type)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_invalid_geometry_type(self, mocker, mock_hou_exceptions):
+    def test_invalid_geometry_type(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -921,7 +921,7 @@ class Test_reverse_sort_geometry(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_points(self, mocker, mock_hou_exceptions):
+    def test_points(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -941,7 +941,7 @@ class Test_reverse_sort_geometry(object):
 
         mock_reverse.assert_called_with(mock_geometry, mock_get_owner.return_value)
 
-    def test_prims(self, mocker, mock_hou_exceptions):
+    def test_prims(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -965,7 +965,7 @@ class Test_reverse_sort_geometry(object):
 class Test_sort_geometry_by_proximity_to_position(object):
     """Test ht.inline.api.sort_geometry_by_proximity_to_position."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -974,14 +974,14 @@ class Test_sort_geometry_by_proximity_to_position(object):
         geometry_type = mocker.MagicMock(spec=hou.geometryType)
         mock_pos = mocker.MagicMock(spec=hou.Vector3)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.sort_geometry_by_proximity_to_position(
                 mock_geometry, geometry_type, mock_pos
             )
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_invalid_geometry_type(self, mocker, mock_hou_exceptions):
+    def test_invalid_geometry_type(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -997,7 +997,7 @@ class Test_sort_geometry_by_proximity_to_position(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_points(self, mocker, mock_hou_exceptions):
+    def test_points(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1024,7 +1024,7 @@ class Test_sort_geometry_by_proximity_to_position(object):
             mock_geometry, mock_get_owner.return_value, mock_pos
         )
 
-    def test_prims(self, mocker, mock_hou_exceptions):
+    def test_prims(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1055,19 +1055,19 @@ class Test_sort_geometry_by_proximity_to_position(object):
 class Test_sort_geometry_by_vertex_order(object):
     """Test ht.inline.api.sort_geometry_by_vertex_order."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.sort_geometry_by_vertex_order(mock_geometry)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_invalid_geometry_type(self, mocker, mock_hou_exceptions):
+    def test_invalid_geometry_type(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1084,7 +1084,7 @@ class Test_sort_geometry_by_vertex_order(object):
 class Test_sort_geometry_by_expression(object):
     """Test ht.inline.api.sort_geometry_by_expression."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -1093,14 +1093,14 @@ class Test_sort_geometry_by_expression(object):
         mock_geometry_type = mocker.MagicMock(spec=hou.geometryType.Points)
         mock_expression = mocker.MagicMock(spec=str)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.sort_geometry_by_expression(
                 mock_geometry, mock_geometry_type, mock_expression
             )
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_points(self, mocker, mock_hou_exceptions):
+    def test_points(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1137,7 +1137,7 @@ class Test_sort_geometry_by_expression(object):
             [mock_hscript.return_value, mock_hscript.return_value],
         )
 
-    def test_prims(self, mocker, mock_hou_exceptions):
+    def test_prims(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1174,7 +1174,7 @@ class Test_sort_geometry_by_expression(object):
             [mock_hscript.return_value, mock_hscript.return_value],
         )
 
-    def test_invalid_type(self, mocker, mock_hou_exceptions):
+    def test_invalid_type(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1199,7 +1199,7 @@ class Test_sort_geometry_by_expression(object):
 class Test_create_point_at_position(object):
     """Test ht.inline.api.create_point_at_position."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -1207,12 +1207,12 @@ class Test_create_point_at_position(object):
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_pos = mocker.MagicMock(spec=hou.Vector3)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.create_point_at_position(mock_geometry, mock_pos)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1235,7 +1235,7 @@ class Test_create_point_at_position(object):
 class Test_create_n_points(object):
     """Test ht.inline.api.create_n_points."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -1243,12 +1243,12 @@ class Test_create_n_points(object):
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_npoints = mocker.MagicMock(spec=int)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.create_n_points(mock_geometry, mock_npoints)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_n_0(self, mocker, mock_hou_exceptions):
+    def test_n_0(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1261,7 +1261,7 @@ class Test_create_n_points(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_n_negative(self, mocker, mock_hou_exceptions):
+    def test_n_negative(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1274,7 +1274,7 @@ class Test_create_n_points(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1301,7 +1301,7 @@ class Test_create_n_points(object):
 class Test_merge_point_group(object):
     """Test ht.inline.api.merge_point_group."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -1309,12 +1309,12 @@ class Test_merge_point_group(object):
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_group = mocker.MagicMock(spec=hou.PointGroup)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.merge_point_group(mock_geometry, mock_group)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_not_point_group(self, mocker, mock_hou_exceptions):
+    def test_not_point_group(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1327,7 +1327,7 @@ class Test_merge_point_group(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1349,7 +1349,7 @@ class Test_merge_point_group(object):
 class Test_merge_points(object):
     """Test ht.inline.api.merge_points."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -1357,12 +1357,12 @@ class Test_merge_points(object):
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_points = mocker.MagicMock(spec=list)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.merge_points(mock_geometry, mock_points)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1394,7 +1394,7 @@ class Test_merge_points(object):
 class Test_merge_prim_group(object):
     """Test ht.inline.api.merge_prim_group."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -1402,12 +1402,12 @@ class Test_merge_prim_group(object):
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_group = mocker.MagicMock(spec=hou.PrimGroup)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.merge_prim_group(mock_geometry, mock_group)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_not_prim_group(self, mocker, mock_hou_exceptions):
+    def test_not_prim_group(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1420,7 +1420,7 @@ class Test_merge_prim_group(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1442,7 +1442,7 @@ class Test_merge_prim_group(object):
 class Test_merge_prims(object):
     """Test ht.inline.api.merge_prims."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -1450,12 +1450,12 @@ class Test_merge_prims(object):
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_prims = mocker.MagicMock(spec=list)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.merge_prims(mock_geometry, mock_prims)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1488,7 +1488,7 @@ class Test_merge_prims(object):
 class Test_copy_attribute_values(object):
     """Test ht.inline.api.copy_attribute_values."""
 
-    def test_vertex_read_only(self, mocker, mock_hou_exceptions):
+    def test_vertex_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -1501,13 +1501,13 @@ class Test_copy_attribute_values(object):
         mock_target_geo = mocker.MagicMock(spec=hou.Geometry)
         mock_target.geometry.return_value = mock_target_geo
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.copy_attribute_values(mock_source, mock_attribs, mock_target)
 
         mock_target.linearNumber.assert_called()
         mock_read_only.assert_called_with(mock_target_geo)
 
-    def test_vertex(self, mocker, mock_hou_exceptions):
+    def test_vertex(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1583,7 +1583,7 @@ class Test_copy_attribute_values(object):
             len(mock_build.return_value),
         )
 
-    def test_point(self, mocker, mock_hou_exceptions):
+    def test_point(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1659,7 +1659,7 @@ class Test_copy_attribute_values(object):
             len(mock_build.return_value),
         )
 
-    def test_geometry(self, mocker, mock_hou_exceptions):
+    def test_geometry(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -1860,18 +1860,18 @@ class Test_string_table_indices(object):
 class Test_vertex_string_attrib_values(object):
     """Test ht.inline.api.vertex_string_attrib_values."""
 
-    def test_invalid_attribute(self, mocker, mock_hou_exceptions):
+    def test_invalid_attribute(self, mocker, fix_hou_exceptions):
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_geometry.findVertexAttrib.return_value = None
 
         mock_name = mocker.MagicMock(spec=str)
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.vertex_string_attrib_values(mock_geometry, mock_name)
 
         mock_geometry.findVertexAttrib.assert_called_with(mock_name)
 
-    def test_not_string(self, mocker, mock_hou_exceptions):
+    def test_not_string(self, mocker, fix_hou_exceptions):
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_name = mocker.MagicMock(spec=str)
 
@@ -1885,7 +1885,7 @@ class Test_vertex_string_attrib_values(object):
 
         mock_geometry.findVertexAttrib.assert_called_with(mock_name)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_get = mocker.patch("ht.inline.api._cpp_methods.vertexStringAttribValues")
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
@@ -1907,17 +1907,17 @@ class Test_vertex_string_attrib_values(object):
 class Test_set_vertex_string_attrib_values(object):
     """Test ht.inline.api.set_vertex_string_attrib_values."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_name = mocker.MagicMock(spec=str)
         mock_values = mocker.MagicMock(spec=list)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.set_vertex_string_attrib_values(mock_geometry, mock_name, mock_values)
 
-    def test_invalid_attribute(self, mocker, mock_hou_exceptions):
+    def test_invalid_attribute(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
@@ -1926,12 +1926,12 @@ class Test_set_vertex_string_attrib_values(object):
         mock_name = mocker.MagicMock(spec=str)
         mock_values = mocker.MagicMock(spec=list)
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.set_vertex_string_attrib_values(mock_geometry, mock_name, mock_values)
 
         mock_geometry.findVertexAttrib.assert_called_with(mock_name)
 
-    def test_not_string(self, mocker, mock_hou_exceptions):
+    def test_not_string(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
@@ -1948,7 +1948,7 @@ class Test_set_vertex_string_attrib_values(object):
 
         mock_geometry.findVertexAttrib.assert_called_with(mock_name)
 
-    def test_no_size_match(self, mocker, mock_hou_exceptions):
+    def test_no_size_match(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_num = mocker.patch("ht.inline.api.num_vertices")
 
@@ -1967,7 +1967,7 @@ class Test_set_vertex_string_attrib_values(object):
         mock_geometry.findVertexAttrib.assert_called_with(mock_name)
         mock_num.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_num = mocker.patch("ht.inline.api.num_vertices")
         mock_build = mocker.patch("ht.inline.utils.build_c_string_array")
@@ -2006,17 +2006,17 @@ class Test_set_vertex_string_attrib_values(object):
 class Test_set_shared_point_string_attrib(object):
     """Test ht.inline.api.set_shared_point_string_attrib."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_name = mocker.MagicMock(spec=str)
         mock_value = mocker.MagicMock(spec=str)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.set_shared_point_string_attrib(mock_geometry, mock_name, mock_value)
 
-    def test_invalid_attribute(self, mocker, mock_hou_exceptions):
+    def test_invalid_attribute(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
@@ -2030,7 +2030,7 @@ class Test_set_shared_point_string_attrib(object):
 
         mock_geometry.findPointAttrib.assert_called_with(mock_name)
 
-    def test_not_string(self, mocker, mock_hou_exceptions):
+    def test_not_string(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
@@ -2047,7 +2047,7 @@ class Test_set_shared_point_string_attrib(object):
 
         mock_geometry.findPointAttrib.assert_called_with(mock_name)
 
-    def test_default(self, mocker, mock_hou_exceptions):
+    def test_default(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
         mock_set = mocker.patch("ht.inline.api._cpp_methods.setSharedStringAttrib")
@@ -2070,7 +2070,7 @@ class Test_set_shared_point_string_attrib(object):
             mock_geometry, mock_owner.return_value, mock_name, mock_value, 0
         )
 
-    def test_group(self, mocker, mock_hou_exceptions):
+    def test_group(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
         mock_set = mocker.patch("ht.inline.api._cpp_methods.setSharedStringAttrib")
@@ -2104,17 +2104,17 @@ class Test_set_shared_point_string_attrib(object):
 class Test_set_shared_prim_string_attrib(object):
     """Test ht.inline.api.set_shared_prim_string_attrib."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_name = mocker.MagicMock(spec=str)
         mock_value = mocker.MagicMock(spec=str)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.set_shared_prim_string_attrib(mock_geometry, mock_name, mock_value)
 
-    def test_invalid_attribute(self, mocker, mock_hou_exceptions):
+    def test_invalid_attribute(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
@@ -2128,7 +2128,7 @@ class Test_set_shared_prim_string_attrib(object):
 
         mock_geometry.findPrimAttrib.assert_called_with(mock_name)
 
-    def test_not_string(self, mocker, mock_hou_exceptions):
+    def test_not_string(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
@@ -2145,7 +2145,7 @@ class Test_set_shared_prim_string_attrib(object):
 
         mock_geometry.findPrimAttrib.assert_called_with(mock_name)
 
-    def test_default(self, mocker, mock_hou_exceptions):
+    def test_default(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
         mock_set = mocker.patch("ht.inline.api._cpp_methods.setSharedStringAttrib")
@@ -2168,7 +2168,7 @@ class Test_set_shared_prim_string_attrib(object):
             mock_geometry, mock_owner.return_value, mock_name, mock_value, 0
         )
 
-    def test_group(self, mocker, mock_hou_exceptions):
+    def test_group(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
         mock_set = mocker.patch("ht.inline.api._cpp_methods.setSharedStringAttrib")
@@ -2270,7 +2270,7 @@ def test_shared_edges(mocker):
 class Test_insert_vertex(object):
     """Test ht.inline.api.insert_vertex."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -2283,12 +2283,12 @@ class Test_insert_vertex(object):
         mock_point = mocker.MagicMock(spec=hou.Point)
         mock_index = mocker.MagicMock(spec=int)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.insert_vertex(mock_face, mock_point, mock_index)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -2323,7 +2323,7 @@ class Test_insert_vertex(object):
 class Test_delete_vertex_from_face(object):
     """Test ht.inline.api.delete_vertex_from_face."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -2334,12 +2334,12 @@ class Test_delete_vertex_from_face(object):
 
         mock_index = mocker.MagicMock(spec=int)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.delete_vertex_from_face(mock_face, mock_index)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -2367,7 +2367,7 @@ class Test_delete_vertex_from_face(object):
 class Test_set_face_vertex_point(object):
     """Test ht.inline.api.set_face_vertex_point."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -2380,12 +2380,12 @@ class Test_set_face_vertex_point(object):
         mock_point = mocker.MagicMock(spec=hou.Point)
         mock_index = mocker.MagicMock(spec=int)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.set_face_vertex_point(mock_face, mock_point, mock_index)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -2468,7 +2468,7 @@ def test_primitive_volume(mocker):
 class Test_reverse_prim(object):
     """Test ht.inline.api.reverse_prim."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -2478,12 +2478,12 @@ class Test_reverse_prim(object):
         mock_prim = mocker.MagicMock(spec=hou.Prim)
         mock_prim.geometry.return_value = mock_geometry
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.reverse_prim(mock_prim)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -2504,7 +2504,7 @@ class Test_reverse_prim(object):
 class Test_make_primitive_points_unique(object):
     """Test ht.inline.api.make_primitive_points_unique."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -2513,12 +2513,12 @@ class Test_make_primitive_points_unique(object):
         mock_prim = mocker.MagicMock(spec=hou.Prim)
         mock_prim.geometry.return_value = mock_geometry
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.make_primitive_points_unique(mock_prim)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -2607,15 +2607,15 @@ def test_primitive_bounding_box(mocker):
 class Test_compute_point_normals(object):
     """Test ht.inline.api.compute_point_normals."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.compute_point_normals(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_compute = mocker.patch("ht.inline.api._cpp_methods.computePointNormals")
 
@@ -2629,15 +2629,15 @@ class Test_compute_point_normals(object):
 class Test_add_point_normal_attribute(object):
     """Test ht.inline.api.add_point_normal_attribute."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.add_point_normal_attribute(mock_geometry)
 
-    def test_failure(self, mocker, mock_hou_exceptions):
+    def test_failure(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_add = mocker.patch(
             "ht.inline.api._cpp_methods.addNormalAttribute", return_value=False
@@ -2645,12 +2645,12 @@ class Test_add_point_normal_attribute(object):
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.add_point_normal_attribute(mock_geometry)
 
         mock_add.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_add = mocker.patch(
             "ht.inline.api._cpp_methods.addNormalAttribute", return_value=True
@@ -2670,14 +2670,14 @@ class Test_add_point_normal_attribute(object):
 class Test_add_point_velocity_attribute(object):
     """Test ht.inline.api.add_point_velocity_attribute."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.add_point_velocity_attribute(mock_geometry)
 
-    def test_failure(self, mocker, mock_hou_exceptions):
+    def test_failure(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_add = mocker.patch(
             "ht.inline.api._cpp_methods.addVelocityAttribute", return_value=False
@@ -2685,12 +2685,12 @@ class Test_add_point_velocity_attribute(object):
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.add_point_velocity_attribute(mock_geometry)
 
         mock_add.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_add = mocker.patch(
             "ht.inline.api._cpp_methods.addVelocityAttribute", return_value=True
@@ -2710,16 +2710,16 @@ class Test_add_point_velocity_attribute(object):
 class Test_add_color_attribute(object):
     """Test ht.inline.api.add_color_attribute."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_attrib_type = mocker.MagicMock(spec=hou.attribType)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.add_color_attribute(mock_geometry, mock_attrib_type)
 
-    def test_global(self, mocker, mock_hou_exceptions):
+    def test_global(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
@@ -2727,7 +2727,7 @@ class Test_add_color_attribute(object):
         with pytest.raises(ValueError):
             api.add_color_attribute(mock_geometry, hou.attribType.Global)
 
-    def test_failure(self, mocker, mock_hou_exceptions):
+    def test_failure(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
         mock_add = mocker.patch(
@@ -2737,14 +2737,14 @@ class Test_add_color_attribute(object):
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_attrib_type = mocker.MagicMock(spec=hou.attribType)
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.add_color_attribute(mock_geometry, mock_attrib_type)
 
         mock_owner.assert_called_with(mock_attrib_type)
 
         mock_add.assert_called_with(mock_geometry, mock_owner.return_value)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
         mock_add = mocker.patch(
@@ -2769,15 +2769,15 @@ class Test_add_color_attribute(object):
 class Test_convex_polygons(object):
     """Test ht.inline.api.convex_polygons."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.convex_polygons(mock_geometry)
 
-    def test_default_arg(self, mocker, mock_hou_exceptions):
+    def test_default_arg(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_convex = mocker.patch("ht.inline.api._cpp_methods.convexPolygons")
 
@@ -2787,7 +2787,7 @@ class Test_convex_polygons(object):
 
         mock_convex.assert_called_with(mock_geometry, 3)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_convex = mocker.patch("ht.inline.api._cpp_methods.convexPolygons")
 
@@ -2802,17 +2802,17 @@ class Test_convex_polygons(object):
 class Test_clip_geometry(object):
     """Test ht.inline.api.clip_geometry."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_origin = mocker.MagicMock(spec=hou.Vector3)
         mock_normal = mocker.MagicMock(spec=hou.Vector3)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.clip_geometry(mock_geometry, mock_origin, mock_normal)
 
-    def test_group_below(self, mocker, mock_hou_exceptions):
+    def test_group_below(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_build = mocker.patch("ht.inline.api.hou.hmath.buildTranslate")
         mock_clip = mocker.patch("ht.inline.api._cpp_methods.clipGeometry")
@@ -2846,7 +2846,7 @@ class Test_clip_geometry(object):
             mock_group.name.return_value,
         )
 
-    def test_default_args(self, mocker, mock_hou_exceptions):
+    def test_default_args(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_build = mocker.patch("ht.inline.api.hou.hmath.buildTranslate")
         mock_clip = mocker.patch("ht.inline.api._cpp_methods.clipGeometry")
@@ -2873,16 +2873,16 @@ class Test_clip_geometry(object):
 class Test_destroy_empty_groups(object):
     """Test ht.inline.api.destroy_empty_groups."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
         mock_attrib_type = mocker.MagicMock(spec=hou.attribType)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.destroy_empty_groups(mock_geometry, mock_attrib_type)
 
-    def test_global(self, mocker, mock_hou_exceptions):
+    def test_global(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
@@ -2890,7 +2890,7 @@ class Test_destroy_empty_groups(object):
         with pytest.raises(ValueError):
             api.destroy_empty_groups(mock_geometry, hou.attribType.Global)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
         mock_destroy = mocker.patch("ht.inline.api._cpp_methods.destroyEmptyGroups")
@@ -2907,15 +2907,15 @@ class Test_destroy_empty_groups(object):
 class Test_destroy_unused_points(object):
     """Test ht.inline.api.destroy_unused_points."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.destroy_unused_points(mock_geometry)
 
-    def test_group(self, mocker, mock_hou_exceptions):
+    def test_group(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_destroy = mocker.patch("ht.inline.api._cpp_methods.destroyUnusedPoints")
 
@@ -2926,7 +2926,7 @@ class Test_destroy_unused_points(object):
 
         mock_destroy.assert_called_with(mock_geometry, mock_group.name.return_value)
 
-    def test_no_group(self, mocker, mock_hou_exceptions):
+    def test_no_group(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_destroy = mocker.patch("ht.inline.api._cpp_methods.destroyUnusedPoints")
 
@@ -2940,15 +2940,15 @@ class Test_destroy_unused_points(object):
 class Test_consolidate_points(object):
     """Test ht.inline.api.consolidate_points."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.consolidate_points(mock_geometry)
 
-    def test_group_distance(self, mocker, mock_hou_exceptions):
+    def test_group_distance(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_consolidate = mocker.patch("ht.inline.api._cpp_methods.consolidatePoints")
 
@@ -2962,7 +2962,7 @@ class Test_consolidate_points(object):
             mock_geometry, mock_distance, mock_group.name.return_value
         )
 
-    def test_no_group(self, mocker, mock_hou_exceptions):
+    def test_no_group(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_consolidate = mocker.patch("ht.inline.api._cpp_methods.consolidatePoints")
 
@@ -2976,15 +2976,15 @@ class Test_consolidate_points(object):
 class Test_unique_points(object):
     """Test ht.inline.api.unique_points."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.unique_points(mock_geometry)
 
-    def test_group(self, mocker, mock_hou_exceptions):
+    def test_group(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_unique = mocker.patch("ht.inline.api._cpp_methods.uniquePoints")
 
@@ -2995,7 +2995,7 @@ class Test_unique_points(object):
 
         mock_unique.assert_called_with(mock_geometry, mock_group.name.return_value)
 
-    def test_no_group(self, mocker, mock_hou_exceptions):
+    def test_no_group(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_unique = mocker.patch("ht.inline.api._cpp_methods.uniquePoints")
 
@@ -3009,7 +3009,7 @@ class Test_unique_points(object):
 class Test_rename_group(object):
     """Test ht.inline.api.rename_group."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
@@ -3019,10 +3019,10 @@ class Test_rename_group(object):
 
         mock_new_name = mocker.MagicMock(spec=str)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.rename_group(mock_group, mock_new_name)
 
-    def test_same_name(self, mocker, mock_hou_exceptions):
+    def test_same_name(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
@@ -3032,10 +3032,10 @@ class Test_rename_group(object):
 
         mock_new_name = mock_group.name.return_value
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.rename_group(mock_group, mock_new_name)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_get_type = mocker.patch("ht.inline.api.utils.get_group_type")
         mock_rename = mocker.patch(
@@ -3067,7 +3067,7 @@ class Test_rename_group(object):
             mock_geometry, mock_get_type.return_value, mock_new_name
         )
 
-    def test_failure(self, mocker, mock_hou_exceptions):
+    def test_failure(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_get_type = mocker.patch("ht.inline.api.utils.get_group_type")
         mock_rename = mocker.patch(
@@ -3142,7 +3142,7 @@ def test_group_size(mocker):
 class Test_toggle_point_in_group(object):
     """Test ht.inline.api.toggle_point_in_group."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -3154,12 +3154,12 @@ class Test_toggle_point_in_group(object):
 
         mock_point = mocker.MagicMock(spec=hou.Point)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.toggle_point_in_group(mock_group, mock_point)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3190,7 +3190,7 @@ class Test_toggle_point_in_group(object):
 class Test_toggle_prim_in_group(object):
     """Test ht.inline.api.toggle_point_in_group."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -3202,12 +3202,12 @@ class Test_toggle_prim_in_group(object):
 
         mock_prim = mocker.MagicMock(spec=hou.Prim)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.toggle_prim_in_group(mock_group, mock_prim)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3238,7 +3238,7 @@ class Test_toggle_prim_in_group(object):
 class Test_toggle_group_entries(object):
     """Test ht.inline.api.toggle_group_entries."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -3248,12 +3248,12 @@ class Test_toggle_group_entries(object):
         mock_group = mocker.MagicMock(spec=hou.PointGroup)
         mock_group.geometry.return_value = mock_geometry
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.toggle_group_entries(mock_group)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3279,7 +3279,7 @@ class Test_toggle_group_entries(object):
 class Test_copy_group(object):
     """Test ht.inline.api.copy_group."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -3291,12 +3291,12 @@ class Test_copy_group(object):
 
         mock_new_name = mocker.MagicMock(spec=str)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.copy_group(mock_group, mock_new_name)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_same_name(self, mocker, mock_hou_exceptions):
+    def test_same_name(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3308,12 +3308,12 @@ class Test_copy_group(object):
 
         mock_new_name = mock_group.name.return_value
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.copy_group(mock_group, mock_new_name)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_existing(self, mocker, mock_hou_exceptions):
+    def test_existing(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3327,7 +3327,7 @@ class Test_copy_group(object):
 
         mock_new_name = mocker.MagicMock(spec=str)
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.copy_group(mock_group, mock_new_name)
 
         mock_read_only.assert_called_with(mock_geometry)
@@ -3338,7 +3338,7 @@ class Test_copy_group(object):
             mock_geometry, mock_get_type.return_value, mock_new_name
         )
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3469,7 +3469,7 @@ class Test_groups_share_elements(object):
 class Test_convert_prim_to_point_group(object):
     """Test ht.inline.api.convert_prim_to_point_group."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -3479,12 +3479,12 @@ class Test_convert_prim_to_point_group(object):
         mock_group = mocker.MagicMock(spec=hou.PrimGroup)
         mock_group.geometry.return_value = mock_geometry
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.convert_prim_to_point_group(mock_group)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_name_already_exists(self, mocker, mock_hou_exceptions):
+    def test_name_already_exists(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3494,14 +3494,14 @@ class Test_convert_prim_to_point_group(object):
         mock_group = mocker.MagicMock(spec=hou.PrimGroup)
         mock_group.geometry.return_value = mock_geometry
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.convert_prim_to_point_group(mock_group)
 
         mock_read_only.assert_called_with(mock_geometry)
 
         mock_geometry.findPointGroup.assert_called_with(mock_group.name.return_value)
 
-    def test_same_name(self, mocker, mock_hou_exceptions):
+    def test_same_name(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3534,7 +3534,7 @@ class Test_convert_prim_to_point_group(object):
             True,
         )
 
-    def test_new_name_no_destroy(self, mocker, mock_hou_exceptions):
+    def test_new_name_no_destroy(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3567,7 +3567,7 @@ class Test_convert_prim_to_point_group(object):
 class Test_convert_point_to_prim_group(object):
     """Test ht.inline.api.convert_point_to_prim_group."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -3577,12 +3577,12 @@ class Test_convert_point_to_prim_group(object):
         mock_group = mocker.MagicMock(spec=hou.PointGroup)
         mock_group.geometry.return_value = mock_geometry
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.convert_point_to_prim_group(mock_group)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_name_already_exists(self, mocker, mock_hou_exceptions):
+    def test_name_already_exists(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3592,14 +3592,14 @@ class Test_convert_point_to_prim_group(object):
         mock_group = mocker.MagicMock(spec=hou.PointGroup)
         mock_group.geometry.return_value = mock_geometry
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.convert_point_to_prim_group(mock_group)
 
         mock_read_only.assert_called_with(mock_geometry)
 
         mock_geometry.findPrimGroup.assert_called_with(mock_group.name.return_value)
 
-    def test_same_name(self, mocker, mock_hou_exceptions):
+    def test_same_name(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3632,7 +3632,7 @@ class Test_convert_point_to_prim_group(object):
             True,
         )
 
-    def test_new_name_no_destroy(self, mocker, mock_hou_exceptions):
+    def test_new_name_no_destroy(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3678,7 +3678,7 @@ def test_geometry_has_ungrouped_points(mocker):
 class Test_group_ungrouped_points(object):
     """Test ht.inline.api.group_ungrouped_points."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -3687,12 +3687,12 @@ class Test_group_ungrouped_points(object):
 
         mock_group_name = mocker.MagicMock(spec=str)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.group_ungrouped_points(mock_geometry, mock_group_name)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_empty_name(self, mocker, mock_hou_exceptions):
+    def test_empty_name(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3704,7 +3704,7 @@ class Test_group_ungrouped_points(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_group_exists(self, mocker, mock_hou_exceptions):
+    def test_group_exists(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3714,14 +3714,14 @@ class Test_group_ungrouped_points(object):
         mock_group_name = mocker.MagicMock(spec=str)
         mock_group_name.__len__.return_value = 1
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.group_ungrouped_points(mock_geometry, mock_group_name)
 
         mock_read_only.assert_called_with(mock_geometry)
 
         mock_geometry.findPointGroup.assert_called_with(mock_group_name)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3764,7 +3764,7 @@ def test_geometry_has_ungrouped_prims(mocker):
 class Test_group_ungrouped_prims(object):
     """Test ht.inline.api.group_ungrouped_prims."""
 
-    def test_read_only(self, mocker, mock_hou_exceptions):
+    def test_read_only(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=True
         )
@@ -3773,12 +3773,12 @@ class Test_group_ungrouped_prims(object):
 
         mock_group_name = mocker.MagicMock(spec=str)
 
-        with pytest.raises(mock_hou_exceptions.GeometryPermissionError):
+        with pytest.raises(hou.GeometryPermissionError):
             api.group_ungrouped_prims(mock_geometry, mock_group_name)
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_empty_name(self, mocker, mock_hou_exceptions):
+    def test_empty_name(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3790,7 +3790,7 @@ class Test_group_ungrouped_prims(object):
 
         mock_read_only.assert_called_with(mock_geometry)
 
-    def test_group_exists(self, mocker, mock_hou_exceptions):
+    def test_group_exists(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -3800,14 +3800,14 @@ class Test_group_ungrouped_prims(object):
         mock_group_name = mocker.MagicMock(spec=str)
         mock_group_name.__len__.return_value = 1
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.group_ungrouped_prims(mock_geometry, mock_group_name)
 
         mock_read_only.assert_called_with(mock_geometry)
 
         mock_geometry.findPrimGroup.assert_called_with(mock_group_name)
 
-    def test(self, mocker, mock_hou_exceptions):
+    def test(self, mocker, fix_hou_exceptions):
         mock_read_only = mocker.patch(
             "ht.inline.api.is_geometry_read_only", return_value=False
         )
@@ -5293,7 +5293,7 @@ def test_build_lookat_matrix(mocker):
 class Test_get_oriented_point_transform(object):
     """Test ht.inline.api.get_oriented_point_transform."""
 
-    def test_face(self, mocker, mock_hou_exceptions):
+    def test_face(self, mocker, fix_hou_exceptions):
         """Test where the bound prim is a hou.Face"""
         mock_connected = mocker.patch("ht.inline.api.connected_prims")
         mocker.patch("ht.inline.api._cpp_methods.point_instance_transform")
@@ -5305,12 +5305,12 @@ class Test_get_oriented_point_transform(object):
 
         mock_point = mocker.MagicMock(spec=hou.Point)
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.get_oriented_point_transform(mock_point)
 
         mock_connected.assert_called_with(mock_point)
 
-    def test_surface(self, mocker, mock_hou_exceptions):
+    def test_surface(self, mocker, fix_hou_exceptions):
         """Test where the bound prim is a hou.Surface"""
         mock_connected = mocker.patch("ht.inline.api.connected_prims")
         mocker.patch("ht.inline.api._cpp_methods.point_instance_transform")
@@ -5322,12 +5322,12 @@ class Test_get_oriented_point_transform(object):
 
         mock_point = mocker.MagicMock(spec=hou.Point)
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             api.get_oriented_point_transform(mock_point)
 
         mock_connected.assert_called_with(mock_point)
 
-    def test_valid_prim(self, mocker, mock_hou_exceptions):
+    def test_valid_prim(self, mocker, fix_hou_exceptions):
         """Test where the bound prim is a not a hou.Face of hou.Surface"""
         mock_connected = mocker.patch("ht.inline.api.connected_prims")
         mocker.patch("ht.inline.api._cpp_methods.point_instance_transform")
@@ -5350,7 +5350,7 @@ class Test_get_oriented_point_transform(object):
 
         mock_connected.assert_called_with(mock_point)
 
-    def test_unattached_point(self, mocker, mock_hou_exceptions):
+    def test_unattached_point(self, mocker, fix_hou_exceptions):
         """Test where the point is not attached."""
         mock_connected = mocker.patch("ht.inline.api.connected_prims", return_value=())
         mock_point_instance_transform = mocker.patch(

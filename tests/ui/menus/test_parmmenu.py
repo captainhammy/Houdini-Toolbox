@@ -15,7 +15,7 @@ import hou
 
 
 # =============================================================================
-# CLASSES
+# TESTS
 # =============================================================================
 
 
@@ -425,7 +425,7 @@ def test_convert_relative_to_absolute_path(mocker):
 class Test_promote_parameter_to_node(object):
     """Test ht.ui.menus.parmmenu.promote_parameter_to_node."""
 
-    def test_target_is_source(self, mocker, mock_hou_ui, mock_hou_exceptions):
+    def test_target_is_source(self, mocker, mock_hou_ui, fix_hou_exceptions):
         """Test when trying to promote to the node containing the parms to promote."""
         mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
 
@@ -442,7 +442,7 @@ class Test_promote_parameter_to_node(object):
 
         scriptargs = {"parms": (mock_parm1,)}
 
-        with pytest.raises(mock_hou_exceptions.OperationFailed):
+        with pytest.raises(hou.OperationFailed):
             ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
         mock_hou_ui.selectNode.assert_called_with(
@@ -450,7 +450,7 @@ class Test_promote_parameter_to_node(object):
         )
         mock_hou_node.assert_called_with(mock_hou_ui.selectNode.return_value)
 
-    def test_parm_exists_no_set(self, mocker, mock_hou_ui, mock_hou_exceptions):
+    def test_parm_exists_no_set(self, mocker, mock_hou_ui, fix_hou_exceptions):
         """Test when the target exists and we don't want to set the target value to the
         current value before promoting.
 
@@ -494,7 +494,7 @@ class Test_promote_parameter_to_node(object):
 
         mock_parm1.set.assert_called_with(mock_target_parm1)
 
-    def test_parm_exists_set_value(self, mocker, mock_hou_ui, mock_hou_exceptions):
+    def test_parm_exists_set_value(self, mocker, mock_hou_ui, fix_hou_exceptions):
         """Test when the target exists and we want to set the target value to the current
         value before promoting.
 
@@ -538,7 +538,7 @@ class Test_promote_parameter_to_node(object):
 
         mock_parm1.set.assert_called_with(mock_target_parm1)
 
-    def test_parm_exists_cancel(self, mocker, mock_hou_ui, mock_hou_exceptions):
+    def test_parm_exists_cancel(self, mocker, mock_hou_ui, fix_hou_exceptions):
         """Test when the target exists and we want to cancel."""
         mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
 
@@ -577,7 +577,7 @@ class Test_promote_parameter_to_node(object):
         mock_target_node.parm.assert_not_called()
 
     def test_no_existing_single_component(
-        self, mocker, mock_hou_ui, mock_hou_exceptions
+        self, mocker, mock_hou_ui, fix_hou_exceptions
     ):
         """Test when there is no existing parm and we want to promote a single parm from the tuple."""
         mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
@@ -630,7 +630,7 @@ class Test_promote_parameter_to_node(object):
         mock_parm1.set.assert_called_with(mock_target_parm1)
 
     def test_no_existing_multiple_components(
-        self, mocker, mock_hou_ui, mock_hou_exceptions
+        self, mocker, mock_hou_ui, fix_hou_exceptions
     ):
         """Test when there is no existing parm and we want to promote a full tuple."""
         mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
@@ -702,7 +702,7 @@ class Test_promote_parameter_to_node(object):
 
         mock_parm1.set.assert_called_with(mock_target_parm1)
 
-    def test_no_selection(self, mocker, mock_hou_ui, mock_hou_exceptions):
+    def test_no_selection(self, mocker, mock_hou_ui, fix_hou_exceptions):
         """Test when no target node is selected."""
         mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
 

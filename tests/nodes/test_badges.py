@@ -16,14 +16,14 @@ import hou
 
 
 # =============================================================================
-# CLASSES
+# TESTS
 # =============================================================================
 
 
 class Test_clear_generic_image_badge(object):
     """Test ht.nodes.badges.clear_generic_image_badge."""
 
-    def test_no_data(self, mocker, mock_hou_exceptions):
+    def test_no_data(self, mocker, fix_hou_exceptions):
         mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
             "ht.nodes.badges._ht_generic_image_badge.get_generic_image_key"
@@ -31,7 +31,7 @@ class Test_clear_generic_image_badge(object):
 
         mock_node = mocker.MagicMock(spec=hou.Node)
 
-        mock_node.destroyUserData.side_effect = mock_hou_exceptions.OperationFailed
+        mock_node.destroyUserData.side_effect = hou.OperationFailed
 
         badges.clear_generic_image_badge(mock_node)
 
@@ -57,7 +57,7 @@ class Test_clear_generic_image_badge(object):
 class Test_clear_generic_text_badge(object):
     """Test ht.nodes.badges.clear_generic_text_badge."""
 
-    def test_no_data(self, mocker, mock_hou_exceptions):
+    def test_no_data(self, mocker, fix_hou_exceptions):
         mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
             "ht.nodes.badges._ht_generic_text_badge.get_generic_text_key"
@@ -68,7 +68,7 @@ class Test_clear_generic_text_badge(object):
 
         mock_node = mocker.MagicMock(spec=hou.Node)
 
-        mock_node.destroyUserData.side_effect = mock_hou_exceptions.OperationFailed
+        mock_node.destroyUserData.side_effect = hou.OperationFailed
 
         badges.clear_generic_text_badge(mock_node)
 
@@ -101,7 +101,7 @@ class Test_clear_generic_text_badge(object):
 class Test_clear_generic_text_badge_color(object):
     """Test ht.nodes.badges.clear_generic_text_badge_color."""
 
-    def test_no_data(self, mocker, mock_hou_exceptions):
+    def test_no_data(self, mocker, fix_hou_exceptions):
         mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
             "ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key"
@@ -109,7 +109,7 @@ class Test_clear_generic_text_badge_color(object):
 
         mock_node = mocker.MagicMock(spec=hou.Node)
 
-        mock_node.destroyUserData.side_effect = mock_hou_exceptions.OperationFailed
+        mock_node.destroyUserData.side_effect = hou.OperationFailed
 
         badges.clear_generic_text_badge_color(mock_node)
 
