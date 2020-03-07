@@ -6,7 +6,7 @@
 
 # Houdini Toolbox Imports
 from ht.ui.paste import dialogs, utils
-from ht.ui.paste.sources import HomeToolDirSource, SourceManager
+from ht.ui.paste.sources import HomeDirSource, SourceManager
 
 # Houdini Imports
 import hou
@@ -146,4 +146,4 @@ def paste_items_to_graph(eventtype, editor, uievent):
 MANAGER = SourceManager()
 
 # Add any relevant sources.
-MANAGER.sources.append(HomeToolDirSource())
+MANAGER.sources.append(HomeDirSource())

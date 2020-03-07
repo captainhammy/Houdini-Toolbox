@@ -10,7 +10,7 @@ import datetime
 import getpass
 import json
 import os
-from pwd import getpwuid
+import platform
 
 # Third Party Imports
 import six
@@ -21,6 +21,15 @@ import ht.ui.paste.helpers
 
 # Houdini Imports
 import hou
+
+# Handle differences between platforms.
+if platform.system() == "Windows":
+    _CONTEXT_SEP = "@"
+    getpwuid = None
+
+else:
+    _CONTEXT_SEP = ":"
+    from pwd import getpwuid
 
 
 # ==============================================================================
@@ -126,15 +135,15 @@ class CopyPasteSource(object):
         pass
 
 
-class HomeToolDirSource(CopyPasteSource):
-    """Copy/Paste .cpio items from ~/tooldev/copypaste."""
+class HomeDirSource(CopyPasteSource):
+    """Copy/Paste .cpio items from ~/copypaste."""
 
     _extension = ".cpio"
 
-    _base_path = os.path.join(os.path.expanduser("~"), "tooldev", "copypaste")
+    _base_path = os.path.join(os.path.expanduser("~"), "copypaste")
 
     def __init__(self):
-        super(HomeToolDirSource, self).__init__()
+        super(HomeDirSource, self).__init__()
 
         self._init_sources()
 
@@ -222,7 +231,7 @@ class HomeToolDirSource(CopyPasteSource):
     @property
     def display_name(self):
         """str: A display name for this source."""
-        return "~/tooldev"
+        return "$HOME"
 
     @property
     def icon(self):
@@ -263,7 +272,7 @@ class HomeToolDirSource(CopyPasteSource):
 
         # The file name consists of the user name and the description, separated
         # by a :.
-        file_name = "{}:{}{}".format(context, clean_name, self._extension)
+        file_name = "{}{}{}{}".format(context, _CONTEXT_SEP, clean_name, self._extension)
 
         file_path = os.path.join(self._base_path, file_name)
 
@@ -467,7 +476,7 @@ class CPIOContextCopyPasteItemFile(CopyPasteItemSource):
         """
         file_name = os.path.splitext(os.path.basename(file_path))[0]
 
-        context, name = file_name.split(":")
+        context, name = file_name.split(_CONTEXT_SEP)
 
         name = cls.unpack_name(name)
 
@@ -543,7 +552,12 @@ class CPIOContextCopyPasteItemFile(CopyPasteItemSource):
         else:
             stat_data = os.stat(self.file_path)
 
-            self._author = getpwuid(stat_data.st_uid).pw_name
+            if getpwuid is not None:
+                self._author = getpwuid(stat_data.st_uid).pw_name
+
+            else:
+                self._author = "unknown"
+
             self._date = datetime.datetime.fromtimestamp(stat_data.st_mtime)
 
     # -------------------------------------------------------------------------
