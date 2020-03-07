@@ -6,7 +6,6 @@
 
 # Standard Library Imports
 import argparse
-import imp
 
 # Third Party Imports
 import pytest
@@ -14,10 +13,6 @@ import pytest
 # Houdini Toolbox Imports
 from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.operations import operation
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(operation)
 
 
 # =============================================================================

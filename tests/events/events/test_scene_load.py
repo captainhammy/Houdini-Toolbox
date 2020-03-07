@@ -4,18 +4,10 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-import imp
-
 # Houdini Toolbox Imports
 import ht.events.events.scene_load
-
 from ht.events.item import HoudiniEventItem
 from ht.events.types import SceneEvents
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(ht.events.events.scene_load)
 
 
 # =============================================================================
@@ -27,6 +19,7 @@ class Test_SceneLoadEvent(object):
     """Test ht.events.events.scene_load.SceneLoadEvent class."""
 
     def test___init__(self):
+        """Test object initialization."""
         event = ht.events.events.scene_load.SceneLoadEvent()
 
         expected_map = {
@@ -38,6 +31,7 @@ class Test_SceneLoadEvent(object):
     # Methods
 
     def test_clear_session_settings(self, mocker):
+        """Test clearing session settings."""
         mocker.patch.object(
             ht.events.events.scene_load.SceneLoadEvent, "__init__", lambda x: None
         )

@@ -4,9 +4,6 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-import imp
-
 # Third Party Imports
 import pytest
 
@@ -15,10 +12,6 @@ from ht.nodes.styles import styles
 
 # Houdini Imports
 import hou
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(styles)
 
 
 # =============================================================================

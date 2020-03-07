@@ -407,8 +407,8 @@ def _scale_resolution(resolution, scale):
 
     """
     return [
-        int(round(value * scale)) for value in resolution
-    ]  # pylint: disable=round-builtin
+        int(round(value * scale)) for value in resolution  # pylint: disable=round-builtin
+    ]
 
 
 def _scale_samples(samples, scale):

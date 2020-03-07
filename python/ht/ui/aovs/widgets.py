@@ -1621,10 +1621,7 @@ class InfoTableView(QtWidgets.QTableView):
         result = self.model().data(index)
 
         if result is not None:
-            clipboard = (
-                QtGui.QApplication.clipboard()
-                # pylint: disable=c-extension-no-member
-            )
+            clipboard = QtWidgets.QApplication.clipboard()
             clipboard.setText(result)
 
     def contextMenuEvent(self, event):

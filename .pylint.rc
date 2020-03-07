@@ -1,7 +1,7 @@
 
 [MASTER]
 
-extension-pkg-whitelist=PySide2,PySide2.QtGui
+extension-pkg-whitelist=PySide2
 
 ignore=CVS
 ignore-patterns=icons.py

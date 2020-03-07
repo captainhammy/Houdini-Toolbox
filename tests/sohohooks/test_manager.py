@@ -4,18 +4,11 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-import imp
-
 # Third Party Imports
 import pytest
 
 # Houdini Toolbox Imports
 from ht.sohohooks import manager
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(manager)
 
 
 # =============================================================================

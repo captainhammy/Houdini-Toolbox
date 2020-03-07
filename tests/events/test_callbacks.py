@@ -4,15 +4,8 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-import imp
-
 # Houdini Toolbox Imports
 from ht.events import SceneEvents, callbacks
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(callbacks)
 
 
 # =============================================================================

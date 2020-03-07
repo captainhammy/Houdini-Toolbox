@@ -6,17 +6,12 @@
 
 # Standard Library Imports
 from collections import OrderedDict
-import imp
 
 # Third Party Imports
 import pytest
 
 # Houdini Toolbox Imports
 import ht.events.stats
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(ht.events.stats)
 
 
 # =============================================================================
@@ -80,6 +75,9 @@ class Test__StatsMeta(object):
     """Test ht.events.stats._StatsMeta metaclass."""
 
     def test_new(self, init_tester, mocker):
+        # Clear instances since there might be some already from other tests.
+        ht.events.stats._StatsMeta._instances.clear()
+
         mock_name = mocker.MagicMock(spec=str)
         inst = init_tester(mock_name)
 

@@ -4,9 +4,6 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-import imp
-
 # Third Party Imports
 import pytest
 
@@ -18,10 +15,6 @@ from ht.events.types import RopEvents
 
 # Houdini Imports
 import hou
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(ht.events.events.rop_render)
 
 
 # =============================================================================

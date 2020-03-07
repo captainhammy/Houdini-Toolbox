@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-import imp
 import os
 
 # Third Party Imports
@@ -17,10 +16,6 @@ from ht.nodes.styles import manager
 
 # Houdini Imports
 import hou
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(manager)
 
 
 # =============================================================================
@@ -185,8 +180,13 @@ class Test_StyleManager(object):
 
         constants = {}
 
+        mocker.patch.object(
+            manager.StyleManager,
+            "constants",
+            new_callable=mocker.PropertyMock(return_value=constants),
+        )
+
         mgr = init_manager()
-        type(mgr).constants = mocker.PropertyMock(return_value=constants)
 
         mgr._build_constants_from_data(all_data)
 
@@ -1354,9 +1354,7 @@ class Test__find_files(object):
 
     def test_no_dirs(self, mocker, fix_hou_exceptions):
         """Test finding files where there are no config/styles folders in the HOUDINI_PATH."""
-        mocker.patch(
-            "hou.findDirectories", side_effect=hou.OperationFailed
-        )
+        mocker.patch("hou.findDirectories", side_effect=hou.OperationFailed)
         mock_glob = mocker.patch("ht.nodes.styles.manager.glob.glob")
 
         result = manager._find_files()

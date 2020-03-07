@@ -4,9 +4,6 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-import imp
-
 # Third Party Imports
 import pytest
 
@@ -15,10 +12,6 @@ from ht.events.item import HoudiniEventItem
 from ht.events.event import HoudiniEvent
 from ht.events.group import HoudiniEventGroup
 import ht.events.manager
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(ht.events.manager)
 
 
 # =============================================================================

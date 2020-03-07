@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pythonPanelDocument>
   <interface name="aov_manager" label="AOV Manager" icon="PANETYPES_viewer_cop" help_url="">
-    <script><![CDATA[import ht.ui.aovs.widgets
-
+    <script><![CDATA[
 manager_widget = None
 
 def onCreateInterface():
+    import ht.ui.aovs.widgets
     global manager_widget  # pylint: disable=global-statement
     manager_widget = ht.ui.aovs.widgets.AOVManagerWidget()
 

@@ -443,6 +443,8 @@ class HoudiniBuildManager(object):
 
         :param build_numbers: A list of build numbers to process.
         :type build_numbers: list(str)
+        :param product: The specific product name.
+        :type product: str
         :return:
 
         """

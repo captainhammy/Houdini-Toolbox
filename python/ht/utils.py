@@ -19,40 +19,10 @@ _logger = logging.getLogger(__name__)
 
 
 @contextlib.contextmanager
-def timer(label=None):
-    """Context manager for outputting timing information.
-
-    >>> with ht.utils.timer("sleeping"):
-    ...     time.sleep(2)
-    ...
-    'sleeping - 2.00206804276'
-
-    :param label: Optional label for output.
-    :type label: str
-    :return:
-
-
-    """
-    # Start time.
-    t = time.time()
-
-    try:
-        yield
-
-    finally:
-        duration = time.time() - t
-
-        if label is not None:
-            _logger.info("%s - %s", label, duration)
-        else:
-            _logger.info(duration)
-
-
-@contextlib.contextmanager
 def restore_update_mode(update_mode):
     """Set a UI update mode and restore the current mode on exit.
 
-    >>> with ht.utils.restore_update_mode(hou.updateMode.Manual):
+    >>> with restore_update_mode(hou.updateMode.Manual):
     ...     # do some stuff while it is in manual mode
     ...
 
@@ -77,3 +47,34 @@ def restore_update_mode(update_mode):
     finally:
         # Restore the update mode.
         hou.ui.setUpdateMode(current)
+
+
+@contextlib.contextmanager
+def timer(label=None):
+    """Context manager for outputting timing information.
+
+    >>> with timer("sleeping"):
+    ...     time.sleep(2)
+    ...
+    'sleeping - 2.00206804276'
+
+    :param label: Optional label for output.
+    :type label: str
+    :return:
+
+
+    """
+    # Start time.
+    t = time.time()
+
+    try:
+        yield
+
+    finally:
+        duration = time.time() - t
+
+        if label is not None:
+            _logger.info("%s - %s", label, duration)
+
+        else:
+            _logger.info(duration)

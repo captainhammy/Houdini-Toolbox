@@ -14,9 +14,6 @@ import pytest
 from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.operations import setproperties
 
-# Houdini Imports
-import hou
-
 
 # =============================================================================
 # FIXTURES
@@ -461,9 +458,7 @@ class Test_MaskedPropertySetter(object):
         op.set_property()
 
         mock_get.assert_called_with(mock_mask_name.return_value)
-        mock_match.assert_called_with(
-            mock_mask.return_value, mock_get.return_value
-        )
+        mock_match.assert_called_with(mock_mask.return_value, mock_get.return_value)
 
         mock_super_set.assert_not_called()
 
@@ -488,9 +483,7 @@ class Test_MaskedPropertySetter(object):
         op.set_property()
 
         mock_get.assert_called_with(mock_mask_name.return_value)
-        mock_match.assert_called_with(
-            mock_mask.return_value, mock_get.return_value
-        )
+        mock_match.assert_called_with(mock_mask.return_value, mock_get.return_value)
 
         mock_super_set.assert_called()
 

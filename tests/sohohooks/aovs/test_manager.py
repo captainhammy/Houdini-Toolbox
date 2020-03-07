@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-import imp
 import os
 
 # Third Party Imports
@@ -17,10 +16,6 @@ from ht.sohohooks.aovs import constants as consts
 
 # Houdini Imports
 import hou
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(manager)
 
 
 # =============================================================================
@@ -59,6 +54,7 @@ class Test_AOVManager(object):
     """Test ht.sohohooks.aovs.manager.AOVManager object."""
 
     def test___init__(self, mocker):
+        """Test object initialization."""
         mock_init = mocker.patch(
             "ht.sohohooks.aovs.manager.AOVManager._init_from_files"
         )

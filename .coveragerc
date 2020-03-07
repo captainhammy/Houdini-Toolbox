@@ -2,42 +2,17 @@
 [run]
 branch = True
 source =
-    ht.events.callbacks
-    ht.events.event
-    ht.events.group
-    ht.events.item
-    ht.events.manager
-    ht.events.stats
-    ht.events.events.rop_render
-    ht.events.events.scene_load
-    ht.inline.api
-    ht.inline.utils
-    ht.logging.adapters
-    ht.logging.shellio
-    ht.nodes.badges
-    ht.nodes.styles.event
-    ht.nodes.styles.styles
-    ht.nodes.styles.manager
-    ht.pyfilter.manager
-    ht.pyfilter.property
-    ht.pyfilter.utils
-    ht.pyfilter.operations.deepimage
-    ht.pyfilter.operations.ipoverrides
-    ht.pyfilter.operations.logoutput
-    ht.pyfilter.operations.operation
-    ht.pyfilter.operations.primaryimage
-    ht.pyfilter.operations.setproperties
-    ht.pyfilter.operations.settilecallback
-    ht.pyfilter.operations.zdepth
-    ht.sohohooks.aovs.aov
-    ht.sohohooks.aovs.manager
-    ht.sohohooks.manager
-    ht.ui.menus.opmenu
-    ht.ui.menus.parmmenu
+    ht
 
 omit =
         *tests*
         *__init__*
+	*machinery*
+	*/constants.py
+	*/icons.py
+	*/types.py
+	*/ui/aovs/*
+	*/ui/paste/*
 
 disable_warnings = 
 	module-not-imported

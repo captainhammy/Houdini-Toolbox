@@ -6,7 +6,6 @@
 
 # Standard Library Imports
 import copy
-import imp
 
 # Third Party Imports
 import pytest
@@ -14,10 +13,6 @@ import pytest
 # Houdini Toolbox Imports
 import ht.events.item
 import ht.events.stats
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(ht.events.item)
 
 
 # =============================================================================

@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-import imp
 import logging
 
 # Third Party Imports
@@ -16,10 +15,6 @@ import ht.logging.shellio
 
 # Houdini Imports
 import hou
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(ht.logging.shellio)
 
 
 # =============================================================================

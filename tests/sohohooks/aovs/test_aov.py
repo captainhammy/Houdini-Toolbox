@@ -4,9 +4,6 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-import imp
-
 # Third Party Imports
 import pytest
 
@@ -15,10 +12,6 @@ from ht.sohohooks.aovs import aov
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import constants as consts
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(aov)
 
 
 # =============================================================================
@@ -2055,11 +2048,12 @@ class Test__write_light(object):
 
         mock_light.getDefaultedString.return_value = [mock_suffix]
 
-        def evalString(name, mock_now, prefix):
+        def eval_string(name, mock_now, prefix):
+            """Fake string evaluation that appends a value."""
             prefix.append(mock_prefix)
             return True
 
-        mock_light.evalString.side_effect = evalString
+        mock_light.evalString.side_effect = eval_string
 
         data = {}
         mock_base = mocker.MagicMock(spec=str)
@@ -2088,10 +2082,12 @@ class Test__write_light(object):
         mock_light = mocker.MagicMock()
         mock_light.getName.return_value = mock_name
 
-        def getDefaulted(name, mock_now, default):
-            return default
+        # def get_defaulted(name, mock_now, default):
+        #     return default
 
-        mock_light.getDefaultedString.side_effect = getDefaulted
+        mock_light.getDefaultedString.side_effect = (
+            lambda name, mock_now, default: default
+        )
 
         mock_light.evalString.return_value = False
 

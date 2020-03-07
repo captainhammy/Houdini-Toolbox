@@ -4,16 +4,8 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-import imp
-
-
 # Houdini Toolbox Imports
 import ht.events.group
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(ht.events.group)
 
 
 # =============================================================================

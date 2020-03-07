@@ -47,4 +47,4 @@ run-lint-py3k:
 # Run Python unit tests
 run-tests:
 	@coverage erase
-	hython -m pytest tests/
+	env --unset=HOUDINI_PATH hython -m pytest tests/

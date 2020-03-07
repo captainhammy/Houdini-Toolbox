@@ -4,9 +4,6 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-import imp
-
 # Third Party Imports
 import pytest
 
@@ -14,10 +11,6 @@ import pytest
 import ht.events.item
 import ht.events.event
 import ht.events.stats
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(ht.events.event)
 
 
 # =============================================================================

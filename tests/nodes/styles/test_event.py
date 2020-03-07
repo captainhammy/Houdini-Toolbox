@@ -4,9 +4,6 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-import imp
-
 # Houdini Toolbox Imports
 import ht.nodes.styles.event
 from ht.events.item import HoudiniEventItem
@@ -14,10 +11,6 @@ from ht.events.types import NodeEvents
 
 # Houdini Imports
 import hou
-
-# Reload the module to test to capture load evaluation since it has already
-# been loaded.
-imp.reload(ht.nodes.styles.event)
 
 
 # =============================================================================
