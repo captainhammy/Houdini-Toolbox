@@ -289,7 +289,7 @@ class Test_ExclusiveHoudiniEventItem(object):
         }
 
     def test___init__replace(self, mocker):
-        """Test the constructor when replacing an existing item."""
+        """Test initialization when replacing an existing item."""
         mock_priority = mocker.patch.object(
             ht.events.item.ExclusiveHoudiniEventItem,
             "priority",
@@ -332,6 +332,7 @@ class Test_ExclusiveHoudiniEventItem(object):
     # run
 
     def test_run__no_run(self, init_exclusive_item, mocker):
+        """Test when the event item is not the exclusive item."""
         mocker.patch(
             "ht.events.item.ExclusiveHoudiniEventItem.__eq__", return_value=False
         )
@@ -357,6 +358,7 @@ class Test_ExclusiveHoudiniEventItem(object):
         mock_super_run.assert_not_called()
 
     def test__run(self, init_exclusive_item, mocker):
+        """Test when the event item is the exclusive item."""
         mocker.patch(
             "ht.events.item.ExclusiveHoudiniEventItem.__eq__", return_value=True
         )

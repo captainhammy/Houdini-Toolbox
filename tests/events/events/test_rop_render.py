@@ -9,7 +9,6 @@ import pytest
 
 # Houdini Toolbox Imports
 import ht.events.events.rop_render
-
 from ht.events.item import HoudiniEventItem
 from ht.events.types import RopEvents
 
@@ -35,6 +34,12 @@ def init_event(mocker):
     return _create
 
 
+@pytest.fixture
+def mock_logger(mocker):
+    """Mock the module logger."""
+    yield mocker.patch("ht.events.events.rop_render._logger")
+
+
 # =============================================================================
 # TESTS
 # =============================================================================
@@ -43,9 +48,16 @@ def init_event(mocker):
 class Test_RopRenderEvent(object):
     """Test ht.events.events.rop_render.RopRenderEvent class."""
 
-    def test___init__(self):
+    def test___init__(self, mocker):
         """Test object initialization."""
+        mock_super_init = mocker.patch.object(ht.events.rop_render.HoudiniEventGroup, "__init__")
+
+        event_map = {}
+        mocker.patch.object(ht.events.events.rop_render.RopRenderEvent, "event_map", event_map)
+
         event = ht.events.events.rop_render.RopRenderEvent()
+
+        mock_super_init.assert_called()
 
         assert event._frame_start is None
         assert event._render_start is None
@@ -58,55 +70,49 @@ class Test_RopRenderEvent(object):
             RopEvents.PostWrite: HoudiniEventItem((event.post_write,)),
         }
 
-        assert event.event_map == expected_map
-
-    # Methods
+        assert event_map == expected_map
 
     # pre_frame
 
-    def test_pre_frame(self, init_event, mocker):
-        mock_logger = mocker.patch("ht.events.events.rop_render._logger")
-
+    def test_pre_frame(self, init_event, mocker, mock_logger):
+        """Test pre-frame action."""
         event = init_event()
         event._frame_start = None
 
+        mock_frame = mocker.MagicMock(spec=int)
         mock_time = mocker.MagicMock(spec=float)
 
-        scriptargs = {"time": mock_time, "frame": mocker.MagicMock(spec=int)}
+        scriptargs = {"time": mock_time, "frame": mock_frame}
 
         event.pre_frame(scriptargs)
 
         assert event._frame_start == mock_time
 
-        mock_logger.info.assert_called()
+        mock_logger.info.assert_called_with("Starting Frame: %s", mock_frame)
 
     # pre_render
 
-    def test_pre_render__with_frame_range(self, init_event, mocker):
-        mock_logger = mocker.patch("ht.events.events.rop_render._logger")
-
+    def test_pre_render__with_frame_range(self, init_event, mocker, mock_logger):
+        """Test when a frame range is passed."""
         event = init_event()
         event._render_start = None
 
         mock_time = mocker.MagicMock(spec=float)
 
-        frange = (
-            mocker.MagicMock(spec=int),
-            mocker.MagicMock(spec=int),
-            mocker.MagicMock(spec=int),
-        )
+        mock_start = mocker.MagicMock(spec=int)
+        mock_end = mocker.MagicMock(spec=int)
+        mock_inc = mocker.MagicMock(spec=int)
 
-        scriptargs = {"time": mock_time, "frame_range": frange}
+        scriptargs = {"time": mock_time, "frame_range": (mock_start, mock_end, mock_inc)}
 
         event.pre_render(scriptargs)
 
         assert event._render_start == mock_time
 
-        mock_logger.info.assert_called()
+        mock_logger.info.assert_called_with("Starting render: %s-%s:%s", mock_start, mock_end, mock_inc)
 
-    def test_pre_render__no_frame_range(self, init_event, mocker):
-        mock_logger = mocker.patch("ht.events.events.rop_render._logger")
-
+    def test_pre_render__no_frame_range(self, init_event, mocker, mock_logger):
+        """Test with no frame range."""
         event = init_event()
         event._render_start = None
 
@@ -118,184 +124,135 @@ class Test_RopRenderEvent(object):
 
         assert event._render_start == mock_time
 
-        mock_logger.info.assert_called()
+        mock_logger.info.assert_called_with("Starting render")
 
     # post_frame
 
-    def test_post_frame__valid_start_frame(self, init_event, mocker):
-        mock_logger = mocker.patch("ht.events.events.rop_render._logger")
+    def test_post_frame__valid_start_frame(self, init_event, mocker, mock_logger):
+        """Test when a start time exists."""
         mock_print = mocker.patch("ht.events.events.rop_render._print_frame_write")
 
         event = init_event()
         event._frame_start = mocker.MagicMock(spec=float)
 
+        mock_time = mocker.MagicMock(spec=float)
+        mock_frame = mocker.MagicMock(spec=int)
+
         scriptargs = {
-            "time": mocker.MagicMock(spec=float),
-            "frame": mocker.MagicMock(spec=int),
+            "time": mock_time,
+            "frame": mock_frame,
         }
 
         event.post_frame(scriptargs)
 
         mock_print.assert_called_with(scriptargs)
 
-        mock_logger.info.assert_called()
+        mock_logger.info.assert_called_with("Completed Frame: %s (%0.5fs)", mock_frame, mock_time-event._frame_start)
 
-    def test_post_frame__no_start_frame(self, init_event, mocker):
-        mock_logger = mocker.patch("ht.events.events.rop_render._logger")
+    def test_post_frame__no_start_frame(self, init_event, mocker, mock_logger):
+        """Test when no start time is known."""
         mock_print = mocker.patch("ht.events.events.rop_render._print_frame_write")
 
         event = init_event()
         event._frame_start = None
 
-        scriptargs = {"frame": mocker.MagicMock(spec=int)}
+        mock_frame = mocker.MagicMock(spec=int)
+
+        scriptargs = {"frame": mock_frame}
 
         event.post_frame(scriptargs)
 
         mock_print.assert_called_with(scriptargs)
 
-        mock_logger.info.assert_called()
+        mock_logger.info.assert_called_with("Completed Frame: %s", mock_frame)
 
     # post_render
 
-    def test_post_render__valid_start_frame(self, init_event, mocker):
-        mock_logger = mocker.patch("ht.events.events.rop_render._logger")
-
+    def test_post_render__valid_start_time(self, init_event, mocker, mock_logger):
+        """Test when a start time exists."""
         event = init_event()
         event._render_start = mocker.MagicMock(spec=float)
 
-        scriptargs = {"time": mocker.MagicMock(spec=float)}
+        mock_time = mocker.MagicMock(spec=float)
+
+        scriptargs = {"time": mock_time}
 
         event.post_render(scriptargs)
 
-        mock_logger.info.assert_called()
+        mock_logger.info.assert_called_with("Completed Render: %0.5fs", mock_time-event._render_start)
 
-    def test_post_render__no_start_frame(self, init_event, mocker):
-        mock_logger = mocker.patch("ht.events.events.rop_render._logger")
-
+    def test_post_render__no_start_time(self, init_event, mock_logger):
+        """Test when no start time is known."""
         event = init_event()
         event._render_start = None
 
         event.post_render({})
 
-        mock_logger.info.assert_called()
+        mock_logger.info.assert_called_with("Completed Render")
 
     # post_write
 
-    def test_post_write__valid_path(self, init_event, mocker):
-        mock_logger = mocker.patch("ht.events.events.rop_render._logger")
-
+    def test_post_write__valid_path(self, init_event, mocker, mock_logger):
+        """Test when the output path is known."""
         event = init_event()
 
+        mock_frame = mocker.MagicMock(spec=int)
+        mock_path = mocker.MagicMock(spec=str)
+
         scriptargs = {
-            "frame": mocker.MagicMock(spec=int),
-            "path": mocker.MagicMock(spec=str),
+            "frame": mock_frame,
+            "path": mock_path
+        }
+
+        event.post_write(scriptargs)
+
+        mock_logger.info.assert_called_with("Wrote frame %s to %s", mock_frame, mock_path)
+
+    def test_post_write__no_path(self, init_event, mocker, mock_logger):
+        """Test when the output path is unknown."""
+        event = init_event()
+
+        mock_frame = mocker.MagicMock(spec=int)
+
+        scriptargs = {
+            "frame": mock_frame,
         }
 
         event.post_write(scriptargs)
 
         mock_logger.info.assert_called()
 
-    def test_post_write__no_path(self, init_event, mocker):
-        mock_logger = mocker.patch("ht.events.events.rop_render._logger")
 
-        event = init_event()
-
-        scriptargs = {"frame": mocker.MagicMock(spec=int)}
-
-        event.post_write(scriptargs)
-
-        mock_logger.info.assert_called()
-
-
-class Test__get_target_file(object):
+@pytest.mark.parametrize("type_name, return_value, expected", [
+    ("geometry", None, ("sopoutput", )),
+    ("rop_geometry", None, ("sopoutput", )),
+    ("alembic", None, ("filename", )),
+    ("rop_alembic", None, ("filename", )),
+    ("ifd", True, ("soho_outputmode", "soho_diskfile")),
+    ("ifd", False, ("vm_picture", )),
+    (None, None, None),
+])
+def test__get_target_file(mocker, type_name, return_value, expected):
     """Test ht.events.events.rop_render._get_target_file."""
+    mock_type = mocker.MagicMock(spec=hou.NodeType)
+    mock_type.name.return_value = type_name
 
-    def test_geometry(self, mocker):
-        mock_type = mocker.MagicMock(spec=hou.NodeType)
-        mock_type.name.return_value = "geometry"
+    mock_type = mocker.MagicMock(spec=hou.NodeType)
+    mock_type.name.return_value = type_name
 
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value = mock_type
+    mock_node = mocker.MagicMock(spec=hou.Node)
+    mock_node.evalParm.return_value = return_value
+    mock_node.type.return_value = mock_type
 
-        mock_path = mocker.MagicMock(spec=str)
+    result = ht.events.events.rop_render._get_target_file(mock_node)
 
-        mock_node.evalParm.return_value = mock_path
+    if expected:
+        assert result == mock_node.evalParm.return_value
 
-        result = ht.events.events.rop_render._get_target_file(mock_node)
+        calls = [mocker.call(value) for value in expected]
+        mock_node.evalParm.assert_has_calls(calls)
 
-        assert result == mock_path
-        mock_node.evalParm.assert_called_with("sopoutput")
-
-        # Try again but with rop_geometry.
-        mock_type.name.return_value = "rop_geometry"
-
-        result = ht.events.events.rop_render._get_target_file(mock_node)
-
-        assert result == mock_path
-        mock_node.evalParm.assert_called_with("sopoutput")
-
-    def test_alembic(self, mocker):
-        mock_type = mocker.MagicMock(spec=hou.NodeType)
-        mock_type.name.return_value = "alembic"
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value = mock_type
-
-        mock_path = mocker.MagicMock(spec=str)
-
-        mock_node.evalParm.return_value = mock_path
-
-        result = ht.events.events.rop_render._get_target_file(mock_node)
-
-        assert result == mock_path
-        mock_node.evalParm.assert_called_with("filename")
-
-        # Try again but with rop_alembic.
-        mock_type.name.return_value = "rop_alembic"
-
-        result = ht.events.events.rop_render._get_target_file(mock_node)
-
-        assert result == mock_path
-        mock_node.evalParm.assert_called_with("filename")
-
-    def test_ifd(self, mocker):
-        mock_type = mocker.MagicMock(spec=hou.NodeType)
-        mock_type.name.return_value = "ifd"
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value = mock_type
-
-        mock_path = mocker.MagicMock(spec=str)
-
-        # Return True for soho_outputmode (writing ifd) and the path.
-        mock_node.evalParm.side_effect = (True, mock_path)
-
-        result = ht.events.events.rop_render._get_target_file(mock_node)
-
-        assert result == mock_path
-        mock_node.evalParm.assert_any_call("soho_outputmode")
-        mock_node.evalParm.assert_any_call("soho_diskfile")
-
-        mock_node.reset_mock()
-
-        # Try again but with writing an image.
-        mock_node.evalParm.side_effect = (False, "/var/tmp/test.exr")
-
-        result = ht.events.events.rop_render._get_target_file(mock_node)
-
-        assert result == "/var/tmp/test.exr"
-        mock_node.evalParm.assert_any_call("soho_outputmode")
-        mock_node.evalParm.assert_any_call("vm_picture")
-
-    def test_unknown(self, mocker):
-        mock_type = mocker.MagicMock(spec=hou.NodeType)
-        mock_type.name.return_value = mocker.MagicMock(spec=str)
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value = mock_type
-
-        result = ht.events.events.rop_render._get_target_file(mock_node)
-
+    else:
         assert result is None
 
 
@@ -303,6 +260,7 @@ class Test__print_frame_write(object):
     """Test ht.events.events.rop_render._print_frame_write."""
 
     def test_no_path(self, mocker):
+        """Test when no path is found."""
         mock_node = mocker.MagicMock(spec=hou.Node)
         scriptargs = {"node": mock_node}
 
@@ -310,9 +268,8 @@ class Test__print_frame_write(object):
 
         mock_node.parm.assert_not_called()
 
-    def test_post_script(self, mocker):
-        mock_logger = mocker.patch("ht.events.events.rop_render._logger")
-
+    def test_post_script(self, mocker, mock_logger):
+        """Test when there is a post-write script enabled and the path won't be printed."""
         mock_script = mocker.MagicMock(spec=str)
         mock_script.__len__.return_value = 1
 
@@ -328,9 +285,8 @@ class Test__print_frame_write(object):
 
         mock_logger.info.assert_not_called()
 
-    def test_path_no_post_script(self, mocker):
-        mock_logger = mocker.patch("ht.events.events.rop_render._logger")
-
+    def test_path_no_post_script(self, mocker, mock_logger):
+        """Test when the path will be printed."""
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.eval.return_value = ""
 

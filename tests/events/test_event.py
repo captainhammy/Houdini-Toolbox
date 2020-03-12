@@ -46,7 +46,6 @@ class Test_HoudiniEventFactory(object):
         )
 
         mock_name = mocker.MagicMock(spec=str)
-
         mock_return = mocker.MagicMock(spec=ht.events.event.HoudiniEvent)
 
         mock_mappings.return_value = {mock_name: mock_return}
@@ -106,7 +105,7 @@ class Test_HoudiniEvent(object):
     """Test ht.events.event.HoudiniEvent class."""
 
     def test___init__(self, mocker):
-        """Test the constructor."""
+        """Test object initialization."""
         mock_stats = mocker.patch("ht.events.event.HoudiniEventStats", autospec=True)
 
         mock_name = mocker.MagicMock(spec=str)
@@ -182,12 +181,11 @@ class Test_HoudiniEvent(object):
 
     def test_register_item(self, init_event, mocker):
         """Test registering a HoudiniEventItem."""
-        mock_item_map = mocker.patch.object(
-            ht.events.event.HoudiniEvent, "item_map", new_callable=mocker.PropertyMock
-        )
-
         mock_map = {}
-        mock_item_map.return_value = mock_map
+
+        mocker.patch.object(
+            ht.events.event.HoudiniEvent, "item_map", new_callable=mocker.PropertyMock(return_value=mock_map)
+        )
 
         # Mock the item via the reference in the module so that the isinstance()
         # test is more reliable vs mocking ht.events.item.HoudiniEventItem

@@ -149,7 +149,7 @@ class Test_HoudiniLoggerAdapter(object):
 
     # process
 
-    def test_process__node_arg(self, init_adapter, mocker):
+    def test_process__node_arg(self, init_adapter, mocker, mock_ui_unavailable):
         """Test when passing a node."""
         mocker.patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
         mocker.patch.object(
@@ -167,7 +167,6 @@ class Test_HoudiniLoggerAdapter(object):
             "status_bar",
             new_callable=mocker.PropertyMock(return_value=False),
         )
-        mocker.patch("ht.logging.adapters.hou.isUIAvailable", return_value=False)
 
         mock_message = mocker.MagicMock(spec=str)
 
@@ -186,7 +185,7 @@ class Test_HoudiniLoggerAdapter(object):
 
         mock_node.path.assert_called()
 
-    def test_process__node_property(self, init_adapter, mocker):
+    def test_process__node_property(self, init_adapter, mocker, mock_ui_unavailable):
         """Test when using the 'node' property."""
         mocker.patch.dict(ht.logging.adapters._TO_WRAP, {}, clear=True)
         mock_node_prop = mocker.patch.object(
@@ -204,7 +203,6 @@ class Test_HoudiniLoggerAdapter(object):
             "status_bar",
             new_callable=mocker.PropertyMock(return_value=False),
         )
-        mocker.patch("ht.logging.adapters.hou.isUIAvailable", return_value=False)
 
         mock_message = mocker.MagicMock(spec=str)
 

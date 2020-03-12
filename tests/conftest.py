@@ -122,6 +122,20 @@ def fix_hou_exceptions(monkeypatch):
 
 
 @pytest.fixture
+def mock_hdefereval(mocker):
+    """Mock hdefereval which isn't available when running tests via Hython."""
+    mock_hdefereval = mocker.MagicMock()
+
+    # Need to mock importing hdefereval because the import will fail when
+    # the UI is not available (like in testing).
+    modules = {"hdefereval": mock_hdefereval}
+
+    mocker.patch.dict("sys.modules", modules)
+
+    yield mock_hdefereval
+
+
+@pytest.fixture
 def mock_hou_qt(mocker):
     """Mock the hou.qt module which isn't available when running tests via Hython.
 
@@ -136,17 +150,25 @@ def mock_hou_qt(mocker):
 
 
 @pytest.fixture
-def mock_hou_ui(mocker):
+def mock_ui_available(mocker):
+    """Fixture to mock hou.isUIAvailable() to return True."""
+    yield mocker.patch("hou.isUIAvailable", return_value=True)
+
+
+@pytest.fixture
+def mock_ui_unavailable(mocker):
+    """Fixture to mock hou.isUIAvailable() to return False."""
+    yield mocker.patch("hou.isUIAvailable", return_value=False)
+
+
+@pytest.fixture
+def mock_hou_ui(mocker, mock_ui_available):
     """Mock the hou.ui module which isn't available when running tests via Hython.
 
     This fixture will also mock hou.isUIAvailable() to return True.
 
     """
     mock_ui = mocker.MagicMock()
-
-    # If we are going to be mocking the hou.ui module we should patch
-    # hou.isUIAvailable so that it reflects we have hou.ui.
-    mocker.patch("hou.isUIAvailable", return_value=True)
 
     hou.ui = mock_ui
 

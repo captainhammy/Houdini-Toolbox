@@ -7,12 +7,13 @@ source =
 omit =
         *tests*
         *__init__*
-	*machinery*
+	python/ht/machinery/*
 	*/constants.py
-	*/icons.py
-	*/types.py
-	*/ui/aovs/*
-	*/ui/paste/*
+	python/ht/events/types.py
+	python/ht/inline/lib.py
+	python/ht/ui/aovs/*
+	python/ht/ui/paste/*
+	python/ht/ui/icons.py
 
 disable_warnings = 
 	module-not-imported

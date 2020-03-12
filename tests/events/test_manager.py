@@ -324,6 +324,7 @@ class Test_HoudiniEventManager(object):
     # register_item
 
     def test_register_item__invalid_type(self, init_manager, mocker):
+        """Test registering an invalid type."""
         # Don't spec so it will fail isinstance(HoudiniEventItem)
         manager = init_manager()
 
@@ -331,6 +332,7 @@ class Test_HoudiniEventManager(object):
             manager.register_item(None, mocker.MagicMock(spec=str))
 
     def test_register_item__new_event(self, init_manager, mocker):
+        """Test registering an item whose event does not exist yet."""
         mock_events = mocker.patch.object(
             ht.events.manager.HoudiniEventManager,
             "events",
@@ -360,6 +362,7 @@ class Test_HoudiniEventManager(object):
         mock_event.register_item.assert_called_with(mock_item)
 
     def test_register_item__existing_event(self, init_manager, mocker):
+        """Test registering an item to an existing event."""
         mock_events = mocker.patch.object(
             ht.events.manager.HoudiniEventManager,
             "events",
@@ -470,6 +473,7 @@ class Test_register_function(object):
     """Test ht.events.manager.register_function."""
 
     def test_not_callable(self, mocker):
+        """Test registering a non-callable object."""
         mock_event_name = mocker.MagicMock(spec=str)
         mock_item_name = mocker.MagicMock(spec=str)
         mock_priority = mocker.MagicMock(spec=int)
@@ -481,6 +485,7 @@ class Test_register_function(object):
             )
 
     def test(self, mocker):
+        """Test registering a callable object."""
         mock_cls = mocker.patch("ht.events.manager.HoudiniEventItem", autospec=True)
         mock_register_item = mocker.patch("ht.events.manager.register_item")
 
@@ -505,12 +510,14 @@ class Test_register_item(object):
     """Test ht.events.manager.register_item."""
 
     def test_not_item(self, mocker):
+        """Test registering an invalid type."""
         mock_event_name = mocker.MagicMock(spec=str)
 
         with pytest.raises(TypeError):
             ht.events.manager.register_item(None, mock_event_name)
 
     def test(self, mocker):
+        """Test registering a valid item."""
         mock_manager = mocker.patch("ht.events.manager.MANAGER")
 
         mock_event_name = mocker.MagicMock(spec=str)
