@@ -6,27 +6,14 @@
 
 # Standard Library Imports
 from __future__ import absolute_import
-from functools import wraps
+from contextlib import contextmanager
 import logging
+
+# Third Party Imports
+from logquacious.backport_configurable_stacklevel import patch_logger
 
 # Houdini Imports
 import hou
-
-
-# ==============================================================================
-# GLOBALS
-# ==============================================================================
-
-# Logging functions to wrap, and a corresponding severity for popup
-# messages.
-_TO_WRAP = {
-    "critical": hou.severityType.Error,
-    "debug": hou.severityType.Message,
-    "error": hou.severityType.Error,
-    "exception": hou.severityType.Error,
-    "info": hou.severityType.ImportantMessage,
-    "warning": hou.severityType.Warning,
-}
 
 
 # ==============================================================================
@@ -58,24 +45,34 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         self._status_bar = status_bar
 
     # --------------------------------------------------------------------------
-    # SPECIAL METHODS
+    # CLASS METHODS
     # --------------------------------------------------------------------------
 
-    def __new__(cls, *args, **kwargs):  # pylint: disable=unused-argument
-        """Overridden __new__ that will wrap logging methods with custom function."""
-        inst = super(HoudiniLoggerAdapter, cls).__new__(cls)
+    @classmethod
+    def from_name(cls, name, dialog=False, node=None, status_bar=False):
+        """Create a new HoudiniLoggerAdapter from a name.
 
-        # We want to wrap various log calls to process args and set severities.
-        for key, severity in _TO_WRAP.items():
-            if hasattr(inst, key):
-                attr = getattr(inst, key)
+        This is a convenience function around the following code:
 
-                if callable(attr):
-                    wrapped = _wrap_logger(attr, severity)
+        >>> base_logger = logging.getLogger(name)
+        >>> logger = HoudiniLoggerAdapter(base_logger)
 
-                    setattr(inst, key, wrapped)
+        :param name: The name of the logger to use.
+        :type name: str
+        :param dialog: Whether to always utilize the dialog option.
+        :type dialog: bool
+        :param node: Optional node for prefixing messages with the path.
+        :type node: hou.Node
+        :param status_bar: Whether to always utilize the dialog option.
+        :type status_bar: bool
+        :return: An adapter wrapping a logger of the passed name.
+        :rtype: HoudiniLoggerAdapter
 
-        return inst
+        """
+        # Create a base logger
+        base_logger = logging.getLogger(name)
+
+        return cls(base_logger, dialog=dialog, node=node, status_bar=status_bar)
 
     # --------------------------------------------------------------------------
     # PROPERTIES
@@ -167,48 +164,146 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 
         return msg, kwargs
 
+    def critical(self, msg, *args, **kwargs):
+        """Delegate an info call to the underlying logger, after adding
+        contextual information from this adapter instance.
+
+        """
+        _pre_process_args(hou.severityType.Error, args, kwargs)
+        msg, kwargs = self.process(msg, kwargs)
+
+        with _patch_logger(self.logger):
+            self.logger.critical(msg, *args, **kwargs)
+
+    def debug(self, msg, *args, **kwargs):
+        """Delegate an info call to the underlying logger, after adding
+        contextual information from this adapter instance.
+
+        """
+        _pre_process_args(hou.severityType.Message, args, kwargs)
+        msg, kwargs = self.process(msg, kwargs)
+
+        with _patch_logger(self.logger):
+            self.logger.debug(msg, *args, **kwargs)
+
+    def error(self, msg, *args, **kwargs):
+        """Delegate an info call to the underlying logger, after adding
+        contextual information from this adapter instance.
+
+        """
+        _pre_process_args(hou.severityType.Error, args, kwargs)
+        msg, kwargs = self.process(msg, kwargs)
+
+        with _patch_logger(self.logger):
+            self.logger.error(msg, *args, **kwargs)
+
+    def exception(self, msg, *args, **kwargs):
+        """Delegate an info call to the underlying logger, after adding
+        contextual information from this adapter instance.
+
+        """
+        _pre_process_args(hou.severityType.Error, args, kwargs)
+        msg, kwargs = self.process(msg, kwargs)
+
+        kwargs["exc_info"] = 1
+
+        with _patch_logger(self.logger):
+            self.logger.exception(msg, *args, **kwargs)
+
+    def info(self, msg, *args, **kwargs):
+        """Delegate an info call to the underlying logger, after adding
+        contextual information from this adapter instance.
+
+        """
+        _pre_process_args(hou.severityType.ImportantMessage, args, kwargs)
+        msg, kwargs = self.process(msg, kwargs)
+
+        with _patch_logger(self.logger):
+            self.logger.info(msg, *args, **kwargs)
+
+    def warning(self, msg, *args, **kwargs):
+        """Delegate an info call to the underlying logger, after adding
+        contextual information from this adapter instance.
+
+        """
+        _pre_process_args(hou.severityType.Warning, args, kwargs)
+        msg, kwargs = self.process(msg, kwargs)
+
+        with _patch_logger(self.logger):
+            self.logger.warning(msg, *args, **kwargs)
+
 
 # ==============================================================================
 # NON-PUBLIC FUNCTIONS
 # ==============================================================================
 
 
-def _wrap_logger(func, severity):
-    """Function which wraps a logger method with custom code."""
+@contextmanager
+def _patch_logger(logger):
+    """Patch the __class__ of the logger for the duration so we can utilize the
+    'stacklevel' arg.
 
-    @wraps(func)
-    def func_wrapper(*args, **kwargs):  # pylint: disable=missing-docstring
-        # Get the extra dictionary or an empty one if it doesn't exist.
-        extra = kwargs.setdefault("extra", {})
+    :param logger: The logger to patch.
+    :type logger: logging.Logger
+    :return:
 
-        # Set the severity to our passed in value.
-        extra["severity"] = severity
+    """
+    original_logger_class = logger.__class__
 
-        # If a 'node' arg was passed to the call, remove it and store the
-        # node.
-        if "node" in kwargs:
-            extra["node"] = kwargs.pop("node")
+    logger.__class__ = patch_logger(logger.__class__)
 
-        # If a 'dialog' arg was passed to the call, remove it and store the
-        # value.
-        if "dialog" in kwargs:
-            extra["dialog"] = kwargs.pop("dialog")
+    try:
+        yield
 
-        # If a 'status_bar' arg was passed to the call, remove it and store the
-        # value.
-        if "status_bar" in kwargs:
-            extra["status_bar"] = kwargs.pop("status_bar")
+    finally:
+        logger.__class__ = original_logger_class
 
-        # If a 'title' arg was passed to the call, remove it and store the
-        # value.
-        if "title" in kwargs:
-            extra["title"] = kwargs.pop("title")
 
-        # If there is more than one arg we want to pass them as extra data so that
-        # we can use it to format the message for extra outputs.
-        if len(args) > 1:
-            extra["message_args"] = args[1:]
+def _pre_process_args(severity, args, kwargs):
+    """Pre-process args.
 
-        return func(*args, **kwargs)
+    :param severity: The message severity.
+    :type severity: hou.severityType
+    :param args: The list of message args.
+    :type args: tuple(str)
+    :param kwargs: The kwargs dict.
+    :type kwargs: dict
+    :return:
 
-    return func_wrapper
+    """
+    extra = kwargs.setdefault("extra", {})
+
+    # Set the severity to our passed in value.
+    extra["severity"] = severity
+
+    # Check if notify is set.
+    if "notify_send" in kwargs:
+        extra["notify_send"] = kwargs.pop("notify_send")
+
+    # If a 'node' arg was passed to the call, remove it and store the
+    # node.
+    if "node" in kwargs:
+        extra["node"] = kwargs.pop("node")
+
+    # If a 'dialog' arg was passed to the call, remove it and store the
+    # value.
+    if "dialog" in kwargs:
+        extra["dialog"] = kwargs.pop("dialog")
+
+    # If a 'status_bar' arg was passed to the call, remove it and store the
+    # value.
+    if "status_bar" in kwargs:
+        extra["status_bar"] = kwargs.pop("status_bar")
+
+    # If a 'title' arg was passed to the call, remove it and store the
+    # value.
+    if "title" in kwargs:
+        extra["title"] = kwargs.pop("title")
+
+    if len(args) > 1:
+        extra["message_args"] = args[1:]
+
+    if "stacklevel" not in kwargs:
+        # Set stacklevel=2 so that the module/file/line reporting will represent
+        # the calling point and not the function call inside the adapter..
+        kwargs["stacklevel"] = 2

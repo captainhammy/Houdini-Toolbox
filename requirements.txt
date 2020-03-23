@@ -2,6 +2,7 @@ enum34
 flake8
 humanfriendly
 jinja2
+logquacious
 numpy
 pytest
 pytest-cov
