@@ -12,9 +12,9 @@
 # then it will use sys.stdout which is redirected to any interactive Python
 # Shell panes.  We explicitly provide an alternate stream handler for output
 # to only these pane tabs.
-import ht.logging
+import ht.logging.config
 
-ht.logging.init_config()
+ht.logging.config.init_config()
 
 import ht.events
 import ht.events.callbacks

@@ -300,8 +300,9 @@ def _pre_process_args(severity, args, kwargs):
     if "title" in kwargs:
         extra["title"] = kwargs.pop("title")
 
-    if len(args) > 1:
-        extra["message_args"] = args[1:]
+    # Stash any log format args so we can pass them along to process().
+    if args:
+        extra["message_args"] = args
 
     if "stacklevel" not in kwargs:
         # Set stacklevel=2 so that the module/file/line reporting will represent

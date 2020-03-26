@@ -465,7 +465,7 @@ class Test__pre_process_args(object):
             "notify_send": mock_notify,
             "severity": hou.severityType.Error,
             "title": mock_title,
-            "message_args": (mock_arg2,),
+            "message_args": (mock_arg1, mock_arg2,),
         }
 
         assert kwargs["extra"] == expected
@@ -478,7 +478,7 @@ class Test__pre_process_args(object):
 
         kwargs = {}
 
-        ht.logging.adapters._pre_process_args(hou.severityType.Error, (mock_arg, ), kwargs)
+        ht.logging.adapters._pre_process_args(hou.severityType.Error, (), kwargs)
 
         # The expected extra dict values.
         expected = {"severity": hou.severityType.Error}
