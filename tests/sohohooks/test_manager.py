@@ -57,15 +57,15 @@ class Test_SohoHookManager(object):
 
     def test_call_hook__func_result_true(self, init_manager, mocker, patch_soho):
         """Test when a function returns a value that is equivalent to bool(value) == True."""
-        mock_hooks = mocker.patch.object(
-            manager.SohoHookManager, "hooks", new_callable=mocker.PropertyMock
-        )
-
         mock_hook_name = mocker.MagicMock(spec=str)
         mock_hook = mocker.MagicMock()
         mock_hook.return_value = True
 
-        mock_hooks.return_value = {mock_hook_name: [mock_hook]}
+        mocker.patch.object(
+            manager.SohoHookManager,
+            "hooks",
+            new_callable=mocker.PropertyMock(return_value={mock_hook_name: [mock_hook]})
+        )
 
         mock_arg = mocker.MagicMock()
         mock_kwarg = mocker.MagicMock()
@@ -80,15 +80,15 @@ class Test_SohoHookManager(object):
 
     def test_call_hook__func_no_result(self, init_manager, mocker, patch_soho):
         """Test when a function returns no value."""
-        mock_hooks = mocker.patch.object(
-            manager.SohoHookManager, "hooks", new_callable=mocker.PropertyMock
-        )
-
         mock_hook_name = mocker.MagicMock(spec=str)
         mock_hook = mocker.MagicMock()
         mock_hook.return_value = None
 
-        mock_hooks.return_value = {mock_hook_name: [mock_hook]}
+        mocker.patch.object(
+            manager.SohoHookManager,
+            "hooks",
+            new_callable=mocker.PropertyMock(return_value={mock_hook_name: [mock_hook]})
+        )
 
         mock_arg = mocker.MagicMock()
         mock_kwarg = mocker.MagicMock()
@@ -103,15 +103,15 @@ class Test_SohoHookManager(object):
 
     def test_call_hook__error(self, init_manager, mocker, patch_soho):
         """Test when calling a hook generates an exception."""
-        mock_hooks = mocker.patch.object(
-            manager.SohoHookManager, "hooks", new_callable=mocker.PropertyMock
-        )
-
         mock_hook_name = mocker.MagicMock(spec=str)
         mock_hook = mocker.MagicMock()
         mock_hook.side_effect = Exception
 
-        mock_hooks.return_value = {mock_hook_name: [mock_hook]}
+        mocker.patch.object(
+            manager.SohoHookManager,
+            "hooks",
+            new_callable=mocker.PropertyMock(return_value={mock_hook_name: [mock_hook]})
+        )
 
         mock_arg = mocker.MagicMock()
         mock_kwarg = mocker.MagicMock()
@@ -130,12 +130,11 @@ class Test_SohoHookManager(object):
 
     def test_register_hook(self, init_manager, mocker):
         """Test registering hooks."""
-        mock_hooks = mocker.patch.object(
-            manager.SohoHookManager, "hooks", new_callable=mocker.PropertyMock
-        )
-
         hooks = {}
-        mock_hooks.return_value = hooks
+
+        mocker.patch.object(
+            manager.SohoHookManager, "hooks", new_callable=mocker.PropertyMock(return_value=hooks)
+        )
 
         mock_hook_name1 = mocker.MagicMock(spec=str)
         mock_hook_name3 = mocker.MagicMock(spec=str)
