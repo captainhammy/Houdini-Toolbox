@@ -32,7 +32,7 @@ def build_pyfilter_command(pyfilter_args=None, pyfilter_path=None):
     if pyfilter_args is None:
         pyfilter_args = []
 
-    # If no path was passed, use the one located in the package.
+    # If no path was passed, use the one located in the HOUDINI_PATH.
     if pyfilter_path is None:
         try:
             pyfilter_path = hou.findFile("pyfilter/ht-pyfilter.py")
@@ -43,9 +43,10 @@ def build_pyfilter_command(pyfilter_args=None, pyfilter_path=None):
 
             return ""
 
-    # Ensure the script path exists.
-    if not os.path.isfile(pyfilter_path):
-        raise OSError("No such file: {}".format(pyfilter_path))
+    else:
+        # Ensure the script path exists.
+        if not os.path.isfile(pyfilter_path):
+            raise OSError("No such file: {}".format(pyfilter_path))
 
     cmd = '-P "{} {}"'.format(pyfilter_path, " ".join(pyfilter_args))
 
