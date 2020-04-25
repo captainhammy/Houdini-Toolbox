@@ -5,12 +5,11 @@
 # =============================================================================
 
 # Third Party Imports
+from contextlib import contextmanager
 import pytest
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import aov
-
-# Houdini Toolbox Imports
 from ht.sohohooks.aovs import constants as consts
 
 
@@ -41,6 +40,12 @@ def init_group(mocker):
     return _create
 
 
+@contextmanager
+def does_not_raise():
+    """Dummy for testing"""
+    yield
+
+
 # =============================================================================
 # TESTS
 # =============================================================================
@@ -63,9 +68,9 @@ class Test_AOV(object):
 
     # Special Methods
 
-    # __eq__
-
-    def test___eq___equal(self, init_aov, mocker):
+    @pytest.mark.parametrize("equals", (None, True, False))
+    def test___eq__(self, init_aov, mocker, equals):
+        """Test object equality."""
         mock_variable_value = mocker.MagicMock(spec=str)
 
         mocker.patch(
@@ -75,39 +80,36 @@ class Test_AOV(object):
 
         inst1 = init_aov()
 
-        inst2 = mocker.MagicMock(spec=aov.AOV)
-        type(inst2).variable = mock_variable_value
+        # If equals is None then the other object won't be an AOV.
+        if equals is None:
+            inst2 = mocker.MagicMock()
 
-        assert inst1 == inst2
+            # Check for NotImplemented since the objects aren't of the same type.
+            assert inst1.__eq__(inst2) == NotImplemented
 
-        mock_variable_value.__eq__.assert_called_with(inst2.variable)
+        else:
+            inst2 = mocker.MagicMock(spec=aov.AOV)
 
-    def test___eq___not_equal(self, init_aov, mocker):
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.variable",
-            new_callable=mocker.PropertyMock(spec=str),
-        )
+            # Ensure the variables are equal.
+            if equals:
+                type(inst2).variable = mock_variable_value
 
-        inst1 = init_aov()
+            else:
+                type(inst2).variable = mocker.PropertyMock(spec=str)
 
-        inst2 = mocker.MagicMock(spec=aov.AOV)
-        type(inst2).variable = mocker.PropertyMock(spec=str)
+            if equals:
+                assert inst1 == inst2
 
-        assert inst1 != inst2
+            else:
+                assert inst1 != inst2
 
-    def test___eq___non_aov(self, init_aov, mocker):
-        inst1 = init_aov()
-        inst2 = mocker.MagicMock()
+            mock_variable_value.__eq__.assert_called_with(inst2.variable)
 
-        result = inst1.__eq__(inst2)
-
-        assert result == NotImplemented
-
-    # __ge__
-
-    def test___ge___less_than(self, init_aov, mocker):
+    @pytest.mark.parametrize("ge", (None, True, False))
+    def test___ge___greater_than(self, init_aov, mocker, ge):
+        """Test greater than or equal operator."""
         mock_variable_value = mocker.MagicMock(spec=str)
-        mock_variable_value.__ge__.return_value = False
+        mock_variable_value.__ge__.return_value = ge
 
         mocker.patch(
             "ht.sohohooks.aovs.aov.AOV.variable",
@@ -116,15 +118,28 @@ class Test_AOV(object):
 
         inst1 = init_aov()
 
-        inst2 = mocker.MagicMock(spec=aov.AOV)
+        if ge is None:
+            inst2 = mocker.MagicMock()
+            assert inst1.__ge__(inst2) == NotImplemented
 
-        assert not inst1 >= inst2
+        else:
+            inst2 = mocker.MagicMock(spec=aov.AOV)
 
-        mock_variable_value.__ge__.assert_called_with(inst2.variable)
+            result = inst1 >= inst2
 
-    def test___ge___equal(self, init_aov, mocker):
+            if ge:
+                assert result
+
+            else:
+                assert not result
+
+            mock_variable_value.__ge__.assert_called_with(inst2.variable)
+
+    @pytest.mark.parametrize("gt", (None, True, False))
+    def test___gt__(self, init_aov, mocker, gt):
+        """Test greater than operator."""
         mock_variable_value = mocker.MagicMock(spec=str)
-        mock_variable_value.__ge__.return_value = True
+        mock_variable_value.__gt__.return_value = gt
 
         mocker.patch(
             "ht.sohohooks.aovs.aov.AOV.variable",
@@ -133,99 +148,26 @@ class Test_AOV(object):
 
         inst1 = init_aov()
 
-        inst2 = mocker.MagicMock(spec=aov.AOV)
+        if gt is None:
+            inst2 = mocker.MagicMock()
 
-        assert inst1 >= inst2
+            assert inst1.__gt__(inst2) == NotImplemented
 
-        mock_variable_value.__ge__.assert_called_with(inst2.variable)
+        else:
+            inst2 = mocker.MagicMock(spec=aov.AOV)
 
-    def test___ge___greater_than(self, init_aov, mocker):
-        mock_variable_value = mocker.MagicMock(spec=str)
-        mock_variable_value.__ge__.return_value = True
+            result = inst1 > inst2
 
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.variable",
-            new_callable=mocker.PropertyMock(return_value=mock_variable_value),
-        )
+            if gt:
+                assert result
 
-        inst1 = init_aov()
+            else:
+                assert not result
 
-        inst2 = mocker.MagicMock(spec=aov.AOV)
-
-        assert inst1 >= inst2
-
-        mock_variable_value.__ge__.assert_called_with(inst2.variable)
-
-    def test___ge___non_aov(self, init_aov, mocker):
-        inst1 = init_aov()
-        inst2 = mocker.MagicMock()
-
-        assert inst1.__ge__(inst2) == NotImplemented
-
-    # __gt__
-
-    def test___gt___less_than(self, init_aov, mocker):
-        mock_variable_value = mocker.MagicMock(spec=str)
-        mock_variable_value.__gt__.return_value = False
-
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.variable",
-            new_callable=mocker.PropertyMock(return_value=mock_variable_value),
-        )
-
-        inst1 = init_aov()
-
-        inst2 = mocker.MagicMock(spec=aov.AOV)
-
-        assert not inst1 > inst2
-
-        mock_variable_value.__gt__.assert_called_with(inst2.variable)
-
-    def test___gt___equal(self, init_aov, mocker):
-        mock_variable_value = mocker.MagicMock(spec=str)
-        mock_variable_value.__gt__.return_value = False
-
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.variable",
-            new_callable=mocker.PropertyMock(return_value=mock_variable_value),
-        )
-
-        inst1 = init_aov()
-
-        inst2 = mocker.MagicMock(spec=aov.AOV)
-
-        assert not inst1 > inst2
-
-        mock_variable_value.__gt__.assert_called_with(inst2.variable)
-
-    def test___gt___greater_than(self, init_aov, mocker):
-        mock_variable_value = mocker.MagicMock(spec=str)
-        mock_variable_value.__gt__.return_value = True
-
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.variable",
-            new_callable=mocker.PropertyMock(return_value=mock_variable_value),
-        )
-
-        inst1 = init_aov()
-
-        inst2 = mocker.MagicMock(spec=aov.AOV)
-
-        assert inst1 > inst2
-
-        mock_variable_value.__gt__.assert_called_with(inst2.variable)
-
-    def test___gt___non_aov(self, init_aov, mocker):
-        inst1 = init_aov()
-        inst2 = mocker.MagicMock()
-
-        result = inst1.__gt__(inst2)
-
-        assert result == NotImplemented
-
-    # __hash__
+            mock_variable_value.__gt__.assert_called_with(inst2.variable)
 
     def test___hash__(self, init_aov, mocker):
+        """Test hashing an AOV."""
         mock_variable_value = mocker.MagicMock(spec=str)
         mocker.patch(
             "ht.sohohooks.aovs.aov.AOV.variable",
@@ -240,11 +182,11 @@ class Test_AOV(object):
 
         assert hash(inst1) == hash(mock_variable_value)
 
-    # __le__
-
-    def test___le___less_than(self, init_aov, mocker):
+    @pytest.mark.parametrize("le", (None, True, False))
+    def test___le__(self, init_aov, mocker, le):
+        """Test less than or equal operator."""
         mock_variable_value = mocker.MagicMock(spec=str)
-        mock_variable_value.__le__.return_value = True
+        mock_variable_value.__le__.return_value = le
 
         mocker.patch(
             "ht.sohohooks.aovs.aov.AOV.variable",
@@ -253,15 +195,28 @@ class Test_AOV(object):
 
         inst1 = init_aov()
 
-        inst2 = mocker.MagicMock(spec=aov.AOV)
+        if le is None:
+            inst2 = mocker.MagicMock()
 
-        assert inst1 <= inst2
+            assert inst1.__le__(inst2) == NotImplemented
+        else:
+            inst2 = mocker.MagicMock(spec=aov.AOV)
 
-        mock_variable_value.__le__.assert_called_with(inst2.variable)
+            result = inst1 <= inst2
 
-    def test___le___equal(self, init_aov, mocker):
+            if le:
+                assert result
+
+            else:
+                assert not result
+
+            mock_variable_value.__le__.assert_called_with(inst2.variable)
+
+    @pytest.mark.parametrize("lt", (None, True, False))
+    def test___lt__(self, init_aov, mocker, lt):
+        """Test less than operator."""
         mock_variable_value = mocker.MagicMock(spec=str)
-        mock_variable_value.__le__.return_value = True
+        mock_variable_value.__lt__.return_value = lt
 
         mocker.patch(
             "ht.sohohooks.aovs.aov.AOV.variable",
@@ -270,101 +225,25 @@ class Test_AOV(object):
 
         inst1 = init_aov()
 
-        inst2 = mocker.MagicMock(spec=aov.AOV)
+        if lt is None:
+            inst2 = mocker.MagicMock()
 
-        assert inst1 <= inst2
+            assert inst1.__lt__(inst2) == NotImplemented
+        else:
+            inst2 = mocker.MagicMock(spec=aov.AOV)
 
-        mock_variable_value.__le__.assert_called_with(inst2.variable)
+            result = inst1 < inst2
 
-    def test___le___greater_than(self, init_aov, mocker):
-        mock_variable_value = mocker.MagicMock(spec=str)
-        mock_variable_value.__le__.return_value = False
+            if lt:
+                assert result
 
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.variable",
-            new_callable=mocker.PropertyMock(return_value=mock_variable_value),
-        )
+            else:
+                assert not result
 
-        inst1 = init_aov()
-
-        inst2 = mocker.MagicMock(spec=aov.AOV)
-
-        assert not inst1 <= inst2
-
-        mock_variable_value.__le__.assert_called_with(inst2.variable)
-
-    def test___le___non_aov(self, init_aov, mocker):
-        inst1 = init_aov()
-        inst2 = mocker.MagicMock()
-
-        result = inst1.__le__(inst2)
-
-        assert result == NotImplemented
-
-    # __lt__
-
-    def test___lt___less_than(self, init_aov, mocker):
-        mock_variable_value = mocker.MagicMock(spec=str)
-        mock_variable_value.__lt__.return_value = True
-
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.variable",
-            new_callable=mocker.PropertyMock(return_value=mock_variable_value),
-        )
-
-        inst1 = init_aov()
-
-        inst2 = mocker.MagicMock(spec=aov.AOV)
-
-        assert inst1 < inst2
-
-        mock_variable_value.__lt__.assert_called_with(inst2.variable)
-
-    def test___lt___equal(self, init_aov, mocker):
-        mock_variable_value = mocker.MagicMock(spec=str)
-        mock_variable_value.__lt__.return_value = False
-
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.variable",
-            new_callable=mocker.PropertyMock(return_value=mock_variable_value),
-        )
-
-        inst1 = init_aov()
-
-        inst2 = mocker.MagicMock(spec=aov.AOV)
-
-        assert not inst1 < inst2
-
-        mock_variable_value.__lt__.assert_called_with(inst2.variable)
-
-    def test___lt___greater_than(self, init_aov, mocker):
-        mock_variable_value = mocker.MagicMock(spec=str)
-        mock_variable_value.__lt__.return_value = False
-
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.variable",
-            new_callable=mocker.PropertyMock(return_value=mock_variable_value),
-        )
-
-        inst1 = init_aov()
-
-        inst2 = mocker.MagicMock(spec=aov.AOV)
-
-        assert not inst1 < inst2
-
-        mock_variable_value.__lt__.assert_called_with(inst2.variable)
-
-    def test___lt___non_aov(self, init_aov, mocker):
-        inst1 = init_aov()
-        inst2 = mocker.MagicMock()
-
-        result = inst1.__lt__(inst2)
-
-        assert result == NotImplemented
-
-    # __ne__
+            mock_variable_value.__lt__.assert_called_with(inst2.variable)
 
     def test___ne__(self, init_aov, mocker):
+        """Test the not equals operator."""
         mock_eq = mocker.patch.object(aov.AOV, "__eq__")
 
         inst1 = init_aov()
@@ -375,9 +254,8 @@ class Test_AOV(object):
         assert result != mock_eq.return_value
         mock_eq.assert_called_with(inst2)
 
-    # __str__
-
     def test___str__(self, init_aov, mocker):
+        """Test conversion to string."""
         mock_variable = mocker.patch(
             "ht.sohohooks.aovs.aov.AOV.variable",
             new_callable=mocker.PropertyMock(spec=str),
@@ -389,31 +267,22 @@ class Test_AOV(object):
 
         assert result == mock_variable
 
+    # Non-Public Methods
+
     # _light_export_planes
 
-    def test__light_export_planes__no_lightexport(self, init_aov, mocker):
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.lightexport",
-            new_callable=mocker.PropertyMock(return_value=None),
-        )
-        mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
-
-        inst = init_aov()
-
-        data = mocker.MagicMock(spec=dict)
-        mock_wrangler = mocker.MagicMock()
-        mock_cam = mocker.MagicMock()
-        mock_now = mocker.MagicMock(spec=float)
-
-        inst._light_export_planes(data, mock_wrangler, mock_cam, mock_now)
-
-        mock_write.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
-
-    def test__light_export_planes__per_light(self, init_aov, mocker):
+    @pytest.mark.parametrize("export_value", [
+        consts.LIGHTEXPORT_PER_LIGHT_KEY,
+        consts.LIGHTEXPORT_SINGLE_KEY,
+        consts.LIGHTEXPORT_PER_CATEGORY_KEY,
+        "foo",
+        None
+    ])
+    def test__light_export_planes(self, init_aov, mocker, export_value):
         mocker.patch(
             "ht.sohohooks.aovs.aov.AOV.lightexport",
             new_callable=mocker.PropertyMock(
-                return_value=consts.LIGHTEXPORT_PER_LIGHT_KEY
+                return_value=export_value
             ),
         )
         mock_scope = mocker.patch(
@@ -424,7 +293,10 @@ class Test_AOV(object):
             "ht.sohohooks.aovs.aov.AOV.lightexport_select",
             new_callable=mocker.PropertyMock,
         )
-        mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_light")
+        mock_write_light = mocker.patch("ht.sohohooks.aovs.aov._write_light")
+        mock_write_single = mocker.patch("ht.sohohooks.aovs.aov._write_single_channel")
+        mock_write_per_category = mocker.patch("ht.sohohooks.aovs.aov._write_per_category")
+        mock_write_to_ifd = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
 
         inst = init_aov()
 
@@ -441,186 +313,62 @@ class Test_AOV(object):
         mock_cam.objectList.return_value = lights
         mock_now = mocker.MagicMock(spec=float)
 
-        inst._light_export_planes(data, mock_wrangler, mock_cam, mock_now)
+        if export_value == "foo":
+            with pytest.raises(aov.InvalidAOVValueError):
+                inst._light_export_planes(data, mock_wrangler, mock_cam, mock_now)
 
-        mock_cam.objectList.assert_called_with(
-            "objlist:light", mock_now, mock_scope.return_value, mock_select.return_value
-        )
-
-        calls = [
-            mocker.call(
-                mock_light1, mock_channel, data, mock_wrangler, mock_cam, mock_now
-            ),
-            mocker.call(
-                mock_light2, mock_channel, data, mock_wrangler, mock_cam, mock_now
-            ),
-        ]
-
-        mock_write.assert_has_calls(calls)
-
-    def test__light_export_planes__single(self, init_aov, mocker):
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.lightexport",
-            new_callable=mocker.PropertyMock(
-                return_value=consts.LIGHTEXPORT_SINGLE_KEY
-            ),
-        )
-        mock_scope = mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.lightexport_scope",
-            new_callable=mocker.PropertyMock,
-        )
-        mock_select = mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.lightexport_select",
-            new_callable=mocker.PropertyMock,
-        )
-        mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_single_channel")
-
-        inst = init_aov()
-
-        mock_light1 = mocker.MagicMock()
-        mock_light2 = mocker.MagicMock()
-
-        lights = [mock_light1, mock_light2]
-
-        mock_channel = mocker.MagicMock(spec="str")
-        data = {consts.CHANNEL_KEY: mock_channel}
-        mock_wrangler = mocker.MagicMock()
-
-        mock_cam = mocker.MagicMock()
-        mock_cam.objectList.return_value = lights
-        mock_now = mocker.MagicMock(spec=float)
-
-        inst._light_export_planes(data, mock_wrangler, mock_cam, mock_now)
-
-        mock_cam.objectList.assert_called_with(
-            "objlist:light", mock_now, mock_scope.return_value, mock_select.return_value
-        )
-
-        mock_write.assert_called_with(lights, data, mock_wrangler, mock_cam, mock_now)
-
-    def test__light_export_planes__per_category(self, init_aov, mocker):
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.lightexport",
-            new_callable=mocker.PropertyMock(
-                return_value=consts.LIGHTEXPORT_PER_CATEGORY_KEY
-            ),
-        )
-        mock_scope = mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.lightexport_scope",
-            new_callable=mocker.PropertyMock,
-        )
-        mock_select = mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.lightexport_select",
-            new_callable=mocker.PropertyMock,
-        )
-        mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_per_category")
-
-        inst = init_aov()
-
-        mock_light1 = mocker.MagicMock()
-        mock_light2 = mocker.MagicMock()
-
-        lights = [mock_light1, mock_light2]
-
-        mock_channel = mocker.MagicMock(spec="str")
-        data = {consts.CHANNEL_KEY: mock_channel}
-        mock_wrangler = mocker.MagicMock()
-
-        mock_cam = mocker.MagicMock()
-        mock_cam.objectList.return_value = lights
-        mock_now = mocker.MagicMock(spec=float)
-
-        inst._light_export_planes(data, mock_wrangler, mock_cam, mock_now)
-
-        mock_cam.objectList.assert_called_with(
-            "objlist:light", mock_now, mock_scope.return_value, mock_select.return_value
-        )
-
-        mock_write.assert_called_with(
-            lights, mock_channel, data, mock_wrangler, mock_cam, mock_now
-        )
-
-    def test__light_export_planes__bad_value(self, init_aov, mocker):
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.lightexport",
-            new_callable=mocker.PropertyMock(spec=str),
-        )
-        mock_scope = mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.lightexport_scope",
-            new_callable=mocker.PropertyMock,
-        )
-        mock_select = mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.lightexport_select",
-            new_callable=mocker.PropertyMock,
-        )
-
-        inst = init_aov()
-
-        mock_light1 = mocker.MagicMock()
-        mock_light2 = mocker.MagicMock()
-
-        lights = [mock_light1, mock_light2]
-
-        mock_channel = mocker.MagicMock(spec="str")
-        data = {consts.CHANNEL_KEY: mock_channel}
-        mock_wrangler = mocker.MagicMock()
-
-        mock_cam = mocker.MagicMock()
-        mock_cam.objectList.return_value = lights
-        mock_now = mocker.MagicMock(spec=float)
-
-        with pytest.raises(aov.InvalidAOVValueError):
+        else:
             inst._light_export_planes(data, mock_wrangler, mock_cam, mock_now)
 
-        mock_cam.objectList.assert_called_with(
-            "objlist:light", mock_now, mock_scope.return_value, mock_select.return_value
-        )
+            if export_value is not None:
+                mock_cam.objectList.assert_called_with(
+                    "objlist:light", mock_now, mock_scope.return_value, mock_select.return_value
+                )
 
-    # _verify_internal_data
+            if export_value == consts.LIGHTEXPORT_PER_LIGHT_KEY:
+                mock_write_light.assert_has_calls(
+                    [
+                        mocker.call(mock_light1, mock_channel, data, mock_wrangler, mock_cam, mock_now),
+                        mocker.call(mock_light2, mock_channel, data, mock_wrangler, mock_cam, mock_now),
+                    ]
+                )
 
-    def test__verify_internal_data__no_variable(self, init_aov, mocker):
+            elif export_value == consts.LIGHTEXPORT_SINGLE_KEY:
+                mock_write_single.assert_called_with(lights, data, mock_wrangler, mock_cam, mock_now)
+
+            elif export_value == consts.LIGHTEXPORT_PER_CATEGORY_KEY:
+                mock_write_per_category.assert_called_with(
+                    lights, mock_channel, data, mock_wrangler, mock_cam, mock_now
+                )
+
+            elif export_value is None:
+                mock_write_to_ifd.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
+
+    @pytest.mark.parametrize("variable, vextype, raises", [
+        (None, None, pytest.raises(aov.MissingVariableError)),
+        ("variable", None, pytest.raises(aov.MissingVexTypeError)),
+        ("variable", "vextype", does_not_raise()),
+    ])
+    def test__verify_internal_data(self, init_aov, mocker, variable, vextype, raises):
+        """Test verifying internal data."""
         mocker.patch(
             "ht.sohohooks.aovs.aov.AOV.variable",
-            new_callable=mocker.PropertyMock(return_value=None),
-        )
-
-        inst = init_aov()
-
-        with pytest.raises(aov.MissingVariableError):
-            inst._verify_internal_data()
-
-    def test__verify_internal_data__no_vextype(self, init_aov, mocker):
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.variable",
-            new_callable=mocker.PropertyMock(spec=str),
+            new_callable=mocker.PropertyMock(return_value=variable),
         )
         mocker.patch(
             "ht.sohohooks.aovs.aov.AOV.vextype",
-            new_callable=mocker.PropertyMock(return_value=None),
+            new_callable=mocker.PropertyMock(return_value=vextype),
         )
 
         inst = init_aov()
 
-        with pytest.raises(aov.MissingVexTypeError):
+        with raises:
             inst._verify_internal_data()
-
-    def test__verify_internal_data__valid(self, init_aov, mocker):
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.variable",
-            new_callable=mocker.PropertyMock(spec=str),
-        )
-        mocker.patch(
-            "ht.sohohooks.aovs.aov.AOV.vextype",
-            new_callable=mocker.PropertyMock(spec=str),
-        )
-
-        inst = init_aov()
-
-        inst._verify_internal_data()
 
     # properties
 
     def test_channel(self, init_aov, mocker):
+        """Test the 'channel' property."""
         mock_value = mocker.MagicMock(spec=str)
 
         inst = init_aov()
@@ -633,6 +381,7 @@ class Test_AOV(object):
         assert inst._data[consts.CHANNEL_KEY] is None
 
     def test_comment(self, init_aov, mocker):
+        """Test the 'comment' property."""
         mock_value = mocker.MagicMock(spec=str)
 
         inst = init_aov()
@@ -645,6 +394,7 @@ class Test_AOV(object):
         assert inst._data[consts.COMMENT_KEY] is None
 
     def test_componentexport(self, init_aov, mocker):
+        """Test the 'componentexport' property."""
         mock_value1 = mocker.MagicMock(spec=bool)
 
         inst = init_aov()
@@ -658,6 +408,7 @@ class Test_AOV(object):
         assert inst._data[consts.COMPONENTEXPORT_KEY] == mock_value2
 
     def test_components(self, init_aov, mocker):
+        """Test the 'components' property."""
         mock_value1 = mocker.MagicMock(spec=list)
 
         inst = init_aov()
@@ -671,6 +422,7 @@ class Test_AOV(object):
         assert inst._data[consts.COMPONENTS_KEY] == mock_value2
 
     def test_exclude_from_dcm(self, init_aov, mocker):
+        """Test the 'exclude_from_dcm' property."""
         mock_value1 = mocker.MagicMock(spec=bool)
 
         inst = init_aov()
@@ -684,6 +436,7 @@ class Test_AOV(object):
         assert inst._data[consts.EXCLUDE_DCM_KEY] == mock_value2
 
     def test_intrinsics(self, init_aov, mocker):
+        """Test the 'intrinsics' property."""
         mock_value1 = mocker.MagicMock(spec=list)
 
         inst = init_aov()
@@ -697,6 +450,7 @@ class Test_AOV(object):
         assert inst._data[consts.INTRINSICS_KEY] == mock_value2
 
     def test_lightexport(self, init_aov, mocker):
+        """Test the 'lightexport' property."""
         mock_value1 = mocker.MagicMock(spec=str)
 
         inst = init_aov()
@@ -710,6 +464,7 @@ class Test_AOV(object):
         assert inst._data[consts.LIGHTEXPORT_KEY] == mock_value2
 
     def test_lightexport_select(self, init_aov, mocker):
+        """Test the 'lightexport_select' property."""
         mock_value1 = mocker.MagicMock(spec=str)
 
         inst = init_aov()
@@ -723,6 +478,7 @@ class Test_AOV(object):
         assert inst._data[consts.LIGHTEXPORT_SELECT_KEY] == mock_value2
 
     def test_lightexport_scope(self, init_aov, mocker):
+        """Test the 'lightexport_scope' property."""
         mock_value1 = mocker.MagicMock(spec=str)
 
         inst = init_aov()
@@ -736,6 +492,7 @@ class Test_AOV(object):
         assert inst._data[consts.LIGHTEXPORT_SCOPE_KEY] == mock_value2
 
     def test_path(self, init_aov, mocker):
+        """Test the 'path' property."""
         mock_value1 = mocker.MagicMock(spec=str)
 
         inst = init_aov()
@@ -749,6 +506,7 @@ class Test_AOV(object):
         assert inst._data[consts.PATH_KEY] == mock_value2
 
     def test_pfilter(self, init_aov, mocker):
+        """Test the 'pfilter' property."""
         mock_value1 = mocker.MagicMock(spec=str)
 
         inst = init_aov()
@@ -762,6 +520,7 @@ class Test_AOV(object):
         assert inst._data[consts.PFILTER_KEY] == mock_value2
 
     def test_planefile(self, init_aov, mocker):
+        """Test the 'planefile' property."""
         mock_value1 = mocker.MagicMock(spec=str)
 
         inst = init_aov()
@@ -775,6 +534,7 @@ class Test_AOV(object):
         assert inst._data[consts.PLANEFILE_KEY] == mock_value2
 
     def test_priority(self, init_aov, mocker):
+        """Test the 'priority' property."""
         mock_value1 = mocker.MagicMock(spec=int)
 
         inst = init_aov()
@@ -788,6 +548,7 @@ class Test_AOV(object):
         assert inst._data[consts.PRIORITY_KEY] == mock_value2
 
     def test_quantize(self, init_aov, mocker):
+        """Test the 'quantize' property."""
         mock_value1 = mocker.MagicMock(spec=str)
 
         inst = init_aov()
@@ -801,6 +562,7 @@ class Test_AOV(object):
         assert inst._data[consts.QUANTIZE_KEY] == mock_value2
 
     def test_sfilter(self, init_aov, mocker):
+        """Test the 'sfilter' property."""
         mock_value1 = mocker.MagicMock(spec=str)
 
         inst = init_aov()
@@ -814,6 +576,7 @@ class Test_AOV(object):
         assert inst._data[consts.SFILTER_KEY] == mock_value2
 
     def test_variable(self, init_aov, mocker):
+        """Test the 'variable' property."""
         mock_value1 = mocker.MagicMock(spec=str)
 
         inst = init_aov()
@@ -827,6 +590,7 @@ class Test_AOV(object):
         assert inst._data[consts.VARIABLE_KEY] == mock_value2
 
     def test_vextype(self, init_aov, mocker):
+        """Test the 'vextype' property."""
         mock_value1 = mocker.MagicMock(spec=str)
 
         inst = init_aov()
@@ -842,6 +606,7 @@ class Test_AOV(object):
     # as_data
 
     def test_as_data__defaults(self, init_aov, mocker):
+        """Test converting to a data dictionary with mostly defaults."""
         mocker.patch.object(aov.AOV, "variable", new_callable=mocker.PropertyMock)
         mocker.patch.object(aov.AOV, "vextype", new_callable=mocker.PropertyMock)
         mocker.patch.object(
@@ -889,6 +654,7 @@ class Test_AOV(object):
         }
 
     def test_as_data__values_per_category_no_components(self, init_aov, mocker):
+        """Test converting to a data dictionary with per category exports and no components."""
         mocker.patch.object(aov.AOV, "variable", new_callable=mocker.PropertyMock)
         mocker.patch.object(aov.AOV, "vextype", new_callable=mocker.PropertyMock)
         mocker.patch.object(aov.AOV, "channel", new_callable=mocker.PropertyMock)
@@ -934,7 +700,9 @@ class Test_AOV(object):
         }
         assert result == expected
 
-    def test_as_data__values_exports_components(self, init_aov, mocker):
+    def test_as_data__values_exports_components(self, init_aov,
+                                                mocker):
+        """Test converting to a data dictionary with exports and components."""
         mocker.patch.object(aov.AOV, "variable", new_callable=mocker.PropertyMock)
         mocker.patch.object(aov.AOV, "vextype", new_callable=mocker.PropertyMock)
         mocker.patch.object(aov.AOV, "channel", new_callable=mocker.PropertyMock)
@@ -2048,7 +1816,7 @@ class Test__write_light(object):
 
         mock_light.getDefaultedString.return_value = [mock_suffix]
 
-        def eval_string(name, mock_now, prefix):
+        def eval_string(name, now, prefix):
             """Fake string evaluation that appends a value."""
             prefix.append(mock_prefix)
             return True
@@ -2082,12 +1850,7 @@ class Test__write_light(object):
         mock_light = mocker.MagicMock()
         mock_light.getName.return_value = mock_name
 
-        # def get_defaulted(name, mock_now, default):
-        #     return default
-
-        mock_light.getDefaultedString.side_effect = (
-            lambda name, mock_now, default: default
-        )
+        mock_light.getDefaultedString.side_effect = lambda name, now, default: default
 
         mock_light.evalString.return_value = False
 

@@ -132,6 +132,9 @@ class AOV(object):
         """
         # Handle any light exporting.
         if self.lightexport is not None:
+            if self.lightexport not in ALLOWABLE_VALUES[consts.LIGHTEXPORT_KEY]:
+                raise InvalidAOVValueError(consts.LIGHTEXPORT_KEY, self.lightexport)
+
             # Get a list of lights matching our mask and selection.
             lights = cam.objectList(
                 "objlist:light", now, self.lightexport_scope, self.lightexport_select
@@ -147,11 +150,9 @@ class AOV(object):
             elif self.lightexport == consts.LIGHTEXPORT_SINGLE_KEY:
                 _write_single_channel(lights, data, wrangler, cam, now)
 
-            elif self.lightexport == consts.LIGHTEXPORT_PER_CATEGORY_KEY:
-                _write_per_category(lights, base_channel, data, wrangler, cam, now)
-
+            # consts.LIGHTEXPORT_PER_CATEGORY_KEY
             else:
-                raise InvalidAOVValueError(consts.LIGHTEXPORT_KEY, self.lightexport)
+                _write_per_category(lights, base_channel, data, wrangler, cam, now)
 
         else:
             # Write a normal AOV definition.
