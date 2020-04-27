@@ -108,7 +108,6 @@ def fix_hou_exceptions(monkeypatch):
     monkeypatch.setattr(hou, "KeyframeValueNotSet", _HouKeyframeValueNotSet)
     monkeypatch.setattr(hou, "LoadWarning", _HouLoadWarning)
     monkeypatch.setattr(hou, "MatchDefinitionError", _HouMatchDefinitionError)
-    monkeypatch.setattr(hou, "NameConflict", _HouNameConflict)
     monkeypatch.setattr(hou, "NodeError", _HouNodeError)
     monkeypatch.setattr(hou, "NodeWarning", _HouNodeWarning)
     monkeypatch.setattr(hou, "NotAvailable", _HouNotAvailable)
@@ -119,6 +118,10 @@ def fix_hou_exceptions(monkeypatch):
     monkeypatch.setattr(hou, "SystemExit", _HouSystemExit)
     monkeypatch.setattr(hou, "TypeError", _HouTypeError)
     monkeypatch.setattr(hou, "ValueError", _HouValueError)
+
+    # Support for any exceptions added in newer versions of Houdini.
+    if hou.applicationVersion() > (17,):
+        mocker.patch("hou.NameConflict", _HouNameConflict)
 
 
 @pytest.fixture
