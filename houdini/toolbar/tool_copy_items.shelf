@@ -7,9 +7,9 @@
   <tool name="copy_items" label="Copy Items to File" icon="BUTTONS_copy">
     <script scriptType="python"><![CDATA["""Copy selected items to a file."""
 
-from ht.ui.paste import copy_items
+import ht.ui.paste
 
-copy_items(kwargs)  # pylint: disable=undefined-variable
+ht.ui.paste.copy_items(kwargs)  # pylint: disable=undefined-variable
 ]]></script>
     <toolMenuContext name="network">
       <contextNetType>OBJ</contextNetType>
