@@ -1,8 +1,12 @@
-"""Test setup."""
+"""Testing fixtures."""
 
 # =============================================================================
 # IMPORTS
 # =============================================================================
+
+# Standard Library Imports
+import os
+from xml.etree import ElementTree
 
 # Third Party Imports
 import pytest
@@ -14,6 +18,52 @@ import hou
 # =============================================================================
 # FIXTURES
 # =============================================================================
+
+
+@pytest.fixture
+def exec_tool_script():
+    """Fixture to execute a tool inside an xml .shelf file."""
+
+    def _exec(file_name, tool_name, kwargs):
+        """Execute tool code inside a file.
+
+        :param file_name: The name of the .shelf file to execute.
+        :type file_name: str
+        :param tool_name: The name of the tool to execute.
+        :type tool_name: str
+        :param kwargs: The global 'kwargs' dict for the tool execution.
+        :type kwargs: dict
+        :return:
+
+        """
+        # Find the file to execute.
+        path = os.path.join(os.environ["TOOLBAR_PATH"], file_name)
+
+        # Fail if we can't find it.
+        if not os.path.exists(path):
+            raise OSError("Could not find file {}".format(path))
+
+        # Read the file and find all the tools.
+        tree = ElementTree.parse(path)
+        root = tree.getroot()
+        tools = root.findall("tool")
+
+        # Look for the specified tool.
+        for tool in tools:
+            if tool.get("name") == tool_name:
+                script = tool.find("script")
+
+                # Read the contents and break.
+                contents = script.text
+                break
+
+        # We didn't find the target tool in the file so fail.
+        else:
+            raise RuntimeError("Could not find tool {}".format(tool_name))
+
+        exec(contents, {"kwargs": kwargs})
+
+    return _exec
 
 
 @pytest.fixture
@@ -121,7 +171,7 @@ def fix_hou_exceptions(monkeypatch):
 
     # Support for any exceptions added in newer versions of Houdini.
     if hou.applicationVersion() > (17,):
-        mocker.patch("hou.NameConflict", _HouNameConflict)
+        monkeypatch.setattr(hou, "NameConflict", _HouNameConflict)
 
 
 @pytest.fixture
@@ -140,9 +190,7 @@ def mock_hdefereval(mocker):
 
 @pytest.fixture
 def mock_hou_qt(mocker):
-    """Mock the hou.qt module which isn't available when running tests via Hython.
-
-    """
+    """Mock the hou.qt module which isn't available when running tests via Hython."""
     mock_qt = mocker.MagicMock()
 
     hou.qt = mock_qt
@@ -150,18 +198,6 @@ def mock_hou_qt(mocker):
     yield mock_qt
 
     del hou.qt
-
-
-@pytest.fixture
-def mock_ui_available(mocker):
-    """Fixture to mock hou.isUIAvailable() to return True."""
-    yield mocker.patch("hou.isUIAvailable", return_value=True)
-
-
-@pytest.fixture
-def mock_ui_unavailable(mocker):
-    """Fixture to mock hou.isUIAvailable() to return False."""
-    yield mocker.patch("hou.isUIAvailable", return_value=False)
 
 
 @pytest.fixture
@@ -181,6 +217,18 @@ def mock_hou_ui(mocker, mock_ui_available):
 
 
 @pytest.fixture
+def mock_ui_available(mocker):
+    """Fixture to mock hou.isUIAvailable() to return True."""
+    yield mocker.patch("hou.isUIAvailable", return_value=True)
+
+
+@pytest.fixture
+def mock_ui_unavailable(mocker):
+    """Fixture to mock hou.isUIAvailable() to return False."""
+    yield mocker.patch("hou.isUIAvailable", return_value=False)
+
+
+@pytest.fixture
 def patch_soho(mocker):
     """Mock importing of mantra/soho related modules.
 
@@ -194,6 +242,7 @@ def patch_soho(mocker):
     mock_soho = mocker.MagicMock()
 
     class MockSoho(object):
+        """Mock object for accessing patched mantra/SOHO modules."""
         IFDapi = mock_api
         IFDhooks = mock_hooks
         IFDsettings = mock_settings
