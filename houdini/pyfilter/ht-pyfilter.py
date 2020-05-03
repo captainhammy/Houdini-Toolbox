@@ -18,7 +18,7 @@ import logging
 import ht.logging
 
 # Initialize logging config.
-ht.logging.init_config()
+ht.logging.config.init_config()
 
 from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.property import get_property
