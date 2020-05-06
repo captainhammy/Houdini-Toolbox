@@ -38,11 +38,15 @@ run-flake:
 
 # Run python linting
 run-lint:
-	bin/run_lint
+	bin/run_lint --rcfile=.pylint.rc --package-name=ht --add-file houdini/pyfilter/ht-pyfilter.py --add-dir bin 
 
 # Run python linting against Python 3 compatibility
 run-lint-py3k:
-	bin/run_lint --py3k
+	bin/run_lint --rcfile=.pylint.rc --package-name=ht --add-file houdini/pyfilter/ht-pyfilter.py --add-dir bin --py3k
+
+# Run python linting for regular issues and Python 3 compatibility.
+run-lint-both:
+	bin/run_lint --rcfile=.pylint.rc --package-name=ht --add-file houdini/pyfilter/ht-pyfilter.py --add-dir bin --regular-and-py3k
 
 # Run Python unit tests
 run-tests:
