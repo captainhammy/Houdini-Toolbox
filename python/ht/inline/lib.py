@@ -19,7 +19,8 @@ import inlinecpp
 
 _FUNCTION_SOURCES = [
     """
-void clearCacheByName(const char* cache_name)
+void
+clearCacheByName(const char* cache_name)
 {
     UT_Cache                    *cache;
     UT_ValArray<UT_Cache *>     caches;
@@ -1951,7 +1952,7 @@ eval_multiparm_instance_int(OP_Node *node, const char *parm_name, int component_
 }
 """,
     """
-const char *
+inlinecpp::BinaryString
 eval_multiparm_instance_string(OP_Node *node, const char *parm_name, int component_index, int index, int start_offset)
 {
     fpreal                      t = CHgetEvalTime();
@@ -1965,8 +1966,7 @@ eval_multiparm_instance_string(OP_Node *node, const char *parm_name, int compone
 
     addDependencyOnParm(node, name, instance_index, component_index);
 
-    // For some reason we can sometimes get garbage values if we don't do this :/
-    return value.toStdString().c_str();
+    return value.toStdString();
 }
 """,
     """
