@@ -71,8 +71,15 @@ class HoudiniBase(object):
         if not isinstance(other, HoudiniBase):
             return NotImplemented
 
-        # Two objects are equal if their Houdini versions are equal.
-        return self.version == other.version
+        # Check the Houdini version.
+        if self.version != other.version:
+            return False
+
+        # Check the products.
+        if self.product != other.product:
+            return False
+
+        return True
 
     def __ne__(self, other):
         if not isinstance(other, HoudiniBase):
@@ -478,19 +485,28 @@ class HoudiniBuildManager(object):
 
         """
         default = None
+        default_product = None
+
+        # Get the builds that are installed.
+        builds = self.installed
 
         # Ensure we have system settings available.
         if _SETTINGS_MANAGER.system is not None:
-            # Get the default from the system settings.
+            # Get the defaults from the system settings.
             default_name = _SETTINGS_MANAGER.system.default_version
+            default_product = _SETTINGS_MANAGER.system.default_product
 
+            # Filter the list of builds by the default product.
+            builds = [build for build in builds if build.product == default_product]
+
+            # If a default name was given then filter the builds based on that.
             if default_name is not None:
-                default = find_matching_builds(default_name, self.installed)
+                default = find_matching_builds(default_name, builds)
 
         # If the default could not be found (or none was specified) use the
         # latest build.
-        if default is None and self.installed:
-            default = self.installed[-1]
+        if default is None and builds:
+            default = builds[-1]
 
         return default
 
@@ -917,12 +933,16 @@ class HoudiniSystemSettings(object):
     def __init__(self, data):
         self._locations = data["archive_locations"]
         self._plugins = None
+        self._default_product = None
         self._default_version = None
 
         self._installation = HoudiniInstallationSettings(data["installation"])
 
         if "default_version" in data:
             self._default_version = data["default_version"]
+
+        if "default_product" in data:
+            self._default_product = data["default_product"]
 
         # Plugin data is optional.
         if "plugins" in data:
@@ -931,6 +951,11 @@ class HoudiniSystemSettings(object):
     # -------------------------------------------------------------------------
     # PROPERTIES
     # -------------------------------------------------------------------------
+
+    @property
+    def default_product(self):
+        """str or None: A default product string."""
+        return self._default_product
 
     @property
     def default_version(self):

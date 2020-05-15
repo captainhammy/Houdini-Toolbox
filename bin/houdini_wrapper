@@ -20,6 +20,7 @@ import ht.machinery.argparser
 import ht.machinery.package
 import ht.machinery.sidefx_web_api
 
+
 # =============================================================================
 # GLOBALS
 # =============================================================================
@@ -413,8 +414,6 @@ def main():
     no_jemalloc = args.no_jemalloc
     test_path = args.test_path
 
-    cprint("Houdini Wrapper:\n", "yellow")
-
     # If version is False (no argument), display any available versions and
     # exit.
     if not args.version:
@@ -448,8 +447,6 @@ def main():
         program_name = "hconfig"
         extras = ["-a"]
 
-        cprint("Dumping env settings\n", "yellow")
-
         # Dump the environment with 'printenv'.
         proc = subprocess.Popen("printenv", stdout=subprocess.PIPE)
 
@@ -465,17 +462,10 @@ def main():
     if no_jemalloc:
         run_args = _set_no_jemalloc(build.path, program_name)
 
-    # Print the Houdini version information.
-    six.print_("\tHoudini {}: {}\n".format(build, build.path))
-
-    # Print the command being run.
-    cprint("Launching {} {} ... ".format(" ".join(run_args), " ".join(extras)), "yellow")
-
     # Run the application.
     proc = subprocess.Popen(run_args + extras)
 
     # Display the process id.
-    cprint("{} process id: {}".format(program_name, proc.pid+2), "blue")
 
     # Wait for the program to complete.
     proc.wait()
