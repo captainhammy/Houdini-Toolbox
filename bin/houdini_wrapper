@@ -84,6 +84,13 @@ def _build_parsers():
     )
 
     parser.add_argument(
+        "--default-version",
+	action="store_true",
+        dest="display_default",
+        help="Display the default version."
+    )
+
+    parser.add_argument(
         "--no-symlink",
         action="store_true",
         default=False,
@@ -393,6 +400,12 @@ def main():
         args.func(args)
 
         return
+
+    # If asking to display the default version then just print it and bail.
+    if args.display_default:
+	six.print_(_BUILD_MANAGER.get_default_build())
+
+	return
 
     # Get the name of the executable we are trying to run.
     program_name = os.path.basename(sys.argv[0])

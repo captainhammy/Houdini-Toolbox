@@ -1,4 +1,7 @@
 
+# Default Houdini version to use for commands.
+HOUDINI_VERSION := $(shell houdini --default-version)
+
 # Quickly compile Qt icons using PySide2.
 build-icons:
 	pyside2-rcc -o python/ht/ui/icons.py icons/icons.qrc
@@ -6,12 +9,12 @@ build-icons:
 # Invoke hcmake and make to build all plugins.
 build-plugins:
 	mkdir -p ${CURDIR}/plugins/build
-	cd ${CURDIR}/plugins/build && hcmake .. && make
+	cd ${CURDIR}/plugins/build && hcmake --version $(HOUDINI_VERSION) .. && make
 
 # Build a single plugin: build-plugin PLUGIN={PLUGIN_NAME}
 build-plugin:
 	mkdir -p ${CURDIR}/plugins/build
-	cd ${CURDIR}/plugins/build && hcmake .. && make ${PLUGIN}
+	cd ${CURDIR}/plugins/build && hcmake --version $(HOUDINI_VERSION) .. && make ${PLUGIN}
 
 # Clean built plugins.
 clean-plugins:
@@ -25,7 +28,7 @@ list-targets:
 # Initialize the build location and run cmake
 init-build:
 	mkdir -p ${CURDIR}/plugins/build
-	cd ${CURDIR}/plugins/build && hcmake ..
+	cd ${CURDIR}/plugins/build && hcmake --version $(HOUDINI_VERSION) ..
 
 .PHONY: run-flake run-lint run-lint-py3k
 
@@ -51,4 +54,5 @@ run-lint-both:
 # Run Python unit tests
 run-tests:
 	@coverage erase
-	env --unset=HOUDINI_PATH TOOLBAR_PATH=`pwd`/houdini/toolbar hython -m pytest tests/
+	env --unset=HOUDINI_PATH TOOLBAR_PATH=`pwd`/houdini/toolbar hython --version $(HOUDINI_VERSION) -m pytest tests/
+
