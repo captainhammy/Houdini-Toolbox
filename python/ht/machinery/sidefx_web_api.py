@@ -20,6 +20,8 @@ from humanfriendly.tables import format_pretty_table
 import requests
 import six
 from termcolor import colored, cprint
+from tqdm import tqdm
+
 
 # =============================================================================
 # GLOBALS
@@ -417,7 +419,9 @@ def download_build(  # pylint: disable=too-many-locals
         return None
 
     file_size = release_info["size"]
-    chunk_size = file_size // 10
+
+    nchunks = 10
+    chunk_size = file_size // nchunks
 
     if not os.path.isdir(download_path):
         os.makedirs(download_path)
@@ -437,21 +441,11 @@ def download_build(  # pylint: disable=too-many-locals
             )
         )
 
-        total = 0
-
-        with open(target_path, "wb") as handle:
-            sys.stdout.write("0% complete")
-            sys.stdout.flush()
-
-            for chunk in request.iter_content(chunk_size=chunk_size):
-                total += chunk_size
-
-                sys.stdout.write(
-                    "\r{}% complete".format(min(int((total / file_size) * 100), 100))
-                )
-                sys.stdout.flush()
-
-                handle.write(chunk)
+        with tqdm(desc="Downloading build", total=file_size) as pbar:
+            with open(target_path, "wb") as handle:
+                for chunk in request.iter_content(chunk_size=chunk_size):
+                    pbar.update(chunk_size)
+                    handle.write(chunk)
 
         six.print_("\n\nDownload complete")
 
