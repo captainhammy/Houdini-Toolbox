@@ -16,7 +16,7 @@ import tempfile
 from xml.etree import ElementTree
 
 # Third Party Imports
-import contextlib2
+import contextlib
 
 from pylint import lint
 from pylint.reporters.text import TextReporter
@@ -499,7 +499,7 @@ class LintableMenuFile(LintableFile):
         if disabled_checks is None:
             disabled_checks = []
 
-        disabled_checks.extend(["missing-docstring", "undefined_variable"])
+        disabled_checks.extend(["missing-docstring", "undefined-variable"])
 
         clean = runner.lint_path(temp_path, self, disabled_checks=disabled_checks)
 
@@ -800,7 +800,7 @@ def _build_parser():
     return parser
 
 
-@contextlib2.contextmanager
+@contextlib.contextmanager
 def _filter_error_output():
     """Filter stderr output to ignore pylint 'Using config file ...' messages.
 
