@@ -12,8 +12,8 @@
 # IMPORTS
 # =============================================================================
 
-# Third Party Imports
-import six
+# Standard Library Imports
+from __future__ import print_function
 
 # Houdini Toolbox Imports
 from ht.nodes import helpcard
@@ -65,7 +65,7 @@ if target_node is not None:
                 open_type_properties = True
 
             else:
-                six.print_(help_text)
+                print(help_text)
 
         else:
             help_section = type_definition.addSection("Help")
@@ -76,7 +76,7 @@ if target_node is not None:
         if open_type_properties:
             hou.ui.openTypePropertiesDialog(target_node)
     else:
-        six.print_(help_text)
+        print(help_text)
 ]]></script>
   </tool>
 </shelfDocument>

@@ -4,8 +4,8 @@
 # IMPORTS
 # =============================================================================
 
-# Third Party Imports
-import six
+# Standard Library Imports
+from __future__ import print_function
 
 # Houdini Imports
 import hou
@@ -34,10 +34,10 @@ if not node.evalParm("pause_compiling"):
             hou.ui.setStatusMessage(msg, hou.severityType.Error)
 
         else:
-            six.print_(msg)
+            print(msg)
 
         if node.evalParm("print_compile_errors"):
-            six.print_(inst)
+            print(inst)
 
     # If there are no function sources
     except node.hm().NoFunctionSourcesError:
@@ -52,4 +52,4 @@ if not node.evalParm("pause_compiling"):
 
 # Get and execute the Python code.
 code = node.parm("code").unexpandedString()
-six.exec_(code)
+exec(code)
