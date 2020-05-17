@@ -8,6 +8,8 @@ file path.
 # =============================================================================
 
 # Standard Library Imports
+from builtins import object
+import builtins
 from collections import Iterable
 import json
 import logging
@@ -43,12 +45,12 @@ class PropertySetterManager(object):
 
         """
         # Process each filter stage name and it's data.
-        for stage_name, stage_data in data.items():
+        for stage_name, stage_data in list(data.items()):
             # A list of properties for this stage.
             properties = self.properties.setdefault(stage_name, [])
 
             # The data is stored by property name.
-            for property_name, property_block in stage_data.items():
+            for property_name, property_block in list(stage_data.items()):
                 # Wrapping properties in a 'rendertype:type' block is supported
                 # if the the name indicates that we have to modify the data.
                 if property_name.startswith("rendertype:"):
@@ -89,7 +91,7 @@ class PropertySetterManager(object):
         _logger.debug("Reading properties from %s", file_path)
 
         # Load json data from the file.
-        with open(file_path) as handle:
+        with builtins.open(file_path) as handle:
             data = json.load(handle)
 
         self._load_from_data(data)
@@ -501,7 +503,7 @@ def _process_rendertype_block(properties, stage_name, rendertype, property_block
 
     """
     # Process each child property block.
-    for name, block in property_block.items():
+    for name, block in list(property_block.items()):
         # If the child data is the standard dictionary of data
         # we can just insert the rendertype value into it.
         if isinstance(block, dict):

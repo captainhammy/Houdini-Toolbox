@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Standard Library Imports
+from builtins import object
 import copy
 
 # Houdini Toolbox Imports
@@ -419,7 +420,7 @@ class AOV(object):
         :return:
 
         """
-        for name, value in data.items():
+        for name, value in list(data.items()):
             # Check if there is a restriction on the data type.
             if name in ALLOWABLE_VALUES:
                 # Get the allowable types for this data.
@@ -1002,7 +1003,7 @@ def _write_per_category(lights, base_channel, data, wrangler, cam, now):
     category_map = _build_category_map(lights, now)
 
     # Process all the found categories and their member lights.
-    for category, category_lights in category_map.items():
+    for category, category_lights in list(category_map.items()):
         # Construct the export string to contain all the member
         # lights.
         data[consts.LIGHTEXPORT_KEY] = " ".join(

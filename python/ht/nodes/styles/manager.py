@@ -8,9 +8,13 @@ colors in Houdini.
 # =============================================================================
 
 # Standard Library Imports
+from builtins import object
 import glob
 import json
 import os
+
+# Third Party Imports
+import builtins
 
 # Houdini Toolbox Imports
 from ht.nodes.styles.styles import ConstantRule, StyleConstant, StyleRule
@@ -61,7 +65,7 @@ class StyleManager(object):
         # Read all the target files in reverse.
         for path in reversed(files):
             # Open the target file and load the data.
-            with open(path) as handle:
+            with builtins.open(path) as handle:
                 data = json.load(handle)
 
             data[constants.PATH_KEY] = path
@@ -84,7 +88,7 @@ class StyleManager(object):
 
             # Process any constants first so they can be used by assignments.
             if constants.CONSTANT_DEFINITION_KEY in data:
-                for name, entry in data[constants.CONSTANT_DEFINITION_KEY].items():
+                for name, entry in list(data[constants.CONSTANT_DEFINITION_KEY].items()):
                     # Get the color from the info.
 
                     color, color_type = _build_color(entry)
@@ -109,12 +113,12 @@ class StyleManager(object):
 
                 path = data[constants.PATH_KEY]
 
-                for rule_type, rule_data in rules_data.items():
+                for rule_type, rule_data in list(rules_data.items()):
                     # Get the mapping dictionary from the manager.
                     rule_type_map = getattr(self, rule_type)
 
                     # Process each category in the data.
-                    for category_name, rules in rule_data.items():
+                    for category_name, rules in list(rule_data.items()):
                         # Get a mapping list for the category name.
                         category_map = rule_type_map.setdefault(category_name, {})
 
@@ -180,7 +184,7 @@ class StyleManager(object):
             # Check for rules for the node type category.
             if category_name in self.name_rules:
                 # Check if the name matches any of the category rules.
-                for rule in self.name_rules[category_name].values():
+                for rule in list(self.name_rules[category_name].values()):
                     if hou.patternMatch(rule.name, name):
                         return self._resolve_rule(rule)
 
@@ -206,7 +210,7 @@ class StyleManager(object):
             if category_name in self.node_type_rules:
                 # Check if the node type name matches any of the category
                 # rules.
-                for rule in self.node_type_rules[category_name].values():
+                for rule in list(self.node_type_rules[category_name].values()):
                     if hou.patternMatch(rule.name, type_name):
                         return self._resolve_rule(rule)
 
@@ -232,7 +236,7 @@ class StyleManager(object):
                 # Process the locations, looking for the first match.
                 for location in menu_locations:
                     # Check if the location matches any of the category rules.
-                    for rule in self.tool_rules[category_name].values():
+                    for rule in list(self.tool_rules[category_name].values()):
                         if hou.patternMatch(rule.name, location):
                             return self._resolve_rule(rule)
 

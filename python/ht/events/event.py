@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
+from builtins import object
 from ht.events.item import HoudiniEventItem
 from ht.events.stats import HoudiniEventStats
 

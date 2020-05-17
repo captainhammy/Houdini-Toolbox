@@ -40,7 +40,6 @@ class _BaseCopyHelperWidget(QtWidgets.QWidget):
         :return:
 
         """
-        pass
 
 
 class _BasePasteHelperWidget(QtWidgets.QWidget):
@@ -68,7 +67,6 @@ class _BasePasteHelperWidget(QtWidgets.QWidget):
         :return:
 
         """
-        pass
 
 
 class HomeToolDirItemsCopyHelperWidget(_BaseCopyHelperWidget):
