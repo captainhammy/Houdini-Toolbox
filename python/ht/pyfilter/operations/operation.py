@@ -65,7 +65,6 @@ class PyFilterOperation(object):
         :rtype: str
 
         """
-        pass
 
     @staticmethod
     def register_parser_args(parser):
@@ -76,7 +75,6 @@ class PyFilterOperation(object):
         :return:
 
         """
-        pass
 
     # -------------------------------------------------------------------------
     # METHODS
@@ -90,7 +88,6 @@ class PyFilterOperation(object):
         :return:
 
         """
-        pass
 
     def should_run(self):  # pylint: disable=no-self-use
         """Determine whether or not this filter should be run.

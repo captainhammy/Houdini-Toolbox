@@ -159,10 +159,10 @@ def _get_target_file(node):
     if node_type_name in ("geometry", "rop_geometry"):
         return node.evalParm("sopoutput")
 
-    elif node_type_name in ("alembic", "rop_alembic"):
+    if node_type_name in ("alembic", "rop_alembic"):
         return node.evalParm("filename")
 
-    elif node_type_name in ("ifd",):
+    if node_type_name in ("ifd",):
         if node.evalParm("soho_outputmode"):
             return node.evalParm("soho_diskfile")
 

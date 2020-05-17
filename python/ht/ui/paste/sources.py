@@ -358,7 +358,6 @@ class CopyPasteItemSource(with_metaclass(abc.ABCMeta, object)):
     @abc.abstractproperty
     def author(self):
         """str: The name of the item author."""
-        pass
 
     @property
     def context(self):
@@ -368,17 +367,14 @@ class CopyPasteItemSource(with_metaclass(abc.ABCMeta, object)):
     @abc.abstractproperty
     def date(self):
         """datetime.datetime: The date of creation."""
-        pass
 
     @abc.abstractproperty
     def description(self):
         """str: The item description."""
-        pass
 
     @abc.abstractproperty
     def name(self):
         """str: The item name."""
-        pass
 
     # -------------------------------------------------------------------------
     # METHODS
@@ -391,7 +387,6 @@ class CopyPasteItemSource(with_metaclass(abc.ABCMeta, object)):
         :return:
 
         """
-        pass
 
     @abc.abstractmethod
     def load_items(self, parent):
@@ -401,7 +396,6 @@ class CopyPasteItemSource(with_metaclass(abc.ABCMeta, object)):
         :type parent: hou.Node
 
         """
-        pass
 
     @abc.abstractmethod
     def save_items(self, parent, items):
@@ -414,7 +408,6 @@ class CopyPasteItemSource(with_metaclass(abc.ABCMeta, object)):
         :return:
 
         """
-        pass
 
 
 class CPIOContextCopyPasteItemFile(CopyPasteItemSource):

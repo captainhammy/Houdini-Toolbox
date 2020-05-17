@@ -2440,7 +2440,12 @@ def test_get_node_representative_node():
 def test_asset_file_meta_source():
     """Test ht.inline.api.asset_file_meta_source."""
     target = "Scanned Asset Library Directories"
-    path = hou.expandString("$HH/otls/OPlibSop.hda")
+
+    if hou.applicationVersion() >= (18):
+        path = hou.text.expandString("$HH/otls/OPlibSop.hda")
+
+    else:
+        path = hou.expandString("$HH/otls/OPlibSop.hda")
 
     assert ht.inline.api.asset_file_meta_source(path) == target
 

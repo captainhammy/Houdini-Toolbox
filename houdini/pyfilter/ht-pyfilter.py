@@ -15,7 +15,7 @@ For more information, please see:
 import logging
 
 # Houdini Toolbox Imports
-import ht.logging
+import ht.logging.config
 
 # Initialize logging config.
 ht.logging.config.init_config()
@@ -168,8 +168,9 @@ def filterPlane():
     variable = get_property("plane:variable")
     channel = get_property("plane:channel")
 
-    if variable == channel or channel == "":
+    if channel in (variable, ""):
         _logger.debug("filterPlane (%s)", variable)
+
     else:
         _logger.debug("filterPlane (%s -> %s)", variable, channel)
 

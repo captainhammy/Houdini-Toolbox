@@ -108,8 +108,7 @@ class PyFilterManager(object):
 
                     continue
 
-                else:
-                    _logger.debug("Registering %s (%s)", class_name, module_name)
+                _logger.debug("Registering %s (%s)", class_name, module_name)
 
                 # Add an instance of it to our operations list.
                 self.operations.append(cls(self))

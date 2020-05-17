@@ -1,5 +1,6 @@
 enum34
 flake8
+future
 humanfriendly
 jinja2
 logquacious
@@ -9,6 +10,5 @@ pytest-cov
 pytest-mock
 requests
 scipy
-six
 termcolor
 tqdm

@@ -146,10 +146,9 @@ class HomeToolDirItemsCopyHelperWidget(_BaseCopyHelperWidget):
 
             return self.source.create_source(self.context, name, description)
 
-        else:
-            sources = self.table.get_selected_sources()
+        sources = self.table.get_selected_sources()
 
-            return sources[0]
+        return sources[0]
 
 
 class HomeToolDirItemsPasteHelperWidget(_BasePasteHelperWidget):

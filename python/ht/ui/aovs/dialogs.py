@@ -363,7 +363,6 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
     def _additional_aov_variable_validation(self, variable_name):
         """Perform additional validation against a variable name."""
-        pass
 
     # -------------------------------------------------------------------------
     # METHODS
@@ -873,7 +872,6 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
 
     def _additional_group_name_validation(self, group_name):
         """Perform additional validation against a group name."""
-        pass
 
     # -------------------------------------------------------------------------
     # METHODS

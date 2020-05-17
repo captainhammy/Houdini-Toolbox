@@ -1991,13 +1991,13 @@ class StatusMessageWidget(QtWidgets.QWidget):
             self.icon.setPixmap(self.error_pixmap)
             return self._error_mappings[highest]
 
-        elif self._warning_mappings:
+        if self._warning_mappings:
             highest = sorted(self._warning_mappings.keys())[0]
 
             self.icon.setPixmap(self.warning_pixmap)
             return self._warning_mappings[highest]
 
-        elif self._info_mappings:
+        if self._info_mappings:
             highest = sorted(self._info_mappings.keys())[0]
 
             self.icon.setPixmap(self.info_pixmap)

@@ -10,7 +10,13 @@ file path.
 # Standard Library Imports
 from builtins import object
 import builtins
-from collections import Iterable
+
+try:
+    from collections.abc import Iterable
+
+except ImportError:
+    from collections import Iterable
+
 import json
 import logging
 
@@ -443,16 +449,15 @@ def _create_property_setter(property_name, property_block, stage_name):
             return MaskedPropertySetter(property_name, property_block, "plane:variable")
 
         # Something involving an actual object.
-        elif stage_name in ("fog", "light", "instance"):
+        if stage_name in ("fog", "light", "instance"):
             return MaskedPropertySetter(property_name, property_block, "object:name")
 
         # If masking is specified but we don't know how to handle it, log a
         # warning message.  We will still return a regular PropertySetter
         # object though.
-        else:
-            _logger.warning(
-                "No masking available for %s:%s.", stage_name, property_name
-            )
+        _logger.warning(
+            "No masking available for %s:%s.", stage_name, property_name
+        )
 
     # Generic property setter.
     return PropertySetter(property_name, property_block)

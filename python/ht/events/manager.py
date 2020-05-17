@@ -9,7 +9,13 @@ events in Houdini.
 
 # Standard Library Imports
 from builtins import object
-import collections
+
+try:
+    from collections.abc import Callable
+
+except ImportError:
+    from collections import Callable
+
 from contextlib import contextmanager
 
 # Houdini Toolbox Imports
@@ -237,7 +243,7 @@ def register_function(func, event_name, item_name=None, priority=1, stat_tags=No
     :return:
 
     """
-    if not isinstance(func, collections.Callable):
+    if not isinstance(func, Callable):
         raise TypeError("{} is not callable".format(func))
 
     item = HoudiniEventItem((func,), item_name, priority, stat_tags=stat_tags)
