@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Standard Library Imports
+from builtins import object
 import sys
 
 # Third Party Imports
@@ -51,7 +52,7 @@ class Test__prep_value_to_set(object):
 
     @pytest.mark.skipif(sys.version_info.major == 3, reason="Skipping for Python 3")
     def test_unicode(self, mocker):
-        mock_value = mocker.MagicMock(spec=unicode)
+        mock_value = mocker.MagicMock(spec=str)
 
         result = prop._prep_value_to_set(mock_value)
 

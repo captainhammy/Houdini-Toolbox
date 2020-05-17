@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Standard Library Imports
+from builtins import object
 import os
 from xml.etree import ElementTree
 

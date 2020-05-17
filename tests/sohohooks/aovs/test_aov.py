@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Third Party Imports
+from builtins import object
 from contextlib import contextmanager
 import pytest
 

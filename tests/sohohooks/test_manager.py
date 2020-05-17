@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Third Party Imports
+from builtins import object
 import pytest
 
 # Houdini Toolbox Imports
