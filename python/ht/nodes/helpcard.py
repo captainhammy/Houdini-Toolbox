@@ -9,13 +9,13 @@ standard_library.install_aliases()
 
 # Standard Library Imports
 from collections import OrderedDict
+import io
 import os
 import re
 import yaml
 
 # Third Party Imports
 import jinja2
-import io
 
 # Houdini Imports
 import hou

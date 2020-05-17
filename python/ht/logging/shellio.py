@@ -55,8 +55,8 @@ class PythonShellHandler(logging.StreamHandler):
                 stream.write("\n")
                 stream.flush()
 
-        except (KeyboardInterrupt, SystemExit):
-            raise
+        except (KeyboardInterrupt, SystemExit) as inst:
+            raise inst
 
         except Exception:  # pylint: disable=broad-except
             self.handleError(record)

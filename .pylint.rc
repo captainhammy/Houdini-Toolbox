@@ -23,7 +23,10 @@ disable=import-error,
 	duplicate-code,
 	fixme,
 	too-many-lines,
-	bad-continuation
+	bad-continuation,
+	import-outside-toplevel,
+	useless-object-inheritance,
+	exec-used
 
 enable=c-extension-no-member,
     no-else-return

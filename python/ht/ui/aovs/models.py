@@ -141,7 +141,6 @@ class TreeNode(object):
 
     def tooltip(self):
         """Return a tooltip for the node."""
-        pass
 
 
 class FolderNode(TreeNode):

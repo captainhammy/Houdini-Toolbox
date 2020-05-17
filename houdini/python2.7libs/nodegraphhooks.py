@@ -46,7 +46,7 @@ def createEventHandler(
         if setKeyPrompt(editor, key, "h.tool:copy_items", eventtype):
             return paste.copy_items_from_graph(editor)
 
-        elif setKeyPrompt(editor, key, "h.tool:paste_items", eventtype):
+        if setKeyPrompt(editor, key, "h.tool:paste_items", eventtype):
             return paste.paste_items_to_graph(eventtype, editor, uievent)
 
     return None, False

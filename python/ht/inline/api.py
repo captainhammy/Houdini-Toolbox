@@ -2102,7 +2102,7 @@ def eval_parm_tuple_as_vector(parm_tuple):
     if size == 2:
         return hou.Vector2(value)
 
-    elif size == 3:
+    if size == 3:
         return hou.Vector3(value)
 
     return hou.Vector4(value)
@@ -2864,8 +2864,7 @@ def get_oriented_point_transform(point):
 
     # Just a simple unattached point so we can return the standard point instance
     # matrix.
-    else:
-        return point_instance_transform(point)
+    return point_instance_transform(point)
 
 
 def point_instance_transform(point):

@@ -1,12 +1,18 @@
 """This module contains the Houdini event group class."""
 
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+# Third Party Imports
+from builtins import object
+
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
 
-from builtins import object
 class HoudiniEventGroup(object):
     """The Houdini event group class.
 

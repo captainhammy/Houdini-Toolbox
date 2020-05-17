@@ -5,12 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from __future__ import division, print_function
-from future import standard_library
-standard_library.install_aliases()
-
-from builtins import str
-from builtins import object
 import base64
 import datetime
 import hashlib
@@ -41,7 +35,7 @@ _STATUS_MAP = {"good": "white", "bad": "red"}
 # =============================================================================
 
 
-class _Service(object):
+class _Service:
     """Class representing a connection to the SideFX Web API."""
 
     def __init__(self):
@@ -82,7 +76,8 @@ class _Service(object):
         )
 
         # Sort the release list by integer version/build since it will be sorted by string
-        def sorter(data):  # pylint: disable=missing-docstring
+        def sorter(data):
+            """Function to build key generation for sorting builds."""
             return [int(val) for val in data["version"].split(".")], int(data["build"])
 
         releases_list.sort(reverse=True, key=sorter)
@@ -111,7 +106,7 @@ class _Service(object):
         return release_info
 
 
-class _APIFunction(object):
+class _APIFunction:
     """Class representing a Web API function.
 
     :param function_name: The name of the function.
@@ -152,7 +147,7 @@ class APIError(Exception):
     """
 
     def __init__(self, http_code, message):
-        super(APIError, self).__init__(message)
+        super().__init__(message)
         self.http_code = http_code
 
 
@@ -163,7 +158,7 @@ class AuthorizationError(Exception):
     """
 
     def __init__(self, http_code, message):
-        super(AuthorizationError, self).__init__(message)
+        super().__init__(message)
         self.http_code = http_code
 
 
@@ -270,7 +265,7 @@ def _extract_traceback_from_response(response):
     if not traceback:
         traceback = error_message
 
-    return str(html.parser.HTMLParser().unescape(traceback))
+    return str(html.unescape(traceback))
 
 
 def _get_build_to_download(
