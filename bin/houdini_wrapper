@@ -6,13 +6,13 @@
 # =============================================================================
 
 # Standard Library Imports
+from __future__ import print_function
 import os
 import signal
 import subprocess
 import sys
 
 # Third Party Imports
-import six
 from termcolor import colored, cprint
 
 # Houdini Toolbox Imports
@@ -86,7 +86,7 @@ def _build_parsers():
 
     parser.add_argument(
         "--default-version",
-	action="store_true",
+        action="store_true",
         dest="display_default",
         help="Display the default version."
     )
@@ -137,7 +137,7 @@ def _display_versions():
     :return:
 
     """
-    six.print_("Installed Houdini builds:")
+    print("Installed Houdini builds:")
 
     default_build = _BUILD_MANAGER.get_default_build()
 
@@ -153,9 +153,9 @@ def _display_versions():
         else:
             output.append(build.display_name)
 
-    six.print_('\t' + ' '.join(output))
+    print('\t' + ' '.join(output))
 
-    six.print_()
+    print()
 
 
 def _download_handler(args):
@@ -169,7 +169,7 @@ def _download_handler(args):
     product = args.product
 
     if args.list_builds:
-        six.print_("Houdini builds available to download:\n")
+        print("Houdini builds available to download:\n")
 
         ht.machinery.sidefx_web_api.list_builds(
             version=args.version,
@@ -180,7 +180,7 @@ def _download_handler(args):
         return
 
     if not args.version:
-        six.print_("No version specified")
+        print("No version specified")
 
         return
 
@@ -206,7 +206,7 @@ def _find_build(args):
 
     # Couldn't find any builds, so print the appropriate message.
     if not search_builds:
-        six.print_("No available builds found.")
+        print("No available builds found.")
 
         return None
 
@@ -225,7 +225,7 @@ def _find_build(args):
         result = ht.machinery.package.find_matching_builds(version, search_builds)
 
         if result is None:
-            six.print_("Could not find version: {}".format(version))
+            print("Could not find version: {}".format(version))
 
         else:
             build = result
@@ -248,14 +248,14 @@ def _install_handler(args):
         return
 
     if not args.version:
-        six.print_("No version specified")
+        print("No version specified")
 
         return
 
     result = ht.machinery.package.find_matching_builds(args.version, _BUILD_MANAGER.installable)
 
     if not result:
-        six.print_("Could not find installable build {}".format(args.version))
+        print("Could not find installable build {}".format(args.version))
 
     result.install(not args.no_symlink)
 
@@ -270,11 +270,11 @@ def _print_local_build_list(build_list, message):
     :return:
 
     """
-    six.print_(message)
+    print(message)
 
-    six.print_('\t' + " ".join([build.display_name for build in build_list]))
+    print('\t' + " ".join([build.display_name for build in build_list]))
 
-    six.print_()
+    print()
 
 
 def _signal_handler(signal_num, current_frame):  # pylint: disable=unused-argument
@@ -290,7 +290,7 @@ def _signal_handler(signal_num, current_frame):  # pylint: disable=unused-argume
 
     """
     signal_name = _SIGNALS[signal_num]
-    six.print_("Houdini wrapper caught sig SIG{}".format(signal_name))
+    print("Houdini wrapper caught sig SIG{}".format(signal_name))
 
     # Ignore further signals.
     for sig in _SIGNALS:
@@ -359,7 +359,7 @@ def _uninstall_handler(args):
         return
 
     if not args.versions:
-        six.print_("No version specified")
+        print("No version specified")
 
         return
 
@@ -367,7 +367,7 @@ def _uninstall_handler(args):
         result = ht.machinery.package.find_matching_builds(version, _BUILD_MANAGER.installed)
 
         if result is None:
-            six.print_("Could not find version: {}".format(version))
+            print("Could not find version: {}".format(version))
 
             continue
 
@@ -404,9 +404,9 @@ def main():
 
     # If asking to display the default version then just print it and bail.
     if args.display_default:
-	six.print_(_BUILD_MANAGER.get_default_build())
+        print(_BUILD_MANAGER.get_default_build())
 
-	return
+        return
 
     # Get the name of the executable we are trying to run.
     program_name = os.path.basename(sys.argv[0])
@@ -450,8 +450,8 @@ def main():
         # Dump the environment with 'printenv'.
         proc = subprocess.Popen("printenv", stdout=subprocess.PIPE)
 
-        six.print_(proc.communicate()[0])
-        six.print_()
+        print(proc.communicate()[0])
+        print()
 
     # Start with the name of the program to run.
     run_args = [program_name]

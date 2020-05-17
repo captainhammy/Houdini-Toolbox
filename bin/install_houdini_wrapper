@@ -6,12 +6,10 @@
 # =============================================================================
 
 # Standard Library Imports
+from __future__ import print_function
 import argparse
 import os
 import stat
-
-# Third Party Imports
-import six
 
 # =============================================================================
 # GLOBALS
@@ -105,7 +103,7 @@ def main():
 
     # If neither install or uninstall was specified we can't do anything.
     if not any([arguments.install, arguments.uninstall]):
-        six.print_("Nothing to do: Please specify --install or --uninstall.")
+        print("Nothing to do: Please specify --install or --uninstall.")
         return
 
     # Verify the target directory exists.
@@ -126,7 +124,7 @@ def main():
 
         # Create the link.
         if arguments.install:
-            six.print_("Creating {link} -> {target}".format(link=link_path, target=wrapper))
+            print("Creating {link} -> {target}".format(link=link_path, target=wrapper))
 
             os.symlink(wrapper, link_path)
 
@@ -139,7 +137,7 @@ def main():
             # If the link isn't pointing to the specified wrapper we can't
             # remove it.
             if os.path.realpath(link_path) != wrapper:
-                six.print_(
+                print(
                     "Warning: Cannot remove {}.  Not linked to {}".format(
                         link_path,
                         wrapper
@@ -148,7 +146,7 @@ def main():
 
                 continue
 
-            six.print_("Removing {link} -> {target}".format(link=link_path, target=wrapper))
+            print("Removing {link} -> {target}".format(link=link_path, target=wrapper))
 
             # Remove the link.
             os.unlink(link_path)
