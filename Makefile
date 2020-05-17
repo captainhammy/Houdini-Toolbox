@@ -41,7 +41,7 @@ run-flake:
 
 # Run python linting
 run-lint:
-	bin/run_lint --rcfile=.pylint.rc --package-name=ht --add-file houdini/pyfilter/ht-pyfilter.py --add-dir bin 
+	bin/run_lint --rcfile=.pylint.rc --package-name=ht --add-file houdini/pyfilter/ht-pyfilter.py --add-dir bin
 
 # Run python linting against Python 3 compatibility
 run-lint-py3k:
@@ -55,4 +55,3 @@ run-lint-both:
 run-tests:
 	@coverage erase
 	env --unset=HOUDINI_PATH TOOLBAR_PATH=`pwd`/houdini/toolbar hython --version $(HOUDINI_VERSION) -m pytest tests/
-

@@ -4,15 +4,16 @@
 # IMPORTS
 # =============================================================================
 
-# Houdini Toolbox Imports
+# Third Party Imports
 from builtins import object
+
+# Houdini Toolbox Imports
 from ht.events.stats import HoudiniEventItemStats
 
 
 # =============================================================================
-# IMPORTS
+# CLASSES
 # =============================================================================
-
 
 class HoudiniEventItem(object):
     """Class responsible for calling callable methods.

@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Standard Library Imports
-from __future__ import division, print_function
+import errno
 import glob
 import json
 from operator import attrgetter
@@ -34,13 +34,15 @@ _PACKAGE_CONFIG_FILE = "houdini_package_config.json"
 # =============================================================================
 
 
-class HoudiniBase(object):
+class HoudiniBase:
     """This class represents a Houdini build on disk.
 
     :param path: The path to the build on disk.
     :type path: str
     :param version: The build version
-    :type version: tuple(int)
+    :type version: list or tuple
+    :param product: Optional product name.
+    :type product: str
 
     """
 
@@ -227,7 +229,7 @@ class HoudiniBase(object):
         return value.format(**args)
 
 
-class HoudiniBuildData(object):
+class HoudiniBuildData:
     """This class stores Houdini build data.
 
     :param data: A build data dictionary.
@@ -344,7 +346,7 @@ class HoudiniBuildData(object):
         return tuple(all_args)
 
 
-class HoudiniBuildManager(object):
+class HoudiniBuildManager:
     """This class provides an interface for accessing installable and installed
     Houdini builds.
 
@@ -540,7 +542,7 @@ class HoudiniBuildManager(object):
         return default
 
 
-class HoudiniEnvironmentSettings(object):
+class HoudiniEnvironmentSettings:
     """This class stores environment settings.
 
     :param data: The source data dict.
@@ -695,7 +697,7 @@ class HoudiniInstallFile(HoudiniBase):
         if len(components) == 3:
             components.append(None)
 
-        super(HoudiniInstallFile, self).__init__(path, components, product=product)
+        super().__init__(path, components, product=product)
 
         self._install_target = _SETTINGS_MANAGER.system.installation.target
         self._install_folder = _SETTINGS_MANAGER.system.installation.folder
@@ -754,7 +756,7 @@ class HoudiniInstallFile(HoudiniBase):
                 os.symlink(install_path, link_path)
 
             except OSError as inst:
-                if inst.errno == os.errno.EEXIST:
+                if inst.errno == errno.EEXIST:
                     os.remove(link_path)
                     os.symlink(install_path, link_path)
 
@@ -809,7 +811,7 @@ class HoudiniInstallFile(HoudiniBase):
         print("Installation of Houdini {} complete.".format(self.display_name))
 
 
-class HoudiniInstallationSettings(object):
+class HoudiniInstallationSettings:
     """This class stores Houdini installation settings.
 
     :param data: The source data dict.
@@ -842,7 +844,7 @@ class HoudiniInstallationSettings(object):
         return self._target
 
 
-class HoudiniPluginSettings(object):
+class HoudiniPluginSettings:
     """This class stores Houdini plugin settings.
 
     :param data: The source data dict.
@@ -872,7 +874,7 @@ class HoudiniPluginSettings(object):
         return self._target
 
 
-class HoudiniSettingsManager(object):
+class HoudiniSettingsManager:
     """This class manages Houdini package settings.
 
     """
@@ -951,7 +953,7 @@ class HoudiniSettingsManager(object):
         return self._system
 
 
-class HoudiniSystemSettings(object):
+class HoudiniSystemSettings:
     """This class stores Houdini system settings.
 
     :param data: The source data dict.
@@ -1039,7 +1041,7 @@ class InstalledHoudiniBuild(HoudiniBase):
         if len(components) == 3:
             components.append(None)
 
-        super(InstalledHoudiniBuild, self).__init__(path, components, product=product)
+        super().__init__(path, components, product=product)
 
     # -------------------------------------------------------------------------
     # METHODS
@@ -1127,7 +1129,7 @@ class BuildAlreadyInstalledError(HoudiniPackageError):
     """
 
     def __init__(self, build):
-        super(BuildAlreadyInstalledError, self).__init__()
+        super().__init__()
 
         self.build = build
 

@@ -82,10 +82,10 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
             if column == 1:
                 return item.description
 
-            elif column == 2:
+            if column == 2:
                 return item.author
 
-            elif column == 3:
+            if column == 3:
                 if item.date is not None:
                     return utils.date_to_string(item.date)
 

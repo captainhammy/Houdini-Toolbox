@@ -314,7 +314,7 @@ def is_file_path_valid(path):
     if not all([dirname, file_name]):
         return False
 
-    elif not os.path.splitext(file_name)[1]:
+    if not os.path.splitext(file_name)[1]:
         return False
 
     return True

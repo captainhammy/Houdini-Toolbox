@@ -1,8 +1,12 @@
 # .coveragerc to control coverage.py
 [run]
+#plugins =
+#    shelf_coverage_plugin
 branch = True
 source =
     ht
+    houdini/toolbar
+  #  /var/tmp/
 
 omit =
         *tests*

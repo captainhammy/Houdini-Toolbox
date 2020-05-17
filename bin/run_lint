@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.7
 """Script to lint the project."""
 
 # =============================================================================
@@ -8,6 +8,7 @@
 # Standard Library Imports
 import argparse
 import glob
+from io import StringIO
 import json
 import os
 import subprocess
@@ -16,20 +17,15 @@ import tempfile
 from xml.etree import ElementTree
 
 # Third Party Imports
-import contextlib
-
 from pylint import lint
 from pylint.reporters.text import TextReporter
-
-import six
-from six.moves import StringIO
 
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
-class _BaseLintable(object):
+class _BaseLintable:
     """Base class for a lintable thing.
 
     :param path: The path for the lintable object.
@@ -117,7 +113,7 @@ class ExtractedOperator(_BaseLintable):
             with open(extra_options) as handle:
                 data = json.load(handle)
 
-            for key, values in data.items():
+            for key, values in list(data.items()):
                 if "IsPython" in key:
                     value = values["value"]
 
@@ -176,7 +172,7 @@ class ExtractedOperator(_BaseLintable):
         return clean_code
 
 
-class ExtractedOtl(object):
+class ExtractedOtl:
     """Class representing an extracted otl file.
 
     :param directory_path: The path to the extracted otl.
@@ -240,7 +236,7 @@ class ExtractedOtl(object):
         return self._path
 
 
-class HoudiniLintRunner(object):
+class HoudiniLintRunner:
     """Linter configuration and runner."""
 
     def __init__(self, houdini_items, python_bins, verbose=False):
@@ -325,14 +321,13 @@ class HoudiniLintRunner(object):
 
         if self._verbose:
             if file_path == item.path or isinstance(item, LintableDirectory):
-                six.print_("Linting {}".format(file_path))
+                print("Linting {}".format(file_path))
 
             else:
-                six.print_("Linting {} ({})".format(file_path, item.path))
+                print("Linting {} ({})".format(file_path, item.path))
 
         # Run the test, capturing and filtering error output.
-        with _filter_error_output():  # pylint: disable=not-context-manager
-            lint.Run([file_path] + flags, reporter=TextReporter(buf), exit=False)
+        lint.Run([file_path] + flags, reporter=TextReporter(buf), exit=False)
 
         # Print any output.
         stdout = buf.getvalue()
@@ -412,7 +407,7 @@ class LintableFile(_BaseLintable):
     """
 
     def __init__(self, path, display_name=None, disabled_checks=None):
-        super(LintableFile, self).__init__(path, disabled_checks=disabled_checks)
+        super().__init__(path, disabled_checks=disabled_checks)
 
         self._display_name = display_name
 
@@ -458,10 +453,10 @@ class LintableFile(_BaseLintable):
 
         if not clean:
             if self.display_name is not None:
-                six.print_(self.display_name)
+                print(self.display_name)
 
             else:
-                six.print_(self.path)
+                print(self.path)
 
         return clean
 
@@ -504,7 +499,7 @@ class LintableMenuFile(LintableFile):
         clean = runner.lint_path(temp_path, self, disabled_checks=disabled_checks)
 
         if not clean:
-            six.print_("{}: {} ({})".format(self.path, base_file_name, temp_path))
+            print("{}: {} ({})".format(self.path, base_file_name, temp_path))
 
         return clean
 
@@ -561,7 +556,7 @@ class LintablePythonPanelFile(LintableFile):
             "undefined-variable"
         ]
 
-        super(LintablePythonPanelFile, self).__init__(path, display_name, disabled_checks)
+        super().__init__(path, display_name, disabled_checks)
 
     # -------------------------------------------------------------------------
     # METHODS
@@ -602,7 +597,7 @@ class LintablePythonPanelFile(LintableFile):
             clean = runner.lint_path(temp_path, self)
 
             if not clean:
-                six.print_("{}: {} ({})".format(self.path, interface_name, temp_path))
+                print("{}: {} ({})".format(self.path, interface_name, temp_path))
 
             clean_code &= clean
 
@@ -627,7 +622,7 @@ class LintableShelfFile(LintableFile):
             "undefined-variable"
         ]
 
-        super(LintableShelfFile, self).__init__(path, display_name, disabled_checks)
+        super().__init__(path, display_name, disabled_checks)
 
         self._tool_name = tool_name
 
@@ -679,7 +674,7 @@ class LintableShelfFile(LintableFile):
             clean = runner.lint_path(temp_path, self)
 
             if not clean:
-                six.print_("{}: {} ({})".format(self.path, tool_name, temp_path))
+                print("{}: {} ({})".format(self.path, tool_name, temp_path))
 
             clean_code &= clean
 
@@ -798,36 +793,6 @@ def _build_parser():
     )
 
     return parser
-
-
-@contextlib.contextmanager
-def _filter_error_output():
-    """Filter stderr output to ignore pylint 'Using config file ...' messages.
-
-    :return:
-
-    """
-    err_buf = StringIO()
-    sys.stderr = err_buf
-
-    yield
-
-    sys.stderr = sys.__stderr__
-
-    output = []
-    skip_next = False
-
-    for val in err_buf.buflist:
-        if skip_next and val == "\n":
-            continue
-
-        if val.startswith("Using config file"):
-            skip_next = True
-            continue
-
-        output.append(val)
-
-    sys.stderr.write("".join(output))
 
 
 def _get_houdini_items(houdini_root, runner):
@@ -986,12 +951,20 @@ def _is_python_file(file_path, runner):
     :rtype: bool
 
     """
-    if os.path.splitext(file_path)[1] == ".py":
+    ext = os.path.splitext(file_path)[1]
+    if ext == ".py":
         return True
+
+    if ext == ".pyc":
+        return False
 
     if runner.python_bins:
         with open(file_path) as handle:
-            first_line = handle.readline()
+            try:
+                first_line = handle.readline()
+
+            except UnicodeDecodeError:
+                return False
 
         if first_line.startswith("#!"):
             for python_bin in runner.python_bins:
@@ -1086,10 +1059,10 @@ def main():  # pylint: disable=too-many-locals
             clean &= item.lint(runner)
 
     if clean:
-        six.print_("No problems detected")
+        print("No problems detected")
 
     else:
-        six.print_("Problems detected")
+        print("Problems detected")
         sys.exit(1)
 
 

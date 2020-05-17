@@ -139,17 +139,16 @@ def find_attrib(geometry, attrib_type, name):
     if attrib_type == hou.attribType.Vertex:
         return geometry.findVertexAttrib(name)
 
-    elif attrib_type == hou.attribType.Point:
+    if attrib_type == hou.attribType.Point:
         return geometry.findPointAttrib(name)
 
-    elif attrib_type == hou.attribType.Prim:
+    if attrib_type == hou.attribType.Prim:
         return geometry.findPrimAttrib(name)
 
-    elif attrib_type == hou.attribType.Global:
+    if attrib_type == hou.attribType.Global:
         return geometry.findGlobalAttrib(name)
 
-    else:
-        raise ValueError("Expected hou.attribType, got {}".format(type(attrib_type)))
+    raise ValueError("Expected hou.attribType, got {}".format(type(attrib_type)))
 
 
 def find_group(geometry, group_type, name):
@@ -170,14 +169,13 @@ def find_group(geometry, group_type, name):
     if group_type == 0:
         return geometry.findPointGroup(name)
 
-    elif group_type == 1:
+    if group_type == 1:
         return geometry.findPrimGroup(name)
 
-    elif group_type == 2:
+    if group_type == 2:
         return geometry.findEdgeGroup(name)
 
-    else:
-        raise ValueError("Invalid group type {}".format(group_type))
+    raise ValueError("Invalid group type {}".format(group_type))
 
 
 def geo_details_match(geometry1, geometry2):

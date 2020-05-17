@@ -702,8 +702,6 @@ class IntrinsicAOVGroup(AOVGroup):
 class AOVError(Exception):  # pragma: no cover
     """AOV exception base class."""
 
-    pass
-
 
 class InvalidAOVValueError(AOVError):  # pragma: no cover
     """Exception for invalid AOV setting values.

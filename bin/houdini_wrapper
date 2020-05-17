@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.7
 """Launch Houdini related applications."""
 
 # =============================================================================
@@ -6,7 +6,7 @@
 # =============================================================================
 
 # Standard Library Imports
-from __future__ import print_function
+import argparse
 import os
 import signal
 import subprocess
@@ -16,7 +16,6 @@ import sys
 from termcolor import colored, cprint
 
 # Houdini Toolbox Imports
-import ht.machinery.argparser
 import ht.machinery.package
 import ht.machinery.sidefx_web_api
 
@@ -45,12 +44,12 @@ def _build_parsers():
     """Build ArgumentParsers for the wrapper.
 
     :return: The wrapper argument parsers.
-    :rtype: tuple(ht.machinery.argparser.ArgumentParser)
+    :rtype: tuple(argparse.ArgumentParser)
 
     """
     # Don't allow abbreviations since we don't want them to interfere with any
     # flags that might need to be passed through.
-    parser = ht.machinery.argparser.ArgumentParser(
+    parser = argparse.ArgumentParser(
         description="Run Houdini related applications.  Supports 'download', 'install' & 'uninstall' subcommands.",
         allow_abbrev=False
     )
@@ -99,7 +98,7 @@ def _build_parsers():
         dest="no_symlink"
     )
 
-    extra_parser = ht.machinery.argparser.ArgumentParser()
+    extra_parser = argparse.ArgumentParser()
     subparsers = extra_parser.add_subparsers()
 
     # Download sub parser
