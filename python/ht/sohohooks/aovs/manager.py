@@ -8,6 +8,8 @@ with AOVs.
 # =============================================================================
 
 # Standard Library Imports
+from builtins import object
+import builtins
 import glob
 import json
 import os
@@ -53,7 +55,7 @@ class AOVManager(object):
 
         """
         # Process any AOVs that we have to look for any intrinsic groups.
-        for aov in self.aovs.values():
+        for aov in list(self.aovs.values()):
             for intrinsic_name in aov.intrinsics:
                 # Intrinsic groups are prefixed with "i:".
                 name = "i:" + intrinsic_name
@@ -402,7 +404,7 @@ class AOVFile(object):
         :return:
 
         """
-        for name, group_data in definitions.items():
+        for name, group_data in list(definitions.items()):
             # Create a new AOVGroup.
             group = AOVGroup(name)
 
@@ -433,7 +435,7 @@ class AOVFile(object):
         :return:
 
         """
-        with open(self.path) as handle:
+        with builtins.open(self.path) as handle:
             data = json.load(handle)
 
         if consts.FILE_DEFINITIONS_KEY in data:
@@ -585,7 +587,7 @@ class AOVFile(object):
         if path is None:
             path = self.path
 
-        with open(path, "w") as handle:
+        with builtins.open(path, "w") as handle:
             json.dump(data, handle, indent=4)
 
 

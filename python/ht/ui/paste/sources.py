@@ -13,7 +13,8 @@ import os
 import platform
 
 # Third Party Imports
-import six
+from builtins import object
+from future.utils import with_metaclass
 
 # Houdini Toolbox Imports
 from ht.ui.paste import utils
@@ -56,8 +57,7 @@ class SourceManager(object):
 # Sources
 
 
-@six.add_metaclass(abc.ABCMeta)
-class CopyPasteSource(object):
+class CopyPasteSource(with_metaclass(abc.ABCMeta, object)):
     """Base class for managing copy/paste items.
 
     """
@@ -72,12 +72,10 @@ class CopyPasteSource(object):
     @abc.abstractproperty
     def display_name(self):
         """str: The source display name."""
-        pass
 
     @abc.abstractproperty
     def icon(self):
         """PySide2.QtGui.QIcon: The icon for the source."""
-        pass
 
     @property
     def sources(self):
@@ -96,12 +94,10 @@ class CopyPasteSource(object):
         :rtype: ht.ui.paste.helpers._BaseCopyHelperWidget
 
         """
-        pass
 
     @abc.abstractmethod
     def create_source(self, *args, **kwargs):
         """Create a new source."""
-        pass
 
     @abc.abstractmethod
     def get_sources(self, context):
@@ -113,7 +109,6 @@ class CopyPasteSource(object):
         :rtype: list(ht.ui.paste.sources.CopyPasteItemSource)
 
         """
-        pass
 
     @abc.abstractmethod
     def paste_helper_widget(self):
@@ -123,7 +118,6 @@ class CopyPasteSource(object):
         :rtype: ht.ui.paste.helpers._BasePasteHelperWidget
 
         """
-        pass
 
     @abc.abstractmethod
     def refresh(self):
@@ -132,7 +126,6 @@ class CopyPasteSource(object):
         :return:
 
         """
-        pass
 
 
 class HomeDirSource(CopyPasteSource):
@@ -347,8 +340,7 @@ class HomeDirSource(CopyPasteSource):
 # Item Sources
 
 
-@six.add_metaclass(abc.ABCMeta)
-class CopyPasteItemSource(object):
+class CopyPasteItemSource(with_metaclass(abc.ABCMeta, object)):
     """Class responsible for loading and saving items from a source.
 
     :param context: The operator context.

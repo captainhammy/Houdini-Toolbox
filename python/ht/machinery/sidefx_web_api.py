@@ -5,20 +5,24 @@
 # =============================================================================
 
 # Standard Library Imports
-from __future__ import division
+from __future__ import division, print_function
+from future import standard_library
+standard_library.install_aliases()
+
+from builtins import str
+from builtins import object
 import base64
 import datetime
 import hashlib
 import json
 import os
-import sys
 import time
+import html.parser
 
 # Third Party Imports
 import humanfriendly
 from humanfriendly.tables import format_pretty_table
 import requests
-import six
 from termcolor import colored, cprint
 from tqdm import tqdm
 
@@ -266,7 +270,7 @@ def _extract_traceback_from_response(response):
     if not traceback:
         traceback = error_message
 
-    return str(six.moves.html_parser.HTMLParser().unescape(traceback))
+    return str(html.parser.HTMLParser().unescape(traceback))
 
 
 def _get_build_to_download(
@@ -414,14 +418,14 @@ def download_build(  # pylint: disable=too-many-locals
         if build is not None:
             build_str = "{}.{}".format(build_str, build)
 
-        six.print_("No such build {}".format(build_str))
+        print("No such build {}".format(build_str))
 
         return None
 
     file_size = release_info["size"]
 
-    nchunks = 10
-    chunk_size = file_size // nchunks
+    number_of_chunks = 10
+    chunk_size = file_size // number_of_chunks
 
     if not os.path.isdir(download_path):
         os.makedirs(download_path)
@@ -431,23 +435,20 @@ def download_build(  # pylint: disable=too-many-locals
     request = requests.get(release_info["download_url"], stream=True)
 
     if request.status_code == 200:
-        six.print_("Downloading to {}".format(target_path))
-        six.print_(
-            "\tFile size: {}".format(humanfriendly.format_size(file_size, binary=True))
-        )
-        six.print_(
-            "\tDownload chunk size: {}\n".format(
-                humanfriendly.format_size(chunk_size, binary=True)
-            )
-        )
+        print("Downloading to {}".format(target_path))
+        print("\tFile size: {}".format(humanfriendly.format_size(file_size, binary=True)))
 
-        with tqdm(desc="Downloading build", total=file_size) as pbar:
+        print("\tDownload chunk size: {}\n".format(
+            humanfriendly.format_size(chunk_size, binary=True)
+        ))
+
+        with tqdm(desc="Downloading build", total=file_size) as progress_bar:
             with open(target_path, "wb") as handle:
                 for chunk in request.iter_content(chunk_size=chunk_size):
-                    pbar.update(chunk_size)
+                    progress_bar.update(chunk_size)
                     handle.write(chunk)
 
-        six.print_("\n\nDownload complete")
+        print("\n\nDownload complete")
 
     else:
         raise Exception("Error downloading file!")

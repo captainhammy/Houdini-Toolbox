@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Standard Library Imports
+from builtins import str
 import ctypes
 
 # Houdini Imports
@@ -104,7 +105,8 @@ def build_c_string_array(values):
     :rtype: list(ctypes.c_char_p)
 
     """
-    arr = (ctypes.c_char_p * len(values))(*values)
+    converted = [value.encode("utf-8") for value in values]
+    arr = (ctypes.c_char_p * len(values))(*converted)
 
     return arr
 
@@ -239,7 +241,7 @@ def get_attrib_owner_from_geometry_entity_type(entity_type):
     # such as hou.Polygon, hou.Face, hou.Volume, etc.  We will check the class
     # against being a subclass of any of our valid types and if it is, return
     # the owner of that class.
-    for key, value in _GEOMETRY_ATTRIB_MAP.items():
+    for key, value in list(_GEOMETRY_ATTRIB_MAP.items()):
         if issubclass(entity_type, key):
             return value
 

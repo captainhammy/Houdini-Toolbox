@@ -5,11 +5,10 @@
 # =============================================================================
 
 # Standard Library Imports
+from builtins import zip
+from past.builtins import basestring
 from collections import Iterable
 import json
-
-# Third Party Imports
-import six
 
 
 # =============================================================================
@@ -52,7 +51,7 @@ def _prep_value_to_set(value):
         value = []
 
     # Convert to a list of a single string value.
-    elif isinstance(value, six.string_types):
+    elif isinstance(value, basestring):
         value = [value]
 
     elif isinstance(value, dict):
@@ -107,7 +106,7 @@ def _transform_values(values):
                 # If there are multiple values we want to build a
                 # dictionary out of pairs.
                 if len(value_components) > 2:
-                    value = dict(zip(*[iter(value_components)] * 2))
+                    value = dict(list(zip(*[iter(value_components)] * 2)))
 
                 # Not multiple values so perform additional processing.
                 else:

@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Standard Library Imports
-from __future__ import division
+from __future__ import division, print_function
 import glob
 import json
 from operator import attrgetter
@@ -16,9 +16,6 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
-
-# Third Party Imports
-import six
 
 # Houdini Toolbox Imports
 from ht.machinery import sidefx_web_api
@@ -485,7 +482,6 @@ class HoudiniBuildManager(object):
 
         """
         default = None
-        default_product = None
 
         # Get the builds that are installed.
         builds = self.installed
@@ -689,7 +685,7 @@ class HoudiniInstallFile(HoudiniBase):
         # Let our system tell us where we can store the temp files.
         temp_path = tempfile.gettempdir()
 
-        six.print_("Extracting {} to {}".format(self.path, temp_path))
+        print("Extracting {} to {}".format(self.path, temp_path))
 
         # Open the tar file that this object represents and extract
         # everything to our temp directory, closing the file afterwards.
@@ -711,15 +707,15 @@ class HoudiniInstallFile(HoudiniBase):
         # Last arg is the target path.
         cmd.append(install_path)
 
-        six.print_("Running Houdini installer: {}".format(" ".join(cmd)))
+        print("Running Houdini installer: {}".format(" ".join(cmd)))
         subprocess.call(cmd)
 
         # Remove the temporary extraction directory.
-        six.print_("Removing temporary install files.")
+        print("Removing temporary install files.")
         shutil.rmtree(extract_path)
 
         if link_path is not None:
-            six.print_("Linking {} to {}".format(link_path, install_path))
+            print("Linking {} to {}".format(link_path, install_path))
 
             try:
                 os.symlink(install_path, link_path)
@@ -777,7 +773,7 @@ class HoudiniInstallFile(HoudiniBase):
             raise UnsupportedOSError("OS X is not supported")
 
         # Notify that the build installation has completed.
-        six.print_("Installation of Houdini {} complete.".format(self.display_name))
+        print("Installation of Houdini {} complete.".format(self.display_name))
 
 
 class HoudiniInstallationSettings(object):
@@ -1029,7 +1025,7 @@ class InstalledHoudiniBuild(HoudiniBase):
 
         # Run custom setup if allowed.
         if test_path:
-            six.print_("Initializing test_path environment\n")
+            print("Initializing test_path environment\n")
             _SETTINGS_MANAGER.environment.set_test_path_environment()
 
         else:
@@ -1059,23 +1055,23 @@ class InstalledHoudiniBuild(HoudiniBase):
         # to remove it.
         if os.path.islink(link_path):
             if os.path.realpath(link_path) == self.path:
-                six.print_("Removing symlink {} -> {}".format(link_path, self.path))
+                print("Removing symlink {} -> {}".format(link_path, self.path))
 
                 try:
                     os.unlink(link_path)
 
                 except OSError as inst:
-                    six.print_("Error: Could not remove symlink")
-                    six.print_(inst)
+                    print("Error: Could not remove symlink")
+                    print(inst)
 
-        six.print_("Removing installation directory {}".format(self.path))
+        print("Removing installation directory {}".format(self.path))
 
         shutil.rmtree(self.path)
 
         # If there are plugins, remove them.
         if self.plugin_path is not None:
             if os.path.isdir(self.plugin_path):
-                six.print_("Removing compiled operators in {}".format(self.plugin_path))
+                print("Removing compiled operators in {}".format(self.plugin_path))
 
                 shutil.rmtree(self.plugin_path)
 

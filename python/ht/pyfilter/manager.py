@@ -7,6 +7,8 @@ actions.
 # =============================================================================
 
 # Standard Library Imports
+from builtins import object
+import builtins
 import argparse
 import importlib
 import json
@@ -236,7 +238,7 @@ def _get_operation_data(file_path):
 
     """
     try:
-        with open(file_path) as handle:
+        with builtins.open(file_path) as handle:
             data = json.load(handle)
 
     except (IOError, ValueError) as inst:

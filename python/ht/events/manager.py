@@ -8,6 +8,7 @@ events in Houdini.
 # =============================================================================
 
 # Standard Library Imports
+from builtins import object
 import collections
 from contextlib import contextmanager
 
@@ -53,13 +54,13 @@ class HoudiniEventManager(object):
 
         """
         if names is not None:
-            for event in self.events.values():
+            for event in list(self.events.values()):
                 if event.name in names:
                     self._event_states[event.name] = event.enabled
 
                     event.enabled = False
         else:
-            for event in self.events.values():
+            for event in list(self.events.values()):
                 self._event_states[event.name] = event.enabled
                 event.enabled = False
 
@@ -69,7 +70,7 @@ class HoudiniEventManager(object):
         :return:
 
         """
-        for name, state in self._event_states.items():
+        for name, state in list(self._event_states.items()):
             self.events[name].enabled = state
 
         self._event_states.clear()
@@ -146,7 +147,7 @@ class HoudiniEventManager(object):
 
         event_mappings = event_group.event_map
 
-        for name, items in event_mappings.items():
+        for name, items in list(event_mappings.items()):
             if name not in self.events:
                 self.create_event(name)
 
