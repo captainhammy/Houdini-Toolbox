@@ -12,6 +12,9 @@ and modules they are meant to extend.
 # =============================================================================
 
 # Standard Library Imports
+from builtins import str
+from builtins import zip
+from builtins import range
 import ast
 import math
 
@@ -180,7 +183,7 @@ def set_variable(name, value, local=False):
     :return:
 
     """
-    _cpp_methods.setVariable(name, str(value), local)
+    _cpp_methods.setVariable(name, str(value).encode("utf-8"), local)
 
 
 def unset_variable(name):
