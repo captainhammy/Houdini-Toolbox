@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Standard Library Imports
+from builtins import object
 import copy
 
 # Third Party Imports

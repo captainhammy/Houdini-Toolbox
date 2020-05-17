@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
+from builtins import object
 import ht.events.events.scene_load
 from ht.events.item import HoudiniEventItem
 from ht.events.types import SceneEvents

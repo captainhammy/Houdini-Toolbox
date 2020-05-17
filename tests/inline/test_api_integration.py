@@ -5,6 +5,8 @@
 # =============================================================================
 
 # Standard Library Imports
+from builtins import str
+from builtins import range
 import os
 import sys
 
@@ -170,7 +172,7 @@ def test_sort_geometry_by_attribute():
 
     values = [int(val) for val in geo.primFloatAttribValues("id")]
 
-    assert values, range(10)
+    assert values, list(range(10))
 
     # Reversed
     geo = get_obj_geo_copy("test_sort_geometry_by_attribute")
@@ -181,7 +183,7 @@ def test_sort_geometry_by_attribute():
 
     values = [int(val) for val in geo.primFloatAttribValues("id")]
 
-    assert values == list(reversed(range(10)))
+    assert values == list(reversed(list(range(10))))
 
     # Invalid index
     geo = get_obj_geo_copy("test_sort_geometry_by_attribute")
@@ -209,7 +211,7 @@ def test_sort_geometry_along_axis():
 
     values = [int(val) for val in geo.pointFloatAttribValues("id")]
 
-    assert values == range(10)
+    assert values == list(range(10))
 
     # Prims
     geo = get_obj_geo_copy("test_sort_geometry_along_axis_prims")
@@ -218,7 +220,7 @@ def test_sort_geometry_along_axis():
 
     values = [int(val) for val in geo.primFloatAttribValues("id")]
 
-    assert values == range(10)
+    assert values == list(range(10))
 
 
 def test_sort_geometry_by_values():
@@ -279,7 +281,7 @@ def test_shift_geometry_elements():
 def test_reverse_sort_geometry():
     """Test ht.inline.api.reverse_sort_geometry."""
     # Points
-    target = range(10)
+    target = list(range(10))
     target.reverse()
 
     geo = get_obj_geo_copy("test_reverse_sort_geometry_points")
@@ -290,7 +292,7 @@ def test_reverse_sort_geometry():
     assert values == target
 
     # Prims
-    target = range(10)
+    target = list(range(10))
     target.reverse()
 
     geo = get_obj_geo_copy("test_reverse_sort_geometry_prims")
@@ -332,7 +334,7 @@ def test_sort_geometry_by_proximity_to_position():
 
 def test_sort_geometry_by_vertex_order():
     """Test ht.inline.api.sort_geometry_by_vertex_order."""
-    target = range(10)
+    target = list(range(10))
 
     geo = get_obj_geo_copy("test_sort_geometry_by_vertex_order")
     ht.inline.api.sort_geometry_by_vertex_order(geo)

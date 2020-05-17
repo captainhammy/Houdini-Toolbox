@@ -5,6 +5,9 @@
 # =============================================================================
 
 # Standard Library Imports
+from builtins import str
+from builtins import range
+from builtins import object
 import sys
 
 # Third Party Imports
@@ -230,7 +233,7 @@ class Test_set_variable(object):
 
         api.set_variable(mock_name, mock_value)
 
-        mock_set.assert_called_with(mock_name, str(mock_value), False)
+        mock_set.assert_called_with(mock_name, str(mock_value).encode("utf-8"), False)
 
     def test(self, mocker):
         mock_set = mocker.patch("ht.inline.api._cpp_methods.setVariable")
@@ -241,7 +244,7 @@ class Test_set_variable(object):
 
         api.set_variable(mock_name, mock_value, mock_global)
 
-        mock_set.assert_called_with(mock_name, str(mock_value), mock_global)
+        mock_set.assert_called_with(mock_name, str(mock_value).encode("utf-8"), mock_global)
 
 
 def test_unset_variable(mocker):
@@ -1818,8 +1821,8 @@ def test_referencing_vertices(mocker):
     mock_point = mocker.MagicMock(spec=hou.Prim)
 
     mock_result = mocker.MagicMock()
-    mock_result.prims = range(3)
-    mock_result.indices = reversed(range(3))
+    mock_result.prims = list(range(3))
+    mock_result.indices = reversed(list(range(3)))
 
     mock_referencing.return_value = mock_result
 

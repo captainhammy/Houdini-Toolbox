@@ -6,6 +6,7 @@
 
 # Standard Library Imports
 from __future__ import absolute_import
+from builtins import object
 import logging
 
 # Third Party Imports
