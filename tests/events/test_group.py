@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
+from builtins import object
 import ht.events.group
 
 

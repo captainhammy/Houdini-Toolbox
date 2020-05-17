@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Standard Library Imports
+from builtins import object
 import argparse
 import copy
 
@@ -63,7 +64,7 @@ def init_operation(mocker):
 
         values.update(prop_map)
 
-        for key, value in values.items():
+        for key, value in list(values.items()):
             if as_properties:
                 if isinstance(value, type):
                     prop = mocker.PropertyMock(spec=value)
@@ -721,7 +722,7 @@ class Test_IpOverrides(object):
         )
 
         # Create an operation with each property set and ip set.
-        for key, value in data.items():
+        for key, value in list(data.items()):
             op = init_operation({key: value}, as_properties=True)
 
             assert op.should_run()

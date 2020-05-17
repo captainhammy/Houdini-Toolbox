@@ -5,6 +5,8 @@
 # =============================================================================
 
 # Standard Library Imports
+from builtins import range
+from builtins import object
 import ctypes
 
 # Third Party Imports

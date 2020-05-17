@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Third Party Imports
+from builtins import object
 import pytest
 
 # Houdini Toolbox Imports
@@ -169,7 +170,7 @@ class Test_HoudiniEventManager(object):
         mock_states = mocker.MagicMock(spec=dict)
 
         states = {mock_event1.name: False, mock_event2.name: True}
-        mock_states.items.return_value = states.items()
+        mock_states.items.return_value = list(states.items())
 
         manager = init_manager()
         manager._event_states = mock_states
@@ -204,7 +205,7 @@ class Test_HoudiniEventManager(object):
         result = manager.create_event(mock_name)
 
         assert result == mock_event
-        assert mock_event in events.values()
+        assert mock_event in list(events.values())
         mock_factory.get_event_type.assert_called_with(mock_name)
 
     def test_event_disabler(self, init_manager, mocker):
