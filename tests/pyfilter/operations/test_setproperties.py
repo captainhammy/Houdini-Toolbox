@@ -176,7 +176,7 @@ class Test_PropertySetterManager(object):
         op = init_manager()
 
         mock_handle = mocker.mock_open()
-        mocker.patch("__builtin__.open", mock_handle)
+        mocker.patch("builtins.open", mock_handle)
 
         op.load_from_file(mock_path)
 
