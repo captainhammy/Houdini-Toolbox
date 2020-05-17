@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Standard Library Imports
+from builtins import object
 from collections import OrderedDict
 
 # Third Party Imports
@@ -12,6 +13,7 @@ import pytest
 
 # Houdini Toolbox Imports
 import ht.events.stats
+from future.utils import with_metaclass
 
 
 # =============================================================================
@@ -49,9 +51,7 @@ def init_stats(mocker):
 def init_tester():
     """Create a tester class object for StatsMeta"""
 
-    class _Tester(object):
-        __metaclass__ = ht.events.stats._StatsMeta
-
+    class _Tester(with_metaclass(ht.events.stats._StatsMeta, object)):
         def __init__(self, name, tags=None, post_report=False):
             self._post_report = post_report
 

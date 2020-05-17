@@ -37,7 +37,7 @@ def test_build_c_double_array():
 
 def test_build_c_int_array():
     """Test ht.inline.utils.build_c_int_array."""
-    values = range(5)
+    values = list(range(5))
     values.reverse()
 
     result = utils.build_c_int_array(values)
@@ -55,7 +55,7 @@ def test_build_c_string_array():
 
     result = utils.build_c_string_array(values)
 
-    assert list(result) == values
+    assert list(result) == [b"foo", b"bar", b"test"]
 
     expected_type = type((ctypes.c_char_p * len(values))())
     assert isinstance(result, expected_type)

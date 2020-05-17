@@ -4,6 +4,12 @@
 # IMPORTS
 # =============================================================================
 
+# Standard Library Imports
+import sys
+
+# Third Party Imports
+import pytest
+
 # Houdini Toolbox Imports
 from ht.pyfilter import property as prop
 
@@ -43,6 +49,7 @@ class Test__prep_value_to_set(object):
 
         assert result == [mock_value]
 
+    @pytest.mark.skipif(sys.version_info.major == 3, reason="Skipping for Python 3")
     def test_unicode(self, mocker):
         mock_value = mocker.MagicMock(spec=unicode)
 

@@ -175,7 +175,7 @@ class Test_AOVManager(object):
         mock_add = mocker.patch.object(manager.AOVManager, "add_aov")
 
         mock_varname = mocker.MagicMock(spec=str)
-        mock_priority = mocker.MagicMock(spec=int)
+        mock_priority = 3
 
         mock_new_aov = mocker.MagicMock(spec=manager.AOV)
         mock_new_aov.variable = mock_varname
@@ -259,7 +259,7 @@ class Test_AOVManager(object):
         mock_add = mocker.patch.object(manager.AOVManager, "add_group")
 
         mock_group_name = mocker.MagicMock(spec=str)
-        mock_priority = mocker.MagicMock(spec=int)
+        mock_priority = 3
 
         mock_new_group = mocker.MagicMock(spec=manager.AOVGroup)
         mock_new_group.name = mock_group_name
@@ -960,7 +960,7 @@ class Test_AOVFile(object):
 
         mock_handle = mocker.mock_open()
 
-        mocker.patch("__builtin__.open", mock_handle)
+        mocker.patch("builtins.open", mock_handle)
 
         aov_file._init_from_file()
 
@@ -1186,7 +1186,7 @@ class Test_AOVFile(object):
 
         mock_handle = mocker.mock_open()
 
-        mocker.patch("__builtin__.open", mock_handle)
+        mocker.patch("builtins.open", mock_handle)
 
         aov_file.write_to_file(path)
 
@@ -1204,13 +1204,13 @@ class Test__find_aov_files(object):
 
     def test_aov_path(self, mocker):
         """Test finding aov files with HT_AOV_PATH."""
-        mock_glob = mocker.patch("ht.sohohooks.aovs.manager.glob.glob")
+        mock_glob = mocker.patch("glob.glob")
         mock_get_folders = mocker.patch(
             "ht.sohohooks.aovs.manager._get_aov_path_folders"
         )
 
-        mock_folder_path = mocker.MagicMock(spec=str)
-        mock_get_folders.return_value = (mock_folder_path,)
+        folder_path = "/path/to/folder"
+        mock_get_folders.return_value = (folder_path,)
 
         mock_path1 = mocker.MagicMock(spec=str)
         mock_path2 = mocker.MagicMock(spec=str)
@@ -1225,17 +1225,17 @@ class Test__find_aov_files(object):
 
         mock_get_folders.assert_called()
 
-        mock_glob.assert_called_with(os.path.join(mock_folder_path, "*.json"))
+        mock_glob.assert_called_with(os.path.join(folder_path, "*.json"))
 
     def test_houdini_path(self, mocker):
         """Test finding aov files with HOUDINI_PATH."""
         mock_find = mocker.patch(
             "ht.sohohooks.aovs.manager._find_houdinipath_aov_folders"
         )
-        mock_glob = mocker.patch("ht.sohohooks.aovs.manager.glob.glob")
+        mock_glob = mocker.patch("glob.glob")
 
-        mock_folder_path = mocker.MagicMock(spec=str)
-        mock_find.return_value = [mock_folder_path]
+        folder_path = "/path/to/folder"
+        mock_find.return_value = [folder_path]
 
         mock_path1 = mocker.MagicMock(spec=str)
         mock_path2 = mocker.MagicMock(spec=str)
@@ -1249,7 +1249,7 @@ class Test__find_aov_files(object):
 
         mock_find.assert_called()
 
-        mock_glob.assert_called_with(os.path.join(mock_folder_path, "*.json"))
+        mock_glob.assert_called_with(os.path.join(folder_path, "*.json"))
 
 
 class Test__find_houdinipath_aov_folders(object):
