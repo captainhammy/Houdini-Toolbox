@@ -5,6 +5,10 @@
 # =============================================================================
 
 # Third Party Imports
+from builtins import str
+from builtins import zip
+from builtins import range
+from builtins import object
 from PySide2 import QtCore, QtGui
 
 # Houdini Toolbox Imports
@@ -614,7 +618,7 @@ class AOVSelectModel(BaseAOVTreeModel):
         if manager.MANAGER.groups:
             groups = manager.MANAGER.groups
 
-            for group in groups.values():
+            for group in list(groups.values()):
                 if isinstance(group, IntrinsicAOVGroup):
                     IntrinsicAOVGroupNode(group, groups_node)
                 else:
@@ -623,7 +627,7 @@ class AOVSelectModel(BaseAOVTreeModel):
         if manager.MANAGER.aovs:
             aovs = manager.MANAGER.aovs
 
-            for aov in aovs.values():
+            for aov in list(aovs.values()):
                 AOVNode(aov, aovs_node)
 
         self.endResetModel()
@@ -845,7 +849,7 @@ class AOVsToAddModel(BaseAOVTreeModel):
         node = self.get_node(parent)
 
         # Remove each child.
-        for row in reversed(range(len(node.children))):
+        for row in reversed(list(range(len(node.children)))):
             index = self.index(row, 0, parent)
             self.remove_index(index)
 

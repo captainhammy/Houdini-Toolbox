@@ -5,6 +5,9 @@
 # =============================================================================
 
 # Standard Library Imports
+from builtins import str
+from builtins import range
+from builtins import object
 import os
 import pickle
 

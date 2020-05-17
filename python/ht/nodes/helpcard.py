@@ -4,6 +4,9 @@
 # IMPORTS
 # =============================================================================
 
+from future import standard_library
+standard_library.install_aliases()
+
 # Standard Library Imports
 from collections import OrderedDict
 import os
@@ -12,7 +15,7 @@ import yaml
 
 # Third Party Imports
 import jinja2
-import six.moves
+import io
 
 # Houdini Imports
 import hou
@@ -49,7 +52,7 @@ def _add_inputs(string_buf, node):
     """Create the INPUTS section.
 
     :param string_buf: The output buffer.
-    :type string_buf: six.moves.StringIO
+    :type string_buf: io.StringIO
     :param node: The source node.
     :type node: hou.Node
     :return:
@@ -74,7 +77,7 @@ def _add_using_section(string_buf, node_type):
     """Create the 'Using' section.
 
     :param string_buf: The output buffer.
-    :type string_buf: six.moves.StringIO
+    :type string_buf: io.StringIO
     :param node_type: The source node type.
     :type node_type: hou.NodeType
     :return:
@@ -94,7 +97,7 @@ def _add_using_section(string_buf, node_type):
     if tool is not None:
         icon = _resolve_icon(tool.icon(), node_type)
 
-        for shelf in hou.shelves.shelves().values():
+        for shelf in list(hou.shelves.shelves().values()):
             if tool in shelf.tools():
                 tool_tab = shelf.label()
 
@@ -184,7 +187,7 @@ def _add_parameters_section(string_buf, node_type):
     """Add a parameters section to the buffer.
 
     :param string_buf: The output buffer.
-    :type string_buf: six.moves.StringIO
+    :type string_buf: io.StringIO
     :param node_type: The source node type.
     :type node_type: hou.NodeType
     :return:
@@ -206,7 +209,7 @@ def _create_header(string_buf, node_type):
     """Create the header sections.
 
     :param string_buf: The output buffer.
-    :type string_buf: six.moves.StringIO
+    :type string_buf: io.StringIO
     :param node_type: The source node type.
     :type node_type: hou.NodeType
     :return:
@@ -261,7 +264,7 @@ def _get_help_text(string_buf, items, indent):
     """Add items to the output.
 
     :param string_buf: The output buffer.
-    :type string_buf: six.moves.StringIO
+    :type string_buf: io.StringIO
     :param items: Help items or strings.
     :type items: list or OrderedDict or str
     :param indent: The indentation level.
@@ -270,7 +273,7 @@ def _get_help_text(string_buf, items, indent):
 
     """
     if isinstance(items, OrderedDict):
-        for key, value in items.items():
+        for key, value in list(items.items()):
             for line in key.split("\n"):
                 string_buf.write("{}{}\n".format("    " * indent, line))
 
@@ -367,7 +370,7 @@ def generate_help_card(node, inputs=False, related=False, using=False):
     node_type = node.type()
 
     # Use a StringIO object for generating all the text.
-    string_buf = six.moves.StringIO()
+    string_buf = io.StringIO()
 
     # Construct the internal and main header.
     _create_header(string_buf, node_type)

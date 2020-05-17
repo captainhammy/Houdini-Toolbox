@@ -11,7 +11,8 @@ import logging
 import time
 
 # Third Party Imports
-import six
+from builtins import object
+from future.utils import with_metaclass
 
 _logger = logging.getLogger(__name__)
 
@@ -83,8 +84,7 @@ class _StatsMeta(type):
         return inst
 
 
-@six.add_metaclass(_StatsMeta)
-class HoudiniEventStats(object):
+class HoudiniEventStats(with_metaclass(_StatsMeta, object)):
     """The base statistics class.
 
     :param name: Name for the stats.
@@ -237,7 +237,7 @@ class HoudiniEventItemStats(HoudiniEventStats):
         _logger.info("\tRun Count: %s", self.run_count)
         _logger.info("\tCallables:")
 
-        for item_name, item_time in self.item_stats.items():
+        for item_name, item_time in list(self.item_stats.items()):
             _logger.info("\t\t%s: %0.4f", item_name, item_time)
 
         _logger.info("\tRun Time: %0.4f", self.last_run_time)
@@ -317,9 +317,9 @@ def get_event_stats(matching_tags=None):
     :rtype: tuple(HoudiniEventStats)
 
     """
-    all_stats = _StatsMeta._instances.get(  # pylint: disable=protected-access
+    all_stats = list(_StatsMeta._instances.get(  # pylint: disable=protected-access
         HoudiniEventStats, {}
-    ).values()
+    ).values())
 
     if matching_tags is None:
         return tuple(all_stats)
@@ -336,9 +336,9 @@ def get_item_stats(matching_tags=None):
     :rtype: tuple(HoudiniEventItemStats)
 
     """
-    all_stats = _StatsMeta._instances.get(  # pylint: disable=protected-access
+    all_stats = list(_StatsMeta._instances.get(  # pylint: disable=protected-access
         HoudiniEventItemStats, {}
-    ).values()
+    ).values())
 
     if matching_tags is None:
         return tuple(all_stats)

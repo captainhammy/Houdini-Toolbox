@@ -203,7 +203,7 @@ def promote_parameter_to_node(scriptargs):  # pylint: disable=too-many-locals
     num_components = len(parm_tuple)
 
     # Determine how many components of the tuple we will set.
-    num_components_to_set = max([len(value) for value in parm_tuple_map.values()])
+    num_components_to_set = max([len(value) for value in list(parm_tuple_map.values())])
 
     # Prompt for a target node.  Start at the parent (the most logical choice?)
     result = hou.ui.selectNode(initial_node=start_node)
