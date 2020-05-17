@@ -13,7 +13,6 @@ from builtins import object
 # =============================================================================
 
 
-from builtins import object
 class HoudiniEventGroup(object):
     """The Houdini event group class.
 
