@@ -8,6 +8,7 @@
 from builtins import object
 
 # Houdini Toolbox Imports
+from builtins import object
 from ht.events.stats import HoudiniEventItemStats
 
 
