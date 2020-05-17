@@ -258,9 +258,11 @@ class Test_ExclusiveHoudiniEventItem(object):
             "priority",
             new_callable=mocker.PropertyMock,
         )
+
         mock_super_init = mocker.patch.object(
             ht.events.item.HoudiniEventItem, "__init__"
         )
+
         mock_map = mocker.patch.object(
             ht.events.item.ExclusiveHoudiniEventItem,
             "_exclusive_map",
@@ -269,7 +271,7 @@ class Test_ExclusiveHoudiniEventItem(object):
 
         mock_callables = (mocker.MagicMock(),)
         mock_name = mocker.MagicMock(spec=str)
-        priority = mocker.MagicMock(spec=int)
+        priority = 3
         mock_stat_tags = mocker.MagicMock(spec=list)
 
         mock_priority.return_value = priority

@@ -360,7 +360,7 @@ class Test__get_operation_data(object):
     def test_ioerror(self, mocker):
         mock_handle = mocker.mock_open()
         mock_handle.side_effect = IOError
-        mocker.patch("__builtin__.open", mock_handle)
+        mocker.patch("builtins.open", mock_handle)
 
         mock_path = mocker.MagicMock(spec=str)
 
@@ -374,7 +374,7 @@ class Test__get_operation_data(object):
         mock_path = mocker.MagicMock(spec=str)
 
         mock_handle = mocker.mock_open()
-        mocker.patch("__builtin__.open", mock_handle)
+        mocker.patch("builtins.open", mock_handle)
 
         result = manager._get_operation_data(mock_path)
 
@@ -388,7 +388,7 @@ class Test__get_operation_data(object):
         mock_path = mocker.MagicMock(spec=str)
 
         mock_handle = mocker.mock_open()
-        mocker.patch("__builtin__.open", mock_handle)
+        mocker.patch("builtins.open", mock_handle)
 
         result = manager._get_operation_data(mock_path)
 

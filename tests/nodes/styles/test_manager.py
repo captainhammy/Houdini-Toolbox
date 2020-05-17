@@ -123,7 +123,7 @@ class Test_StyleManager(object):
 
         mock_handle = mocker.mock_open()
 
-        mocker.patch("__builtin__.open", mock_handle)
+        mocker.patch("builtins.open", mock_handle)
         mgr._build()
 
         mock_load.assert_called_with(mock_handle())
@@ -1355,7 +1355,7 @@ class Test__find_files(object):
     def test_no_dirs(self, mocker, fix_hou_exceptions):
         """Test finding files where there are no config/styles folders in the HOUDINI_PATH."""
         mocker.patch("hou.findDirectories", side_effect=hou.OperationFailed)
-        mock_glob = mocker.patch("ht.nodes.styles.manager.glob.glob")
+        mock_glob = mocker.patch("glob.glob")
 
         result = manager._find_files()
 
@@ -1366,16 +1366,16 @@ class Test__find_files(object):
     def test(self, mocker):
         """Test finding files where there are valid config/styles folders in the HOUDINI_PATH."""
         mock_find = mocker.patch("hou.findDirectories")
-        mock_glob = mocker.patch("ht.nodes.styles.manager.glob.glob")
+        mock_glob = mocker.patch("glob.glob")
 
-        mock_dir1 = mocker.MagicMock(spec=str)
-        mock_dir2 = mocker.MagicMock(spec=str)
+        dir1 = "/dir1"
+        dir2 = "/dir2"
 
         mock_file1 = mocker.MagicMock(spec=str)
         mock_file2 = mocker.MagicMock(spec=str)
         mock_file3 = mocker.MagicMock(spec=str)
 
-        mock_find.return_value = (mock_dir1, mock_dir2)
+        mock_find.return_value = (dir1, dir2)
 
         mock_glob.side_effect = ((mock_file1, mock_file2), (mock_file3,))
 
@@ -1385,8 +1385,8 @@ class Test__find_files(object):
         assert result == expected
 
         calls = [
-            mocker.call(os.path.join(mock_dir1, "*.json")),
-            mocker.call(os.path.join(mock_dir2, "*.json")),
+            mocker.call(os.path.join(dir1, "*.json")),
+            mocker.call(os.path.join(dir2, "*.json")),
         ]
 
         mock_glob.assert_has_calls(calls)

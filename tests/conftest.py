@@ -61,6 +61,13 @@ def exec_tool_script():
         else:
             raise RuntimeError("Could not find tool {}".format(tool_name))
 
+        temp_path = os.path.join("/var/tmp/", file_name)
+
+        with open(temp_path, "w") as handle:
+            handle.writelines(contents)
+
+        #execfile(temp_path,  {"kwargs": kwargs})
+
         exec(contents, {"kwargs": kwargs})
 
     return _exec
