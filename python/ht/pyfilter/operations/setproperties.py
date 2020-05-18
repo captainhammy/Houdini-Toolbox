@@ -455,9 +455,7 @@ def _create_property_setter(property_name, property_block, stage_name):
         # If masking is specified but we don't know how to handle it, log a
         # warning message.  We will still return a regular PropertySetter
         # object though.
-        _logger.warning(
-            "No masking available for %s:%s.", stage_name, property_name
-        )
+        _logger.warning("No masking available for %s:%s.", stage_name, property_name)
 
     # Generic property setter.
     return PropertySetter(property_name, property_block)
