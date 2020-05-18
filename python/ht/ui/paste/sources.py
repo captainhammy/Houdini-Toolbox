@@ -265,7 +265,9 @@ class HomeDirSource(CopyPasteSource):
 
         # The file name consists of the user name and the description, separated
         # by a :.
-        file_name = "{}{}{}{}".format(context, _CONTEXT_SEP, clean_name, self._extension)
+        file_name = "{}{}{}{}".format(
+            context, _CONTEXT_SEP, clean_name, self._extension
+        )
 
         file_path = os.path.join(self._base_path, file_name)
 
