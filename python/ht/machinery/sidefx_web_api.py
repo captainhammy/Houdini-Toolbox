@@ -431,11 +431,15 @@ def download_build(  # pylint: disable=too-many-locals
 
     if request.status_code == 200:
         print("Downloading to {}".format(target_path))
-        print("\tFile size: {}".format(humanfriendly.format_size(file_size, binary=True)))
+        print(
+            "\tFile size: {}".format(humanfriendly.format_size(file_size, binary=True))
+        )
 
-        print("\tDownload chunk size: {}\n".format(
-            humanfriendly.format_size(chunk_size, binary=True)
-        ))
+        print(
+            "\tDownload chunk size: {}\n".format(
+                humanfriendly.format_size(chunk_size, binary=True)
+            )
+        )
 
         with tqdm(desc="Downloading build", total=file_size) as progress_bar:
             with open(target_path, "wb") as handle:

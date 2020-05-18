@@ -15,6 +15,7 @@ from ht.events.stats import HoudiniEventItemStats
 # CLASSES
 # =============================================================================
 
+
 class HoudiniEventItem(object):
     """Class responsible for calling callable methods.
 

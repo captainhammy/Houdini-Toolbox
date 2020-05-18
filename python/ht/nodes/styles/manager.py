@@ -88,7 +88,9 @@ class StyleManager(object):
 
             # Process any constants first so they can be used by assignments.
             if constants.CONSTANT_DEFINITION_KEY in data:
-                for name, entry in list(data[constants.CONSTANT_DEFINITION_KEY].items()):
+                for name, entry in list(
+                    data[constants.CONSTANT_DEFINITION_KEY].items()
+                ):
                     # Get the color from the info.
 
                     color, color_type = _build_color(entry)

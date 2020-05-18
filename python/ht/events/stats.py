@@ -317,9 +317,11 @@ def get_event_stats(matching_tags=None):
     :rtype: tuple(HoudiniEventStats)
 
     """
-    all_stats = list(_StatsMeta._instances.get(  # pylint: disable=protected-access
-        HoudiniEventStats, {}
-    ).values())
+    all_stats = list(
+        _StatsMeta._instances.get(  # pylint: disable=protected-access
+            HoudiniEventStats, {}
+        ).values()
+    )
 
     if matching_tags is None:
         return tuple(all_stats)
@@ -336,9 +338,11 @@ def get_item_stats(matching_tags=None):
     :rtype: tuple(HoudiniEventItemStats)
 
     """
-    all_stats = list(_StatsMeta._instances.get(  # pylint: disable=protected-access
-        HoudiniEventItemStats, {}
-    ).values())
+    all_stats = list(
+        _StatsMeta._instances.get(  # pylint: disable=protected-access
+            HoudiniEventItemStats, {}
+        ).values()
+    )
 
     if matching_tags is None:
         return tuple(all_stats)
