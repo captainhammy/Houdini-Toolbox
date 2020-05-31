@@ -1969,7 +1969,7 @@ def bounding_box_is_inside(source_bbox, target_bbox):
     :rtype: bool
 
     """
-    return _cpp_methods.boundingBoxisInside(source_bbox, target_bbox)
+    return _cpp_methods.boundingBoxIsInside(source_bbox, target_bbox)
 
 
 def bounding_boxes_intersect(bbox1, bbox2):

@@ -13,8 +13,8 @@ import sys
 # Third Party Imports
 import pytest
 
-if sys.version_info.major == 3:
-    pytest.skip("Skipping", allow_module_level=True)
+#if sys.version_info.major == 3:
+#    pytest.skip("Skipping", allow_module_level=True)
 
 # Houdini Toolbox Imports
 import ht.inline.api
@@ -59,6 +59,112 @@ pytestmark = pytest.mark.usefixtures("load_test_file")
 # TESTS
 # =============================================================================
 
+# def test_clear_caches_specific():
+#     result = hou.hscript("sopcache -l")[0].split("\n")[1]
+#     old_nodes = int(result.split(": ")[1])
+#
+#     ht.inline.api.clear_caches(["SOP Cache"])
+#
+#     result = hou.hscript("sopcache -l")[0].split("\n")[1]
+#     current_nodes = int(result.split(": ")[1])
+#
+#     assert current_nodes != old_nodes
+
+
+# def test_clear_caches_all():
+#     result = hou.hscript("objcache -l")[0].split("\n")[1]
+#     old_nodes = int(result.split(": ")[1])
+#
+#     ht.inline.api.clear_caches()
+#
+#     result = hou.hscript("objcache -l")[0].split("\n")[1]
+#     current_nodes = int(result.split(": ")[1])
+#
+#     assert current_nodes != old_nodes
+
+
+def test_is_rendering():
+    """Test ht.inline.api.is_rendering."""
+    container = OBJ.node("test_is_rendering")
+
+    # Force cook the node which should fail.  We manually catch the exception
+    # because it comes from within Houdini and we can't patch the Python exception.
+    try:
+        container.node("python").cook(force=True)
+
+    except hou.OperationFailed:
+        pass
+
+    # The test didn't fail for some reason so we need to fail the test.
+    else:
+        raise RuntimeError("Cooking succeeded but should have failed.")
+
+    # Execute the ROP which should cool the node and have it not fail since
+    # it will be rendering.
+    try:
+        container.node("render").render()
+
+    # The cook failed for some reason so fail the test.
+    except hou.OperationFailed:
+        raise RuntimeError("Render failed but should have succeeded.")
+
+
+def test_get_global_variable_names():
+    hou.hscript("set -g GLOBAL=123")
+    result = ht.inline.api.get_global_variable_names()
+
+    for name in ("ACTIVETAKE", "DRIVER", "E", "HIP", "GLOBAL"):
+        assert name in result
+
+
+def test_get_global_variable_names_dirty():
+    name = "TEST_DIRTY_GLOBAL_VAR"
+
+    result = ht.inline.api.get_global_variable_names()
+
+    assert name not in result
+
+    hou.hscript("set -g {}=6666".format(name))
+
+    result = ht.inline.api.get_global_variable_names(dirty=True)
+
+    assert name in result
+
+    hou.hscript("varchange")
+
+    result = ht.inline.api.get_global_variable_names(dirty=True)
+
+    assert name not in result
+
+
+def test_get_variable_names():
+    hou.hscript("set -g LOCAL=123")
+
+    result = ht.inline.api.get_variable_names()
+
+    for name in ("ACTIVETAKE", "DRIVER", "E", "HIP", "LOCAL"):
+        assert name in result
+
+
+def test_get_variable_names_dirty():
+    name = "TEST_DIRTY_LOCAL_VAR"
+
+    result = ht.inline.api.get_global_variable_names()
+
+    assert name not in result
+
+    hou.hscript("set {}=6666".format(name))
+
+    result = ht.inline.api.get_variable_names(dirty=True)
+
+    assert name in result
+
+    hou.hscript("varchange")
+
+    result = ht.inline.api.get_variable_names(dirty=True)
+
+    assert name not in result
+
 
 def test_get_variable_value():
     """Test ht.inline.api.get_variable_value."""
@@ -67,24 +173,21 @@ def test_get_variable_value():
     assert hip_name == os.path.splitext(os.path.basename(hou.hipFile.path()))[0]
 
 
+def test_get_variable_value__syntax_error():
+    """Test ht.inline.api.get_variable_value."""
+    hou.hscript("set ERROR_THING=1.1.1")
+
+    result = ht.inline.api.get_variable_value("ERROR_THING")
+
+    assert result == '1.1.1'
+
+
 def test_set_variable():
     """Test ht.inline.api.set_variable."""
     value = 22
     ht.inline.api.set_variable("awesome", value)
 
     assert ht.inline.api.get_variable_value("awesome") == 22
-
-
-def test_get_variable_names():
-    """Test ht.inline.api.get_variable_value."""
-    variable_names = ht.inline.api.get_variable_names()
-
-    assert "ACTIVETAKE" in variable_names
-
-    # Dirty
-    dirty_variable_names = ht.inline.api.get_variable_names(dirty=True)
-
-    assert variable_names != dirty_variable_names
 
 
 def test_unset_variable():
@@ -153,6 +256,24 @@ def test_num_prims():
     assert ht.inline.api.num_prims(geo) == 12
 
 
+def test_pack_geometry__target_readonly(fix_hou_exceptions):
+    """Test ht.inline.api.pack_geometry."""
+    source_geo = hou.Geometry().freeze()
+    target_geo = hou.Geometry().freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.pack_geometry(target_geo, source_geo)
+
+
+def test_pack_geometry__source_readonly(fix_hou_exceptions):
+    """Test ht.inline.api.pack_geometry."""
+    source_geo = hou.Geometry().freeze(True)
+    target_geo = hou.Geometry().freeze()
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.pack_geometry(target_geo, source_geo)
+
+
 def test_pack_geometry():
     """Test ht.inline.api.pack_geometry."""
     geo = get_obj_geo("test_pack_geometry")
@@ -162,8 +283,13 @@ def test_pack_geometry():
     assert isinstance(prim, hou.PackedGeometry)
 
 
-def test_sort_geometry_by_attribute():
+def test_sort_geometry_by_attribute(fix_hou_exceptions):
     """Test ht.inline.api.sort_geometry_by_attribute."""
+    geo = hou.Geometry().freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.sort_geometry_by_attribute(geo, None)
+
     geo = get_obj_geo_copy("test_sort_geometry_by_attribute")
 
     attrib = geo.findPrimAttrib("id")
@@ -204,6 +330,21 @@ def test_sort_geometry_by_attribute():
 
 def test_sort_geometry_along_axis():
     """Test ht.inline.api.sort_geometry_along_axis."""
+    geo = hou.Geometry().freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.sort_geometry_along_axis(geo, None, None)
+
+    geo = hou.Geometry()
+
+    # Test axis constraints
+    for axis in (-1, 3):
+        with pytest.raises(ValueError):
+            ht.inline.api.sort_geometry_along_axis(geo, None, axis)
+
+    with pytest.raises(ValueError):
+        ht.inline.api.sort_geometry_along_axis(geo, None, 0)
+
     # Points
     geo = get_obj_geo_copy("test_sort_geometry_along_axis_points")
 
@@ -225,11 +366,54 @@ def test_sort_geometry_along_axis():
 
 def test_sort_geometry_by_values():
     """Test ht.inline.api.sort_geometry_by_values."""
-    pass
+    geo = hou.Geometry().freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.sort_geometry_by_values(geo, None, None)
+
+    geo = hou.Geometry()
+
+    with pytest.raises(hou.OperationFailed):
+        ht.inline.api.sort_geometry_by_values(geo, hou.geometryType.Points, [1])
+
+    with pytest.raises(hou.OperationFailed):
+        ht.inline.api.sort_geometry_by_values(geo, hou.geometryType.Primitives, [1])
+
+    with pytest.raises(ValueError):
+        ht.inline.api.sort_geometry_by_values(geo, None, [1])
+
+    # Points
+    target_geo = OBJ.node("test_sort_geometry_by_values_points/RESULT").geometry()
+    test_geo = OBJ.node("test_sort_geometry_by_values_points/TEST").geometry()
+
+    assert test_geo.pointFloatAttribValues("id") == target_geo.pointFloatAttribValues(
+        "id"
+    )
+
+    # Prims
+    target_geo = OBJ.node("test_sort_geometry_by_values_prims/RESULT").geometry()
+    test_geo = OBJ.node("test_sort_geometry_by_values_prims/TEST").geometry()
+
+    assert test_geo.primFloatAttribValues("id") == target_geo.primFloatAttribValues(
+        "id"
+    )
 
 
 def test_sort_geometry_randomly():
     """Test ht.inline.api.sort_geometry_randomly."""
+    geo = hou.Geometry().freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.sort_geometry_randomly(geo, None, None)
+
+    geo = hou.Geometry()
+
+    with pytest.raises(TypeError):
+        ht.inline.api.sort_geometry_randomly(geo, None, "seed")
+
+    with pytest.raises(ValueError):
+        ht.inline.api.sort_geometry_randomly(geo, None)
+
     # Points
     seed = 11
     target = [5, 9, 3, 8, 0, 2, 6, 1, 4, 7]
@@ -255,6 +439,19 @@ def test_sort_geometry_randomly():
 
 def test_shift_geometry_elements():
     """Test ht.inline.api.shift_geometry_elements."""
+    geo = hou.Geometry().freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.shift_geometry_elements(geo, None, None)
+
+    geo = hou.Geometry()
+
+    with pytest.raises(TypeError):
+        ht.inline.api.shift_geometry_elements(geo, None, 1.0)
+
+    with pytest.raises(ValueError):
+        ht.inline.api.shift_geometry_elements(geo, None, 1)
+
     # Points
     offset = -18
     target = [8, 9, 0, 1, 2, 3, 4, 5, 6, 7]
@@ -280,6 +477,16 @@ def test_shift_geometry_elements():
 
 def test_reverse_sort_geometry():
     """Test ht.inline.api.reverse_sort_geometry."""
+    geo = hou.Geometry().freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.reverse_sort_geometry(geo, None)
+
+    geo = hou.Geometry()
+
+    with pytest.raises(ValueError):
+        ht.inline.api.reverse_sort_geometry(geo, None)
+
     # Points
     target = list(range(10))
     target.reverse()
@@ -305,6 +512,16 @@ def test_reverse_sort_geometry():
 
 def test_sort_geometry_by_proximity_to_position():
     """Test ht.inline.api.sort_geometry_by_proximity_to_position."""
+    geo = hou.Geometry().freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.sort_geometry_by_proximity_to_position(geo, None, None)
+
+    geo = hou.Geometry()
+
+    with pytest.raises(ValueError):
+        ht.inline.api.sort_geometry_by_proximity_to_position(geo, None, None)
+
     # Points
     target = [4, 3, 5, 2, 6, 1, 7, 0, 8, 9]
     position = hou.Vector3(4, 1, 2)
@@ -334,6 +551,11 @@ def test_sort_geometry_by_proximity_to_position():
 
 def test_sort_geometry_by_vertex_order():
     """Test ht.inline.api.sort_geometry_by_vertex_order."""
+    geo = hou.Geometry().freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.sort_geometry_by_vertex_order(geo)
+
     target = list(range(10))
 
     geo = get_obj_geo_copy("test_sort_geometry_by_vertex_order")
@@ -346,6 +568,16 @@ def test_sort_geometry_by_vertex_order():
 
 def test_sort_geometry_by_expression():
     """Test ht.inline.api.sort_geometry_by_expression."""
+    geo = hou.Geometry().freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.sort_geometry_by_expression(geo, None, None)
+
+    geo = hou.Geometry()
+
+    with pytest.raises(ValueError):
+        ht.inline.api.sort_geometry_by_expression(geo, None, None)
+
     # Points
     target_geo = OBJ.node("test_sort_geometry_by_expression_points/RESULT").geometry()
     test_geo = OBJ.node("test_sort_geometry_by_expression_points/TEST").geometry()
@@ -1325,6 +1557,13 @@ def test_rename_group():
 
     with pytest.raises(hou.GeometryPermissionError):
         ht.inline.api.rename_group(group, "test_group")
+
+    geo = hou.Geometry()
+    geo.createPointGroup("foo")
+    bar = geo.createPointGroup("bar")
+
+    result = ht.inline.api.rename_group(bar, "foo")
+    assert result is None
 
     # Point group
     geo = get_obj_geo_copy("test_rename_point_group")
