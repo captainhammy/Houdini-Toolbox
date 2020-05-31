@@ -60,7 +60,7 @@ _GEOMETRY_TYPE_MAP = {
 _GROUP_ATTRIB_MAP = {hou.PointGroup: 1, hou.PrimGroup: 2}
 
 # Mapping between group types and corresponding GA_GroupType values.
-_GROUP_TYPE_MAP = {hou.PointGroup: 0, hou.PrimGroup: 1, hou.EdgeGroup: 2}
+_GROUP_TYPE_MAP = {hou.PointGroup: 0, hou.PrimGroup: 1, hou.EdgeGroup: 2, hou.VertexGroup: 3}
 
 
 # =============================================================================
@@ -174,6 +174,9 @@ def find_group(geometry, group_type, name):
 
     if group_type == 2:
         return geometry.findEdgeGroup(name)
+
+    if group_type == 3:
+        return geometry.findVertexGroup(name)
 
     raise ValueError("Invalid group type {}".format(group_type))
 

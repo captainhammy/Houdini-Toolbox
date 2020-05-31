@@ -13,8 +13,8 @@ import sys
 # Third Party Imports
 import pytest
 
-if sys.version_info.major == 3:
-    pytest.skip("Skipping", allow_module_level=True)
+#if sys.version_info.major == 3:
+#    pytest.skip("Skipping", allow_module_level=True)
 
 # Houdini Toolbox Imports
 from ht.inline import api
@@ -441,7 +441,7 @@ class Test_sort_geometry_by_attribute(object):
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
-        mock_attrib_type = mocker.MagicMock()
+        mock_attrib_type = hou.attribType.Point
 
         mock_attribute = mocker.MagicMock(spec=hou.Attrib)
         mock_attribute.size.return_value = 5
@@ -470,7 +470,7 @@ class Test_sort_geometry_by_attribute(object):
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
-        mock_attrib_type = mocker.MagicMock()
+        mock_attrib_type = hou.attribType.Point
 
         mock_attribute = mocker.MagicMock(spec=hou.Attrib)
         mock_attribute.size.return_value = 5
@@ -3846,7 +3846,7 @@ class Test_group_ungrouped_prims(object):
 
 def test_bounding_box_is_inside(mocker):
     """Test ht.inline.api.bounding_box_is_inside."""
-    mock_is_inside = mocker.patch("ht.inline.api._cpp_methods.boundingBoxisInside")
+    mock_is_inside = mocker.patch("ht.inline.api._cpp_methods.boundingBoxIsInside")
 
     mock_box1 = mocker.MagicMock(spec=hou.BoundingBox)
     mock_box2 = mocker.MagicMock(spec=hou.BoundingBox)
@@ -5363,7 +5363,7 @@ class Test_get_oriented_point_transform(object):
         """Test where the point is not attached."""
         mock_connected = mocker.patch("ht.inline.api.connected_prims", return_value=())
         mock_point_instance_transform = mocker.patch(
-            "ht.inline.api._cpp_methods.point_instance_transform"
+            "ht.inline.api.point_instance_transform"
         )
 
         mock_point = mocker.MagicMock(spec=hou.Point)
