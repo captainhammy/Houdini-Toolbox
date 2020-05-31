@@ -3,9 +3,10 @@
 
 #include <OP/OP_Node.h>
 
-#include <OPUI/OPUI_GraphTextBadge.h>
+#include <OPUI/OPUI_GraphBadge.h>
 #include <OPUI/OPUI_GraphDisplayOptions.h>
 #include <OPUI/OPUI_GraphProxyDescriptor.h>
+#include <OPUI/OPUI_GraphTextBadge.h>
 
 #include <PY/PY_CPythonAPI.h>
 #include <PY/PY_Python.h>
@@ -71,6 +72,11 @@ OPUIaddTextBadges(OPUI_GraphTextBadgeArray *add_textbadges)
         )
     );
 }
+
+// Dummy to avoid missing symbol errors on load.
+void
+OPUIaddBadges(OPUI_GraphBadgeArray *add_badges)
+{}
 
 
 PY_PyObject *

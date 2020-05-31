@@ -18,4 +18,4 @@ target_include_directories( ${library_name} PRIVATE
 )
 
 # Sets several common target properties, such as the library's output directory.
-houdini_configure_target( ${library_name} INSTDIR "$ENV{PLUGIN_BUILD_DIR}/dso" )
+houdini_configure_target( ${library_name} INSTDIR "$ENV{PLUGIN_BUILD_DIR}/dso/opui" )

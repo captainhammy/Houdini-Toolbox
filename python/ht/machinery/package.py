@@ -247,6 +247,27 @@ class HoudiniBuildData(object):
     # NON-PUBLIC METHODS
     # -------------------------------------------------------------------------
 
+    def _get_eula_date(self, extract_path):
+        """Get any EULA accept date in the install script, if any.
+
+        :param extract_path: The path to the extracted archive.
+        :type extract_path: str
+        :return: The EULA date, if any.
+        :rtype: str or None
+
+        """
+        install_script = os.path.join(extract_path, "houdini.install")
+
+        if not os.path.exists(install_script):
+            return
+
+        with open(install_script) as handle:
+            for line in handle:
+                if line.startswith("LICENSE_DATE"):
+                    return line.split("=")[1].strip()
+
+        return None
+
     # -------------------------------------------------------------------------
     # PROPERTIES
     # -------------------------------------------------------------------------
@@ -282,11 +303,13 @@ class HoudiniBuildData(object):
 
         return self._types[system]["ext"]
 
-    def get_install_args(self, major_minor=None):
+    def get_install_args(self, major_minor, extract_path):
         """Get installer args.
 
         :param major_minor: The base version to install.
         :type major_minor: str
+        :param extract_path: The path to the extracted archive.
+        :type extract_path: str
         :return: A tuple of installer args.
         :rtype: tuple(str)
 
@@ -310,6 +333,16 @@ class HoudiniBuildData(object):
                     all_args.extend(
                         _flatten_items(version_data["installer_args"].get(system, ()))
                     )
+
+        if major_minor >= "18.5":
+            eula_key = "--accept-EULA"
+
+            if eula_key in all_args:
+                eula_date = self._get_eula_date(extract_path)
+
+                if eula_date is not None:
+                    idx = all_args.index(eula_key)
+                    all_args.insert(idx+1, eula_date[1:-1])
 
         return tuple(all_args)
 
@@ -706,7 +739,7 @@ class HoudiniInstallFile(HoudiniBase):
         cmd = [os.path.join(extract_path, "houdini.install")]
 
         # Get any installer arguments.
-        cmd.extend(_SETTINGS_MANAGER.build_data.get_install_args(self.major_minor))
+        cmd.extend(_SETTINGS_MANAGER.build_data.get_install_args(self.major_minor, extract_path))
 
         # Last arg is the target path.
         cmd.append(install_path)
