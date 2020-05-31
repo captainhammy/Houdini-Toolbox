@@ -1,8 +1,7 @@
-enum34
 flake8
 future
 humanfriendly
-jinja2
+Jinja2
 logquacious
 numpy
 pytest

@@ -109,11 +109,8 @@ getGlobalVariableNames(int dirty=0)
 
     table->getVariableNames(names, dirty);
 
-#if (UT_MAJOR_VERSION_INT >= 17 )
     UTarrayToStdVectorOfStrings(names, result);
-#else
-    names.toStdVectorOfStrings(result);
-#endif
+    
     // Check for an empty vector.
     validateStringVector(result);
 
@@ -121,7 +118,7 @@ getGlobalVariableNames(int dirty=0)
 }
 """,
     """
-char *
+inlinecpp::BinaryString
 getVariableValue(const char *name)
 {
     OP_CommandManager           *cmd;
@@ -137,7 +134,7 @@ getVariableValue(const char *name)
 
     cmd->getVariable(name, value);
 
-    return strdup(value.buffer());
+    return value.toStdString();
 }
 """,
     """
@@ -159,11 +156,7 @@ getVariableNames(int dirty=0)
 
     cmd->getVariableNames(names, dirty);
 
-#if (UT_MAJOR_VERSION_INT >= 17 )
     UTarrayToStdVectorOfStrings(names, result);
-#else
-    names.toStdVectorOfStrings(result);
-#endif
 
     // Check for an empty vector.
     validateStringVector(result);
@@ -1775,7 +1768,7 @@ clipGeometry(GU_Detail *gdp,
 """,
     """
 bool
-boundingBoxisInside(const UT_BoundingBoxD *bbox1, const UT_BoundingBoxD *bbox2)
+boundingBoxIsInside(const UT_BoundingBoxD *bbox1, const UT_BoundingBoxD *bbox2)
 {
     return bbox1->isInside(*bbox2);
 }
@@ -1863,11 +1856,8 @@ getMultiParmInstanceIndex(OP_Node *node, const char *parm_name)
 
     parm.getMultiInstanceIndex(indices);
 
-#if (UT_MAJOR_VERSION_INT >= 17 )
     UTarrayToStdVector(indices, result);
-#else
-    indices.toStdVector(result);
-#endif
+
     return result;
 }
 """,
@@ -2121,13 +2111,10 @@ cpp_methods = inlinecpp.createLibrary(
 #include <PRM/PRM_Name.h>
 #include <PRM/PRM_Parm.h>
 #include <ROP/ROP_RenderManager.h>
+#include <UT/UT_StdUtil.h>
 #include <UT/UT_Version.h>
 #include <UT/UT_WorkArgs.h>
 #include <UT/UT_WorkBuffer.h>
-
-#if (UT_MAJOR_VERSION_INT >= 17)
-    #include <UT/UT_StdUtil.h>
-#endif
 
 using namespace std;
 
