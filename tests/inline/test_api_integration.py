@@ -59,28 +59,30 @@ pytestmark = pytest.mark.usefixtures("load_test_file")
 # TESTS
 # =============================================================================
 
-# def test_clear_caches_specific():
-#     result = hou.hscript("sopcache -l")[0].split("\n")[1]
-#     old_nodes = int(result.split(": ")[1])
-#
-#     ht.inline.api.clear_caches(["SOP Cache"])
-#
-#     result = hou.hscript("sopcache -l")[0].split("\n")[1]
-#     current_nodes = int(result.split(": ")[1])
-#
-#     assert current_nodes != old_nodes
+def test_clear_caches_specific():
+    OBJ.node("test_clear_caches").displayNode().cook(True)
+    result = hou.hscript("sopcache -l")[0].split("\n")[1]
+    old_nodes = int(result.split(": ")[1])
+
+    ht.inline.api.clear_caches(["SOP Cache"])
+
+    result = hou.hscript("sopcache -l")[0].split("\n")[1]
+    current_nodes = int(result.split(": ")[1])
+
+    assert current_nodes != old_nodes
 
 
-# def test_clear_caches_all():
-#     result = hou.hscript("objcache -l")[0].split("\n")[1]
-#     old_nodes = int(result.split(": ")[1])
-#
-#     ht.inline.api.clear_caches()
-#
-#     result = hou.hscript("objcache -l")[0].split("\n")[1]
-#     current_nodes = int(result.split(": ")[1])
-#
-#     assert current_nodes != old_nodes
+def test_clear_caches_all():
+    OBJ.node("test_clear_caches").displayNode().cook(True)
+    result = hou.hscript("sopcache -l")[0].split("\n")[1]
+    old_nodes = int(result.split(": ")[1])
+
+    ht.inline.api.clear_caches()
+
+    result = hou.hscript("sopcache -l")[0].split("\n")[1]
+    current_nodes = int(result.split(": ")[1])
+
+    assert current_nodes != old_nodes
 
 
 def test_is_rendering():
@@ -1319,7 +1321,7 @@ def test_compute_point_normals():
     assert geo.findPointAttrib("N") is not None
 
 
-def test_add_point_normal_attribute():
+def test_add_point_normal_attribute(fix_hou_exceptions):
     """Test ht.inline.api.add_point_normal_attribute."""
     # Read only
     geo = get_obj_geo("test_add_point_normal_attribute")
@@ -2273,6 +2275,19 @@ def test_is_parm_multiparm():
     parm_tuple = node.parmTuple("objpath1")
     assert not ht.inline.api.is_parm_multiparm(parm_tuple)
 
+    # Check against all different FolderSet type folders.
+    for folder_name in ("folder_tabs", "folder_collapsible", "folder_simple", "folder_radio"):
+        parm = node.parm(folder_name)
+        assert not ht.inline.api.is_parm_multiparm(parm)
+
+    # Check against additional multiparm types.
+    for folder_name in ("multi_scroll", "multi_tab"):
+        parm = node.parm(folder_name)
+        assert ht.inline.api.is_parm_multiparm(parm)
+
+        parm_tuple = node.parmTuple(folder_name)
+        assert ht.inline.api.is_parm_multiparm(parm_tuple)
+
 
 def test_get_multiparm_instances_per_item():
     """Test ht.inline.api.get_multiparm_instances_per_item."""
@@ -2364,6 +2379,12 @@ def test_get_multiparm_instances():
 
     assert instances == target
 
+    # Test an multiparm folder with 1 instance but no parameters in it.
+    parm_tuple = node.parmTuple("empty")
+    instances = ht.inline.api.get_multiparm_instances(parm_tuple)
+
+    assert instances == ((), )
+
 
 def test_get_multiparm_instance_values():
     """Test ht.inline.api.get_multiparm_instance_values."""
@@ -2423,6 +2444,12 @@ def test_eval_multiparm_instance():
 
     with pytest.raises(IndexError):
         ht.inline.api.eval_multiparm_instance(node, "hello#", 2)
+
+    # Nested
+    assert ht.inline.api.eval_multiparm_instance(node, "nested#", 0) == 7
+
+    with pytest.raises(IndexError):
+        assert ht.inline.api.eval_multiparm_instance(node, "nested#", 1)
 
 
 # =========================================================================
@@ -2518,6 +2545,11 @@ def test_vector_component_along():
 def test_vector_project_along():
     """Test ht.inline.api.vector_project_along."""
     vec = hou.Vector3(-1.3, 0.5, 7.6)
+
+    # Test zero-length vector
+    with pytest.raises(ValueError):
+        ht.inline.api.vector_project_along(vec, hou.Vector3())
+
     projection = ht.inline.api.vector_project_along(vec, hou.Vector3(2.87, 3.1, -0.5))
 
     result = hou.Vector3(-0.948531, -1.02455, 0.165249)
@@ -2525,18 +2557,17 @@ def test_vector_project_along():
     assert projection.isAlmostEqual(result)
 
 
-def test_vector_contains_nans():
+@pytest.mark.parametrize("vec, expected", [
+    ((), False),
+    (hou.Vector2(1, 0), False),
+    (hou.Vector2(float("nan"), 1), True),
+    (hou.Vector3(6.5, 1, float("nan")), True),
+    (hou.Vector4(-4., 5, -0, float("nan")), True),
+])
+def test_vector_contains_nans(vec, expected):
     """Test ht.inline.api.vector_contains_nans."""
-    nan = float("nan")
-
-    vec = hou.Vector2(nan, 1)
-    assert ht.inline.api.vector_contains_nans(vec)
-
-    vec = hou.Vector3(6.5, 1, nan)
-    assert ht.inline.api.vector_contains_nans(vec)
-
-    vec = hou.Vector4(-4, 5, -0, nan)
-    assert ht.inline.api.vector_contains_nans(vec)
+    result = ht.inline.api.vector_contains_nans(vec)
+    assert result == expected
 
 
 def test_vector_compute_dual():
@@ -2600,6 +2631,70 @@ def test_build_lookat_matrix():
     assert mat == target
 
 
+def test_get_oriented_point_transform(fix_hou_exceptions):
+    """Test ht.inline.api.get_oriented_point_transform."""
+    # Test against a primitive with no transform.
+    geo = OBJ.node("test_get_oriented_point_transform/RAW").geometry()
+    pt = geo.points()[0]
+
+    with pytest.raises(hou.OperationFailed):
+        ht.inline.api.get_oriented_point_transform(pt)
+
+    # Primitive with proper transform.
+    target = hou.Matrix4(
+        (
+            (0.6819891929626465, -0.7313622236251831, 0.0, 0.0),
+            (0.48333778977394104, 0.4507084786891937, -0.7504974603652954, 0.0),
+            (0.5488855242729187, 0.5118311643600464, 0.660873293876648, 0.0),
+            (0.3173518180847168, 0.38005995750427246, -0.6276679039001465, 1.0)
+        )
+    )
+
+    geo = OBJ.node("test_get_oriented_point_transform/XFORMED").geometry()
+    pt = geo.points()[0]
+
+    result = ht.inline.api.get_oriented_point_transform(pt)
+
+    assert result == target
+
+    # Just a lone point.
+
+    target = hou.Matrix4(
+        (
+            (-0.42511632340174754, 0.8177546905539287, -0.38801208441803603, 0.0),
+            (-0.3819913447800112, 0.2265424934082094, 0.895969369562124, 0.0),
+            (0.8205843796286518, 0.5291084621865726, 0.21606830205289468, 0.0),
+            (0.0, 0.0, 0.0, 1.0),
+        )
+    )
+
+    geo = OBJ.node("test_get_oriented_point_transform/SINGLE_POINT").geometry()
+    pt = geo.points()[0]
+
+    result = ht.inline.api.get_oriented_point_transform(pt)
+
+    assert result == target
+
+
+def test_point_instance_transform():
+    """Test ht.inline.api.point_instance_transform."""
+    target = hou.Matrix4(
+        (
+            (-0.42511632340174754, 0.8177546905539287, -0.38801208441803603, 0.0),
+            (-0.3819913447800112, 0.2265424934082094, 0.895969369562124, 0.0),
+            (0.8205843796286518, 0.5291084621865726, 0.21606830205289468, 0.0),
+            (0.0, 0.0, 0.0, 1.0),
+        )
+    )
+
+    geo = get_obj_geo_copy("test_point_instance_transform")
+    pt = geo.points()[0]
+
+    result = ht.inline.api.point_instance_transform(pt)
+
+    assert result == target
+
+
 def test_build_instance_matrix():
     """Test ht.inline.api.build_instance_matrix."""
     target = hou.Matrix4(
@@ -2616,6 +2711,25 @@ def test_build_instance_matrix():
         hou.Vector3(1, 1, 1),
         pscale=1.5,
         up_vector=hou.Vector3(1, 1, -1),
+    )
+
+    assert mat == target
+
+    target = hou.Matrix4(
+        (
+            (0.4999999701976776, -1.0000000298023224, -1.0000000298023224, 0.0),
+            (-1.0000000298023224, 0.4999999701976776, -1.0000000298023224, 0.0),
+            (-1.0000000298023224, -1.0000000298023224, 0.4999999701976776, 0.0),
+            (-1.0, 2.0, 4.0, 1.0),
+        )
+    )
+
+    # Test up vector is zero-vector
+    mat = ht.inline.api.build_instance_matrix(
+        hou.Vector3(-1, 2, 4),
+        hou.Vector3(1, 1, 1),
+        pscale=1.5,
+        up_vector=hou.Vector3(),
     )
 
     assert mat == target
@@ -2641,54 +2755,103 @@ def test_build_instance_matrix():
 # DIGITAL ASSETS
 # =========================================================================
 
-
-def test_get_node_message_nodes():
+@pytest.mark.parametrize("node_name, expected_node", [
+    ("valid", "d/s"),
+    ("no_message_nodes", None),
+    ("not_otl", None),
+])
+def test_get_node_message_nodes(node_name, expected_node):
     """Test ht.inline.api.get_node_message_nodes."""
-    node = OBJ.node("test_message_nodes/solver")
+    node = OBJ.node("test_message_nodes/{}".format(node_name))
 
-    target = (node.node("d/s"),)
+    if expected_node is not None:
+        target = (node.node(expected_node),)
+
+    else:
+        target = ()
 
     assert ht.inline.api.get_node_message_nodes(node) == target
 
 
-def test_get_node_editable_nodes():
+@pytest.mark.parametrize("node_name, expected_node", [
+    ("valid", "d/s"),
+    ("no_message_nodes", None),
+    ("not_otl", None),
+])
+def test_get_node_editable_nodes(node_name, expected_node):
     """Test ht.inline.api.get_node_editable_nodes."""
-    node = OBJ.node("test_message_nodes/solver")
+    node = OBJ.node("test_message_nodes/{}".format(node_name))
 
-    target = (node.node("d/s"),)
+    if expected_node is not None:
+        target = (node.node(expected_node),)
+
+    else:
+        target = ()
 
     assert ht.inline.api.get_node_editable_nodes(node) == target
 
 
-def test_get_node_dive_target():
+@pytest.mark.parametrize("node_name, expected_node", [
+    ("valid", "d/s"),
+    ("no_message_nodes", None),
+    ("not_otl", None),
+])
+def test_get_node_dive_target(node_name, expected_node):
     """Test ht.inline.api.get_node_dive_target."""
-    node = OBJ.node("test_message_nodes/solver")
+    node = OBJ.node("test_message_nodes/{}".format(node_name))
 
-    target = node.node("d/s")
+    if expected_node is not None:
+        target = node.node(expected_node)
+
+    else:
+        target = None
 
     assert ht.inline.api.get_node_dive_target(node) == target
 
 
-def test_get_node_representative_node():
+@pytest.mark.parametrize("node_name, expected_node", [
+    ("test_representative_node", "stereo_camera"),
+    ("test_representative_node/left_camera", None),
+    ("test_representative_node/visualization_root", None),
+    ("test_message_nodes/valid", None),
+])
+def test_get_node_representative_node(node_name, expected_node):
     """Test ht.inline.api.get_node_representative_node."""
-    node = OBJ.node("test_representative_node")
+    node = OBJ.node(node_name)
 
-    target = node.node("stereo_camera")
+    if expected_node is not None:
+        target = node.node(expected_node)
+
+    else:
+        target = None
 
     assert ht.inline.api.get_node_representative_node(node) == target
+
+
+@pytest.mark.parametrize("node_name, expected", [
+    ("test_is_node_digital_asset/is_digital_asset", True),
+    ("test_is_node_digital_asset/not_digital_asset", False),
+])
+def test_is_node_digital_asset(node_name, expected):
+    """Test ht.inline.api.is_node_digital_asset."""
+    node = OBJ.node(node_name)
+
+    assert ht.inline.api.is_node_digital_asset(node) == expected
 
 
 def test_asset_file_meta_source():
     """Test ht.inline.api.asset_file_meta_source."""
     target = "Scanned Asset Library Directories"
 
-    if hou.applicationVersion() >= (18):
+    if hou.applicationVersion() >= (18, ):
         path = hou.text.expandString("$HH/otls/OPlibSop.hda")
 
     else:
         path = hou.expandString("$HH/otls/OPlibSop.hda")
 
     assert ht.inline.api.asset_file_meta_source(path) == target
+
+    assert ht.inline.api.asset_file_meta_source("/some/fake/pat") is None
 
 
 def test_get_definition_meta_source():
@@ -2704,6 +2867,22 @@ def test_libraries_in_meta_source():
     """Test ht.inline.api.libraries_in_meta_source."""
     libs = ht.inline.api.libraries_in_meta_source("Scanned Asset Library Directories")
     assert libs
+
+
+def test_remove_meta_source():
+    """Test ht.inline.api.remove_meta_source."""
+    subnet = OBJ.createNode("subnet")
+    asset = subnet.createDigitalAsset("dummysrcop", "Embedded", "Dummy")
+    definition = asset.type().definition()
+
+    asset.destroy()
+
+    assert definition.isInstalled()
+
+    result = ht.inline.api.remove_meta_source("Current HIP File")
+    assert result
+
+    assert not definition.isInstalled()
 
 
 def test_is_dummy_definition():
