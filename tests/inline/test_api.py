@@ -2643,24 +2643,9 @@ class Test_add_point_normal_attribute(object):
         with pytest.raises(hou.GeometryPermissionError):
             api.add_point_normal_attribute(mock_geometry)
 
-    def test_failure(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_add = mocker.patch(
-            "ht.inline.api._cpp_methods.addNormalAttribute", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        with pytest.raises(hou.OperationFailed):
-            api.add_point_normal_attribute(mock_geometry)
-
-        mock_add.assert_called_with(mock_geometry)
-
     def test(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_add = mocker.patch(
-            "ht.inline.api._cpp_methods.addNormalAttribute", return_value=True
-        )
+        mock_add = mocker.patch("ht.inline.api._cpp_methods.addNormalAttribute")
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
@@ -2683,24 +2668,9 @@ class Test_add_point_velocity_attribute(object):
         with pytest.raises(hou.GeometryPermissionError):
             api.add_point_velocity_attribute(mock_geometry)
 
-    def test_failure(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_add = mocker.patch(
-            "ht.inline.api._cpp_methods.addVelocityAttribute", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        with pytest.raises(hou.OperationFailed):
-            api.add_point_velocity_attribute(mock_geometry)
-
-        mock_add.assert_called_with(mock_geometry)
-
     def test(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_add = mocker.patch(
-            "ht.inline.api._cpp_methods.addVelocityAttribute", return_value=True
-        )
+        mock_add = mocker.patch("ht.inline.api._cpp_methods.addVelocityAttribute")
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
 
@@ -2733,29 +2703,10 @@ class Test_add_color_attribute(object):
         with pytest.raises(ValueError):
             api.add_color_attribute(mock_geometry, hou.attribType.Global)
 
-    def test_failure(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
-        mock_add = mocker.patch(
-            "ht.inline.api._cpp_methods.addDiffuseAttribute", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_attrib_type = mocker.MagicMock(spec=hou.attribType)
-
-        with pytest.raises(hou.OperationFailed):
-            api.add_color_attribute(mock_geometry, mock_attrib_type)
-
-        mock_owner.assert_called_with(mock_attrib_type)
-
-        mock_add.assert_called_with(mock_geometry, mock_owner.return_value)
-
     def test(self, mocker, fix_hou_exceptions):
         mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
         mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
-        mock_add = mocker.patch(
-            "ht.inline.api._cpp_methods.addDiffuseAttribute", return_value=True
-        )
+        mock_add = mocker.patch("ht.inline.api._cpp_methods.addDiffuseAttribute")
         mock_find = mocker.patch("ht.inline.api.utils.find_attrib")
 
         mock_geometry = mocker.MagicMock(spec=hou.Geometry)
@@ -4161,34 +4112,12 @@ class Test_is_parm_multiparm(object):
     """Test ht.inline.api.is_parm_multiparm."""
 
     def test_folder_is_multiparm(self, mocker):
-        mock_folder_type = mocker.MagicMock(spec=hou.folderType)
-
         mock_template = mocker.MagicMock(spec=hou.FolderParmTemplate)
-        mock_template.folderType.return_value = mock_folder_type
 
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.parmTemplate.return_value = mock_template
-
-        mock_types = (mock_folder_type,)
-
-        mocker.patch("ht.inline.api._MULTIPARM_FOLDER_TYPES", mock_types)
 
         assert api.is_parm_multiparm(mock_parm)
-
-    def test_folder_not_multiparm(self, mocker):
-        mock_folder_type = mocker.MagicMock(spec=hou.folderType)
-
-        mock_template = mocker.MagicMock(spec=hou.FolderParmTemplate)
-        mock_template.folderType.return_value = mock_folder_type
-
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.parmTemplate.return_value = mock_template
-
-        mock_types = ()
-
-        mocker.patch("ht.inline.api._MULTIPARM_FOLDER_TYPES", mock_types)
-
-        assert not api.is_parm_multiparm(mock_parm)
 
     def test_not_folder(self, mocker):
         mock_template = mocker.MagicMock(spec=hou.ParmTemplate)
@@ -4567,54 +4496,18 @@ class Test_eval_multiparm_instance(object):
 
         mock_name.count.assert_called_with("#")
 
-    def test_not_multiparm(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=False
-        )
-
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-
-        mock_template = mocker.MagicMock(spec=hou.ParmTemplate)
-
-        mock_folder_template = mocker.MagicMock(spec=hou.FolderParmTemplate)
-
-        mock_ptg = mocker.MagicMock(spec=hou.ParmTemplateGroup)
-        mock_ptg.containingFolder.return_value = mock_folder_template
-        mock_ptg.find.return_value = mock_template
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.parmTemplateGroup.return_value = mock_ptg
-        mock_node.parm.return_value = mock_parm
-
-        mock_name = mocker.MagicMock(spec=str)
-        mock_name.count.return_value = 1
-
-        mock_index = mocker.MagicMock(spec=int)
-
-        with pytest.raises(ValueError):
-            api.eval_multiparm_instance(mock_node, mock_name, mock_index)
-
-        mock_name.count.assert_called_with("#")
-
-        mock_ptg.containingFolder.assert_called_with(mock_name)
-        mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
-
-        mock_is_multiparm.assert_called_with(mock_parm)
-
     def test_invalid_index(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=True
-        )
-
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.eval.return_value = mocker.MagicMock(spec=int)
 
         mock_template = mocker.MagicMock(spec=hou.ParmTemplate)
 
-        mock_folder_template = mocker.MagicMock(spec=hou.FolderParmTemplate)
+        mock_folder_template1 = mocker.MagicMock(spec=hou.FolderSetParmTemplate)
+        mock_folder_template1.name.return_value = "foo#"
+        mock_folder_template2 = mocker.MagicMock(spec=hou.FolderParmTemplate)
 
         mock_ptg = mocker.MagicMock(spec=hou.ParmTemplateGroup)
-        mock_ptg.containingFolder.return_value = mock_folder_template
+        mock_ptg.containingFolder.side_effect = (mock_folder_template1, mock_folder_template2)
         mock_ptg.find.return_value = mock_template
 
         mock_node = mocker.MagicMock(spec=hou.Node)
@@ -4632,17 +4525,17 @@ class Test_eval_multiparm_instance(object):
 
         mock_name.count.assert_called_with("#")
 
-        mock_ptg.containingFolder.assert_called_with(mock_name)
-        mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
-
-        mock_is_multiparm.assert_called_with(mock_parm)
+        mock_ptg.containingFolder.has_calls(
+            [
+                mocker.call(mock_name),
+                mocker.call("foo#")
+            ]
+        )
+        mock_node.parm.assert_called_with(mock_folder_template2.name.return_value)
 
         mock_index.__ge__.assert_called_with(mock_parm.eval.return_value)
 
     def test_float_single_component(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=True
-        )
         mock_get = mocker.patch("ht.inline.api.get_multiparm_start_offset")
         mock_eval = mocker.patch(
             "ht.inline.api._cpp_methods.eval_multiparm_instance_float"
@@ -4679,8 +4572,6 @@ class Test_eval_multiparm_instance(object):
         mock_ptg.containingFolder.assert_called_with(mock_name)
         mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
 
-        mock_is_multiparm.assert_called_with(mock_parm)
-
         mock_index.__ge__.assert_called_with(mock_parm.eval.return_value)
 
         mock_get.assert_called_with(mock_parm)
@@ -4690,9 +4581,6 @@ class Test_eval_multiparm_instance(object):
         )
 
     def test_int_multiple_components(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=True
-        )
         mock_get = mocker.patch("ht.inline.api.get_multiparm_start_offset")
         mock_eval = mocker.patch(
             "ht.inline.api._cpp_methods.eval_multiparm_instance_int"
@@ -4729,8 +4617,6 @@ class Test_eval_multiparm_instance(object):
         mock_ptg.containingFolder.assert_called_with(mock_name)
         mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
 
-        mock_is_multiparm.assert_called_with(mock_parm)
-
         mock_index.__ge__.assert_called_with(mock_parm.eval.return_value)
 
         mock_get.assert_called_with(mock_parm)
@@ -4743,9 +4629,6 @@ class Test_eval_multiparm_instance(object):
         )
 
     def test_string_multiple_components(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=True
-        )
         mock_get = mocker.patch("ht.inline.api.get_multiparm_start_offset")
         mock_eval = mocker.patch(
             "ht.inline.api._cpp_methods.eval_multiparm_instance_string"
@@ -4786,8 +4669,6 @@ class Test_eval_multiparm_instance(object):
         mock_ptg.containingFolder.assert_called_with(mock_name)
         mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
 
-        mock_is_multiparm.assert_called_with(mock_parm)
-
         mock_index.__ge__.assert_called_with(mock_parm.eval.return_value)
 
         mock_get.assert_called_with(mock_parm)
@@ -4801,9 +4682,6 @@ class Test_eval_multiparm_instance(object):
         )
 
     def test_invalid_type(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=True
-        )
         mock_get = mocker.patch("ht.inline.api.get_multiparm_start_offset")
         mocker.patch("ht.inline.api._cpp_methods.eval_multiparm_instance_string")
 
@@ -4837,8 +4715,6 @@ class Test_eval_multiparm_instance(object):
 
         mock_ptg.containingFolder.assert_called_with(mock_name)
         mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
-
-        mock_is_multiparm.assert_called_with(mock_parm)
 
         mock_index.__ge__.assert_called_with(mock_parm.eval.return_value)
 

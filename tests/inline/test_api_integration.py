@@ -56,6 +56,29 @@ pytestmark = pytest.mark.usefixtures("load_test_file")
 # TESTS
 # =============================================================================
 
+# def test_clear_caches_specific():
+#     result = hou.hscript("sopcache -l")[0].split("\n")[1]
+#     old_nodes = int(result.split(": ")[1])
+#
+#     ht.inline.api.clear_caches(["SOP Cache"])
+#
+#     result = hou.hscript("sopcache -l")[0].split("\n")[1]
+#     current_nodes = int(result.split(": ")[1])
+#
+#     assert current_nodes != old_nodes
+
+
+# def test_clear_caches_all():
+#     result = hou.hscript("objcache -l")[0].split("\n")[1]
+#     old_nodes = int(result.split(": ")[1])
+#
+#     ht.inline.api.clear_caches()
+#
+#     result = hou.hscript("objcache -l")[0].split("\n")[1]
+#     current_nodes = int(result.split(": ")[1])
+#
+#     assert current_nodes != old_nodes
+
 
 def test_is_rendering():
     """Test ht.inline.api.is_rendering."""

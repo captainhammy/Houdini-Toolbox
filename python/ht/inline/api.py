@@ -27,18 +27,6 @@ import hou
 
 
 # =============================================================================
-# GLOBALS
-# =============================================================================
-
-# A tuple of folder types that are multiparms.
-_MULTIPARM_FOLDER_TYPES = (
-    hou.folderType.MultiparmBlock,
-    hou.folderType.ScrollingMultiparmBlock,
-    hou.folderType.TabbedMultiparmBlock,
-)
-
-
-# =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
@@ -1384,10 +1372,7 @@ def add_point_normal_attribute(geometry):
     if is_geometry_read_only(geometry):
         raise hou.GeometryPermissionError()
 
-    success = _cpp_methods.addNormalAttribute(geometry)
-
-    if not success:
-        raise hou.OperationFailed("Could not add normal attribute.")
+    _cpp_methods.addNormalAttribute(geometry)
 
     return geometry.findPointAttrib("N")
 
@@ -1405,10 +1390,7 @@ def add_point_velocity_attribute(geometry):
     if is_geometry_read_only(geometry):
         raise hou.GeometryPermissionError()
 
-    success = _cpp_methods.addVelocityAttribute(geometry)
-
-    if not success:
-        raise hou.OperationFailed("Could not add velocity attribute.")
+    _cpp_methods.addVelocityAttribute(geometry)
 
     return geometry.findPointAttrib("v")
 
@@ -1436,11 +1418,7 @@ def add_color_attribute(geometry, attrib_type):
     owner = utils.get_attrib_owner(attrib_type)
 
     # Try to add the Cd attribute.
-    success = _cpp_methods.addDiffuseAttribute(geometry, owner)
-
-    # We didn't create an attribute, so throw an exception.
-    if not success:
-        raise hou.OperationFailed("Could not add Cd attribute.")
+    _cpp_methods.addDiffuseAttribute(geometry, owner)
 
     return utils.find_attrib(geometry, attrib_type, "Cd")
 
@@ -2218,14 +2196,10 @@ def is_parm_multiparm(parm):
     # Get the parameter template for the parm/tuple.
     parm_template = parm.parmTemplate()
 
-    # Make sure the parm is a folder parm.
+    # Make sure the parm is a folder parm, but not a folder set.
+    # Multiparm folders are not sets.
     if isinstance(parm_template, hou.FolderParmTemplate):
-        # Get the folder type.
-        folder_type = parm_template.folderType()
-
-        # If the folder type is in the list return True.
-        if folder_type in _MULTIPARM_FOLDER_TYPES:
-            return True
+        return True
 
     return False
 
@@ -2403,6 +2377,8 @@ def eval_multiparm_instance(node, name, index):
     :rtype: type
 
     """
+    # This effectively verifies that the parameter is in a multiparm block since
+    # Houdini won't let you create a parameter with a # in it outside a multiparm.
     if name.count("#") != 1:
         raise ValueError("Name {} must contain a single '#' value".format(name))
 
@@ -2415,12 +2391,17 @@ def eval_multiparm_instance(node, name, index):
             "Name {} does not map to a parameter on {}".format(name, node.path())
         )
 
+    # Get the folder the parameter is in.
     containing_folder = ptg.containingFolder(name)
 
-    folder_parm = node.parm(containing_folder.name())
+    # It is possible that we might have normal folders within the multiparm block
+    # so if this is the case (the folder name has a # in it) we want to keep
+    # trying to get the parent multiparm folder.
+    while "#" in containing_folder.name():
+        containing_folder = ptg.containingFolder(containing_folder.name())
 
-    if not is_parm_multiparm(folder_parm):
-        raise ValueError("Parameter is not inside a multiparm.")
+    # Get the actual multiparm folder parameter.
+    folder_parm = node.parm(containing_folder.name())
 
     num_values = folder_parm.eval()
 
