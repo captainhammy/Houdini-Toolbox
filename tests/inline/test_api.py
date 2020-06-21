@@ -8,7 +8,6 @@
 from builtins import str
 from builtins import range
 from builtins import object
-import sys
 
 # Third Party Imports
 import pytest
