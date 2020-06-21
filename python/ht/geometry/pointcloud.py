@@ -8,9 +8,6 @@
 import numpy
 from scipy.spatial import KDTree
 
-# Houdini Imports
-import hou
-
 
 # =============================================================================
 # CLASSES
@@ -67,6 +64,9 @@ class PointCloud(object):
 
             self._num_elements = num_points
 
+        if self._num_elements == 0:
+            raise RuntimeError("Cannot create PointCloud with 0 points")
+
         # Build the tree from the data.
         self._tree = KDTree(data, leaf_size)
 
@@ -104,14 +104,8 @@ class PointCloud(object):
         else:
             pattern = " ".join([str(index) for index in indexes])
 
-        # Try to return our matched points.
-        try:
-            return self._geometry.globPoints(pattern)
-
-        # If we didn't find any points then the pattern will be invalid and
-        # throw an exception.  Catch it and return an empty tuple.
-        except hou.OperationFailed:
-            return ()
+        # Return our matched points.
+        return self._geometry.globPoints(pattern)
 
     # -------------------------------------------------------------------------
     # METHODS
@@ -134,6 +128,11 @@ class PointCloud(object):
         # Perform a query based on the position and maxdist.
         result = self._tree.query_ball_point(positions, maxdist)
 
+        # Bail out if we got no results since an empty list would be converted to ""
+        # and hou.Geometry.globPoints would return all points.
+        if not result:
+            return ()
+
         # Return any points that are found.
         return self._get_result_points(result[0])
 
@@ -150,13 +149,13 @@ class PointCloud(object):
         :rtype: tuple(hou.Point)
 
         """
+        # Return no points if we ask for an invalid number of points.
+        if num_points < 1:
+            raise ValueError("Must choose 1 or more points")
+
         # Make sure we aren't querying for more points than we have.
         if num_points > self._num_elements:
             num_points = self._num_elements
-
-        # Return no points if we ask for an invalid number of points.
-        if num_points < 1:
-            return ()
 
         # Convert the position to a compatible ndarray.
         positions = numpy.array([position])
