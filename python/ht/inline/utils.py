@@ -105,14 +105,14 @@ def build_c_string_array(values):
     :rtype: list(ctypes.c_char_p)
 
     """
-    converted = [value.encode("utf-8") for value in values]
+    converted = [string_encode(value) for value in values]
     arr = (ctypes.c_char_p * len(values))(*converted)
 
     return arr
 
 
 def clean_string_values(values):
-    """Process a string list, removing empty strings.
+    """Process a string list, remove empty strings, and convert to utf-8.
 
     :param values: A list of strings to clean.
     :type values: list(str)
@@ -120,7 +120,7 @@ def clean_string_values(values):
     :rtype: tuple(str)
 
     """
-    return tuple([val for val in values if val])
+    return tuple([string_decode(val) for val in values if val])
 
 
 def find_attrib(geometry, attrib_type, name):
@@ -370,3 +370,27 @@ def get_prims_from_list(geometry, prim_list):
 
     # Glob for the specified prims.
     return geometry.globPrims(prim_str)
+
+
+def string_decode(value):
+    """Decode a value.
+
+    :param value: The value to decode.
+    :type value: byes
+    :return: The decoded value
+    :rtype: str
+
+    """
+    return value.decode("utf-8")
+
+
+def string_encode(value):
+    """Encode a value.
+
+    :param value: The value to encode.
+    :type value: float or int or str
+    :return: The encoded value
+    :rtype: bytes
+
+    """
+    return str(value).encode("utf-8")

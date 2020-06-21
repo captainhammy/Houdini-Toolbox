@@ -12,7 +12,6 @@ and modules they are meant to extend.
 # =============================================================================
 
 # Standard Library Imports
-from builtins import str
 from builtins import zip
 from builtins import range
 import ast
@@ -75,7 +74,7 @@ def clear_caches(cache_names=None):
         cache_names = [""]
 
     for cache_name in cache_names:
-        _cpp_methods.clearCacheByName(cache_name)
+        _cpp_methods.clearCacheByName(utils.string_encode(cache_name))
 
 
 def is_rendering():
@@ -142,7 +141,7 @@ def get_variable_value(name):
         return None
 
     # Get the value of the variable.
-    value = _cpp_methods.getVariableValue(name)
+    value = utils.string_decode(_cpp_methods.getVariableValue(utils.string_encode(name)))
 
     # Try to convert it to the proper Python type.
     # Since Houdini stores all variable values as strings we use the ast module
@@ -165,13 +164,13 @@ def set_variable(name, value, local=False):
     :param name: The variable name.
     :type name: str
     :param value: The variable value.
-    :type value: object
+    :type value: float or int or string
     :param local: Whether or not to set the variable as local.
     :type local: bool
     :return:
 
     """
-    _cpp_methods.setVariable(name, str(value).encode("utf-8"), local)
+    _cpp_methods.setVariable(utils.string_encode(name), utils.string_encode(value), local)
 
 
 def unset_variable(name):
@@ -184,7 +183,7 @@ def unset_variable(name):
     :return:
 
     """
-    _cpp_methods.unsetVariable(name)
+    _cpp_methods.unsetVariable(utils.string_encode(name))
 
 
 def emit_var_change():
@@ -213,7 +212,7 @@ def expand_range(pattern):
     :rtype: tuple(int)
 
     """
-    return tuple(_cpp_methods.expandRange(pattern))
+    return tuple(_cpp_methods.expandRange(utils.string_encode(pattern)))
 
 
 def is_geometry_read_only(geometry):
@@ -352,7 +351,7 @@ def sort_geometry_by_attribute(geometry, attribute, tuple_index=0, reverse=False
     attrib_owner = utils.get_attrib_owner(attrib_type)
 
     _cpp_methods.sortGeometryByAttribute(
-        geometry, attrib_owner, attrib_name, tuple_index, reverse
+        geometry, attrib_owner, utils.string_encode(attrib_name), tuple_index, reverse
     )
 
 
@@ -669,7 +668,7 @@ def merge_point_group(geometry, group):
     if not isinstance(group, hou.PointGroup):
         raise ValueError("Group is not a point group.")
 
-    _cpp_methods.mergePointGroup(geometry, group.geometry(), group.name())
+    _cpp_methods.mergePointGroup(geometry, group.geometry(), utils.string_encode(group.name()))
 
 
 def merge_points(geometry, points):
@@ -708,7 +707,7 @@ def merge_prim_group(geometry, group):
     if not isinstance(group, hou.PrimGroup):
         raise ValueError("Group is not a primitive group.")
 
-    _cpp_methods.mergePrimGroup(geometry, group.geometry(), group.name())
+    _cpp_methods.mergePrimGroup(geometry, group.geometry(), utils.string_encode(group.name()))
 
 
 def merge_prims(geometry, prims):
@@ -931,7 +930,7 @@ def string_table_indices(attrib):
 
     return tuple(
         _cpp_methods.getStringTableIndices(
-            attrib.geometry(), attrib_owner, attrib.name()
+            attrib.geometry(), attrib_owner, utils.string_encode(attrib.name())
         )
     )
 
@@ -956,7 +955,9 @@ def vertex_string_attrib_values(geometry, name):
     if attrib.dataType() != hou.attribData.String:
         raise ValueError("Attribute must be a string.")
 
-    return _cpp_methods.vertexStringAttribValues(geometry, name)
+    results = _cpp_methods.vertexStringAttribValues(geometry, utils.string_encode(name))
+
+    return utils.clean_string_values(results)
 
 
 def set_vertex_string_attrib_values(geometry, name, values):
@@ -989,7 +990,7 @@ def set_vertex_string_attrib_values(geometry, name, values):
     # Construct a ctypes string array to pass the strings.
     c_values = utils.build_c_string_array(values)
 
-    _cpp_methods.setVertexStringAttribValues(geometry, name, c_values, len(c_values))
+    _cpp_methods.setVertexStringAttribValues(geometry, utils.string_encode(name), c_values, len(c_values))
 
 
 def set_shared_point_string_attrib(geometry, name, value, group=None):
@@ -1023,14 +1024,18 @@ def set_shared_point_string_attrib(geometry, name, value, group=None):
 
     # If the group is valid use that group's name.
     if group:
-        group_name = group.name()
+        group_name = utils.string_encode(group.name())
 
     # If not pass 0 so the char * will be empty.
     else:
         group_name = 0
 
     _cpp_methods.setSharedStringAttrib(
-        geometry, utils.get_attrib_owner(attribute.type()), name, value, group_name
+        geometry,
+        utils.get_attrib_owner(attribute.type()),
+        utils.string_encode(name),
+        utils.string_encode(value),
+        group_name
     )
 
 
@@ -1065,14 +1070,15 @@ def set_shared_prim_string_attrib(geometry, name, value, group=None):
 
     # If the group is valid use that group's name.
     if group:
-        group_name = group.name()
+        group_name = utils.string_encode(group.name())
 
     # If not pass 0 so the char * will be empty.
     else:
         group_name = 0
 
     _cpp_methods.setSharedStringAttrib(
-        geometry, utils.get_attrib_owner(attribute.type()), name, value, group_name
+        geometry, utils.get_attrib_owner(attribute.type()), utils.string_encode(name), utils.string_encode(value),
+        group_name
     )
 
 
@@ -1485,7 +1491,7 @@ def clip_geometry(geometry, origin, normal, dist=0, below=False, group=None):
     # centered at the origin.
     xform = hou.hmath.buildTranslate(origin)
 
-    _cpp_methods.clipGeometry(geometry, xform, normal.normalized(), dist, group_name)
+    _cpp_methods.clipGeometry(geometry, xform, normal.normalized(), dist, utils.string_encode(group_name))
 
 
 def destroy_empty_groups(geometry, attrib_type):
@@ -1528,7 +1534,7 @@ def destroy_unused_points(geometry, group=None):
         raise hou.GeometryPermissionError()
 
     if group is not None:
-        _cpp_methods.destroyUnusedPoints(geometry, group.name())
+        _cpp_methods.destroyUnusedPoints(geometry, utils.string_encode(group.name()))
 
     else:
         _cpp_methods.destroyUnusedPoints(geometry, 0)
@@ -1553,7 +1559,7 @@ def consolidate_points(geometry, distance=0.001, group=None):
         raise hou.GeometryPermissionError()
 
     if group is not None:
-        _cpp_methods.consolidatePoints(geometry, distance, group.name())
+        _cpp_methods.consolidatePoints(geometry, distance, utils.string_encode(group.name()))
 
     else:
         _cpp_methods.consolidatePoints(geometry, distance, 0)
@@ -1576,7 +1582,7 @@ def unique_points(geometry, group=None):
         raise hou.GeometryPermissionError()
 
     if group is not None:
-        _cpp_methods.uniquePoints(geometry, group.name())
+        _cpp_methods.uniquePoints(geometry, utils.string_encode(group.name()))
 
     else:
         _cpp_methods.uniquePoints(geometry, 0)
@@ -1606,7 +1612,7 @@ def rename_group(group, new_name):
 
     group_type = utils.get_group_type(group)
 
-    success = _cpp_methods.renameGroup(geometry, group.name(), new_name, group_type)
+    success = _cpp_methods.renameGroup(geometry, utils.string_encode(group.name()), utils.string_encode(new_name), group_type)
 
     if success:
         return utils.find_group(geometry, group_type, new_name)
@@ -1626,7 +1632,7 @@ def group_bounding_box(group):
     group_type = utils.get_group_type(group)
 
     # Calculate the bounds for the group.
-    bounds = _cpp_methods.groupBoundingBox(group.geometry(), group_type, group.name())
+    bounds = _cpp_methods.groupBoundingBox(group.geometry(), group_type, utils.string_encode(group.name()))
 
     return hou.BoundingBox(*bounds)
 
@@ -1642,7 +1648,7 @@ def group_size(group):
     """
     group_type = utils.get_group_type(group)
 
-    return _cpp_methods.groupSize(group.geometry(), group.name(), group_type)
+    return _cpp_methods.groupSize(group.geometry(), utils.string_encode(group.name()), group_type)
 
 
 def toggle_point_in_group(group, point):
@@ -1667,7 +1673,7 @@ def toggle_point_in_group(group, point):
     group_type = utils.get_group_type(group)
 
     _cpp_methods.toggleGroupMembership(
-        geometry, group.name(), group_type, point.number()
+        geometry, utils.string_encode(group.name()), group_type, point.number()
     )
 
 
@@ -1693,7 +1699,7 @@ def toggle_prim_in_group(group, prim):
     group_type = utils.get_group_type(group)
 
     _cpp_methods.toggleGroupMembership(
-        geometry, group.name(), group_type, prim.number()
+        geometry,utils.string_encode(group.name()), group_type, prim.number()
     )
 
 
@@ -1716,7 +1722,7 @@ def toggle_group_entries(group):
 
     group_type = utils.get_group_type(group)
 
-    _cpp_methods.toggleGroupEntries(geometry, group.name(), group_type)
+    _cpp_methods.toggleGroupEntries(geometry, utils.string_encode(group.name()), group_type)
 
 
 def copy_group(group, new_group_name):
@@ -1750,7 +1756,7 @@ def copy_group(group, new_group_name):
     attrib_owner = utils.get_group_attrib_owner(group)
 
     # Copy the group.
-    _cpp_methods.copyGroup(geometry, attrib_owner, group.name(), new_group_name)
+    _cpp_methods.copyGroup(geometry, attrib_owner, utils.string_encode(group.name()), utils.string_encode(new_group_name))
 
     # Return the new group.
     return utils.find_group(geometry, group_type, new_group_name)
@@ -1782,7 +1788,7 @@ def groups_share_elements(group1, group2):
         raise TypeError("Groups are not the same types.")
 
     return _cpp_methods.groupsShareElements(
-        group1_geometry, group1.name(), group2.name(), group1_type
+        group1_geometry, utils.string_encode(group1.name()), utils.string_encode(group2.name()), group1_type
     )
 
 
@@ -1817,7 +1823,12 @@ def convert_prim_to_point_group(prim_group, new_group_name=None, destroy=True):
         raise hou.OperationFailed("Group already exists.")
 
     # Convert the group.
-    _cpp_methods.primToPointGroup(geometry, prim_group.name(), new_group_name, destroy)
+    _cpp_methods.primToPointGroup(
+        geometry,
+        utils.string_encode(prim_group.name()),
+        utils.string_encode(new_group_name),
+        destroy
+    )
 
     # Return the new group.
     return geometry.findPointGroup(new_group_name)
@@ -1854,7 +1865,12 @@ def convert_point_to_prim_group(point_group, new_group_name=None, destroy=True):
         raise hou.OperationFailed("Group already exists.")
 
     # Convert the group.
-    _cpp_methods.pointToPrimGroup(geometry, point_group.name(), new_group_name, destroy)
+    _cpp_methods.pointToPrimGroup(
+        geometry,
+        utils.string_encode(point_group.name()),
+        utils.string_encode(new_group_name),
+        destroy
+    )
 
     # Return the new group.
     return geometry.findPrimGroup(new_group_name)
@@ -1893,7 +1909,7 @@ def group_ungrouped_points(geometry, group_name):
     if geometry.findPointGroup(group_name) is not None:
         raise hou.OperationFailed("Group '{}' already exists".format(group_name))
 
-    _cpp_methods.groupUngroupedPoints(geometry, group_name)
+    _cpp_methods.groupUngroupedPoints(geometry, utils.string_encode(group_name))
 
     return geometry.findPointGroup(group_name)
 
@@ -1931,7 +1947,7 @@ def group_ungrouped_prims(geometry, group_name):
     if geometry.findPrimGroup(group_name) is not None:
         raise hou.OperationFailed("Group '{}' already exists".format(group_name))
 
-    _cpp_methods.groupUngroupedPrims(geometry, group_name)
+    _cpp_methods.groupUngroupedPrims(geometry, utils.string_encode(group_name))
 
     return geometry.findPrimGroup(group_name)
 
@@ -2219,7 +2235,7 @@ def get_multiparm_instances_per_item(parm):
     if isinstance(parm, hou.Parm):
         parm = parm.tuple()
 
-    return _cpp_methods.getMultiParmInstancesPerItem(parm.node(), parm.name())
+    return _cpp_methods.getMultiParmInstancesPerItem(parm.node(), utils.string_encode(parm.name()))
 
 
 def get_multiparm_start_offset(parm):
@@ -2260,7 +2276,7 @@ def get_multiparm_instance_index(parm):
     if isinstance(parm, hou.Parm):
         parm = parm.tuple()
 
-    result = _cpp_methods.getMultiParmInstanceIndex(parm.node(), parm.name())
+    result = _cpp_methods.getMultiParmInstanceIndex(parm.node(), utils.string_encode(parm.name()))
 
     return tuple(result)
 
@@ -2286,7 +2302,7 @@ def get_multiparm_instances(parm):
     node = parm.node()
 
     # Get the multiparm parameter names.
-    result = _cpp_methods.getMultiParmInstances(node, parm.name())
+    result = _cpp_methods.getMultiParmInstances(node, utils.string_encode(parm.name()))
 
     multi_parms = []
 
@@ -2300,7 +2316,7 @@ def get_multiparm_instances(parm):
                 continue
 
             # Assume hou.ParmTuple by default.
-            parm_tuple = node.parmTuple(parm_name)
+            parm_tuple = node.parmTuple(utils.string_decode(parm_name))
 
             # If tuple only has one element then use that hou.Parm.
             if len(parm_tuple) == 1:
@@ -2420,26 +2436,29 @@ def eval_multiparm_instance(node, name, index):
         if data_type == hou.parmData.Float:
             values.append(
                 _cpp_methods.eval_multiparm_instance_float(
-                    node, name, component_index, index, start_offset
+                    node, utils.string_encode(name), component_index, index, start_offset
                 )
             )
 
         elif data_type == hou.parmData.Int:
             values.append(
                 _cpp_methods.eval_multiparm_instance_int(
-                    node, name, component_index, index, start_offset
+                    node, utils.string_encode(name), component_index, index, start_offset
                 )
             )
 
         elif data_type == hou.parmData.String:
             values.append(
                 _cpp_methods.eval_multiparm_instance_string(
-                    node, name, component_index, index, start_offset
+                    node, utils.string_encode(name), component_index, index, start_offset
                 )
             )
 
         else:
             raise TypeError("Invalid parm data type {}".format(data_type))
+
+    if data_type == hou.parmData.String:
+        values = utils.clean_string_values(values)
 
     # Return single value for non-tuple parms.
     if len(values) == 1:
@@ -2609,7 +2628,7 @@ def node_author_name(node):
     :rtype: str
 
     """
-    author = _cpp_methods.getNodeAuthor(node)
+    author = utils.string_decode(_cpp_methods.getNodeAuthor(node))
 
     # Remove any machine name from the user name.
     return author.split("@")[0]
@@ -2625,7 +2644,7 @@ def set_node_type_icon(node_type, icon_name):
     :return:
 
     """
-    _cpp_methods.setNodeTypeIcon(node_type, icon_name)
+    _cpp_methods.setNodeTypeIcon(node_type, utils.string_encode(icon_name))
 
 
 def set_node_type_default_icon(node_type):
@@ -2962,7 +2981,7 @@ def asset_file_meta_source(file_path):
     if file_path not in hou.hda.loadedFiles():
         return None
 
-    return _cpp_methods.getMetaSourceForPath(file_path)
+    return utils.string_decode(_cpp_methods.getMetaSourceForPath(utils.string_encode(file_path)))
 
 
 def get_definition_meta_source(definition):
@@ -2992,7 +3011,7 @@ def remove_meta_source(meta_source):
     :rtype: bool
 
     """
-    return _cpp_methods.removeMetaSource(meta_source)
+    return _cpp_methods.removeMetaSource(utils.string_encode(meta_source))
 
 
 def libraries_in_meta_source(meta_source):
@@ -3005,7 +3024,7 @@ def libraries_in_meta_source(meta_source):
 
     """
     # Get the any libraries in the meta source.
-    result = _cpp_methods.getLibrariesInMetaSource(meta_source)
+    result = _cpp_methods.getLibrariesInMetaSource(utils.string_encode(meta_source))
 
     # Return a tuple of the valid values.
     return utils.clean_string_values(result)
@@ -3024,7 +3043,7 @@ def is_dummy_definition(definition):
 
     """
     return _cpp_methods.isDummyDefinition(
-        definition.libraryFilePath(),
-        definition.nodeTypeCategory().name(),
-        definition.nodeTypeName(),
+        utils.string_encode(definition.libraryFilePath()),
+        utils.string_encode(definition.nodeTypeCategory().name()),
+        utils.string_encode(definition.nodeTypeName()),
     )

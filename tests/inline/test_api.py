@@ -8,13 +8,9 @@
 from builtins import str
 from builtins import range
 from builtins import object
-import sys
 
 # Third Party Imports
 import pytest
-
-#if sys.version_info.major == 3:
-#    pytest.skip("Skipping", allow_module_level=True)
 
 # Houdini Toolbox Imports
 from ht.inline import api
