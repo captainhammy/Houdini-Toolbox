@@ -7,6 +7,7 @@
 # Standard Library Imports
 from builtins import object
 import os
+import sys
 from xml.etree import ElementTree
 
 # Third Party Imports
@@ -157,29 +158,30 @@ def fix_hou_exceptions(monkeypatch):
     class _HouValueError(_HouError):
         """Exception to emulate a hou.ValueError"""
 
-    monkeypatch.setattr(hou, "Error", _HouError)
-    monkeypatch.setattr(hou, "GeometryPermissionError", _HouGeometryPermissionError)
-    monkeypatch.setattr(hou, "InitScriptFailed", _HouInitScriptFailed)
-    monkeypatch.setattr(hou, "InvalidInput", _HouInvalidInput)
-    monkeypatch.setattr(hou, "InvalidNodeType", _HouInvalidNodeType)
-    monkeypatch.setattr(hou, "InvalidSize", _HouInvalidSize)
-    monkeypatch.setattr(hou, "KeyframeValueNotSet", _HouKeyframeValueNotSet)
-    monkeypatch.setattr(hou, "LoadWarning", _HouLoadWarning)
-    monkeypatch.setattr(hou, "MatchDefinitionError", _HouMatchDefinitionError)
-    monkeypatch.setattr(hou, "NodeError", _HouNodeError)
-    monkeypatch.setattr(hou, "NodeWarning", _HouNodeWarning)
-    monkeypatch.setattr(hou, "NotAvailable", _HouNotAvailable)
-    monkeypatch.setattr(hou, "ObjectWasDeleted", _HouObjectWasDeleted)
-    monkeypatch.setattr(hou, "OperationFailed", _HouOperationFailed)
-    monkeypatch.setattr(hou, "OperationInterrupted", _HouOperationInterrupted)
-    monkeypatch.setattr(hou, "PermissionError", _HouPermissionError)
-    monkeypatch.setattr(hou, "SystemExit", _HouSystemExit)
-    monkeypatch.setattr(hou, "TypeError", _HouTypeError)
-    monkeypatch.setattr(hou, "ValueError", _HouValueError)
+    if sys.version_info.major == 2:
+        monkeypatch.setattr(hou, "Error", _HouError)
+        monkeypatch.setattr(hou, "GeometryPermissionError", _HouGeometryPermissionError)
+        monkeypatch.setattr(hou, "InitScriptFailed", _HouInitScriptFailed)
+        monkeypatch.setattr(hou, "InvalidInput", _HouInvalidInput)
+        monkeypatch.setattr(hou, "InvalidNodeType", _HouInvalidNodeType)
+        monkeypatch.setattr(hou, "InvalidSize", _HouInvalidSize)
+        monkeypatch.setattr(hou, "KeyframeValueNotSet", _HouKeyframeValueNotSet)
+        monkeypatch.setattr(hou, "LoadWarning", _HouLoadWarning)
+        monkeypatch.setattr(hou, "MatchDefinitionError", _HouMatchDefinitionError)
+        monkeypatch.setattr(hou, "NodeError", _HouNodeError)
+        monkeypatch.setattr(hou, "NodeWarning", _HouNodeWarning)
+        monkeypatch.setattr(hou, "NotAvailable", _HouNotAvailable)
+        monkeypatch.setattr(hou, "ObjectWasDeleted", _HouObjectWasDeleted)
+        monkeypatch.setattr(hou, "OperationFailed", _HouOperationFailed)
+        monkeypatch.setattr(hou, "OperationInterrupted", _HouOperationInterrupted)
+        monkeypatch.setattr(hou, "PermissionError", _HouPermissionError)
+        monkeypatch.setattr(hou, "SystemExit", _HouSystemExit)
+        monkeypatch.setattr(hou, "TypeError", _HouTypeError)
+        monkeypatch.setattr(hou, "ValueError", _HouValueError)
 
-    # Support for any exceptions added in newer versions of Houdini.
-    if hou.applicationVersion() > (17,):
-        monkeypatch.setattr(hou, "NameConflict", _HouNameConflict)
+        # Support for any exceptions added in newer versions of Houdini.
+        if hou.applicationVersion() > (17,):
+            monkeypatch.setattr(hou, "NameConflict", _HouNameConflict)
 
 
 @pytest.fixture
