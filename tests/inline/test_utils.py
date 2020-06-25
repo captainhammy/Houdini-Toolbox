@@ -52,7 +52,6 @@ def test_build_c_int_array():
 
 def test_build_c_string_array():
     """Test ht.inline.utils.build_c_string_array."""
-
     values = ["foo", "bar", "test"]
 
     result = utils.build_c_string_array(values)
@@ -65,7 +64,7 @@ def test_build_c_string_array():
 
 def test_clean_string_values(mocker):
     """Test ht.inline.utils.clean_string_values."""
-
+    mock_decode = mocker.patch("ht.inline.utils.string_decode")
     mock_str1 = mocker.MagicMock(spec=str)
     mock_str1.__len__.return_value = 1
 
@@ -79,7 +78,9 @@ def test_clean_string_values(mocker):
 
     result = utils.clean_string_values(values)
 
-    assert result == tuple([mock_str1, mock_str3])
+    assert result == tuple([mock_decode.return_value, mock_decode.return_value])
+
+    mock_decode.assert_has_calls([mocker.call(mock_str1), mocker.call(mock_str3)])
 
 
 class Test_find_attrib(object):
@@ -430,3 +431,21 @@ class Test_get_prims_from_list(object):
         assert result == mock_geometry.globPrims.return_value
 
         mock_geometry.globPrims.assert_called_with("{} {}".format(mock_int1, mock_int2))
+
+
+@pytest.mark.parametrize("value, expected", [(b"foo", u"foo"), (u"bar", u"bar")])
+def test_string_decode(value, expected):
+    """Test ht.inline.utils.string_decode."""
+    result = utils.string_decode(value)
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "value, expected", [(4, b"4"), ("4", b"4"), (u"bar", b"bar"), ("bar", b"bar")]
+)
+def test_string_encode(value, expected):
+    """Test ht.inline.utils.string_decode."""
+    result = utils.string_encode(value)
+
+    assert result == expected
