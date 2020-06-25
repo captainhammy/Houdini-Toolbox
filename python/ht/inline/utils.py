@@ -376,12 +376,15 @@ def string_decode(value):
     """Decode a value.
 
     :param value: The value to decode.
-    :type value: byes
+    :type value: bytes
     :return: The decoded value
     :rtype: str
 
     """
-    return value.decode("utf-8")
+    if isinstance(value, bytes):
+        return value.decode("utf-8")
+
+    return value
 
 
 def string_encode(value):
