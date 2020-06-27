@@ -1,12 +1,8 @@
-flake8
 future
 humanfriendly
 Jinja2
 logquacious
 numpy
-pytest
-pytest-cov
-pytest-mock
 requests
 scipy
 termcolor
