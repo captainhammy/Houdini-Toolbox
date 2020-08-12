@@ -441,7 +441,7 @@ def download_build(  # pylint: disable=too-many-locals
             )
         )
 
-        with tqdm(desc="Downloading build", total=file_size) as progress_bar:
+        with tqdm(desc="Downloading build", total=file_size, unit='MB', unit_scale=True, unit_divisor=1024) as progress_bar:
             with open(target_path, "wb") as handle:
                 for chunk in request.iter_content(chunk_size=chunk_size):
                     progress_bar.update(chunk_size)
