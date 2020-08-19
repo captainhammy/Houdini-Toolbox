@@ -55,6 +55,16 @@ pytestmark = pytest.mark.usefixtures("load_test_file")
 # TESTS
 # =============================================================================
 
+def test__get_names_in_folder():
+    """Test ht.inline.api._get_names_in_folder."""
+    node = OBJ.node("test__get_names_in_folder/null")
+    parm_template = node.parm("base").parmTemplate()
+
+    result = ht.inline.api._get_names_in_folder(parm_template)
+
+    assert result == ('stringparm#', 'vecparm#', 'collapse_intparm#', 'simple_intparm#', 'tab_intparm1#', 'tab_intparm2#', 'inner_multi#')
+
+
 def test_clear_caches_specific():
     OBJ.node("test_clear_caches").displayNode().cook(True)
     result = hou.hscript("sopcache -l")[0].split("\n")[1]
@@ -2301,152 +2311,204 @@ def test_get_multiparm_instances_per_item():
         ht.inline.api.get_multiparm_instances_per_item(parm)
 
 
-def test_get_multiparm_start_offset():
-    """Test ht.inline.api.get_multiparm_start_offset."""
-    node = OBJ.node("test_get_multiparm_start_offset/add")
-
-    parm = node.parm("remove")
-
-    with pytest.raises(ValueError):
-        ht.inline.api.get_multiparm_start_offset(parm)
-
-    parm = node.parm("points")
-    assert ht.inline.api.get_multiparm_start_offset(parm) == 0
-
-    parm_tuple = node.parmTuple("points")
-    assert ht.inline.api.get_multiparm_start_offset(parm_tuple) == 0
-
-    node = OBJ.node("test_get_multiparm_start_offset/object_merge")
-    parm = node.parm("numobj")
-
-    assert ht.inline.api.get_multiparm_start_offset(parm) == 1
-
-    parm_tuple = node.parmTuple("numobj")
-    assert ht.inline.api.get_multiparm_start_offset(parm_tuple) == 1
-
-
-def test_get_multiparm_instance_index():
+def test_get_multiparm_instance_indices():
     """Test ht.inline.api.get_multiparm_instance_index."""
-    target = (2,)
+    node = OBJ.node("test_get_multiparm_instance_indices/null")
+    parm = node.parm("vecparm0x")
 
-    node = OBJ.node("test_get_multiparm_instance_index/object_merge")
-    parm = node.parm("objpath2")
+    assert ht.inline.api.get_multiparm_instance_indices(parm) == (0, )
 
-    assert ht.inline.api.get_multiparm_instance_index(parm) == target
+    parm_tuple = node.parmTuple("vecparm0")
 
-    parm_tuple = node.parmTuple("objpath2")
+    assert ht.inline.api.get_multiparm_instance_indices(parm_tuple) == (0, )
 
-    assert ht.inline.api.get_multiparm_instance_index(parm_tuple) == target
+    parm_tuple = node.parmTuple("vecparm1")
+    assert ht.inline.api.get_multiparm_instance_indices(parm_tuple) == (1, )
 
-    parm = node.parm("numobj")
+    parm_tuple = node.parmTuple("inner0")
 
-    with pytest.raises(ValueError):
-        ht.inline.api.get_multiparm_instance_index(parm)
+    assert ht.inline.api.get_multiparm_instance_indices(parm_tuple) == (0,)
 
-    parm_tuple = node.parmTuple("numobj")
+    parm = node.parm("leaf0_1")
 
-    with pytest.raises(ValueError):
-        ht.inline.api.get_multiparm_instance_index(parm_tuple)
+    assert ht.inline.api.get_multiparm_instance_indices(parm) == (0, 1)
+    assert ht.inline.api.get_multiparm_instance_indices(parm, True) == (0, 0)
 
+    parm = node.parm("leaf1_5")
 
-def test_get_multiparm_instances():
-    """Test ht.inline.api.get_multiparm_instances."""
-    node = OBJ.node("test_get_multiparm_instances/null1")
+    assert ht.inline.api.get_multiparm_instance_indices(parm) == (1, 5)
+    assert ht.inline.api.get_multiparm_instance_indices(parm, True) == (1, 4)
 
-    parm = node.parm("cacheinput")
-
-    with pytest.raises(ValueError):
-        ht.inline.api.get_multiparm_instances(parm)
-
-    target = (
-        (node.parm("foo1"), node.parmTuple("bar1"), node.parm("hello1")),
-        (node.parm("foo2"), node.parmTuple("bar2"), node.parm("hello2")),
-    )
-
-    parm = node.parm("things")
-
-    instances = ht.inline.api.get_multiparm_instances(parm)
-
-    assert instances == target
-
-    parm_tuple = node.parmTuple("things")
-
-    instances = ht.inline.api.get_multiparm_instances(parm_tuple)
-
-    assert instances == target
-
-    # Test an multiparm folder with 1 instance but no parameters in it.
-    parm_tuple = node.parmTuple("empty")
-    instances = ht.inline.api.get_multiparm_instances(parm_tuple)
-
-    assert instances == ((), )
-
-
-def test_get_multiparm_instance_values():
-    """Test ht.inline.api.get_multiparm_instance_values."""
-    node = OBJ.node("test_get_multiparm_instance_values/null1")
-
-    parm = node.parm("cacheinput")
+    parm = node.parm("base")
 
     with pytest.raises(ValueError):
-        ht.inline.api.get_multiparm_instance_values(parm)
+        ht.inline.api.get_multiparm_instance_indices(parm)
 
-    target = ((1, (2.0, 3.0, 4.0), "foo"), (5, (6.0, 7.0, 8.0), "bar"))
+    parm_tuple = node.parmTuple("base")
 
-    parm = node.parm("things")
+    with pytest.raises(ValueError):
+        ht.inline.api.get_multiparm_instance_indices(parm_tuple)
 
-    values = ht.inline.api.get_multiparm_instance_values(parm)
 
-    assert values == target
+def test_get_multiparm_siblings():
+    """Test ht.inline.api.get_multiparm_siblings."""
+    node = OBJ.node("test_get_multiparm_siblings/null")
 
-    parm_tuple = node.parmTuple("things")
+    with pytest.raises(ValueError):
+        ht.inline.api.get_multiparm_siblings(node.parm("base"))
 
-    values = ht.inline.api.get_multiparm_instance_values(parm_tuple)
+    parm = node.parm("stringparm0")
 
-    assert values == target
+    expected = {
+        'inner_multi#': node.parm('inner_multi0'),
+        'vecparm#': node.parmTuple('vecparm0'),
+        'simple_intparm#': node.parm('simple_intparm0'),
+        'tab_intparm1#': node.parm('tab_intparm10'),
+        'collapse_intparm#': node.parm('collapse_intparm0'),
+        'tab_intparm2#': node.parm('tab_intparm20'),
+    }
+
+    assert ht.inline.api.get_multiparm_siblings(parm) == expected
+
+    parm_tuple = node.parmTuple("vecparm0")
+
+    expected = {
+        'inner_multi#': node.parm('inner_multi0'),
+        'stringparm#': node.parm('stringparm0'),
+        'simple_intparm#': node.parm('simple_intparm0'),
+        'tab_intparm1#': node.parm('tab_intparm10'),
+        'collapse_intparm#': node.parm('collapse_intparm0'),
+        'tab_intparm2#': node.parm('tab_intparm20'),
+    }
+
+    assert ht.inline.api.get_multiparm_siblings(parm_tuple) == expected
+
+
+def test_resolve_multiparm_tokens():
+    """Test ht.inline.api.resolve_multiparm_tokens."""
+    assert ht.inline.api.resolve_multiparm_tokens("test#", 3) == "test3"
+    assert ht.inline.api.resolve_multiparm_tokens("test#", (4, )) == "test4"
+    assert ht.inline.api.resolve_multiparm_tokens("test#", [5, ]) == "test5"
+
+    assert ht.inline.api.resolve_multiparm_tokens("test#_#_#", (1, 2, 3)) == "test1_2_3"
+
+    with pytest.raises(ValueError):
+        ht.inline.api.resolve_multiparm_tokens("test#_#", [5, ])
+
+
+def test_get_multiparm_template_name():
+    """Test ht.inline.api.get_multiparm_template_name."""
+    node = OBJ.node("test_get_multiparm_template_name/null")
+
+    parm = node.parm("base")
+    assert ht.inline.api.get_multiparm_template_name(parm) is None
+
+    parm = node.parm("inner0")
+    assert ht.inline.api.get_multiparm_template_name(parm) == "inner#"
+
+    parm_tuple = node.parmTuple("vecparm0")
+    assert ht.inline.api.get_multiparm_template_name(parm_tuple) == "vecparm#"
+
+    parm = node.parm("leaf1_3")
+    assert ht.inline.api.get_multiparm_template_name(parm) == "leaf#_#"
 
 
 def test_eval_multiparm_instance():
     """Test ht.inline.api.eval_multiparm_instance."""
-    node = OBJ.node("test_eval_multiparm_instance/null1")
+    node = OBJ.node("test_eval_multiparm_instance/null")
 
+    # Test name with no tokens.
     with pytest.raises(ValueError):
-        ht.inline.api.eval_multiparm_instance(node, "foo", 0)
+        ht.inline.api.eval_multiparm_instance(node, "base", 0)
 
+    # Test name which does not exist.
     with pytest.raises(ValueError):
-        ht.inline.api.eval_multiparm_instance(node, "test#", 0)
+        ht.inline.api.eval_multiparm_instance(node, "foo#", 0)
 
-    # Ints
-    assert ht.inline.api.eval_multiparm_instance(node, "foo#", 0) == 1
-    assert ht.inline.api.eval_multiparm_instance(node, "foo#", 1) == 5
+    expected = [
+        (1.1, 2.2, 3.3, 4.4), 1, 2, 3, 10, str(hou.intFrame()), (5.5, 6.6, 7.7, 8.8), 5, 6, 7, 8 ,9, hou.hipFile.path()
+    ]
+
+    results = []
+
+    for i in range(node.evalParm("base")):
+        # Test a float vector parameter.
+        results.append(ht.inline.api.eval_multiparm_instance(node, "vecparm#", i))
+
+        # Test a bunch of nested int parameters.
+        for j in range(ht.inline.api.eval_multiparm_instance(node, "inner#", i)):
+            results.append(ht.inline.api.eval_multiparm_instance(node, "leaf#_#", (i, j)))
+
+        # Test a string parameter which will be expanded.
+        results.append(ht.inline.api.eval_multiparm_instance(node, "string#", i))
+
+    assert results == expected
+
+    results = []
+
+    # Run the same test again but passing True for raw_indices.
+    for i in range(node.evalParm("base")):
+        # Test a float vector parameter.
+        results.append(ht.inline.api.eval_multiparm_instance(node, "vecparm#", i, True))
+
+        # Test a bunch of nested int parameters.
+        for j in range(1, ht.inline.api.eval_multiparm_instance(node, "inner#", i, True) + 1):
+            results.append(ht.inline.api.eval_multiparm_instance(node, "leaf#_#", (i, j), True))
+
+        # Test a string parameter which will be expanded.
+        results.append(ht.inline.api.eval_multiparm_instance(node, "string#", i, True))
+
+    assert results == expected
 
     with pytest.raises(IndexError):
-        ht.inline.api.eval_multiparm_instance(node, "foo#", 2)
+        ht.inline.api.eval_multiparm_instance(node, "vecparm#", 10)
 
-    # Floats
-    assert ht.inline.api.eval_multiparm_instance(node, "bar#", 0) == (2.0, 3.0, 4.0)
-    assert ht.inline.api.eval_multiparm_instance(node, "bar#", 1) == (6.0, 7.0, 8.0)
 
-    with pytest.raises(IndexError):
-        ht.inline.api.eval_multiparm_instance(node, "bar#", 2)
+def test_unexpanded_string_multiparm_instance():
+    """Test ht.inline.api.unexpanded_string_multiparm_instance."""
+    node = OBJ.node("test_unexpanded_string_multiparm_instance/null")
 
-    # Strings
-    assert ht.inline.api.eval_multiparm_instance(node, "hello#", 0) == "foo"
-    assert ht.inline.api.eval_multiparm_instance(node, "hello#", 1) == "bar"
+    # Test name with no tokens.
+    with pytest.raises(ValueError):
+        ht.inline.api.unexpanded_string_multiparm_instance(node, "base", 0)
 
-    # Ramp
+    # Test name which does not exist.
+    with pytest.raises(ValueError):
+        ht.inline.api.unexpanded_string_multiparm_instance(node, "foo#", 0)
+
+    # Test a non-string parm
     with pytest.raises(TypeError):
-        ht.inline.api.eval_multiparm_instance(node, "rampparm#", 0)
+        ht.inline.api.unexpanded_string_multiparm_instance(node, "float#", 0)
+
+    expected = [
+        "$F", ("$E", "$C"), ("$EYE", "$HOME"), "$HIPFILE", ("$JOB", "$TEMP"), ("$FOO", "$BAR")
+    ]
+
+    results = []
+
+    for i in range(node.evalParm("base")):
+        results.append(ht.inline.api.unexpanded_string_multiparm_instance(node, "string#", i))
+
+        for j in range(ht.inline.api.eval_multiparm_instance(node, "inner#", i)):
+            results.append(ht.inline.api.unexpanded_string_multiparm_instance(node, "nested_string#_#", (i, j)))
+
+    assert results == expected
+
+    results = []
+
+    # Run the same test again but passing True for raw_indices.
+    for i in range(node.evalParm("base")):
+        # Test a float vector parameter.
+        results.append(ht.inline.api.unexpanded_string_multiparm_instance(node, "string#", i, True))
+
+        # Test a bunch of nested int parameters.
+        for j in range(1, ht.inline.api.eval_multiparm_instance(node, "inner#", i, True) + 1):
+            results.append(ht.inline.api.unexpanded_string_multiparm_instance(node, "nested_string#_#", (i, j), True))
+
+    assert results == expected
 
     with pytest.raises(IndexError):
-        ht.inline.api.eval_multiparm_instance(node, "hello#", 2)
-
-    # Nested
-    assert ht.inline.api.eval_multiparm_instance(node, "nested#", 0) == 7
-
-    with pytest.raises(IndexError):
-        assert ht.inline.api.eval_multiparm_instance(node, "nested#", 1)
-
+        ht.inline.api.unexpanded_string_multiparm_instance(node, "string#", 10)
 
 # =========================================================================
 # NODES AND NODE TYPES
