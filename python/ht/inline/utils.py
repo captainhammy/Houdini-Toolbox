@@ -316,6 +316,105 @@ def get_group_type(group):
         raise ValueError("Invalid group type")
 
 
+def get_multiparm_containing_folders(name, parm_template_group):
+    """Given a parameter template name, return a list of containing multiparms.
+
+    If the name is contained in one or more multiparm folders, the returned templates
+    will be ordered from innermost to outermost
+
+    |_ outer
+      |_ inner#
+        |_ param#_#
+
+    In a situation like above, querying for containing folders of param#_# would
+    result in a tuple ordered as follows: (<hou.FolderParmTemplate inner#>,  <hou.FolderParmTemplate outer>)
+
+    :param name: The name of the parameter to get the containing names for.
+    :type name: str
+    :param parm_template_group: A parameter template group for a nde.
+    :type parm_template_group: hou.ParmTemplateGroup
+    :return: A tuple of containing multiparm templates, if any.
+    :rtype: tuple(hou.FolderParmTemplate)
+
+    """
+    # A list of containing folders.
+    containing_folders = []
+
+    # Get the folder the parameter is in.
+    containing_folder = parm_template_group.containingFolder(name)
+
+    # Keep looking for containing folders until there are no.
+    while True:
+        # Add a containing multiparm folder to the list.
+        if is_parm_template_multiparm_folder(containing_folder):
+            containing_folders.append(containing_folder)
+
+        # Try to find the parent containing folder.
+        try:
+            containing_folder = parm_template_group.containingFolder(containing_folder)
+
+        # Not inside a folder so bail out.
+        except hou.OperationFailed:
+            break
+
+    return tuple(containing_folders)
+
+
+def get_multiparm_container_offsets(name, parm_template_group):
+    """Given a parameter template name, return a list of containing multiparm folder
+    offsets.
+
+
+    If the name is contained in one or more multiparm folders, the returned offsets
+    will be ordered outermost to innermost
+
+    |_ outer (star1ing offset 0)
+      |_ inner# (starting offset 1)
+        |_ param#_#
+
+    In a situation like above, querying for containing offsets of param#_# would
+    result in a tuple ordered as follows: (0, 1)
+
+    :param name: The name of the parameter to get the containing offsets for.
+    :type name: str
+    :param parm_template_group: A parameter template group for a nde.
+    :type parm_template_group: hou.ParmTemplateGroup
+    :return: A tuple of containing multiparm offsets, if any.
+    :rtype: tuple(int)
+
+    """
+    # A list of contain folders.
+    containing_folders = get_multiparm_containing_folders(name, parm_template_group)
+
+    # A list to store the parent multiparm folder offsets.
+    offsets = []
+
+    # The containing folder list is ordered by folder closest to the base parameter.
+    # We want to process that list in reverse so the first offset item will be for the
+    # outermost parameter and match the ordered provided by the user.
+    for folder in reversed(containing_folders):
+        # Get the start offset. The default offset is 1 so if the tag is not
+        # set we use that as a default.
+        offsets.append(get_multiparm_start_offset(folder))
+
+    return tuple(offsets)
+
+
+def get_multiparm_start_offset(parm_template):
+    """Get the start offset of items in the multiparm.
+
+    :param parm_template: A multiparm folder parm template
+    :type parm_template: hou.ParmTemp
+    :return: The start offset of the multiparm.
+    :rtype: int
+
+    """
+    if not is_parm_template_multiparm_folder(parm_template):
+        raise ValueError("Parameter template is not a multiparm folder")
+
+    return int(parm_template.tags().get("multistartoffset", 1))
+
+
 def get_nodes_from_paths(paths):
     """Convert a list of string paths to hou.Node objects.
 
@@ -372,6 +471,21 @@ def get_prims_from_list(geometry, prim_list):
     return geometry.globPrims(prim_str)
 
 
+def is_parm_template_multiparm_folder(parm_template):
+    """Returns True if the parm template represents a multiparm folder type.
+
+    :param parm_template: The parameter template to check.
+    :type parm_template: hou.ParmTemplate
+    :return: Whether or not the template represents a multiparm folder.
+    :rtype: bool
+
+    """
+    if not isinstance(parm_template, hou.FolderParmTemplate):
+        return False
+
+    return parm_template.folderType() in (hou.folderType.MultiparmBlock, hou.folderType.ScrollingMultiparmBlock, hou.folderType.TabbedMultiparmBlock)
+
+
 def string_decode(value):
     """Decode a value.
 
@@ -397,3 +511,30 @@ def string_encode(value):
 
     """
     return str(value).encode("utf-8")
+
+
+def validate_multiparm_resolve_values(name, indices):
+    """Validate a multiparm token string and the indices to be resolved.
+
+    This function will raise a ValueError if there are not enough indices
+    supplied for the number of tokens.
+    :param name: The parameter name to validate.
+    :type name: str
+    :param indices: The indices to format into the token string.
+    :type indices: list(int) or tuple(int)
+    :return:
+
+    """
+    # Get the number of multiparm tokens in the name.
+    multi_token_count = name.count("#")
+
+    # Ensure that there are enough indices for the name.  Houdini can handle too many
+    # indices but if there are not enough it won't like that and return an unexpected value.
+    if multi_token_count > len(indices):
+        raise ValueError(
+            "Not enough indices provided. Parameter {} expects {}, {} token(s) provided.".format(
+                name,
+                multi_token_count,
+                len(indices)
+            )
+        )

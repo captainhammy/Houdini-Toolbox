@@ -55,28 +55,30 @@ pytestmark = pytest.mark.usefixtures("load_test_file")
 # TESTS
 # =============================================================================
 
-# def test_clear_caches_specific():
-#     result = hou.hscript("sopcache -l")[0].split("\n")[1]
-#     old_nodes = int(result.split(": ")[1])
-#
-#     ht.inline.api.clear_caches(["SOP Cache"])
-#
-#     result = hou.hscript("sopcache -l")[0].split("\n")[1]
-#     current_nodes = int(result.split(": ")[1])
-#
-#     assert current_nodes != old_nodes
+def test_clear_caches_specific():
+    OBJ.node("test_clear_caches").displayNode().cook(True)
+    result = hou.hscript("sopcache -l")[0].split("\n")[1]
+    old_nodes = int(result.split(": ")[1])
+
+    ht.inline.api.clear_caches(["SOP Cache"])
+
+    result = hou.hscript("sopcache -l")[0].split("\n")[1]
+    current_nodes = int(result.split(": ")[1])
+
+    assert current_nodes != old_nodes
 
 
-# def test_clear_caches_all():
-#     result = hou.hscript("objcache -l")[0].split("\n")[1]
-#     old_nodes = int(result.split(": ")[1])
-#
-#     ht.inline.api.clear_caches()
-#
-#     result = hou.hscript("objcache -l")[0].split("\n")[1]
-#     current_nodes = int(result.split(": ")[1])
-#
-#     assert current_nodes != old_nodes
+def test_clear_caches_all():
+    OBJ.node("test_clear_caches").displayNode().cook(True)
+    result = hou.hscript("sopcache -l")[0].split("\n")[1]
+    old_nodes = int(result.split(": ")[1])
+
+    ht.inline.api.clear_caches()
+
+    result = hou.hscript("sopcache -l")[0].split("\n")[1]
+    current_nodes = int(result.split(": ")[1])
+
+    assert current_nodes != old_nodes
 
 
 def test_is_rendering():
@@ -1315,7 +1317,7 @@ def test_compute_point_normals():
     assert geo.findPointAttrib("N") is not None
 
 
-def test_add_point_normal_attribute():
+def test_add_point_normal_attribute(fix_hou_exceptions):
     """Test ht.inline.api.add_point_normal_attribute."""
     # Read only
     geo = get_obj_geo("test_add_point_normal_attribute")

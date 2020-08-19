@@ -51,6 +51,40 @@ def _assert_prim_vertex_index(prim, index):
         raise IndexError("Invalid index: {}".format(index))
 
 
+def _get_names_in_folder(parent_template):
+    """Get a list of template names inside a template folder.
+
+    This should only really ever be called originally with a multiparm template.
+
+    :param parent_template: The parm template to get items for.
+    :type parent_template: hou.FolderParmTemplate
+    :return: A list of template names inside the template.
+    :rtype: tuple(str)
+
+    """
+    names = []
+
+    for parm_template in parent_template.parmTemplates():
+        if isinstance(parm_template, hou.FolderParmTemplate):
+            # If the template is a folder (but not a multiparm folder) then we
+            # need to get the parms inside it as well since they are technically siblings.
+            if not utils.is_parm_template_multiparm_folder(parm_template):
+            # if parm_template.folderType() in (hou.folderType.Simple, hou.folderType.Collapsible):
+                names.extend(_get_names_in_folder(parm_template))
+
+            else:
+            # elif utils.is_parm_template_multiparm_folder(parm_template):
+                names.append(parm_template.name())
+
+        # else:
+            #     names.append(parm_template.name())
+
+        else:
+            names.append(parm_template.name())
+
+    return tuple(names)
+
+
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
@@ -2248,12 +2282,7 @@ def is_parm_multiparm(parm):
     # Get the parameter template for the parm/tuple.
     parm_template = parm.parmTemplate()
 
-    # Make sure the parm is a folder parm, but not a folder set.
-    # Multiparm folders are not sets.
-    if isinstance(parm_template, hou.FolderParmTemplate):
-        return True
-
-    return False
+    return utils.is_parm_template_multiparm_folder(parm_template)
 
 
 def get_multiparm_instances_per_item(parm):
@@ -2276,24 +2305,7 @@ def get_multiparm_instances_per_item(parm):
     )
 
 
-def get_multiparm_start_offset(parm):
-    """Get the start offset of items in the multiparm.
-
-    :param parm: The parm to get the multiparm start offset for.
-    :type parm: hou.Parm or hou.ParmTuple
-    :return: The start offset of the multiparm.
-    :rtype: int
-
-    """
-    if not is_parm_multiparm(parm):
-        raise ValueError("Parameter is not a multiparm.")
-
-    parm_template = parm.parmTemplate()
-
-    return int(parm_template.tags().get("multistartoffset", 1))
-
-
-def get_multiparm_instance_index(parm):
+def get_multiparm_instance_indices(parm, instance_index=False):
     """Get the multiparm instance indices for this parameter tuple.
 
     If this parameter tuple is part of a multiparm, then its index in the
@@ -2304,6 +2316,8 @@ def get_multiparm_instance_index(parm):
 
     :param parm: The parm to get the multiparm instance index for.
     :type parm: hou.Parm or hou.ParmTuple
+    :param instance_index: Each multi-parm can have multiple parameters in each instance. If instance_index is true, the instance number will be returned. Otherwise the raw offset into the multi-parm will be extracted.
+    :type instance_index: bool
     :return The instance indices for the parameter.
     :rtype: tuple(int)
 
@@ -2314,104 +2328,119 @@ def get_multiparm_instance_index(parm):
     if isinstance(parm, hou.Parm):
         parm = parm.tuple()
 
-    result = _cpp_methods.getMultiParmInstanceIndex(
+    results = _cpp_methods.getMultiParmInstanceIndex(
         parm.node(), utils.string_encode(parm.name())
     )
 
-    return tuple(result)
+    if instance_index:
+        offsets = utils.get_multiparm_container_offsets(get_multiparm_template_name(parm), parm.node().parmTemplateGroup())
+
+        results = [result - offset for result, offset in zip(results, offsets)]
+
+    return tuple(results)
 
 
-def get_multiparm_instances(parm):
-    """Return all the parameters in this multiparm block.
+def get_multiparm_siblings(parm):
+    """Get a tuple of any sibling parameters in the multiparm block.
 
-    The parameters are returned as a tuple of parameters based on each
-    instance.
-
-    :param parm: The parm to get the multiparm instances for.
+    :param parm: The parameter to get any siblings for.
     :type parm: hou.Parm or hou.ParmTuple
-    :return: All parameters in the multiparm block.
-    :rtype: tuple
+    :return: Any sibling parameters.
+    :rtype: dict
 
     """
-    if not is_parm_multiparm(parm):
-        raise ValueError("Parameter is not a multiparm.")
+    if not parm.isMultiParmInstance():
+        raise ValueError("Parameter is not a multiparm instance")
 
     if isinstance(parm, hou.Parm):
         parm = parm.tuple()
+
+    # Get the template name for the parameter.
+    template_name = get_multiparm_template_name(parm)
 
     node = parm.node()
 
-    # Get the multiparm parameter names.
-    result = _cpp_methods.getMultiParmInstances(node, utils.string_encode(parm.name()))
+    ptg = node.parmTemplateGroup()
 
-    multi_parms = []
+    # Find the most immediate containing multiparm folder.
+    containing_template = utils.get_multiparm_containing_folders(template_name, ptg)[0]
 
-    # Iterate over each multiparm instance.
-    for block in result:
-        parms = []
+    # Get a list of template names in that folder.
+    names = _get_names_in_folder(containing_template)
 
-        # Build a list of parameters in the instance.
-        for parm_name in block:
-            if not parm_name:
-                continue
+    # The instance indices of the parameter.
+    indices = get_multiparm_instance_indices(parm, True)
 
-            # Assume hou.ParmTuple by default.
-            parm_tuple = node.parmTuple(utils.string_decode(parm_name))
+    parms = {}
 
-            # If tuple only has one element then use that hou.Parm.
-            if len(parm_tuple) == 1:
-                parm_tuple = parm_tuple[0]
+    for name in names:
+        # Skip the parameter that was passed in.
+        if name == template_name:
+            continue
 
-            parms.append(parm_tuple)
+        # Resolve the tokens and get the parm tuple.
+        parm_name = resolve_multiparm_tokens(name, indices)
+        parm_tuple = node.parmTuple(parm_name)
 
-        multi_parms.append(tuple(parms))
+        # If the parm tuple has a size of 1 then just get the parm.
+        if len(parm_tuple) == 1:
+            parm_tuple = parm_tuple[0]
 
-    return tuple(multi_parms)
+        parms[name] = parm_tuple
+
+    return parms
 
 
-# TODO: Function to get sibling parameters
-def get_multiparm_instance_values(parm):
-    """Return all the parameter values in this multiparm block.
+def resolve_multiparm_tokens(name, indices):
+    """Resolve a multiparm token string with the supplied indices.
 
-    The values are returned as a tuple of values based on each instance.
+    :param name: The parameter name.
+    :type name: str
+    :param indices: One or mode multiparm indices.
+    :type indices: int or list(int) or tuple(int)
+    :return: The resolved string.
+    :rtype: str
+
+    """
+    # Support passing in just a single value.
+    if not isinstance(indices, (list, tuple)):
+        indices = [indices]
+
+    utils.validate_multiparm_resolve_values(name, indices)
+
+    indices = utils.build_c_int_array(indices)
+
+    return  utils.string_decode(_cpp_methods.resolve_multiparm_tokens(utils.string_encode(name), indices, len(indices)))
+
+
+def get_multiparm_template_name(parm):
+    """Return a multiparm instance's parameter template name.
 
     :param parm: The parm to get the multiparm instances values for.
     :type parm: hou.Parm or hou.ParmTuple
-    :return: All parameter values in the multiparm block.
-    :rtype: tuple
+    :return: The parameter template name, or None
+    :rtype: str or None
 
     """
-
-    if not is_parm_multiparm(parm):
-        raise ValueError("Parameter is not a multiparm.")
+    # Return None if the parameter isn't a multiparm instance.
+    if not parm.isMultiParmInstance():
+        return None
 
     if isinstance(parm, hou.Parm):
         parm = parm.tuple()
 
-    # Get the multiparm parameters.
-    parms = get_multiparm_instances(parm)
-
-    all_values = []
-
-    # Iterate over each multiparm instance.
-    for block in parms:
-        values = [block_parm.eval() for block_parm in block]
-        all_values.append(tuple(values))
-
-    return tuple(all_values)
+    return  utils.string_decode(_cpp_methods.get_multiparm_template_name(parm))
 
 
-def eval_multiparm_instance(node, name, index):
-    """Evaluate a multiparm parameter by index.
+def eval_multiparm_instance(node, name, indices, raw_indices=False):
+    """Evaluate a multiparm parameter by indices.
 
-    The name should include the # value which will be replaced by the index.
+    The name should include the # value(s) which will be replaced by the indices.
 
     The index should be the multiparm index, not including any start offset.
 
-    This function raises an IndexError if the index exceeds the number of active
-    multiparm instances.
-
-    Supports float, integer and string parameters which can also be tuples.
+    This function raises an IndexError if the indices do not resolve to a valid
+    parameter name on the node.
 
     You cannot try to evaluate a single component of a tuple parameter, evaluate
     the entire tuple instead and get which values you need.
@@ -2427,16 +2456,16 @@ def eval_multiparm_instance(node, name, index):
     :type node: hou.Node
     :param name: The base parameter name.
     :type name: str
-    :param index: The multiparm index.
-    :type index: int
+    :param indices: The multiparm indices.
+    :type indices: list(int) or int
+    :param raw_indices: Whether or not the indices are 'raw' and should not try and take the folder offset into account.
+    :type raw_indices: bool
     :return: The evaluated parameter value.
-    :rtype: type
+    :rtype: float or int or string or tuple or hou.Ramp
 
     """
-    # This effectively verifies that the parameter is in a multiparm block since
-    # Houdini won't let you create a parameter with a # in it outside a multiparm.
-    if name.count("#") != 1:
-        raise ValueError("Name {} must contain a single '#' value".format(name))
+    if "#" not in name:
+        raise ValueError("Parameter name must contain at least one #")
 
     ptg = node.parmTemplateGroup()
 
@@ -2447,70 +2476,102 @@ def eval_multiparm_instance(node, name, index):
             "Name {} does not map to a parameter on {}".format(name, node.path())
         )
 
-    # Get the folder the parameter is in.
-    containing_folder = ptg.containingFolder(name)
+    # Handle directly passing a single index.
+    if not isinstance(indices, (list, tuple)):
+        indices = [indices]
 
-    # It is possible that we might have normal folders within the multiparm block
-    # so if this is the case (the folder name has a # in it) we want to keep
-    # trying to get the parent multiparm folder.
-    while "#" in containing_folder.name():
-        containing_folder = ptg.containingFolder(containing_folder.name())
+    if not raw_indices:
+        offsets = utils.get_multiparm_container_offsets(name, ptg)
 
-    # Get the actual multiparm folder parameter.
-    folder_parm = node.parm(containing_folder.name())
+        # Adjust any supplied offsets with the multiparm offset.
+        indices = [idx + offset for idx, offset in zip(indices, offsets)]
 
-    num_values = folder_parm.eval()
+    # Validate that enough indices were passed.
+    utils.validate_multiparm_resolve_values(name, indices)
 
-    # Check against the current number of available parms.
-    if index >= num_values:
-        raise IndexError("Invalid index {}".format(index))
+    # Resolve the name and indices to get the parameter name.
+    full_name = resolve_multiparm_tokens(name, indices)
 
-    # Need the start offset.
-    start_offset = get_multiparm_start_offset(folder_parm)
+    parm_tuple = node.parmTuple(full_name)
 
-    data_type = parm_template.dataType()
+    if parm_tuple is None:
+        raise IndexError("Invalid indices: {} does not exist".format(full_name))
 
-    values = []
+    values = parm_tuple.eval()
 
-    for component_index in range(parm_template.numComponents()):
-        if data_type == hou.parmData.Float:
-            values.append(
-                _cpp_methods.eval_multiparm_instance_float(
-                    node,
-                    utils.string_encode(name),
-                    component_index,
-                    index,
-                    start_offset,
-                )
-            )
+    # Return single value for non-tuple parms.
+    if len(values) == 1:
+        return values[0]
 
-        elif data_type == hou.parmData.Int:
-            values.append(
-                _cpp_methods.eval_multiparm_instance_int(
-                    node,
-                    utils.string_encode(name),
-                    component_index,
-                    index,
-                    start_offset,
-                )
-            )
+    return tuple(values)
 
-        elif data_type == hou.parmData.String:
-            values.append(
-                _cpp_methods.eval_multiparm_instance_string(
-                    node,
-                    utils.string_encode(name),
-                    component_index,
-                    index,
-                    start_offset,
-                )
-            )
 
-        else:
-            raise TypeError("Invalid parm data type {}".format(data_type))
+def unexpanded_string_multiparm_instance(node, name, indices, raw_indices=False):
+    """Get the unexpanded string of a multiparm parameter by index.
 
-    if data_type == hou.parmData.String:
-        values = utils.clean_string_values(values)
+    The name should include the # value which will be replaced by the index.
+
+    The index should be the multiparm index, not including any start offset.
+
+    This function raises an IndexError if the index exceeds the number of active
+    multiparm instances.
+
+    You cannot try to evaluate a single component of a tuple parameter, evaluate
+    the entire tuple instead and get which values you need.
+
+    # String
+    >>> eval_multiparm_instance(node, "string#", 1)
+    '$HIP'
+    # String 2
+    >>> eval_multiparm_instance(node, "stringvec#", 1)
+    ('$HIP', '$PI')
+
+    :param node: The node to evaluate the parameter on.
+    :type node: hou.Node
+    :param name: The base parameter name.
+    :type name: str
+    :param indices: The multiparm indices.
+    :type indices: list(int) or int
+    :param raw_indices: Whether or not the indices are 'raw'and should not try and take the folder offset into account.
+    :type raw_indices: bool
+    :return: The evaluated parameter value.
+    :rtype: type
+
+    """
+    if "#" not in name:
+        raise ValueError("Parameter name must contain at least one #")
+
+    ptg = node.parmTemplateGroup()
+
+    parm_template = ptg.find(name)
+
+    if parm_template is None:
+        raise ValueError("Name {} does not map to a parameter on {}".format(name, node.path()))
+
+    if parm_template.dataType() != hou.parmData.String:
+        raise TypeError("Parameter must be a string parameter")
+
+    # Handle directly passing a single index.
+    if not isinstance(indices, (list, tuple)):
+        indices = [indices]
+
+    if not raw_indices:
+        offsets = utils.get_multiparm_container_offsets(name, ptg)
+
+        # Adjust any supplied offsets with the multiparm offset.
+        indices = [idx + offset for idx, offset in zip(indices, offsets)]
+
+    # Validate that enough indices were passed.
+    utils.validate_multiparm_resolve_values(name, indices)
+
+    full_name = resolve_multiparm_tokens(name, indices)
+
+    parm_tuple = node.parmTuple(full_name)
+
+    if parm_tuple is None:
+        raise IndexError("Invalid indices: {} does not exist".format(full_name))
+
+    values = [parm.unexpandedString() for parm in parm_tuple]
 
     # Return single value for non-tuple parms.
     if len(values) == 1:

@@ -1862,101 +1862,36 @@ getMultiParmInstanceIndex(OP_Node *node, const char *parm_name)
 }
 """,
     """
-StringTuple
-getMultiParmInstances(OP_Node *node, const char *parm_name)
+inlinecpp::BinaryString
+resolve_multiparm_tokens(const char *parm_name, int *indices, int num_indices)
 {
-    int                         items, instances;
-    std::vector<StringArray>    blocks;
-
-    PRM_Parm                    *parm;
-
-    PRM_Parm &multiparm = node->getParm(parm_name);
-
-    // The number of multi parm blocks.
-    items = multiparm.getMultiParmNumItems();
-
-    // The number of parms in each block.
-    instances = multiparm.getMultiParmInstancesPerItem();
-
-    for (int i=0; i < items; ++i)
-    {
-        std::vector<std::string>    result;
-
-        for (int j=0; j < instances; ++j)
-        {
-            parm = multiparm.getMultiParm(i * instances + j);
-            result.push_back(parm->getToken());
-        }
-
-        // Check for an empty vector.
-        validateStringVector(result);
-
-        blocks.push_back(result);
-    }
-
-    // If there are no entries, add an empty block.
-    if (blocks.size() == 0)
-    {
-        std::vector<std::string>    result;
-        result.push_back("");
-        blocks.push_back(result);
-    }
-
-    return blocks;
-}
-""",
-    """
-float
-eval_multiparm_instance_float(OP_Node *node, const char *parm_name, int component_index, int index, int start_offset)
-{
-    fpreal                      result, t = CHgetEvalTime();
-    int                         instance_index;
-
-    UT_StringRef                name(parm_name);
-
-    instance_index = index + start_offset;
-
-    result = node->evalFloatInst(name, &instance_index, component_index, t);
-
-    addDependencyOnParm(node, name, instance_index, component_index);
-
-    return result;
-}
-""",
-    """
-int
-eval_multiparm_instance_int(OP_Node *node, const char *parm_name, int component_index, int index, int start_offset)
-{
-    fpreal                      t = CHgetEvalTime();
-    int                         instance_index, result;
-
-    UT_StringRef                name(parm_name);
-
-    instance_index = index + start_offset;
-
-    result = node->evalIntInst(name, &instance_index, component_index, t);
-
-    addDependencyOnParm(node, name, instance_index, component_index);
-
-    return result;
+    UT_String       value(parm_name);
+   
+    PRM_Parm::instanceMultiString(
+        value,
+        indices,
+        num_indices,
+        false
+    );
+    
+    return value.toStdString();
 }
 """,
     """
 inlinecpp::BinaryString
-eval_multiparm_instance_string(OP_Node *node, const char *parm_name, int component_index, int index, int start_offset)
+get_multiparm_template_name(const PRM_Parm *parm)
 {
-    fpreal                      t = CHgetEvalTime();
-    int                         instance_index;
-
-    const UT_StringRef          &name(parm_name);
-    UT_String                   value;
-
-    instance_index = index + start_offset;
-    node->evalStringInst(name, &instance_index, value, component_index, t);
-
-    addDependencyOnParm(node, name, instance_index, component_index);
-
-    return value.toStdString();
+    const PRM_Template          *parm_template;
+    
+    parm_template = parm->findMultiParmTemplate();
+    
+    if (parm_template)
+    {
+        UT_StringRef token = parm_template->getToken();
+        return token.toStdString();
+    }
+    
+    return std::string();
 }
 """,
     """
@@ -2110,6 +2045,7 @@ cpp_methods = inlinecpp.createLibrary(
 #include <OP/OP_OTLManager.h>
 #include <PRM/PRM_Name.h>
 #include <PRM/PRM_Parm.h>
+#include <PRM/PRM_Template.h>
 #include <ROP/ROP_RenderManager.h>
 #include <UT/UT_StdUtil.h>
 #include <UT/UT_Version.h>
@@ -2127,36 +2063,6 @@ void validateStringVector(std::vector<std::string> &string_vec)
     {
         // An an empty string.
         string_vec.push_back("");
-    }
-}
-
-
-void addDependencyOnParm(OP_Node *node, const UT_StringRef &name, int instance_index, int component_index)
-{
-    int                         evaluating_parm_index, evaluating_sub_index, target_parm_index;
-
-    OP_ExprFindCh               cache;
-    OP_Node                     *evaluating_node;
-
-    UT_IntArray                 instance_numbers;
-    UT_WorkBuffer               wb;
-
-    instance_numbers.append(instance_index);
-
-    cache.getEvaluatingSource(
-        evaluating_node, evaluating_parm_index, evaluating_sub_index, SYSgetSTID()
-    );
-
-    if (evaluating_node)
-    {
-        PRM_Name::instanceToken(wb, name, instance_numbers);
-
-        target_parm_index = node->getParmList()->getParmIndex(wb.buffer());
-
-        OP_InterestRef target_ref(*evaluating_node, evaluating_parm_index, evaluating_sub_index);
-        OP_InterestRef source_ref(*node, target_parm_index, component_index);
-
-        OP_Node::addExtraInput(target_ref, source_ref);
     }
 }
 
