@@ -18,6 +18,47 @@ import hou
 
 
 # =============================================================================
+# NON-PUBLIC FUNCTIONS
+# =============================================================================
+
+
+def _find_matching_node(parent, request):
+    """Try to find a matching child node based on a test request.
+
+    Node search order is as follows:
+    - Node matching the exact test name
+    - Node matching the class name + test name (minus 'test_' prefix for function name)
+    - Node matching the class name
+
+    """
+    test_name = request.node.name
+
+    # First try to find a node with the exact test name.
+    names = [test_name]
+
+    if request.cls is not None:
+        cls_name = request.cls.__name__.lower()
+
+        test_name = test_name[5:]
+
+        # Look for a node with the class name + test name (minus test_ from function name)
+        names.append("{}_{}".format(cls_name, test_name))
+
+        # Finally try to find a node with the class name.
+        names.append(cls_name)
+
+    node = None
+
+    for name in names:
+        node = parent.node(name)
+
+        if node is not None:
+            break
+
+    return node
+
+
+# =============================================================================
 # FIXTURES
 # =============================================================================
 
@@ -187,15 +228,15 @@ def fix_hou_exceptions(monkeypatch):
 @pytest.fixture
 def mock_hdefereval(mocker):
     """Mock hdefereval which isn't available when running tests via Hython."""
-    mock_hdefereval = mocker.MagicMock()
+    mocked_hdefereval = mocker.MagicMock()
 
     # Need to mock importing hdefereval because the import will fail when
     # the UI is not available (like in testing).
-    modules = {"hdefereval": mock_hdefereval}
+    modules = {"hdefereval": mocked_hdefereval}
 
     mocker.patch.dict("sys.modules", modules)
 
-    yield mock_hdefereval
+    yield mocked_hdefereval
 
 
 @pytest.fixture
@@ -236,6 +277,40 @@ def mock_ui_available(mocker):
 def mock_ui_unavailable(mocker):
     """Fixture to mock hou.isUIAvailable() to return False."""
     yield mocker.patch("hou.isUIAvailable", return_value=False)
+
+
+@pytest.fixture(scope="function")
+def obj_test_node(request):
+    """Fixture to provide a node in /obj matching the test."""
+    parent = hou.node("/obj")
+
+    return _find_matching_node(parent, request)
+
+
+@pytest.fixture(scope="function")
+def obj_test_geo(request):
+    """Fixture to provide the display node geometry of a node in /obj matching the test."""
+    parent = hou.node("/obj")
+
+    test_node = _find_matching_node(parent, request)
+
+    if test_node is None:
+        return None
+
+    if test_node.childTypeCategory() != hou.sopNodeTypeCategory():
+        raise RuntimeError("{} does not contain SOP nodes".format(test_node.path()))
+
+    return test_node.displayNode().geometry()
+
+
+@pytest.fixture(scope="function")
+def obj_test_geo_copy(obj_test_geo):
+    """Fixture to get a writable copy of the display node geometry of a ndoe in /obj matching the test."""
+    geo = hou.Geometry()
+
+    geo.merge(obj_test_geo)
+
+    return geo
 
 
 @pytest.fixture
