@@ -14,9 +14,10 @@
 
 #include <UT/UT_DSOVersion.h>
 
+#include "OPUI_GenericImageBadge.h"
+
 static const UT_StringHolder icon_name("NETVIEW_cop2_info");
 
-static const UT_StringHolder data_name("ht_generic_image");
 
 bool
 opuiGenericImageBadgeTest(const OPUI_GraphProxyDescriptor &desc,
@@ -29,9 +30,9 @@ opuiGenericImageBadgeTest(const OPUI_GraphProxyDescriptor &desc,
 
     UT_StringHolder image_name;
 
-    if (node && node->hasUserData(data_name))
+    if (node && node->hasUserData(GENERIC_IMAGE_BADGE_DATA_NAME))
     {
-        node->getUserData(data_name, image_name);
+        node->getUserData(GENERIC_IMAGE_BADGE_DATA_NAME, image_name);
 
         if (image_name.length() > 0)
         {
@@ -68,7 +69,7 @@ OPUIaddTextBadges(OPUI_GraphTextBadgeArray *add_textbadges)
 PY_PyObject *
 Get_Badge_Data_Name(PY_PyObject*, PY_PyObject*)
 {
-    return PY_PyString_FromString(data_name.c_str());
+    return PY_PyString_FromString(GENERIC_IMAGE_BADGE_DATA_NAME.c_str());
 }
 
 
