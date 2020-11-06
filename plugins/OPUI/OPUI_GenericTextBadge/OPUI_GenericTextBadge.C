@@ -12,13 +12,8 @@
 #include <PY/PY_Python.h>
 #include <PY/PY_InterpreterAutoLock.h>
 
-#include <UT/UT_DSOVersion.h>
-#include <UT/UT_Color.h>
+#include "OPUI_GenericTextBadge.h"
 
-static const UT_StringHolder icon_name("SOP_font");
-
-static const UT_StringHolder data_name("ht_generic_text");
-static const UT_StringHolder color_data_name("ht_generic_text_color");
 
 bool
 opuiGenericTextBadgeTest(const OPUI_GraphProxyDescriptor &desc,
@@ -31,17 +26,17 @@ opuiGenericTextBadgeTest(const OPUI_GraphProxyDescriptor &desc,
     UT_StringHolder generic_text, generic_text_color;
     UT_Color color;
 
-    if (node && node->hasUserData(data_name))
+    if (node && node->hasUserData(TEXT_BADGE_DATA_NAME))
     {
-        node->getUserData(data_name, generic_text);
+        node->getUserData(TEXT_BADGE_DATA_NAME, generic_text);
 
         if (generic_text.length() > 0)
         {
             text = generic_text;
 
-            if (node->hasUserData(color_data_name))
+            if (node->hasUserData(TEXT_BADGE_COLOR_DATA_NAME))
             {
-                node->getUserData(color_data_name, generic_text_color);
+                node->getUserData(TEXT_BADGE_COLOR_DATA_NAME, generic_text_color);
                 color.setColorByName(generic_text_color);
             }
 
@@ -65,44 +60,15 @@ OPUIaddTextBadges(OPUI_GraphTextBadgeArray *add_textbadges)
     add_textbadges->append(
         OPUI_GraphTextBadge(
             "generictextbadge", OPUI_GraphTextBadge::theMainTextBadgeCategory,
-            "HT Generic Text Badge", icon_name, 0.0,
+            "HT Generic Text Badge", TEXT_BADGE_ICON_NAME, 0.0,
             TEXTBADGEVIS_TRUNCATED,
             opuiGenericTextBadgeTest,
             TEXTBADGE_MULTI_THREADED
         )
     );
 }
-
 // Dummy to avoid missing symbol errors on load.
 void
 OPUIaddBadges(OPUI_GraphBadgeArray *add_badges)
 {}
 
-
-PY_PyObject *
-Get_Badge_Data_Name(PY_PyObject*, PY_PyObject*)
-{
-    return PY_PyString_FromString(data_name.c_str());
-}
-
-PY_PyObject *
-Get_Badge_Color_Data_Name(PY_PyObject*, PY_PyObject*)
-{
-    return PY_PyString_FromString(color_data_name.c_str());
-}
-
-void
-HOMextendLibrary()
-{
-    {
-	PY_InterpreterAutoLock interpreter_auto_lock;
-
-        static PY_PyMethodDef hom_extension_methods[] = {
-            {"get_generic_text_key", Get_Badge_Data_Name, PY_METH_VARARGS(), ""},
-            {"get_generic_text_color_key", Get_Badge_Color_Data_Name, PY_METH_VARARGS(), ""},
-            {NULL, NULL, 0, NULL}
-        };
-
-        PY_Py_InitModule("_ht_generic_text_badge", hom_extension_methods);
-    }
-}

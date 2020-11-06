@@ -117,4 +117,5 @@ add_subdirectory( SOP/SOP_DopImpactPoints )
 add_subdirectory( SOP/SOP_PointsFromVoxels )
 add_subdirectory( SOP/SOP_PrimCentroid )
 add_subdirectory( SOP/SOP_PrimGroupCentroid )
-
+add_subdirectory( PY/PY_generic_image_badge )
+add_subdirectory( PY/PY_generic_text_badge )
