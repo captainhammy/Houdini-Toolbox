@@ -24,6 +24,27 @@ from ht.inline import utils
 # Houdini Imports
 import hou
 
+# =============================================================================
+# EXCEPTIONS
+# =============================================================================
+
+
+class RunPyStatementsError(Exception):
+    """Exception for exceptions raised while running Python statements.
+
+    The original exception information is available via the "message"
+    attribute.
+
+    The name of the raised exception is available via the "exception_name"
+    attribute.
+
+    """
+
+    def __init__(self, message, exception_name=None):
+        super(RunPyStatementsError, self).__init__(message)
+
+        self.exception_name = exception_name
+
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
@@ -109,6 +130,106 @@ def clear_caches(cache_names=None):
 
     for cache_name in cache_names:
         _cpp_methods.clearCacheByName(utils.string_encode(cache_name))
+
+
+def run_python_statements(code, use_new_context=True):
+    """Run python statements using Houdini's Python execution code.
+
+    By default the code is run in a new Python context.  If setting
+    use_new_context to False the statements will be run in the global namespace.
+
+    If any errors occurring during the run this function will raise a
+    RunPyStatementsError exception which will contain the original exception
+    data.
+
+    :param code: A block of Python code.
+    :type code: str
+    :param use_new_context: Run the code in a new context.
+    :type use_new_context: bool
+    :return:
+
+    """
+    if use_new_context:
+        result = _cpp_methods.run_python_statements_in_new_context(code)
+
+    else:
+        result = _cpp_methods.run_python_statements(code)
+
+    if result.occurred:
+        message = result.detailed
+        exception_name = result.name
+
+        raise RunPyStatementsError(message, exception_name)
+
+
+def clear_user_data(node):
+    """Clear all user data on a node.
+
+    This does not create an Undo event.
+
+    :param node: The node to clear the user data from.
+    :type node: hou.Node
+    :return:
+
+    """
+    _cpp_methods.clearUserData(node)
+
+
+def has_user_data(node, name):
+    """Check if a node has user data under the supplied name.
+
+    :param node: The node to check for user data on.
+    :type node: hou.Node
+    :param name: The user data name.
+    :type name: str
+    :return: Whether or not the node has user data of the given name.
+    :rtype: bool
+
+    """
+    return _cpp_methods.hasUserData(node, name)
+
+
+def set_user_data(node, name, value):
+    """Sets user data.
+
+    This does not create an Undo event.
+
+    :param node: The node to set user data on.
+    :type node: hou.Node
+    :param name: The user data name.
+    :type name: str
+    :param value: The user data value.
+    :type value: str
+    :return:
+
+    """
+    _cpp_methods.setUserData(node, name, value)
+
+
+def delete_user_data(node, name):
+    """Deletes any user data under the supplied name.
+
+    This does not create an Undo event.
+
+    :param node: The node to delete for user data from.
+    :type node: hou.Node
+    :param name: The user data name.
+    :type name: str
+    :return:
+
+    """
+    _cpp_methods.deleteUserData(node, name)
+
+
+def hash_string(value):
+    """Generate a hash value from a string.
+
+    This is the equivalent of the random_shash() VEX function.
+
+    Uses SYSstring_hash() from SYS_String.h
+
+    """
+    return _cpp_methods.hashString(value)
 
 
 def is_rendering():
@@ -253,27 +374,6 @@ def expand_range(pattern):
     return tuple(_cpp_methods.expandRange(utils.string_encode(pattern)))
 
 
-def is_geometry_read_only(geometry):
-    """Check if the geometry is read only.
-
-    :param geometry: Geometry to check for being read only.
-    :type geometry: hou.Geometry
-    :return: Whether or not this geometry is read only.
-    :rtype: bool
-
-    """
-    # Get a GU Detail Handle for the geometry.
-    handle = geometry._guDetailHandle()  # pylint: disable=protected-access
-
-    # Check if the handle is read only.
-    result = handle.isReadOnly()
-
-    # Destroy the handle.
-    handle.destroy()
-
-    return result
-
-
 def num_points(geometry):
     """Get the number of points in the geometry.
 
@@ -328,101 +428,6 @@ def num_prim_vertices(prim):
     return prim.intrinsicValue("vertexcount")
 
 
-def pack_geometry(geometry, source):
-    """Pack the source geometry into a PackedGeometry prim in this geometry.
-
-    This function works by packing the supplied geometry into the current
-    detail, returning the new PackedGeometry primitive.
-
-    Both hou.Geometry objects must not be read only.
-
-    :param geometry: The geometry to pack into.
-    :type geometry: hou.Geometry
-    :param source: The source geometry.
-    :type source: hou.Geometry
-    :return: The packed geometry primitive.
-    :rtype: hou.PackedGeometry
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    # Make sure the source geometry is not read only.
-    if is_geometry_read_only(source):
-        raise hou.GeometryPermissionError()
-
-    _cpp_methods.packGeometry(source, geometry)
-
-    return geometry.iterPrims()[-1]
-
-
-def sort_geometry_by_attribute(geometry, attribute, tuple_index=0, reverse=False):
-    """Sort points, primitives or vertices based on attribute values.
-
-    :param geometry: The geometry to sort.
-    :type geometry: hou.Geometry
-    :param attribute: The attribute to sort by.
-    :type attribute: hou.Attrib
-    :param tuple_index: The tuple index to sort by when using attributes of size > 1.
-    :type tuple_index: int
-    :param reverse: Whether or not to reverse the sort.
-    :type reverse: bool
-    :return:
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    # Verify the tuple index is valid.
-    if not 0 <= tuple_index < attribute.size():
-        raise IndexError("Invalid tuple index: {}".format(tuple_index))
-
-    attrib_type = attribute.type()
-    attrib_name = attribute.name()
-
-    if attrib_type == hou.attribType.Global:
-        raise ValueError("Attribute type must be point, primitive or vertex.")
-
-    # Get the corresponding attribute type id.
-    attrib_owner = utils.get_attrib_owner(attrib_type)
-
-    _cpp_methods.sortGeometryByAttribute(
-        geometry, attrib_owner, utils.string_encode(attrib_name), tuple_index, reverse
-    )
-
-
-def sort_geometry_along_axis(geometry, geometry_type, axis):
-    """Sort points or primitives based on increasing positions along an axis.
-
-    The axis to sort along: (X=0, Y=1, Z=2)
-
-    :param geometry: The geometry to sort.
-    :type geometry: hou.Geometry
-    :param geometry_type: The type of geometry to sort.
-    :type geometry_type: hou.geometryType
-    :param axis: The axis to sort along.
-    :type axis: int
-    :return:
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    # Verify the axis.
-    if not 0 <= axis < 3:
-        raise ValueError("Invalid axis: {}".format(axis))
-
-    if geometry_type not in (hou.geometryType.Points, hou.geometryType.Primitives):
-        raise ValueError("Geometry type must be points or primitives.")
-
-    attrib_owner = utils.get_attrib_owner_from_geometry_type(geometry_type)
-
-    _cpp_methods.sortGeometryAlongAxis(geometry, attrib_owner, axis)
-
-
 def sort_geometry_by_values(geometry, geometry_type, values):
     """Sort points or primitives based on a list of corresponding values.
 
@@ -439,7 +444,7 @@ def sort_geometry_by_values(geometry, geometry_type, values):
 
     """
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     num_values = len(values)
@@ -469,183 +474,6 @@ def sort_geometry_by_values(geometry, geometry_type, values):
     _cpp_methods.sortGeometryByValues(geometry, attrib_owner, c_values)
 
 
-def sort_geometry_randomly(geometry, geometry_type, seed=0.0):
-    """Sort points or primitives randomly.
-
-    :param geometry: The geometry to sort.
-    :type geometry: hou.Geometry
-    :param geometry_type: The type of geometry to sort.
-    :type geometry_type: hou.geometryType
-    :param seed: The random seed.
-    :type seed: float
-    :return:
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    if not isinstance(seed, (float, int)):
-        raise TypeError("Got '{}', expected 'float'.".format(type(seed).__name__))
-
-    if geometry_type not in (hou.geometryType.Points, hou.geometryType.Primitives):
-        raise ValueError("Geometry type must be points or primitives.")
-
-    attrib_owner = utils.get_attrib_owner_from_geometry_type(geometry_type)
-    _cpp_methods.sortGeometryRandomly(geometry, attrib_owner, seed)
-
-
-def shift_geometry_elements(geometry, geometry_type, offset):
-    """Shift all point or primitives indices forward by an offset.
-
-    Each point or primitive number gets the offset added to it to get its new
-    number.  If this exceeds the number of points or primitives, it wraps
-    around.
-
-    :param geometry: The geometry to shift.
-    :type geometry: hou.Geometry
-    :param geometry_type: The type of geometry to sort.
-    :type geometry_type: hou.geometryType
-    :param offset: The shift offset.
-    :type offset: int
-    :return:
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    if not isinstance(offset, int):
-        raise TypeError("Got '{}', expected 'int'.".format(type(offset).__name__))
-
-    if geometry_type not in (hou.geometryType.Points, hou.geometryType.Primitives):
-        raise ValueError("Geometry type must be points or primitives.")
-
-    attrib_owner = utils.get_attrib_owner_from_geometry_type(geometry_type)
-    _cpp_methods.shiftGeometry(geometry, attrib_owner, offset)
-
-
-def reverse_sort_geometry(geometry, geometry_type):
-    """Reverse the ordering of the points or primitives.
-
-    The highest numbered becomes the lowest numbered, and vice versa.
-
-    :param geometry: The geometry to sort.
-    :type geometry: hou.Geometry
-    :param geometry_type: The type of geometry to sort.
-    :type geometry_type: hou.geometryType
-    :return:
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    if geometry_type not in (hou.geometryType.Points, hou.geometryType.Primitives):
-        raise ValueError("Geometry type must be points or primitives.")
-
-    attrib_owner = utils.get_attrib_owner_from_geometry_type(geometry_type)
-    _cpp_methods.reverseSortGeometry(geometry, attrib_owner)
-
-
-def sort_geometry_by_proximity_to_position(geometry, geometry_type, pos):
-    """Sort elements by their proximity to a point.
-
-    The distance to the point in space is used as a priority. The points or
-    primitives are then sorted so that the 0th entity is the one closest to
-    that point.
-
-    :param geometry: The geometry to sort.
-    :type geometry: hou.Geometry
-    :param geometry_type: The type of geometry to sort.
-    :type geometry_type: hou.geometryType
-    :param pos: The position to sort relatives to.
-    :type pos: hou.Vector3
-    :return:
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    if geometry_type not in (hou.geometryType.Points, hou.geometryType.Primitives):
-        raise ValueError("Geometry type must be points or primitives.")
-
-    attrib_owner = utils.get_attrib_owner_from_geometry_type(geometry_type)
-    _cpp_methods.sortGeometryByProximity(geometry, attrib_owner, pos)
-
-
-def sort_geometry_by_vertex_order(geometry):
-    """Sorts points to match the order of the vertices on the primitives.
-
-    If you have a curve whose point numbers do not increase along the curve,
-    this will reorder the point numbers so they match the curve direction.
-
-    :param geometry: The geometry to sort.
-    :type geometry: hou.Geometry
-    :return:
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    _cpp_methods.sortGeometryByVertexOrder(geometry)
-
-
-def sort_geometry_by_expression(geometry, geometry_type, expression):
-    """Sort points or primitives based on an expression for each element.
-
-    The specified expression is evaluated for each point or primitive. This
-    determines the priority of that primitive, and the entities are reordered
-    according to that priority. The point or primitive with the least evaluated
-    expression value will be numbered 0 after the sort.
-
-    :param geometry: The geometry to sort.
-    :type geometry: hou.Geometry
-    :param geometry_type: The type of geometry to sort.
-    :type geometry_type: hou.geometryType
-    :param expression: The expression to sort by.
-    :type expression: str
-    :return:
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    values = []
-
-    # Get the current cooking SOP node.  We need to do this as the geometry is
-    # frozen and  has no reference to the SOP node it belongs to.
-    sop_node = hou.pwd()
-
-    if geometry_type == hou.geometryType.Points:
-        # Iterate over each point.
-        for point in geometry.points():
-            # Get the point to be the current point.  This allows '$PT' to
-            # work properly in the expression.
-            sop_node.setCurPoint(point)
-
-            # Add the evaluated expression value to the list.
-            values.append(hou.hscriptExpression(expression))
-
-    elif geometry_type == hou.geometryType.Primitives:
-        # Iterate over each primitive.
-        for prim in geometry.prims():
-            # Get the point to be the current point.  This allows '$PR' to
-            # work properly in the expression.
-            sop_node.setCurPrim(prim)
-
-            # Add the evaluated expression value to the list.
-            values.append(hou.hscriptExpression(expression))
-
-    else:
-        raise ValueError("Geometry type must be points or primitives.")
-
-    sort_geometry_by_values(geometry, geometry_type, values)
-
-
 def create_point_at_position(geometry, position):
     """Create a new point located at a position.
 
@@ -658,7 +486,7 @@ def create_point_at_position(geometry, position):
 
     """
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     _cpp_methods.createPointAtPosition(geometry, position)
@@ -678,7 +506,7 @@ def create_n_points(geometry, npoints):
 
     """
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     if npoints <= 0:
@@ -700,7 +528,7 @@ def merge_point_group(geometry, group):
 
     """
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     if not isinstance(group, hou.PointGroup):
@@ -722,7 +550,7 @@ def merge_points(geometry, points):
 
     """
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     c_values = utils.build_c_int_array([point.number() for point in points])
@@ -741,7 +569,7 @@ def merge_prim_group(geometry, group):
 
     """
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     if not isinstance(group, hou.PrimGroup):
@@ -763,7 +591,7 @@ def merge_prims(geometry, prims):
 
     """
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     c_values = utils.build_c_int_array([prim.number() for prim in prims])
@@ -783,51 +611,17 @@ def copy_attribute_values(source_element, source_attribs, target_element):
     :return:
 
     """
-    # Copying to a geometry entity.
-    if not isinstance(target_element, hou.Geometry):
-        # Get the source element's geometry.
-        target_geometry = target_element.geometry()
-
-        # If we're copying to a vertex then we need to get the offset.
-        if isinstance(target_element, hou.Vertex):
-            target_entity_num = target_element.linearNumber()
-
-        # Otherwise the entity number is just the number().
-        else:
-            target_entity_num = target_element.number()
-
-    # hou.Geometry means copying to detail attributes.
-    else:
-        target_geometry = target_element
-        target_entity_num = 0
+    target_type, target_geometry, target_entity_num = utils.get_entity_data(target_element)
 
     # Make sure the target geometry is not read only.
-    if is_geometry_read_only(target_geometry):
+    if target_geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    # Copying from a geometry entity.
-    if not isinstance(source_element, hou.Geometry):
-        # Get the source point's geometry.
-        source_geometry = source_element.geometry()
-
-        if isinstance(source_element, hou.Vertex):
-            source_entity_num = source_element.linearNumber()
-
-        else:
-            source_entity_num = source_element.number()
-
-    # Copying from detail attributes.
-    else:
-        source_geometry = source_element
-        source_entity_num = 0
+    source_type, source_geometry, source_entity_num = utils.get_entity_data(source_element)
 
     # Get the attribute owners from the elements.
-    target_owner = utils.get_attrib_owner_from_geometry_entity_type(
-        type(target_element)
-    )
-    source_owner = utils.get_attrib_owner_from_geometry_entity_type(
-        type(source_element)
-    )
+    target_owner = utils.get_attrib_owner_from_geometry_entity_type(target_type)
+    source_owner = utils.get_attrib_owner_from_geometry_entity_type(source_type)
 
     # Get the attribute names, ensuring we only use attributes on the
     # source's geometry.
@@ -850,7 +644,377 @@ def copy_attribute_values(source_element, source_attribs, target_element):
         source_entity_num,
         c_values,
         len(c_values),
+        False,
     )
+
+
+def batch_copy_attributes_by_indices(
+    source_geometry,
+    source_type,
+    source_indices,
+    source_attribs,
+    target_geometry,
+    target_type,
+    target_indices,
+):
+    """Batch copy attributes given lists of indices.
+
+    :param source_geometry: The geometry to copy attributes from.
+    :type source_geometry: hou.Geometry
+    :param source_type: The source entity type.
+    :type source_type: hou.Geometry or hou.Point or hou.Prim or hou.Vertex
+    :param source_indices: Source entity indices.
+    :type source_indices: list(int) or tuple(int)
+    :param source_attribs: The attributes to copy.
+    :type source_attribs: list(hou.Attrib) or tuple(hou.Attrib)
+    :param target_geometry: The geometry to copy attributes to.
+    :type target_geometry: hou.Geometry
+    :param target_type: The target entity type.
+    :type target_type: hou.Geometry or hou.Point or hou.Prim or hou.Vertex
+    :param target_indices: Target entity indices.
+    :type target_indices: list(int) or tuple(int)
+    :return:
+
+    """
+    # Make sure the geometry is not read only.
+    if target_geometry.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    num_source = len(source_indices)
+    num_target = len(target_indices)
+
+    if num_source != num_target:
+        raise ValueError("Number of source and target elements must match")
+
+    target_owner = utils.get_attrib_owner_from_geometry_entity_type(target_type)
+    source_owner = utils.get_attrib_owner_from_geometry_entity_type(source_type)
+
+    # Get the attribute names, ensuring we only use attributes on the
+    # source's geometry.
+    attrib_names = [
+        attrib.name()
+        for attrib in source_attribs
+        if utils.get_attrib_owner(attrib.type()) == source_owner
+        and attrib.geometry().sopNode() == source_geometry.sopNode()
+    ]
+
+    # Construct a ctypes string array to pass the strings.
+    names_arr = utils.build_c_string_array(attrib_names)
+
+    _cpp_methods.batchCopyAttributeValues(
+        num_target,
+        target_geometry,
+        target_owner,
+        utils.build_c_int_array(target_indices),
+        source_geometry,
+        source_owner,
+        utils.build_c_int_array(source_indices),
+        names_arr,
+        len(names_arr),
+        False,
+    )
+
+
+def batch_copy_attrib_values(source_elements, source_attribs, target_elements):
+    """Copy a list of attributes from the source element to the target element.
+
+    :param source_elements: The elements to copy from.
+    :type source_elements: list(hou.Point) or list(hou.Prim) or list(hou.Vertex) or list(hou.Geometry)
+    :param source_attribs: The attributes to copy.
+    :type source_attribs: list(hou.Attrib) or tuple(hou.Attrib)
+    :param target_elements: The elements to copy to.
+    :type target_elements: list(hou.Point) or list(hou.Prim) or list(hou.Vertex) or list(hou.Geometry)
+    :return:
+
+    """
+    num_elements = len(target_elements)
+
+    if num_elements != len(source_elements):
+        raise ValueError("Number of source and target elements must match")
+
+    target_type, target_geometry, target_entity_nums = utils.get_entity_data_from_list(
+        target_elements
+    )
+
+    # Make sure the target geometry is not read only.
+    if target_geometry.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    source_type, source_geometry, source_entity_nums = utils.get_entity_data_from_list(
+        source_elements
+    )
+
+    # Get the attribute owners from the elements.
+    target_owner = utils.get_attrib_owner_from_geometry_entity_type(target_type)
+    source_owner = utils.get_attrib_owner_from_geometry_entity_type(source_type)
+
+    # Get the attribute names, ensuring we only use attributes on the
+    # source's geometry.
+    attrib_names = [
+        attrib.name()
+        for attrib in source_attribs
+        if utils.get_attrib_owner(attrib.type()) == source_owner
+        and attrib.geometry().sopNode() == source_geometry.sopNode()
+    ]
+
+    # Construct a ctypes string array to pass the strings.
+    arr = utils.build_c_string_array(attrib_names)
+
+    _cpp_methods.batchCopyAttributeValues(
+        num_elements,
+        target_geometry,
+        target_owner,
+        utils.build_c_int_array(target_entity_nums),
+        source_geometry,
+        source_owner,
+        utils.build_c_int_array(source_entity_nums),
+        arr,
+        len(attrib_names),
+        False,
+    )
+
+
+def copy_group_membership(source_element, source_groups, target_element):
+    """Copy group membership from the source element to the target element.
+
+    :param source_element: The element to copy from.
+    :type source_element: hou.Point or hou.Prim or hou.Vertex or hou.Geometry
+    :param source_groups: A groups to copy membership of.
+    :type source_groups: list(hou.PointGroup or hou.PrimGroup or hou.VertexGroup)
+    :param target_element: The element to copy to.
+    :type target_element: hou.Point or hou.Prim or hou.Vertex or hou.Geometry
+    :return:
+
+    """
+    target_type, target_geometry, target_entity_num = utils.get_entity_data(target_element)
+
+    # Make sure the target geometry is not read only.
+    if target_geometry.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    source_type, source_geometry, source_entity_num = utils.get_entity_data(source_element)
+
+    # Get the attribute owners from the elements.
+    target_owner = utils.get_attrib_owner_from_geometry_entity_type(target_type)
+    source_owner = utils.get_attrib_owner_from_geometry_entity_type(source_type)
+
+    # Get the group names, ensuring we only use attributes on the
+    # source's geometry.
+    group_names = [
+        group.name()
+        for group in source_groups
+        if utils.get_group_attrib_owner(group) == source_owner
+        and group.geometry().sopNode() == source_geometry.sopNode()
+    ]
+
+    # Construct a ctypes string array to pass the strings.
+    c_values = utils.build_c_string_array(group_names)
+
+    _cpp_methods.copyAttributeValues(
+        target_geometry,
+        target_owner,
+        target_entity_num,
+        source_geometry,
+        source_owner,
+        source_entity_num,
+        c_values,
+        len(c_values),
+        True,
+    )
+
+
+def batch_copy_group_membership_by_indices(
+    source_geometry,
+    source_type,
+    source_indices,
+    source_groups,
+    target_geometry,
+    target_type,
+    target_indices,
+):
+    """Batch copy group membership given lists of indices.
+
+    :param source_geometry: The geometry to copy group membership from.
+    :type source_geometry: hou.Geometry
+    :param source_type: The source entity type.
+    :type source_type: hou.Geometry or hou.Point or hou.Prim or hou.Vertex
+    :param source_indices: Source entity indices.
+    :type source_indices: list(int) or tuple(int)
+    :param source_groups: The groups to copy membership of.
+    :type source_groups: list(hou.PointGroup or hou.PrimGroup or hou.VertexGroup)
+    :param target_geometry: The geometry to copy group membership to.
+    :type target_geometry: hou.Geometry
+    :param target_type: The target entity type.
+    :type target_type: hou.Geometry or hou.Point or hou.Prim or hou.Vertex
+    :param target_indices: Target entity indices.
+    :type target_indices: list(int) or tuple(int)
+    :return:
+
+    """
+    # Make sure the geometry is not read only.
+    if target_geometry.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    num_source = len(source_indices)
+    num_target = len(target_indices)
+
+    if num_source != num_target:
+        raise ValueError("Number of source and target elements must match")
+
+    target_owner = utils.get_attrib_owner_from_geometry_entity_type(target_type)
+    source_owner = utils.get_attrib_owner_from_geometry_entity_type(source_type)
+
+    # Get the group names, ensuring we only use attributes on the
+    # source's geometry.
+    group_names = [
+        group.name()
+        for group in source_groups
+        if utils.get_group_attrib_owner(group) == source_owner
+        and group.geometry().sopNode() == source_geometry.sopNode()
+    ]
+
+    # Construct a ctypes string array to pass the strings.
+    names_arr = utils.build_c_string_array(group_names)
+
+    _cpp_methods.batchCopyAttributeValues(
+        num_target,
+        target_geometry,
+        target_owner,
+        utils.build_c_int_array(target_indices),
+        source_geometry,
+        source_owner,
+        utils.build_c_int_array(source_indices),
+        names_arr,
+        len(names_arr),
+        True,
+    )
+
+
+def batch_copy_group_membership(source_elements, source_groups, target_elements):
+    """Copy group membership from the source element to the target element.
+
+    :param source_elements: The elements to copy from.
+    :type source_elements: list(hou.Point) or list(hou.Prim) or list(hou.Vertex) or list(hou.Geometry)
+    :param source_groups: The groups to copy membership of.
+    :type source_groups: list(hou.PointGroup or hou.PrimGroup or hou.VertexGroup)ib)
+    :param target_elements: The elements to copy to.
+    :type target_elements: list(hou.Point) or list(hou.Prim) or list(hou.Vertex) or list(hou.Geometry)
+    :return:
+
+    """
+    num_elements = len(target_elements)
+
+    if num_elements != len(source_elements):
+        raise ValueError("Number of source and target elements must match")
+
+    target_type, target_geometry, target_entity_nums = utils.get_entity_data_from_list(
+        target_elements
+    )
+
+    # Make sure the target geometry is not read only.
+    if target_geometry.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    source_type, source_geometry, source_entity_nums = utils.get_entity_data_from_list(
+        source_elements
+    )
+
+    # Get the attribute owners from the elements.
+    target_owner = utils.get_attrib_owner_from_geometry_entity_type(target_type)
+    source_owner = utils.get_attrib_owner_from_geometry_entity_type(source_type)
+
+    # Get the group names, ensuring we only use group on the
+    # source's geometry.
+    group_names = [
+        group.name()
+        for group in source_groups
+        if utils.get_group_attrib_owner(group) == source_owner
+        and group.geometry().sopNode() == source_geometry.sopNode()
+    ]
+
+    # Construct a ctypes string array to pass the strings.
+    arr = utils.build_c_string_array(group_names)
+
+    _cpp_methods.batchCopyAttributeValues(
+        num_elements,
+        target_geometry,
+        target_owner,
+        utils.build_c_int_array(target_entity_nums),
+        source_geometry,
+        source_owner,
+        utils.build_c_int_array(source_entity_nums),
+        arr,
+        len(group_names),
+        True,
+    )
+
+
+def copy_packed_prims_to_points(
+    geometry, source_geometry, prim_list, point_list, copy_attribs=True, attribs=None, copy_groups=True, groups=None,
+):
+    """Copy packed primitives to points by index, optionally copying attributes.
+
+    :param geometry: The geometry to copy the primitives into.
+    :type geometry: hou.Geometry
+    :param source_geometry: The source geometry containing the primitives.
+    :type source_geometry: hou.Geometry
+    :param prim_list: The list of primitive numbers to copy.
+    :type prim_list: list(int)
+    :param point_list: The list of point numbers to copy onto.
+    :type point_list: list(int)
+    :param copy_attribs: Whether or not to copy primitive attributes and their values.
+    :type copy_attribs: bool
+    :param attribs: Optional list of attributes to copy. If None and copy_attribs is True, copies all primitive
+    attributes.
+    :type attribs: list(hou.Attrib)
+    :param copy_groups: Whether or not to copy primitive groups and their values.
+    :type copy_groups: bool
+    :param groups: Optional list of groups to copy. If None and copy_groups is True, copies all primitive groups.
+    :type groups: list(hou.PointGroup) or list(hou.PrimGroup)
+    :return:
+
+    """
+    # Make sure the geometry is not read only.
+    if geometry.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    if len(prim_list) != len(point_list):
+        raise ValueError("Point count does not match number of target prims")
+
+    prim_array = utils.build_c_int_array(prim_list)
+    point_array = utils.build_c_int_array(point_list)
+
+    _cpp_methods.mergePackedPrims(
+        geometry, source_geometry, prim_array, point_array, len(prim_array)
+    )
+
+    if copy_attribs:
+        if attribs is None:
+            attribs = source_geometry.primAttribs()
+
+        batch_copy_attributes_by_indices(
+            source_geometry,
+            hou.Prim,
+            prim_list,
+            attribs,
+            geometry,
+            hou.Prim,
+            list(range(len(geometry.iterPrims()))),
+        )
+
+    if copy_groups:
+        if groups is None:
+            groups = source_geometry.primGroups()
+
+        batch_copy_group_membership_by_indices(
+            source_geometry,
+            hou.Prim,
+            prim_list,
+            groups,
+            geometry,
+            hou.Prim,
+            list(range(len(geometry.iterPrims()))),
+        )
 
 
 def point_adjacent_polygons(prim):
@@ -908,7 +1072,7 @@ def connected_points(point):
     return utils.get_points_from_list(geometry, result)
 
 
-def connected_prims(point):
+def prims_connected_to_point(point):
     """Get all primitives that reference the point.
 
     :param point: The source point.
@@ -1015,7 +1179,7 @@ def set_vertex_string_attrib_values(geometry, name, values):
 
     """
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     attrib = geometry.findVertexAttrib(name)
@@ -1055,7 +1219,7 @@ def set_shared_point_string_attrib(geometry, name, value, group=None):
 
     """
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     attribute = geometry.findPointAttrib(name)
@@ -1101,7 +1265,7 @@ def set_shared_prim_string_attrib(geometry, name, value, group=None):
 
     """
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     attribute = geometry.findPrimAttrib(name)
@@ -1127,6 +1291,30 @@ def set_shared_prim_string_attrib(geometry, name, value, group=None):
         utils.string_encode(value),
         group_name,
     )
+
+
+def attribute_has_uninitialized_string_values(attribute):
+    """Check if an attribute has uninitialized string indices.
+
+    Uninitialized strings will appear as empty strings when viewed
+    don't actually correspond to "" when checked in a conditional
+    statement.  CONFUSING!
+
+    :param attribute: The attribute to check.
+    :type attribute: hou.Attrib
+    :return: Whether or not the attribute has uninitialized string values.
+    :rtype: bool
+
+    """
+    if attribute.dataType() != hou.attribData.String:
+        raise ValueError("Not a string attribute.")
+
+    geometry = attribute.geometry()
+
+    # Get the corresponding attribute type id.
+    type_id = utils.get_attrib_owner(attribute.type())
+
+    return _cpp_methods.hasUninitializedStringValues(geometry, type_id, attribute.name())
 
 
 def face_has_edge(face, point1, point2):
@@ -1198,7 +1386,7 @@ def insert_vertex(face, point, index):
     geometry = face.geometry()
 
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     _assert_prim_vertex_index(face, index)
@@ -1222,7 +1410,7 @@ def delete_vertex_from_face(face, index):
     geometry = face.geometry()
 
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     _assert_prim_vertex_index(face, index)
@@ -1246,7 +1434,7 @@ def set_face_vertex_point(face, index, point):
     geometry = face.geometry()
 
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     _assert_prim_vertex_index(face, index)
@@ -1324,30 +1512,10 @@ def reverse_prim(prim):
     geometry = prim.geometry()
 
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     _cpp_methods.reversePrimitive(geometry, prim.number())
-
-
-def make_primitive_points_unique(prim):
-    """Unique all the points that are in the primitive.
-
-    This function will unique all the points even if they are referenced by
-    other primitives.
-
-    :param prim: The primitive to unique the points of.
-    :type prim: hou.Prim
-    :return:
-
-    """
-    geometry = prim.geometry()
-
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    return _cpp_methods.makePrimitiveUnique(geometry, prim.number())
 
 
 def check_minimum_polygon_vertex_count(geometry, minimum_vertices, ignore_open=True):
@@ -1370,6 +1538,39 @@ def check_minimum_polygon_vertex_count(geometry, minimum_vertices, ignore_open=T
     )
 
 
+def geometry_has_prims_with_shared_vertex_points(geometry):
+    """Check if the geometry contains any primitives which have more than one
+    vertex referencing the same point.
+
+    :param geometry: The geometry to check.
+    :type geometry: hou.Geometry
+    :return: Whether or not the geometry has any primitives with shared vertex points.
+    :rtype: bool
+
+    """
+    return _cpp_methods.hasPrimsWithSharedVertexPoints(geometry)
+
+
+def get_primitives_with_shared_vertex_points(geometry):
+    """Get any primitives in the geometry which have more than one vertex
+    referencing the same point.
+
+    :param geometry: The geometry to check.
+    :type geometry: hou.Geometry
+    :return: A list of any primitives which have shared vertex points.
+    :rtype: tuple(hou.Prim)
+
+    """
+    result = _cpp_methods.getPrimsWithSharedVertexPoints(geometry)
+
+    # Return a tuple of the matching primitives if any were found.
+    if result:
+        return utils.get_prims_from_list(geometry, result)
+
+    # If none were found, return an empty tuple.
+    return ()
+
+
 def primitive_bounding_box(prim):
     """Get the bounding box of the primitive.
 
@@ -1390,159 +1591,6 @@ def primitive_bounding_box(prim):
     )
 
 
-def compute_point_normals(geometry):
-    """Computes the point normals for the geometry.
-
-    This is equivalent to using a Point sop, selecting 'Add Normal' and
-    leaving the default values.  It will add the 'N' attribute if it does not
-    exist.
-
-    :param geometry: The geometry to compute normals for.
-    :type geometry: hou.Geometry
-    :return:
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    _cpp_methods.computePointNormals(geometry)
-
-
-def add_point_normal_attribute(geometry):
-    """Add point normals to the geometry.
-
-    This function will only create the Normal attribute and will not
-    initialize the values.  See hou.Geometry.compute_point_normals().
-
-    :param geometry: The geometry to add a point normal attribute to.
-    :type geometry: hou.Geometry
-    :return: The new 'N' point attribute.
-    :rtype: hou.Attrib
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    _cpp_methods.addNormalAttribute(geometry)
-
-    return geometry.findPointAttrib("N")
-
-
-def add_point_velocity_attribute(geometry):
-    """Add point velocity to the geometry.
-
-    :param geometry: The geometry to add a point velocity attribute to.
-    :type geometry: hou.Geometry
-    :return: The new 'v' point attribute.
-    :rtype: hou.Attrib
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    _cpp_methods.addVelocityAttribute(geometry)
-
-    return geometry.findPointAttrib("v")
-
-
-def add_color_attribute(geometry, attrib_type):
-    """Add a color (Cd) attribute to the geometry.
-
-    Point, primitive and vertex colors are supported.
-
-    :param geometry: The geometry to add a color attribute to.
-    :type geometry: hou.Geometry
-    :param attrib_type: The type of attribute to add.
-    :type attrib_type: hou.attribType
-    :return: The new 'Cd' attribute.
-    :rtype: hou.Attrib
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    if attrib_type == hou.attribType.Global:
-        raise ValueError("Invalid attribute type.")
-
-    owner = utils.get_attrib_owner(attrib_type)
-
-    # Try to add the Cd attribute.
-    _cpp_methods.addDiffuseAttribute(geometry, owner)
-
-    return utils.find_attrib(geometry, attrib_type, "Cd")
-
-
-def convex_polygons(geometry, max_points=3):
-    """Convex the geometry into polygons with a certain number of points.
-
-    This operation is similar to using the Divide SOP and setting the 'Maximum
-    Edges'.
-
-    :param geometry: The geometry to convex.
-    :type geometry: hou.Geometry
-    :param max_points: The maximum points per face.
-    :type max_points: int
-    :return:
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    _cpp_methods.convexPolygons(geometry, max_points)
-
-
-def clip_geometry(geometry, origin, normal, dist=0, below=False, group=None):
-    """Clip this geometry along a plane.
-
-    :param geometry: The geometry to clip.
-    :type geometry: hou.Geometry
-    :param origin: The origin point of the operation.
-    :type origin: hou.Vector3
-    :param normal: The up vector of the clip plane.
-    :type normal: hou.Vector3
-    :param dist: The distance from the origin point to clip.
-    :type dist: float
-    :param below: Whether or not to clip below the plane instead of above.
-    :type below: bool
-    :param group: Optional primitive group to clip.
-    :type group: hou.PrimGroup
-    :return:
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    # If the group is valid, use that group's name.
-    if group:
-        group_name = group.name()
-
-    # If not, pass an empty string to signify no group.
-    else:
-        group_name = ""
-
-    # If we want to keep the primitives below the plane we need to offset
-    # the origin along the normal by the distance and then reverse
-    # the normal and set the distance to 0.
-    if below:
-        origin += normal * dist
-        normal *= -1
-        dist = 0
-
-    # Build a transform to modify the geometry so we can have the plane not
-    # centered at the origin.
-    xform = hou.hmath.buildTranslate(origin)
-
-    _cpp_methods.clipGeometry(
-        geometry, xform, normal.normalized(), dist, utils.string_encode(group_name)
-    )
-
-
 def destroy_empty_groups(geometry, attrib_type):
     """Remove any empty groups of the specified type.
 
@@ -1554,7 +1602,7 @@ def destroy_empty_groups(geometry, attrib_type):
 
     """
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     if attrib_type == hou.attribType.Global:
@@ -1564,79 +1612,6 @@ def destroy_empty_groups(geometry, attrib_type):
     attrib_owner = utils.get_attrib_owner(attrib_type)
 
     _cpp_methods.destroyEmptyGroups(geometry, attrib_owner)
-
-
-def destroy_unused_points(geometry, group=None):
-    """Remove any unused points.
-
-    If group is not None, only unused points within the group are removed.
-
-    :param geometry: The geometry to destroy unused points for.
-    :type geometry: hou.Geometry
-    :param group: Optional point group to restrict to.
-    :type group: hou.PointGroup
-    :return:
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    if group is not None:
-        _cpp_methods.destroyUnusedPoints(geometry, utils.string_encode(group.name()))
-
-    else:
-        _cpp_methods.destroyUnusedPoints(geometry, 0)
-
-
-def consolidate_points(geometry, distance=0.001, group=None):
-    """Consolidate points within a specified distance.
-
-    If group is not None, only points in that group are consolidated.
-
-    :param geometry: The geometry to whose points to consolidate.
-    :type geometry: hou.Geometry
-    :param distance: The consolidation distance.
-    :type distance: float
-    :param group: Optional point group to restrict to.
-    :type group: hou.PointGroup
-    :return:
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    if group is not None:
-        _cpp_methods.consolidatePoints(
-            geometry, distance, utils.string_encode(group.name())
-        )
-
-    else:
-        _cpp_methods.consolidatePoints(geometry, distance, 0)
-
-
-def unique_points(geometry, group=None):
-    """Unique points in the geometry.
-
-    If a point group is specified, only points in that group are made unique.
-
-    :param geometry: The geometry to whose points to unique.
-    :type geometry: hou.Geometry
-    :param group: Optional point group to restrict to.
-    :type group: hou.PointGroup
-    :return:
-
-    """
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    if group is not None:
-        _cpp_methods.uniquePoints(geometry, utils.string_encode(group.name()))
-
-    else:
-        _cpp_methods.uniquePoints(geometry, 0)
 
 
 def rename_group(group, new_name):
@@ -1654,7 +1629,7 @@ def rename_group(group, new_name):
     geometry = group.geometry()
 
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     # Ensure the new group doesn't have the same name.
@@ -1711,58 +1686,6 @@ def group_size(group):
     )
 
 
-def toggle_point_in_group(group, point):
-    """Toggle group membership for a point.
-
-    If the point is a part of the group, it will be removed.  If it isn't, it
-    will be added.
-
-    :param group: The group to toggle membership for.
-    :type group: hou.PointGroup
-    :param point: The point to toggle membership.
-    :type point: hou.Point
-    :return
-
-    """
-    geometry = group.geometry()
-
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    group_type = utils.get_group_type(group)
-
-    _cpp_methods.toggleGroupMembership(
-        geometry, utils.string_encode(group.name()), group_type, point.number()
-    )
-
-
-def toggle_prim_in_group(group, prim):
-    """Toggle group membership for a primitive.
-
-    If the primitive is a part of the group, it will be removed.  If it isn't,
-    it will be added.
-
-    :param group: The group to toggle membership for.
-    :type group: hou.PrimGroup
-    :param prim: The primitive to toggle membership.
-    :type prim: hou.Prim
-    :return
-
-    """
-    geometry = group.geometry()
-
-    # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
-        raise hou.GeometryPermissionError()
-
-    group_type = utils.get_group_type(group)
-
-    _cpp_methods.toggleGroupMembership(
-        geometry, utils.string_encode(group.name()), group_type, prim.number()
-    )
-
-
 def toggle_group_entries(group):
     """Toggle group membership for all elements in the group.
 
@@ -1777,7 +1700,7 @@ def toggle_group_entries(group):
     geometry = group.geometry()
 
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     group_type = utils.get_group_type(group)
@@ -1801,7 +1724,7 @@ def copy_group(group, new_group_name):
     geometry = group.geometry()
 
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     # Ensure the new group doesn't have the same name.
@@ -1862,6 +1785,34 @@ def groups_share_elements(group1, group2):
     )
 
 
+def set_group_string_attribute(group, attribute, value):
+    """Set a string attribute value to all members of a group.
+
+    :param group: The group to set the attribute for.
+    :type group: hou.PointGroup or hou.PrimGroup
+    :param attribute: The attribute to set.
+    :type attribute: hou.Attrib
+    :param value: The value to set.
+    :type value: str
+    :return:
+
+    """
+    geometry = group.geometry()
+
+    # Make sure the geometry is not read only.
+    if geometry.isReadOnly():
+        raise hou.GeometryPermissionError()
+
+    if attribute.dataType() != hou.attribData.String:
+        raise ValueError("Attribute must be a string.")
+
+    group_type = utils.get_group_type(group)
+
+    _cpp_methods.setGroupStringAttribute(
+        geometry, group_type, group.name(), attribute.name(), value
+    )
+
+
 def convert_prim_to_point_group(prim_group, new_group_name=None, destroy=True):
     """Create a new hou.Point group from the primitive group.
 
@@ -1881,7 +1832,7 @@ def convert_prim_to_point_group(prim_group, new_group_name=None, destroy=True):
     geometry = prim_group.geometry()
 
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     # If a new name isn't specified, use the current group name.
@@ -1923,7 +1874,7 @@ def convert_point_to_prim_group(point_group, new_group_name=None, destroy=True):
     geometry = point_group.geometry()
 
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     # If a new name isn't specified, use the current group name.
@@ -1970,7 +1921,7 @@ def group_ungrouped_points(geometry, group_name):
 
     """
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     if not group_name:
@@ -2008,7 +1959,7 @@ def group_ungrouped_prims(geometry, group_name):
 
     """
     # Make sure the geometry is not read only.
-    if is_geometry_read_only(geometry):
+    if geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
     if not group_name:
@@ -2283,26 +2234,6 @@ def is_parm_multiparm(parm):
     parm_template = parm.parmTemplate()
 
     return utils.is_parm_template_multiparm_folder(parm_template)
-
-
-def get_multiparm_instances_per_item(parm):
-    """Get the number of items in a multiparm instance.
-
-    :param parm: The parm to get multiparm instances for.
-    :type parm: hou.Parm or hou.ParmTuple
-    :return: The number of items in a multiparm instance.
-    :rtype: int
-
-    """
-    if not is_parm_multiparm(parm):
-        raise ValueError("Parameter is not a multiparm.")
-
-    if isinstance(parm, hou.Parm):
-        parm = parm.tuple()
-
-    return _cpp_methods.getMultiParmInstancesPerItem(
-        parm.node(), utils.string_encode(parm.name())
-    )
 
 
 def get_multiparm_instance_indices(parm, instance_index=False):
@@ -2747,30 +2678,6 @@ def node_author_name(node):
     return author.split("@")[0]
 
 
-def set_node_type_icon(node_type, icon_name):
-    """Set the node type's icon name.
-
-    :param node_type: The node type whose icon to set.
-    :type node_type: hou.NodeType
-    :param icon_name: The icon to set.
-    :type icon_name: str
-    :return:
-
-    """
-    _cpp_methods.setNodeTypeIcon(node_type, utils.string_encode(icon_name))
-
-
-def set_node_type_default_icon(node_type):
-    """Reset the node type's icon name to its default value.
-
-    :param node_type: The node type whose icon to set.
-    :type node_type: hou.NodeType
-    :return:
-
-    """
-    _cpp_methods.setNodeTypeDefaultIcon(node_type)
-
-
 def is_node_type_python(node_type):
     """Check if the node type represents a Python operator.
 
@@ -2873,7 +2780,7 @@ def vector_compute_dual(vector):
     return mat
 
 
-def is_identity_matrix(matrix):
+def matrix_is_identity(matrix):
     """Check if the matrix is the identity matrix.
 
     :param matrix: The matrix to check.
@@ -2897,7 +2804,7 @@ def is_identity_matrix(matrix):
     return matrix == hou.hmath.identityTransform()
 
 
-def set_matrix_translates(matrix, translates):
+def matrix_set_translates(matrix, translates):
     """Set the translation values of this matrix.
 
     :param matrix: The matrix to set the translate for..
@@ -2956,7 +2863,7 @@ def get_oriented_point_transform(point):
 
     """
     # Check for connected primitives.
-    prims = connected_prims(point)
+    prims = prims_connected_to_point(point)
 
     if prims:
         # Get the first one.  This is probably the only one unless you're doing

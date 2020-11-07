@@ -42,6 +42,10 @@ def _valid_to_convert_to_absolute_reference(parm):
             if not path.startswith(".."):
                 return False
 
+            # Can't convert parameters with keyframes/expressions.
+            if parm.keyframes():
+                return False
+
             # If the path is the same as the raw path then we can say that we
             # can show the menu item.  If the path is not the same as the
             # unexpanded we won't say yes because it would be some sort of an
@@ -80,6 +84,10 @@ def _valid_to_convert_to_relative_reference(parm):
 
             # Ignore paths which already seem to be relative.
             if not path.startswith("/"):
+                return False
+
+            # Can't convert parameters with keyframes/expressions.
+            if parm.keyframes():
                 return False
 
             # If the path is the same as the raw path then we can say that we
