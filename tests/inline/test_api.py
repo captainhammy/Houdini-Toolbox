@@ -1,5528 +1,3107 @@
-"""Test ht.inline.api module."""
+"""Integration tests for ht.inline.api."""
 
 # =============================================================================
 # IMPORTS
 # =============================================================================
 
 # Standard Library Imports
-from builtins import str
-from builtins import range
-from builtins import object
+# from builtins import str
+# from builtins import range
+import os
+import tempfile
 
 # Third Party Imports
 import pytest
 
-pytest.skip("Skipping", allow_module_level=True)
-
 # Houdini Toolbox Imports
-from ht.inline import api
+import ht.inline.api
 
 # Houdini Imports
 import hou
+
+# =============================================================================
+# GLOBALS
+# =============================================================================
+
+OBJ = hou.node("/obj")
+
+
+# =============================================================================
+# FIXTURES
+# =============================================================================
+
+
+@pytest.fixture(scope="module")
+def load_test_file():
+    """Load the test hip file."""
+    hou.hipFile.load(
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "data",
+            "test_api_integration.hip",
+        ),
+        ignore_load_warnings=True,
+    )
+
+
+# Need to ensure the hip file gets loaded.
+pytestmark = pytest.mark.usefixtures("load_test_file")
 
 
 # =============================================================================
 # TESTS
 # =============================================================================
 
-# TODO: Test global dicts
+def test__get_names_in_folder():
+    """Test ht.inline.api._get_names_in_folder."""
+    node = OBJ.node("test__get_names_in_folder/null")
+    parm_template = node.parm("base").parmTemplate()
 
-# Non-Public Functions
+    result = ht.inline.api._get_names_in_folder(parm_template)
 
-
-class Test__assert_prim_vertex_index(object):
-    """Test ht.inline.api._assert_prim_vertex_index."""
-
-    def test_less_than_0(self, mocker):
-        mock_prim = mocker.MagicMock(spec=hou.Prim)
-
-        with pytest.raises(IndexError):
-            api._assert_prim_vertex_index(mock_prim, -1)
-
-    def test_equal(self, mocker):
-        mocker.patch("ht.inline.api.num_prim_vertices", return_value=5)
-
-        mock_prim = mocker.MagicMock(spec=hou.Prim)
-
-        with pytest.raises(IndexError):
-            api._assert_prim_vertex_index(mock_prim, 5)
-
-    def test_greater_than(self, mocker):
-        mocker.patch("ht.inline.api.num_prim_vertices", return_value=5)
-
-        mock_prim = mocker.MagicMock(spec=hou.Prim)
-
-        with pytest.raises(IndexError):
-            api._assert_prim_vertex_index(mock_prim, 6)
-
-    def test_valid(self, mocker):
-        mocker.patch("ht.inline.api.num_prim_vertices", return_value=5)
-
-        mock_prim = mocker.MagicMock(spec=hou.Prim)
-
-        api._assert_prim_vertex_index(mock_prim, 4)
+    assert result == ('stringparm#', 'vecparm#', 'collapse_intparm#', 'simple_intparm#', 'tab_intparm1#', 'tab_intparm2#', 'inner_multi#')
 
 
-# Functions
+def test_clear_caches_specific():
+    OBJ.node("test_clear_caches").displayNode().cook(True)
+    result = hou.hscript("sopcache -l")[0].split("\n")[1]
+    old_nodes = int(result.split(": ")[1])
+
+    ht.inline.api.clear_caches(["SOP Cache"])
+
+    result = hou.hscript("sopcache -l")[0].split("\n")[1]
+    current_nodes = int(result.split(": ")[1])
+
+    assert current_nodes != old_nodes
 
 
-class Test_clear_caches(object):
-    """Test ht.inline.api.clear_caches."""
+def test_clear_caches_all():
+    OBJ.node("test_clear_caches").displayNode().cook(True)
+    result = hou.hscript("sopcache -l")[0].split("\n")[1]
+    old_nodes = int(result.split(": ")[1])
 
-    def test_default_none(self, mocker):
-        """Test with the default arg of None."""
-        mock_clear = mocker.patch("ht.inline.api._cpp_methods.clearCacheByName")
-        mock_encode = mocker.patch("ht.inline.utils.string_encode")
+    ht.inline.api.clear_caches()
 
-        api.clear_caches()
+    result = hou.hscript("sopcache -l")[0].split("\n")[1]
+    current_nodes = int(result.split(": ")[1])
 
-        mock_encode.assert_called_with("")
-        mock_clear.assert_called_with(mock_encode.return_value)
-
-    def test_args(self, mocker):
-        """Test with the default arg of None."""
-        mock_clear = mocker.patch("ht.inline.api._cpp_methods.clearCacheByName")
-        mock_encode = mocker.patch("ht.inline.utils.string_encode")
-
-        mock_name1 = mocker.MagicMock(spec=str)
-        mock_name2 = mocker.MagicMock(spec=str)
-
-        api.clear_caches([mock_name1, mock_name2])
-
-        mock_encode.assert_has_calls(
-            [mocker.call(mock_name1), mocker.call(mock_name2)]
-        )
-
-        mock_clear.assert_has_calls([mocker.call(mock_encode.return_value), mocker.call(mock_encode.return_value)])
+    assert current_nodes != old_nodes
 
 
-def test_is_rendering(mocker):
+def test_run_python_statements(fix_hou_exceptions):
+    """Test ht.inline.api.run_python_statements."""
+    if hasattr(hou.session, "pwd_test"):
+        delattr(hou.session, "pwd_test")
+
+    cwd = hou.pwd()
+    hou.setPwd(hou.node("/obj"))
+
+    code = """hou.session.pwd_test = hou.pwd()"""
+
+    ht.inline.api.run_python_statements(code, use_new_context=False)
+
+    assert hou.session.pwd_test == hou.node("/obj")
+
+    code = """hou.session.pwd_test = hou.pwd()"""
+
+    ht.inline.api.run_python_statements(code)
+
+    assert hou.session.pwd_test == hou.node("/obj")
+    assert hou.pwd() == hou.node("/obj")
+
+    hou.setPwd(cwd)
+
+    code = """xxx = xxx"""
+
+    # Test when an exception occurs in the code.
+    with pytest.raises(ht.inline.api.RunPyStatementsError):
+        ht.inline.api.run_python_statements(code)
+
+
+def test_clear_user_data(obj_test_node):
+    """Test ht.inline.api.clear_user_data."""
+    # Store the current stack since the main purpose of this function is to
+    # not generate any undo entries.
+    current_undo_stack = hou.undos.undoLabels()
+
+    ht.inline.api.clear_user_data(obj_test_node)
+
+    assert obj_test_node.userDataDict() == {}
+
+    # Ensure no entries were created.
+    assert hou.undos.undoLabels() == current_undo_stack
+
+
+def test_has_user_data(obj_test_node):
+    """Test ht.inline.api.has_user_data."""
+    assert ht.inline.api.has_user_data(obj_test_node, "data_to_remove")
+
+    assert not ht.inline.api.has_user_data(obj_test_node, "nonexistant_data")
+
+    user_data = obj_test_node.userDataDict()
+
+    assert "data_to_remove" in user_data
+    assert "nonexistant_data" not in user_data
+
+
+def test_set_user_data(obj_test_node):
+    """Test ht.inline.api.set_user_data."""
+    # Store the current stack since the main purpose of this function is to
+    # not generate any undo entries.
+    current_undo_stack = hou.undos.undoLabels()
+
+    user_data = obj_test_node.userDataDict()
+
+    assert "set_data" not in obj_test_node.userDataDict()
+
+    ht.inline.api.set_user_data(obj_test_node, "set_data", "data")
+
+    assert "set_data" in obj_test_node.userDataDict()
+
+    # Ensure no entries were created.
+    assert hou.undos.undoLabels() == current_undo_stack
+
+
+def test_delete_user_data(obj_test_node):
+    """Test ht.inline.api.delete_user_data."""
+    # Store the current stack since the main purpose of this function is to
+    # not generate any undo entries.
+    current_undo_stack = hou.undos.undoLabels()
+
+    user_data = obj_test_node.userDataDict()
+
+    assert "data_to_remove" in obj_test_node.userDataDict()
+
+    ht.inline.api.delete_user_data(obj_test_node, "data_to_remove")
+
+    assert "data_to_remove" not in obj_test_node.userDataDict()
+
+    # Ensure no entries were created.
+    assert hou.undos.undoLabels() == current_undo_stack
+
+@pytest.mark.parametrize("value_to_hash, expected", [
+    ("foo", 143856),
+    ("foo1", 5322721),
+    ("fooo", 5322783),
+    ("fo", 3885),
+    ("123", 68982),
+    ("1234", 2552386),
+    ("1230", 2552382),
+    ("1230", 2552382),
+    ("123_123", 439236239),
+    ("foo_bar", -968684932),
+])
+def test_hash_string(value_to_hash, expected):
+    """Test ht.inline.api.hash_string."""
+    assert ht.inline.api.hash_string(value_to_hash) == expected
+
+
+def test_is_rendering(obj_test_node):
     """Test ht.inline.api.is_rendering."""
-    mock_rendering = mocker.patch("ht.inline.api._cpp_methods.isRendering")
+    # Force cook the node which should fail.  We manually catch the exception
+    # because it comes from within Houdini and we can't patch the Python exception.
+    try:
+        obj_test_node.node("python").cook(force=True)
 
-    result = api.is_rendering()
+    except hou.OperationFailed:
+        pass
 
-    assert result == mock_rendering.return_value
+    # The test didn't fail for some reason so we need to fail the test.
+    else:
+        raise RuntimeError("Cooking succeeded but should have failed.")
 
+    # Execute the ROP which should cool the node and have it not fail since
+    # it will be rendering.
+    try:
+        obj_test_node.node("render").render()
 
-class Test_get_global_variable_names(object):
-    """Test ht.inline.api.get_global_variable_names."""
-
-    def test_default_arg(self, mocker):
-        mock_get_globals = mocker.patch(
-            "ht.inline.api._cpp_methods.getGlobalVariableNames"
-        )
-        mock_clean = mocker.patch("ht.inline.utils.clean_string_values")
-
-        result = api.get_global_variable_names()
-
-        assert result == mock_clean.return_value
-
-        mock_get_globals.assert_called_with(False)
-        mock_clean.assert_called_with(mock_get_globals.return_value)
-
-    def test(self, mocker):
-        mock_get_globals = mocker.patch(
-            "ht.inline.api._cpp_methods.getGlobalVariableNames"
-        )
-        mock_clean = mocker.patch("ht.inline.utils.clean_string_values")
-
-        mock_dirty = mocker.MagicMock(spec=bool)
-
-        result = api.get_global_variable_names(mock_dirty)
-
-        assert result == mock_clean.return_value
-
-        mock_get_globals.assert_called_with(mock_dirty)
-        mock_clean.assert_called_with(mock_get_globals.return_value)
+    # The cook failed for some reason so fail the test.
+    except hou.OperationFailed:
+        raise RuntimeError("Render failed but should have succeeded.")
 
 
-class Test_get_variable_names(object):
-    """Test ht.inline.api.get_variable_names."""
+def test_get_global_variable_names():
+    hou.hscript("set -g GLOBAL=123")
+    result = ht.inline.api.get_global_variable_names()
 
-    def test_default_arg(self, mocker):
-        mock_get_globals = mocker.patch("ht.inline.api._cpp_methods.getVariableNames")
-        mock_clean = mocker.patch("ht.inline.utils.clean_string_values")
-
-        result = api.get_variable_names()
-
-        assert result == mock_clean.return_value
-
-        mock_get_globals.assert_called_with(False)
-        mock_clean.assert_called_with(mock_get_globals.return_value)
-
-    def test(self, mocker):
-        mock_get_globals = mocker.patch("ht.inline.api._cpp_methods.getVariableNames")
-        mock_clean = mocker.patch("ht.inline.utils.clean_string_values")
-
-        mock_dirty = mocker.MagicMock(spec=bool)
-
-        result = api.get_variable_names(mock_dirty)
-
-        assert result == mock_clean.return_value
-
-        mock_get_globals.assert_called_with(mock_dirty)
-        mock_clean.assert_called_with(mock_get_globals.return_value)
+    for name in ("ACTIVETAKE", "DRIVER", "E", "HIP", "GLOBAL"):
+        assert name in result
 
 
-class Test_get_variable_value(object):
+def test_get_global_variable_names_dirty():
+    name = "TEST_DIRTY_GLOBAL_VAR"
+
+    result = ht.inline.api.get_global_variable_names()
+
+    assert name not in result
+
+    hou.hscript("set -g {}=6666".format(name))
+
+    result = ht.inline.api.get_global_variable_names(dirty=True)
+
+    assert name in result
+
+    hou.hscript("varchange")
+
+    result = ht.inline.api.get_global_variable_names(dirty=True)
+
+    assert name not in result
+
+
+def test_get_variable_names():
+    hou.hscript("set -g LOCAL=123")
+
+    result = ht.inline.api.get_variable_names()
+
+    for name in ("ACTIVETAKE", "DRIVER", "E", "HIP", "LOCAL"):
+        assert name in result
+
+
+def test_get_variable_names_dirty():
+    name = "TEST_DIRTY_LOCAL_VAR"
+
+    result = ht.inline.api.get_global_variable_names()
+
+    assert name not in result
+
+    hou.hscript("set {}=6666".format(name))
+
+    result = ht.inline.api.get_variable_names(dirty=True)
+
+    assert name in result
+
+    hou.hscript("varchange")
+
+    result = ht.inline.api.get_variable_names(dirty=True)
+
+    assert name not in result
+
+
+def test_get_variable_value():
     """Test ht.inline.api.get_variable_value."""
+    hip_name = ht.inline.api.get_variable_value("HIPNAME")
 
-    def test_not_in_list(self, mocker):
-        mocker.patch("ht.inline.api.get_variable_names", return_value=())
-        mock_get_var = mocker.patch("ht.inline.api._cpp_methods.getVariableValue")
-
-        mock_name = mocker.MagicMock(spec=str)
-
-        result = api.get_variable_value(mock_name)
-
-        assert result is None
-
-        mock_get_var.assert_not_called()
-
-    def test_syntax_error(self, mocker):
-        mock_name = mocker.MagicMock(spec=str)
-
-        mocker.patch("ht.inline.api.get_variable_names", return_value=(mock_name,))
-        mock_get_var = mocker.patch("ht.inline.api._cpp_methods.getVariableValue")
-        mock_eval = mocker.patch("ht.inline.api.ast.literal_eval")
-
-        mock_eval.side_effect = SyntaxError
-
-        result = api.get_variable_value(mock_name)
-
-        assert result == mock_get_var.return_value
-
-        mock_get_var.assert_called_with(mock_name)
-        mock_eval.assert_called_with(mock_get_var.return_value)
-
-    def test_value_error(self, mocker):
-        mock_name = mocker.MagicMock(spec=str)
-
-        mocker.patch("ht.inline.api.get_variable_names", return_value=(mock_name,))
-        mock_get_var = mocker.patch("ht.inline.api._cpp_methods.getVariableValue")
-        mock_eval = mocker.patch("ht.inline.api.ast.literal_eval")
-
-        mock_eval.side_effect = ValueError
-
-        result = api.get_variable_value(mock_name)
-
-        assert result == mock_get_var.return_value
-
-        mock_get_var.assert_called_with(mock_name)
-        mock_eval.assert_called_with(mock_get_var.return_value)
-
-    def test(self, mocker):
-        mock_name = mocker.MagicMock(spec=str)
-
-        mocker.patch("ht.inline.api.get_variable_names", return_value=(mock_name,))
-        mock_get_var = mocker.patch("ht.inline.api._cpp_methods.getVariableValue")
-        mock_eval = mocker.patch("ht.inline.api.ast.literal_eval")
-
-        result = api.get_variable_value(mock_name)
-
-        assert result == mock_eval.return_value
-
-        mock_get_var.assert_called_with(mock_name)
-        mock_eval.assert_called_with(mock_get_var.return_value)
+    assert hip_name == os.path.splitext(os.path.basename(hou.hipFile.path()))[0]
 
 
-class Test_set_variable(object):
+def test_get_variable_value__syntax_error():
+    """Test ht.inline.api.get_variable_value."""
+    hou.hscript("set ERROR_THING=1.1.1")
+
+    result = ht.inline.api.get_variable_value("ERROR_THING")
+
+    assert result == '1.1.1'
+
+
+def test_set_variable():
     """Test ht.inline.api.set_variable."""
+    value = 22
+    ht.inline.api.set_variable("awesome", value)
 
-    def test_default_arg(self, mocker):
-        mock_set = mocker.patch("ht.inline.api._cpp_methods.setVariable")
-
-        mock_name = mocker.MagicMock(spec=str)
-        mock_value = mocker.MagicMock()
-
-        api.set_variable(mock_name, mock_value)
-
-        mock_set.assert_called_with(mock_name, str(mock_value).encode("utf-8"), False)
-
-    def test(self, mocker):
-        mock_set = mocker.patch("ht.inline.api._cpp_methods.setVariable")
-
-        mock_name = mocker.MagicMock(spec=str)
-        mock_value = mocker.MagicMock()
-        mock_global = mocker.MagicMock(spec=bool)
-
-        api.set_variable(mock_name, mock_value, mock_global)
-
-        mock_set.assert_called_with(mock_name, str(mock_value).encode("utf-8"), mock_global)
+    assert ht.inline.api.get_variable_value("awesome") == 22
 
 
-def test_unset_variable(mocker):
+def test_unset_variable():
     """Test ht.inline.api.unset_variable."""
-    mock_unset = mocker.patch("ht.inline.api._cpp_methods.unsetVariable")
+    ht.inline.api.set_variable("tester", 10)
+    ht.inline.api.unset_variable("tester")
 
-    mock_name = mocker.MagicMock(spec=str)
-
-    api.unset_variable(mock_name)
-
-    mock_unset.assert_called_with(mock_name)
+    assert ht.inline.api.get_variable_value("tester") is None
 
 
-def test_emit_var_change(mocker):
+def test_emit_var_change():
     """Test ht.inline.api.emit_var_change."""
-    mock_varchange = mocker.patch("ht.inline.api._cpp_methods.emitVarChange")
+    parm = hou.parm("/obj/test_emit_var_change/file1/file")
 
-    api.emit_var_change()
+    string = "something_$VARCHANGE.bgeo"
 
-    mock_varchange.assert_called()
+    parm.set(string)
+
+    path = parm.eval()
+
+    assert path == string.replace("$VARCHANGE", "")
+
+    ht.inline.api.set_variable("VARCHANGE", 22)
+
+    ht.inline.api.emit_var_change()
+
+    new_path = parm.eval()
+
+    # Test the paths aren't the same.
+    assert path != new_path
+
+    # Test the update was successful.
+    assert new_path == string.replace("$VARCHANGE", "22")
 
 
-def test_expand_range(mocker):
+def test_expand_range():
     """Test ht.inline.api.expand_range."""
-    mock_expand = mocker.patch("ht.inline.api._cpp_methods.expandRange")
+    values = ht.inline.api.expand_range("0-5 10-20:2 64 65-66")
+    target = (0, 1, 2, 3, 4, 5, 10, 12, 14, 16, 18, 20, 64, 65, 66)
 
-    mock_pattern = mocker.MagicMock(spec=str)
-
-    result = api.expand_range(mock_pattern)
-
-    assert result == tuple(mock_expand.return_value)
-
-    mock_expand.assert_called_with(mock_pattern)
+    assert values == target
 
 
-def test_is_geometry_read_only(mocker):
-    """Test ht.inline.api.is_geometry_read_only."""
-    mock_handle = mocker.MagicMock(spec=hou._GUDetailHandle)
+class Test_geometry_has_prims_with_shared_vertex_points(object):
+    """Test ht.inline.api.geometry_has_prims_with_shared_vertex_points."""
 
-    mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-    mock_geometry._guDetailHandle.return_value = mock_handle
+    def test_true(self, obj_test_geo):
+        assert ht.inline.api.geometry_has_prims_with_shared_vertex_points(obj_test_geo)
 
-    result = api.is_geometry_read_only(mock_geometry)
-
-    assert result == mock_handle.isReadOnly.return_value
-
-    mock_handle.destroy.assert_called()
+    def test_false(self, obj_test_geo):
+        assert not ht.inline.api.geometry_has_prims_with_shared_vertex_points(obj_test_geo)
 
 
-def test_num_points(mocker):
+class Test_get_primitives_with_shared_vertex_points(object):
+    """Test ht.inline.api.get_primitives_with_shared_vertex_points."""
+
+    def test_shared(self, obj_test_geo):
+        result = ht.inline.api.get_primitives_with_shared_vertex_points(obj_test_geo)
+        assert result == (obj_test_geo.prims()[-1], )
+
+    def test_none(self, obj_test_geo):
+        result = ht.inline.api.get_primitives_with_shared_vertex_points(obj_test_geo)
+        assert not result
+
+
+def test_num_points(obj_test_geo):
     """Test ht.inline.api.num_points."""
-    mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-    result = api.num_points(mock_geometry)
-
-    assert result == mock_geometry.intrinsicValue.return_value
-    mock_geometry.intrinsicValue.assert_called_with("pointcount")
+    assert ht.inline.api.num_points(obj_test_geo) == 5000
 
 
-def test_num_prims(mocker):
+def test_num_prims(obj_test_geo):
     """Test ht.inline.api.num_prims."""
-    mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-    result = api.num_prims(mock_geometry)
-
-    assert result == mock_geometry.intrinsicValue.return_value
-    mock_geometry.intrinsicValue.assert_called_with("primitivecount")
-
-
-def test_num_vertices(mocker):
-    """Test ht.inline.api.num_vertices."""
-    mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-    result = api.num_vertices(mock_geometry)
-
-    assert result == mock_geometry.intrinsicValue.return_value
-    mock_geometry.intrinsicValue.assert_called_with("vertexcount")
-
-
-def test_num_prim_vertices(mocker):
-    """Test ht.inline.api.num_prim_vertices."""
-    mock_prim = mocker.MagicMock(spec=hou.Prim)
-
-    result = api.num_prim_vertices(mock_prim)
-
-    assert result == mock_prim.intrinsicValue.return_value
-    mock_prim.intrinsicValue.assert_called_with("vertexcount")
-
-
-class Test_pack_geometry(object):
-    """Test ht.inline.api.pack_geometry."""
-
-    def test_geo_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_source = mocker.MagicMock(spec=hou.Geometry)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.pack_geometry(mock_geometry, mock_source)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_source_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", side_effect=(False, True)
-        )
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_source = mocker.MagicMock(spec=hou.Geometry)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.pack_geometry(mock_geometry, mock_source)
-
-        mock_read_only.assert_has_calls(
-            [mocker.call(mock_geometry), mocker.call(mock_source)]
-        )
-
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_pack = mocker.patch("ht.inline.api._cpp_methods.packGeometry")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_source = mocker.MagicMock(spec=hou.Geometry)
-
-        result = api.pack_geometry(mock_geometry, mock_source)
-
-        assert result == mock_geometry.iterPrims.return_value.__getitem__.return_value
-
-        mock_geometry.iterPrims.return_value.__getitem__.assert_called_with(-1)
-
-        mock_read_only.assert_has_calls(
-            [mocker.call(mock_geometry), mocker.call(mock_source)]
-        )
-
-        mock_pack.assert_called_with(mock_source, mock_geometry)
-
-
-class Test_sort_geometry_by_attribute(object):
-    """Test ht.inline.api.sort_geometry_by_attribute."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_attribute = mocker.MagicMock(spec=hou.Attrib)
-        mock_index = mocker.MagicMock(spec=int)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.sort_geometry_by_attribute(mock_geometry, mock_attribute, mock_index)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_index_out_of_range(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_attribute = mocker.MagicMock(spec=hou.Attrib)
-        mock_attribute.size.return_value = 5
-
-        with pytest.raises(IndexError):
-            api.sort_geometry_by_attribute(mock_geometry, mock_attribute, 10)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_global_attrib(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_attribute = mocker.MagicMock(spec=hou.Attrib)
-        mock_attribute.size.return_value = 5
-        mock_attribute.type.return_value = hou.attribType.Global
-
-        with pytest.raises(ValueError):
-            api.sort_geometry_by_attribute(mock_geometry, mock_attribute, 1)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_default_arg(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
-        mock_sort = mocker.patch("ht.inline.api._cpp_methods.sortGeometryByAttribute")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_attrib_type = hou.attribType.Point
-
-        mock_attribute = mocker.MagicMock(spec=hou.Attrib)
-        mock_attribute.size.return_value = 5
-        mock_attribute.type.return_value = mock_attrib_type
-
-        api.sort_geometry_by_attribute(mock_geometry, mock_attribute, 1)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_get_owner.assert_called_with(mock_attrib_type)
-
-        mock_sort.assert_called_with(
-            mock_geometry,
-            mock_get_owner.return_value,
-            mock_attribute.name.return_value,
-            1,
-            False,
-        )
-
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
-        mock_sort = mocker.patch("ht.inline.api._cpp_methods.sortGeometryByAttribute")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_attrib_type = hou.attribType.Point
-
-        mock_attribute = mocker.MagicMock(spec=hou.Attrib)
-        mock_attribute.size.return_value = 5
-        mock_attribute.type.return_value = mock_attrib_type
-
-        mock_reverse = mocker.MagicMock(spec=bool)
-
-        api.sort_geometry_by_attribute(mock_geometry, mock_attribute, 1, mock_reverse)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_get_owner.assert_called_with(mock_attrib_type)
-
-        mock_sort.assert_called_with(
-            mock_geometry,
-            mock_get_owner.return_value,
-            mock_attribute.name.return_value,
-            1,
-            mock_reverse,
-        )
-
-
-class Test_sort_geometry_along_axis(object):
-    """Test ht.inline.api.sort_geometry_along_axis."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_geometry_type = mocker.MagicMock(spec=hou.geometryType)
-        mock_axis = mocker.MagicMock(spec=int)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.sort_geometry_along_axis(mock_geometry, mock_geometry_type, mock_axis)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_index_out_of_range(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_geometry_type = mocker.MagicMock(spec=hou.geometryType)
-
-        with pytest.raises(ValueError):
-            api.sort_geometry_along_axis(mock_geometry, mock_geometry_type, 4)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_invalid_type(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geo_type = hou.geometryType.Edges
-        index = 1
-
-        with pytest.raises(ValueError):
-            api.sort_geometry_along_axis(mock_geometry, geo_type, index)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_points(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_owner = mocker.patch(
-            "ht.inline.utils.get_attrib_owner_from_geometry_type"
-        )
-        mock_sort = mocker.patch("ht.inline.api._cpp_methods.sortGeometryAlongAxis")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geo_type = hou.geometryType.Points
-        index = 1
-
-        api.sort_geometry_along_axis(mock_geometry, geo_type, index)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_get_owner.assert_called_with(geo_type)
-
-        mock_sort.assert_called_with(mock_geometry, mock_get_owner.return_value, index)
-
-    def test_prims(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_owner = mocker.patch(
-            "ht.inline.utils.get_attrib_owner_from_geometry_type"
-        )
-        mock_sort = mocker.patch("ht.inline.api._cpp_methods.sortGeometryAlongAxis")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geo_type = hou.geometryType.Primitives
-        index = 1
-
-        api.sort_geometry_along_axis(mock_geometry, geo_type, index)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_get_owner.assert_called_with(geo_type)
-
-        mock_sort.assert_called_with(mock_geometry, mock_get_owner.return_value, index)
+    assert ht.inline.api.num_prims(obj_test_geo) == 12
 
 
 class Test_sort_geometry_by_values(object):
     """Test ht.inline.api.sort_geometry_by_values."""
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_geometry_type = mocker.MagicMock(spec=hou.geometryType)
-        mock_values = mocker.MagicMock(spec=list)
-
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
         with pytest.raises(hou.GeometryPermissionError):
-            api.sort_geometry_by_values(mock_geometry, mock_geometry_type, mock_values)
+            ht.inline.api.sort_geometry_by_values(obj_test_geo, None, None)
 
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_points_mismatch(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_num_points = mocker.patch("ht.inline.api.num_points")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Points
-
-        mock_values = mocker.MagicMock(spec=list)
-
+    def test_not_enough_points(self, fix_hou_exceptions, obj_test_geo_copy):
         with pytest.raises(hou.OperationFailed):
-            api.sort_geometry_by_values(mock_geometry, geometry_type, mock_values)
+            ht.inline.api.sort_geometry_by_values(obj_test_geo_copy, hou.geometryType.Points, [1])
 
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_num_points.assert_called_with(mock_geometry)
-
-    def test_points(self, mocker, fix_hou_exceptions):
-        num_pt = 3
-
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_num_points = mocker.patch("ht.inline.api.num_points", return_value=num_pt)
-        mock_get_owner = mocker.patch(
-            "ht.inline.utils.get_attrib_owner_from_geometry_type"
-        )
-        mock_build = mocker.patch("ht.inline.utils.build_c_double_array")
-        mock_sort = mocker.patch("ht.inline.api._cpp_methods.sortGeometryByValues")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Points
-
-        mock_values = mocker.MagicMock(spec=list)
-
-        mock_values.__len__.return_value = num_pt
-
-        api.sort_geometry_by_values(mock_geometry, geometry_type, mock_values)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_num_points.assert_called_with(mock_geometry)
-
-        mock_get_owner.assert_called_with(geometry_type)
-
-        mock_build.assert_called_with(mock_values)
-
-        mock_sort.assert_called_with(
-            mock_geometry, mock_get_owner.return_value, mock_build.return_value
-        )
-
-    def test_prims_mismatch(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_num_prims = mocker.patch("ht.inline.api.num_prims")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Primitives
-
-        mock_values = mocker.MagicMock(spec=list)
-
+    def test_not_enough_prims(self, fix_hou_exceptions, obj_test_geo_copy):
         with pytest.raises(hou.OperationFailed):
-            api.sort_geometry_by_values(mock_geometry, geometry_type, mock_values)
+            ht.inline.api.sort_geometry_by_values(obj_test_geo_copy, hou.geometryType.Primitives, [1, 2])
 
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_num_prims.assert_called_with(mock_geometry)
-
-    def test_prims(self, mocker, fix_hou_exceptions):
-        num_pr = 3
-
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_num_prims = mocker.patch("ht.inline.api.num_prims", return_value=num_pr)
-        mock_get_owner = mocker.patch(
-            "ht.inline.utils.get_attrib_owner_from_geometry_type"
-        )
-        mock_build = mocker.patch("ht.inline.utils.build_c_double_array")
-        mock_sort = mocker.patch("ht.inline.api._cpp_methods.sortGeometryByValues")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Primitives
-
-        mock_values = mocker.MagicMock(spec=list)
-        mock_values.__len__.return_value = num_pr
-
-        api.sort_geometry_by_values(mock_geometry, geometry_type, mock_values)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_num_prims.assert_called_with(mock_geometry)
-
-        mock_get_owner.assert_called_with(geometry_type)
-
-        mock_build.assert_called_with(mock_values)
-
-        mock_sort.assert_called_with(
-            mock_geometry, mock_get_owner.return_value, mock_build.return_value
-        )
-
-    def test_invalid(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Edges
-
-        mock_values = mocker.MagicMock(spec=list)
-
+    def test_invalid_geometry_type(self, fix_hou_exceptions, obj_test_geo_copy):
         with pytest.raises(ValueError):
-            api.sort_geometry_by_values(mock_geometry, geometry_type, mock_values)
+            ht.inline.api.sort_geometry_by_values(obj_test_geo_copy, None, [1])
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_points(self, obj_test_geo_copy):
+        values = obj_test_geo_copy.pointFloatAttribValues("id")
 
+        ht.inline.api.sort_geometry_by_values(obj_test_geo_copy, hou.geometryType.Points, values)
 
-class Test_sort_geometry_randomly(object):
-    """Test ht.inline.api.sort_geometry_randomly."""
+        assert list(obj_test_geo_copy.pointFloatAttribValues("id")) == sorted(values)
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
+    def test_prims(self, obj_test_geo_copy):
+        values = obj_test_geo_copy.primFloatAttribValues("id")
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = mocker.MagicMock(spec=hou.geometryType)
-        mock_seed = mocker.MagicMock(spec=int)
+        ht.inline.api.sort_geometry_by_values(obj_test_geo_copy, hou.geometryType.Primitives, values)
 
-        with pytest.raises(hou.GeometryPermissionError):
-            api.sort_geometry_randomly(mock_geometry, geometry_type, mock_seed)
+        assert list(obj_test_geo_copy.primFloatAttribValues("id")) == sorted(values)
 
-        mock_read_only.assert_called_with(mock_geometry)
 
-    def test_invalid_seed_type(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = mocker.MagicMock(spec=hou.geometryType)
-        mock_seed = mocker.MagicMock(spec=str)
-
-        with pytest.raises(TypeError):
-            api.sort_geometry_randomly(mock_geometry, geometry_type, mock_seed)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_invalid_geometry_type(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Edges
-
-        mock_seed = mocker.MagicMock(spec=int)
-
-        with pytest.raises(ValueError):
-            api.sort_geometry_randomly(mock_geometry, geometry_type, mock_seed)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_points_int(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_owner = mocker.patch(
-            "ht.inline.utils.get_attrib_owner_from_geometry_type"
-        )
-        mock_sort = mocker.patch("ht.inline.api._cpp_methods.sortGeometryRandomly")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Points
-        mock_seed = mocker.MagicMock(spec=int)
-
-        api.sort_geometry_randomly(mock_geometry, geometry_type, mock_seed)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_get_owner.assert_called_with(geometry_type)
-
-        mock_sort.assert_called_with(
-            mock_geometry, mock_get_owner.return_value, mock_seed
-        )
-
-    def test_prims_float(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_owner = mocker.patch(
-            "ht.inline.utils.get_attrib_owner_from_geometry_type"
-        )
-        mock_sort = mocker.patch("ht.inline.api._cpp_methods.sortGeometryRandomly")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Primitives
-        mock_seed = mocker.MagicMock(spec=float)
-
-        api.sort_geometry_randomly(mock_geometry, geometry_type, mock_seed)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_get_owner.assert_called_with(geometry_type)
-
-        mock_sort.assert_called_with(
-            mock_geometry, mock_get_owner.return_value, mock_seed
-        )
-
-
-class Test_shift_geometry_elements(object):
-    """Test ht.inline.api.shift_geometry_elements."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = mocker.MagicMock(spec=hou.geometryType)
-        mock_offset = mocker.MagicMock(spec=int)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.shift_geometry_elements(mock_geometry, geometry_type, mock_offset)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_invalid_offset_type(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = mocker.MagicMock(spec=hou.geometryType)
-        mock_offset = mocker.MagicMock(spec=float)
-
-        with pytest.raises(TypeError):
-            api.shift_geometry_elements(mock_geometry, geometry_type, mock_offset)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_invalid_geometry_type(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Edges
-        mock_offset = mocker.MagicMock(spec=int)
-
-        with pytest.raises(ValueError):
-            api.shift_geometry_elements(mock_geometry, geometry_type, mock_offset)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_points(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_owner = mocker.patch(
-            "ht.inline.utils.get_attrib_owner_from_geometry_type"
-        )
-        mock_shift = mocker.patch("ht.inline.api._cpp_methods.shiftGeometry")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Points
-        mock_offset = mocker.MagicMock(spec=int)
-
-        api.shift_geometry_elements(mock_geometry, geometry_type, mock_offset)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_get_owner.assert_called_with(geometry_type)
-
-        mock_shift.assert_called_with(
-            mock_geometry, mock_get_owner.return_value, mock_offset
-        )
-
-    def test_prims(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_owner = mocker.patch(
-            "ht.inline.utils.get_attrib_owner_from_geometry_type"
-        )
-        mock_shift = mocker.patch("ht.inline.api._cpp_methods.shiftGeometry")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Primitives
-        mock_offset = mocker.MagicMock(spec=int)
-
-        api.shift_geometry_elements(mock_geometry, geometry_type, mock_offset)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_get_owner.assert_called_with(geometry_type)
-
-        mock_shift.assert_called_with(
-            mock_geometry, mock_get_owner.return_value, mock_offset
-        )
-
-
-class Test_reverse_sort_geometry(object):
-    """Test ht.inline.api.reverse_sort_geometry."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = mocker.MagicMock(spec=hou.geometryType)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.reverse_sort_geometry(mock_geometry, geometry_type)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_invalid_geometry_type(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Edges
-
-        with pytest.raises(ValueError):
-            api.reverse_sort_geometry(mock_geometry, geometry_type)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_points(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_owner = mocker.patch(
-            "ht.inline.utils.get_attrib_owner_from_geometry_type"
-        )
-        mock_reverse = mocker.patch("ht.inline.api._cpp_methods.reverseSortGeometry")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Points
-
-        api.reverse_sort_geometry(mock_geometry, geometry_type)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_get_owner.assert_called_with(geometry_type)
-
-        mock_reverse.assert_called_with(mock_geometry, mock_get_owner.return_value)
-
-    def test_prims(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_owner = mocker.patch(
-            "ht.inline.utils.get_attrib_owner_from_geometry_type"
-        )
-        mock_reverse = mocker.patch("ht.inline.api._cpp_methods.reverseSortGeometry")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Primitives
-
-        api.reverse_sort_geometry(mock_geometry, geometry_type)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_get_owner.assert_called_with(geometry_type)
-
-        mock_reverse.assert_called_with(mock_geometry, mock_get_owner.return_value)
-
-
-class Test_sort_geometry_by_proximity_to_position(object):
-    """Test ht.inline.api.sort_geometry_by_proximity_to_position."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = mocker.MagicMock(spec=hou.geometryType)
-        mock_pos = mocker.MagicMock(spec=hou.Vector3)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.sort_geometry_by_proximity_to_position(
-                mock_geometry, geometry_type, mock_pos
-            )
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_invalid_geometry_type(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Edges
-        mock_pos = mocker.MagicMock(spec=hou.Vector3)
-
-        with pytest.raises(ValueError):
-            api.sort_geometry_by_proximity_to_position(
-                mock_geometry, geometry_type, mock_pos
-            )
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_points(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_owner = mocker.patch(
-            "ht.inline.utils.get_attrib_owner_from_geometry_type"
-        )
-        mock_proximity = mocker.patch(
-            "ht.inline.api._cpp_methods.sortGeometryByProximity"
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Points
-        mock_pos = mocker.MagicMock(spec=hou.Vector3)
-
-        api.sort_geometry_by_proximity_to_position(
-            mock_geometry, geometry_type, mock_pos
-        )
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_get_owner.assert_called_with(geometry_type)
-
-        mock_proximity.assert_called_with(
-            mock_geometry, mock_get_owner.return_value, mock_pos
-        )
-
-    def test_prims(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_owner = mocker.patch(
-            "ht.inline.utils.get_attrib_owner_from_geometry_type"
-        )
-        mock_proximity = mocker.patch(
-            "ht.inline.api._cpp_methods.sortGeometryByProximity"
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        geometry_type = hou.geometryType.Primitives
-        mock_pos = mocker.MagicMock(spec=hou.Vector3)
-
-        api.sort_geometry_by_proximity_to_position(
-            mock_geometry, geometry_type, mock_pos
-        )
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_get_owner.assert_called_with(geometry_type)
-
-        mock_proximity.assert_called_with(
-            mock_geometry, mock_get_owner.return_value, mock_pos
-        )
-
-
-class Test_sort_geometry_by_vertex_order(object):
-    """Test ht.inline.api.sort_geometry_by_vertex_order."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.sort_geometry_by_vertex_order(mock_geometry)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_invalid_geometry_type(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_sort = mocker.patch("ht.inline.api._cpp_methods.sortGeometryByVertexOrder")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        api.sort_geometry_by_vertex_order(mock_geometry)
-
-        mock_read_only.assert_called_with(mock_geometry)
-        mock_sort.assert_called_with(mock_geometry)
-
-
-class Test_sort_geometry_by_expression(object):
-    """Test ht.inline.api.sort_geometry_by_expression."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_geometry_type = mocker.MagicMock(spec=hou.geometryType.Points)
-        mock_expression = mocker.MagicMock(spec=str)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.sort_geometry_by_expression(
-                mock_geometry, mock_geometry_type, mock_expression
-            )
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_points(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_pwd = mocker.patch("ht.inline.api.hou.pwd")
-        mock_hscript = mocker.patch("ht.inline.api.hou.hscriptExpression")
-        mock_sort = mocker.patch("ht.inline.api.sort_geometry_by_values")
-
-        mock_pt1 = mocker.MagicMock(spec=hou.Point)
-        mock_pt2 = mocker.MagicMock(spec=hou.Point)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_geometry.points.return_value = (mock_pt1, mock_pt2)
-
-        geometry_type = hou.geometryType.Points
-        mock_expression = mocker.MagicMock(spec=str)
-
-        mock_sopnode = mocker.MagicMock(spec=hou.SopNode)
-        mock_pwd.return_value = mock_sopnode
-
-        api.sort_geometry_by_expression(mock_geometry, geometry_type, mock_expression)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_sopnode.setCurPoint.assert_has_calls(
-            [mocker.call(mock_pt1), mocker.call(mock_pt2)]
-        )
-
-        mock_hscript.assert_called_with(mock_expression)
-        assert mock_hscript.call_count == 2
-
-        mock_sort.assert_called_with(
-            mock_geometry,
-            geometry_type,
-            [mock_hscript.return_value, mock_hscript.return_value],
-        )
-
-    def test_prims(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_pwd = mocker.patch("ht.inline.api.hou.pwd")
-        mock_hscript = mocker.patch("ht.inline.api.hou.hscriptExpression")
-        mock_sort = mocker.patch("ht.inline.api.sort_geometry_by_values")
-
-        mock_pr1 = mocker.MagicMock(spec=hou.Prim)
-        mock_pr2 = mocker.MagicMock(spec=hou.Prim)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_geometry.prims.return_value = (mock_pr1, mock_pr2)
-
-        geometry_type = hou.geometryType.Primitives
-        mock_expression = mocker.MagicMock(spec=str)
-
-        mock_sopnode = mocker.MagicMock(spec=hou.SopNode)
-        mock_pwd.return_value = mock_sopnode
-
-        api.sort_geometry_by_expression(mock_geometry, geometry_type, mock_expression)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_sopnode.setCurPrim.assert_has_calls(
-            [mocker.call(mock_pr1), mocker.call(mock_pr2)]
-        )
-
-        mock_hscript.assert_called_with(mock_expression)
-        assert mock_hscript.call_count == 2
-
-        mock_sort.assert_called_with(
-            mock_geometry,
-            geometry_type,
-            [mock_hscript.return_value, mock_hscript.return_value],
-        )
-
-    def test_invalid_type(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_pwd = mocker.patch("ht.inline.api.hou.pwd")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        geometry_type = hou.geometryType.Edges
-        mock_expression = mocker.MagicMock(spec=str)
-
-        mock_sopnode = mocker.MagicMock(spec=hou.SopNode)
-        mock_pwd.return_value = mock_sopnode
-
-        with pytest.raises(ValueError):
-            api.sort_geometry_by_expression(
-                mock_geometry, geometry_type, mock_expression
-            )
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-
-class Test_create_point_at_position(object):
+def test_create_point_at_position(fix_hou_exceptions):
     """Test ht.inline.api.create_point_at_position."""
+    geo = hou.Geometry()
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
+    # Read only
+    frozen_geo = geo.freeze(True)
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_pos = mocker.MagicMock(spec=hou.Vector3)
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.create_point_at_position(frozen_geo, hou.Vector3(1, 2, 3))
 
-        with pytest.raises(hou.GeometryPermissionError):
-            api.create_point_at_position(mock_geometry, mock_pos)
+    # Success
+    geo = hou.Geometry()
 
-        mock_read_only.assert_called_with(mock_geometry)
+    point = ht.inline.api.create_point_at_position(geo, hou.Vector3(1, 2, 3))
 
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_create = mocker.patch("ht.inline.api._cpp_methods.createPointAtPosition")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_pos = mocker.MagicMock(spec=hou.Vector3)
-
-        result = api.create_point_at_position(mock_geometry, mock_pos)
-
-        assert result == mock_geometry.iterPoints.return_value.__getitem__.return_value
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_create.assert_called_with(mock_geometry, mock_pos)
-
-        mock_geometry.iterPoints.return_value.__getitem__.assert_called_with(-1)
+    assert point.position() == hou.Vector3(1, 2, 3)
 
 
-class Test_create_n_points(object):
+def test_create_n_points(fix_hou_exceptions):
     """Test ht.inline.api.create_n_points."""
+    geo = hou.Geometry()
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
+    # Read only
+    frozen_geo = geo.freeze(True)
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_npoints = mocker.MagicMock(spec=int)
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.create_n_points(frozen_geo, 15)
 
-        with pytest.raises(hou.GeometryPermissionError):
-            api.create_n_points(mock_geometry, mock_npoints)
+    # Success
+    points = ht.inline.api.create_n_points(geo, 15)
 
-        mock_read_only.assert_called_with(mock_geometry)
+    assert points == geo.points()
 
-    def test_n_0(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        npoints = 0
-
-        with pytest.raises(ValueError):
-            api.create_n_points(mock_geometry, npoints)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_n_negative(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        npoints = -1
-
-        with pytest.raises(ValueError):
-            api.create_n_points(mock_geometry, npoints)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_create = mocker.patch("ht.inline.api._cpp_methods.createNPoints")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        npoints = 10
-
-        result = api.create_n_points(mock_geometry, npoints)
-
-        assert result == tuple(
-            mock_geometry.points.return_value.__getitem__.return_value
-        )
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_create.assert_called_with(mock_geometry, npoints)
-
-        mock_geometry.points.return_value.__getitem__.assert_called_with(
-            slice(-npoints, None, None)
-        )
+    # Invalid Number
+    with pytest.raises(ValueError):
+        ht.inline.api.create_n_points(geo, -4)
 
 
-class Test_merge_point_group(object):
+def test_merge_point_group(fix_hou_exceptions, obj_test_geo):
     """Test ht.inline.api.merge_point_group."""
+    geo = hou.Geometry()
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
+    group = obj_test_geo.pointGroups()[0]
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
+    # Read only
+    frozen_geo = geo.freeze(True)
 
-        with pytest.raises(hou.GeometryPermissionError):
-            api.merge_point_group(mock_geometry, mock_group)
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.merge_point_group(frozen_geo, group)
 
-        mock_read_only.assert_called_with(mock_geometry)
+    # Invalid group type
+    prim_group = obj_test_geo.primGroups()[0]
 
-    def test_not_point_group(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
+    with pytest.raises(ValueError):
+        ht.inline.api.merge_point_group(geo, prim_group)
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_group = mocker.MagicMock(spec=hou.PrimGroup)
+    # Success
+    ht.inline.api.merge_point_group(geo, group)
 
-        with pytest.raises(ValueError):
-            api.merge_point_group(mock_geometry, mock_group)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_merge = mocker.patch("ht.inline.api._cpp_methods.mergePointGroup")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-
-        api.merge_point_group(mock_geometry, mock_group)
-
-        mock_read_only.assert_called_with(mock_geometry)
-        mock_merge.assert_called_with(
-            mock_geometry,
-            mock_group.geometry.return_value,
-            mock_group.name.return_value,
-        )
+    assert len(geo.iterPoints()) == len(group.points())
 
 
-class Test_merge_points(object):
+def test_merge_points(fix_hou_exceptions, obj_test_geo):
     """Test ht.inline.api.merge_points."""
+    geo = hou.Geometry()
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
+    points = obj_test_geo.globPoints("0 6 15 35-38 66")
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_points = mocker.MagicMock(spec=list)
+    # Read only
+    frozen_geo = geo.freeze(True)
 
-        with pytest.raises(hou.GeometryPermissionError):
-            api.merge_points(mock_geometry, mock_points)
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.merge_points(frozen_geo, points)
 
-        mock_read_only.assert_called_with(mock_geometry)
+    # Success
+    ht.inline.api.merge_points(geo, points)
 
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_build = mocker.patch("ht.inline.utils.build_c_int_array")
-        mock_merge = mocker.patch("ht.inline.api._cpp_methods.mergePoints")
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_pt1 = mocker.MagicMock(spec=hou.Point)
-        mock_pt2 = mocker.MagicMock(spec=hou.Point)
-
-        points = [mock_pt1, mock_pt2]
-
-        api.merge_points(mock_geometry, points)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_build.assert_called_with(
-            [mock_pt1.number.return_value, mock_pt2.number.return_value]
-        )
-
-        mock_merge.assert_called_with(
-            mock_geometry,
-            mock_pt1.geometry.return_value,
-            mock_build.return_value,
-            len(mock_build.return_value),
-        )
+    assert len(geo.iterPoints()) == len(points)
 
 
-class Test_merge_prim_group(object):
+def test_merge_prim_group(fix_hou_exceptions, obj_test_geo):
     """Test ht.inline.api.merge_prim_group."""
+    geo = hou.Geometry()
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
+    group = obj_test_geo.primGroups()[0]
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_group = mocker.MagicMock(spec=hou.PrimGroup)
+    # Read only
+    frozen_geo = geo.freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.merge_prim_group(frozen_geo, group)
+
+    # Invalid group type
+    point_group = obj_test_geo.pointGroups()[0]
+
+    with pytest.raises(ValueError):
+        ht.inline.api.merge_prim_group(geo, point_group)
+
+    # Success
+    ht.inline.api.merge_prim_group(geo, group)
+
+    assert len(geo.iterPrims()) == len(group.prims())
+
+
+def test_merge_prims(fix_hou_exceptions, obj_test_geo):
+    """Test ht.inline.api.merge_prims."""
+    geo = hou.Geometry()
+
+    prims = obj_test_geo.globPrims("0 6 15 35-38 66")
+
+    # Read only
+    frozen_geo = geo.freeze(True)
+
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.merge_prims(frozen_geo, prims)
+
+    # Success
+    ht.inline.api.merge_prims(geo, prims)
+
+    assert len(geo.iterPrims()) == len(prims)
+
+
+class Test_copy_packed_prims_to_points(object):
+    """Test ht.inline.api.copy_packed_prims_to_points."""
+
+    def _build_source_prims(self):
+        geo = hou.Geometry()
+
+        sop_category = hou.sopNodeTypeCategory()
+        pack_verb = sop_category.nodeVerb("pack")
+
+        torus_geo = hou.Geometry()
+        torus_verb = sop_category.nodeVerb("torus")
+        torus_verb.execute(torus_geo, [])
+
+        pack_verb.execute(torus_geo, [torus_geo])
+
+        geo.merge(torus_geo)
+
+        box_geo = hou.Geometry()
+        box_verb = sop_category.nodeVerb("box")
+        box_verb.execute(box_geo, [])
+
+        pack_verb.execute(box_geo, [box_geo])
+
+        geo.merge(box_geo)
+        geo.merge(box_geo)
+
+        id_attrib = geo.addAttrib(hou.attribType.Prim, "orig_id", (1, ))
+        other_attrib = geo.addAttrib(hou.attribType.Prim, "other", ("", ))
+
+        for idx, prim in enumerate(geo.prims()):
+            prim.setAttribValue(id_attrib, idx)
+            prim.setAttribValue(other_attrib, "foo")
+
+            group = geo.createPrimGroup("group{}".format(idx))
+            group.add(prim)
+
+        return geo
+
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        source_geo = self._build_source_prims()
+
+        prim_order = [2, 0, 1]
 
         with pytest.raises(hou.GeometryPermissionError):
-            api.merge_prim_group(mock_geometry, mock_group)
+            ht.inline.api.copy_packed_prims_to_points(
+                obj_test_geo,
+                source_geo,
+                prim_order,
+                list(range(3)),
+            )
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_size_missmatch(self, obj_test_geo_copy):
+        source_geo = self._build_source_prims()
 
-    def test_not_prim_group(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
+        prim_order =[2, 0, 1]
 
         with pytest.raises(ValueError):
-            api.merge_prim_group(mock_geometry, mock_group)
+            ht.inline.api.copy_packed_prims_to_points(
+                obj_test_geo_copy,
+                source_geo,
+                prim_order,
+                list(range(2)),
+            )
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_copy_all(self, obj_test_geo_copy):
+        source_geo = self._build_source_prims()
 
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_merge = mocker.patch("ht.inline.api._cpp_methods.mergePrimGroup")
+        prim_order =[2, 0, 1]
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_group = mocker.MagicMock(spec=hou.PrimGroup)
-
-        api.merge_prim_group(mock_geometry, mock_group)
-
-        mock_read_only.assert_called_with(mock_geometry)
-        mock_merge.assert_called_with(
-            mock_geometry,
-            mock_group.geometry.return_value,
-            mock_group.name.return_value,
+        ht.inline.api.copy_packed_prims_to_points(
+            obj_test_geo_copy,
+            source_geo,
+            prim_order,
+            list(range(3)),
         )
 
+        assert len(obj_test_geo_copy.iterPoints()) == 3
+        assert len(obj_test_geo_copy.iterPrims()) == 3
 
-class Test_merge_prims(object):
-    """Test ht.inline.api.merge_prims."""
+        for pt_idx in range(3):
+            pr_idx = prim_order[pt_idx]
+            prim = obj_test_geo_copy.iterPrims()[pt_idx]
+            pt = obj_test_geo_copy.iterPoints()[pt_idx]
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
+            xform = prim.fullTransform()
+
+            orient = hou.Quaternion(pt.attribValue("orient"))
+            assert xform.extractTranslates() == pt.position()
+            assert xform.extractRotationMatrix3() == orient.extractRotationMatrix3()
+
+            assert prim.attribValue("orig_id") == pr_idx
+            assert prim.attribValue("other") == "foo"
+
+            group = obj_test_geo_copy.findPrimGroup("group{}".format(pr_idx))
+            assert prim in group.prims()
+
+    def test_copy_none(self, obj_test_geo_copy):
+        source_geo = self._build_source_prims()
+
+        prim_order = [2, 0, 1]
+
+        ht.inline.api.copy_packed_prims_to_points(
+            obj_test_geo_copy,
+            source_geo,
+            prim_order,
+            list(range(3)),
+            copy_attribs=False,
+            copy_groups=False,
         )
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_prims = mocker.MagicMock(spec=list)
+        assert len(obj_test_geo_copy.iterPoints()) == 3
+        assert len(obj_test_geo_copy.iterPrims()) == 3
 
-        with pytest.raises(hou.GeometryPermissionError):
-            api.merge_prims(mock_geometry, mock_prims)
+        assert len(obj_test_geo_copy.primGroups()) == 0
+        assert len(obj_test_geo_copy.primAttribs()) == 0
 
-        mock_read_only.assert_called_with(mock_geometry)
+        for pt_idx in range(3):
+            pr_idx = prim_order[pt_idx]
+            prim = obj_test_geo_copy.iterPrims()[pt_idx]
+            pt = obj_test_geo_copy.iterPoints()[pt_idx]
 
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
+            xform = prim.fullTransform()
+
+            orient = hou.Quaternion(pt.attribValue("orient"))
+            assert xform.extractTranslates() == pt.position()
+            assert xform.extractRotationMatrix3() == orient.extractRotationMatrix3()
+
+    def test_copy_some(self, obj_test_geo_copy):
+        source_geo = self._build_source_prims()
+
+        group_to_copy = source_geo.findPrimGroup("group1")
+        attrib_to_copy = source_geo.findPrimAttrib("orig_id")
+
+        prim_order = [2, 0, 1]
+
+        ht.inline.api.copy_packed_prims_to_points(
+            obj_test_geo_copy,
+            source_geo,
+            prim_order,
+            list(range(3)),
+            attribs=[attrib_to_copy],
+            groups=[group_to_copy],
         )
-        mock_build = mocker.patch("ht.inline.utils.build_c_int_array")
-        mock_merge = mocker.patch("ht.inline.api._cpp_methods.mergePrims")
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        assert len(obj_test_geo_copy.iterPoints()) == 3
+        assert len(obj_test_geo_copy.iterPrims()) == 3
 
-        mock_pr1 = mocker.MagicMock(spec=hou.Point)
-        mock_pr2 = mocker.MagicMock(spec=hou.Point)
+        assert len(obj_test_geo_copy.primGroups()) == 1
+        assert len(obj_test_geo_copy.primAttribs()) == 1
 
-        points = [mock_pr1, mock_pr2]
+        for pt_idx in range(3):
+            pr_idx = prim_order[pt_idx]
+            prim = obj_test_geo_copy.iterPrims()[pt_idx]
+            pt = obj_test_geo_copy.iterPoints()[pt_idx]
 
-        api.merge_prims(mock_geometry, points)
+            xform = prim.fullTransform()
 
-        mock_read_only.assert_called_with(mock_geometry)
+            orient = hou.Quaternion(pt.attribValue("orient"))
+            assert xform.extractTranslates() == pt.position()
+            assert xform.extractRotationMatrix3() == orient.extractRotationMatrix3()
 
-        mock_build.assert_called_with(
-            [mock_pr1.number.return_value, mock_pr2.number.return_value]
-        )
+            assert prim.attribValue("orig_id") == pr_idx
 
-        mock_merge.assert_called_with(
-            mock_geometry,
-            mock_pr1.geometry.return_value,
-            mock_build.return_value,
-            len(mock_build.return_value),
-        )
+            group = obj_test_geo_copy.findPrimGroup(group_to_copy.name())
+
+            if prim.attribValue("orig_id") == int(group_to_copy.name()[-1]):
+                assert prim in group.prims()
+            else:
+                assert prim not in group.prims()
 
 
 class Test_copy_attribute_values(object):
     """Test ht.inline.api.copy_attribute_values."""
 
-    def test_vertex_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_source = mocker.MagicMock(spec=hou.Vertex)
-        mock_attribs = mocker.MagicMock(spec=list)
-
-        mock_target = mocker.MagicMock(spec=hou.Vertex)
-
-        mock_target_geo = mocker.MagicMock(spec=hou.Geometry)
-        mock_target.geometry.return_value = mock_target_geo
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        geo = hou.Geometry().freeze(True)
+        attribs = obj_test_geo.globalAttribs()
 
         with pytest.raises(hou.GeometryPermissionError):
-            api.copy_attribute_values(mock_source, mock_attribs, mock_target)
+            ht.inline.api.copy_attribute_values(obj_test_geo, attribs, geo)
 
-        mock_target.linearNumber.assert_called()
-        mock_read_only.assert_called_with(mock_target_geo)
+    def test_points(self, obj_test_geo):
+        attribs = obj_test_geo.pointAttribs()
 
-    def test_vertex(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_owner_from_type = mocker.patch(
-            "ht.inline.utils.get_attrib_owner_from_geometry_entity_type"
-        )
-        mock_build = mocker.patch("ht.inline.utils.build_c_string_array")
-        mock_get_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
-        mock_copy = mocker.patch("ht.inline.api._cpp_methods.copyAttributeValues")
+        geo = hou.Geometry()
 
-        mock_source_node = mocker.MagicMock(spec=hou.SopNode)
+        pt1 = geo.createPoint()
+        pt2 = geo.createPoint()
 
-        mock_source_geo = mocker.MagicMock(spec=hou.Geometry)
-        mock_source_geo.sopNode.return_value = mock_source_node
+        ht.inline.api.copy_attribute_values(obj_test_geo.iterPoints()[2], attribs, pt1)
+        ht.inline.api.copy_attribute_values(obj_test_geo.iterPoints()[6], attribs, pt2)
 
-        mock_source = mocker.MagicMock(spec=hou.Vertex)
-        mock_source.geometry.return_value = mock_source_geo
+        # Ensure all the attributes got copied right.
+        assert len(geo.pointAttribs()) == len(attribs)
 
-        mock_attrib1 = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib1.geometry.return_value = mocker.MagicMock()
+        # Ensure P got copied right.
+        assert pt1.position().isAlmostEqual(hou.Vector3(1.66667, 0, -5))
+        assert pt2.position().isAlmostEqual(hou.Vector3(1.66667, 0, -1.66667))
 
-        mock_attrib2 = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib2.geometry.return_value.sopNode.return_value = mock_source_node
+    def test_prims(self, obj_test_geo):
+        attribs = obj_test_geo.primAttribs()
 
-        mock_attrib3 = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib3.geometry.return_value.sopNode.return_value = mock_source_node
+        geo = hou.Geometry()
 
-        attribs = [mock_attrib1, mock_attrib2, mock_attrib3]
+        pr1 = geo.createPolygon()
+        pr2 = geo.createPolygon()
 
-        mock_target_geo = mocker.MagicMock(spec=hou.Geometry)
+        ht.inline.api.copy_attribute_values(obj_test_geo.iterPrims()[1], attribs, pr1)
+        ht.inline.api.copy_attribute_values(obj_test_geo.iterPrims()[4], attribs, pr2)
 
-        mock_target = mocker.MagicMock(spec=hou.Vertex)
-        mock_target.geometry.return_value = mock_target_geo
+        # Ensure all the attributes got copied right.
+        assert len(geo.primAttribs()) == len(attribs)
 
-        mock_target_owner = mocker.MagicMock(spec=int)
-        mock_source_owner = mocker.MagicMock(spec=int)
+        # Ensure P got copied right.
+        assert pr1.attribValue("prnum") == 1
+        assert pr2.attribValue("prnum") == 4
 
-        mock_get_owner.side_effect = (
-            mock_source_owner,
-            mock_source_owner,
-            mocker.MagicMock(spec=int),
-        )
+    def test_vertex_to_point(self, obj_test_geo):
+        attribs = obj_test_geo.vertexAttribs()
 
-        mock_owner_from_type.side_effect = (mock_target_owner, mock_source_owner)
+        geo = hou.Geometry()
+        pt1 = geo.createPoint()
 
-        api.copy_attribute_values(mock_source, attribs, mock_target)
+        pr1 = obj_test_geo.prims()[1]
 
-        mock_target.linearNumber.assert_called()
-        mock_read_only.assert_called_with(mock_target_geo)
+        ht.inline.api.copy_attribute_values(pr1.vertex(2), attribs, pt1)
+        assert pt1.attribValue("id") == 6
+        assert pt1.attribValue("random_vtx") == 0.031702518463134766
 
-        mock_owner_from_type.assert_has_calls(
-            [mocker.call(type(mock_target)), mocker.call(type(mock_source))]
-        )
+    def test_points_to_global(self, obj_test_geo):
+        attribs = obj_test_geo.pointAttribs()
+        geo = hou.Geometry()
 
-        mock_get_owner.assert_has_calls(
-            [
-                mocker.call(mock_attrib1.type.return_value),
-                mocker.call(mock_attrib2.type.return_value),
-                mocker.call(mock_attrib3.type.return_value),
-            ]
-        )
+        ht.inline.api.copy_attribute_values(obj_test_geo.iterPoints()[2], attribs, geo)
 
-        mock_build.assert_called_with([mock_attrib2.name.return_value])
+        # Ensure all the attributes got copied right.
+        assert len(geo.globalAttribs()) == len(attribs)
 
-        mock_copy.assert_called_with(
-            mock_target_geo,
-            mock_target_owner,
-            mock_target.linearNumber.return_value,
-            mock_source.geometry.return_value,
-            mock_source_owner,
-            mock_source.linearNumber.return_value,
-            mock_build.return_value,
-            len(mock_build.return_value),
-        )
+        assert geo.attribValue("ptnum") == 2
 
-    def test_point(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_owner_from_type = mocker.patch(
-            "ht.inline.utils.get_attrib_owner_from_geometry_entity_type"
-        )
-        mock_build = mocker.patch("ht.inline.utils.build_c_string_array")
-        mock_get_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
-        mock_copy = mocker.patch("ht.inline.api._cpp_methods.copyAttributeValues")
+        assert geo.attribValue("random") == 0.5108950138092041
 
-        mock_source_node = mocker.MagicMock(spec=hou.SopNode)
+    def test_global_to_point(self, obj_test_geo):
+        geo = hou.Geometry()
+        attribs = obj_test_geo.globalAttribs()
+        pt1 = geo.createPoint()
 
-        mock_source_geo = mocker.MagicMock(spec=hou.Geometry)
-        mock_source_geo.sopNode.return_value = mock_source_node
+        ht.inline.api.copy_attribute_values(obj_test_geo, attribs, pt1)
 
-        mock_source = mocker.MagicMock(spec=hou.Point)
-        mock_source.geometry.return_value = mock_source_geo
+        assert pt1.attribValue("barbles") == 33
+        assert pt1.attribValue("foobles") == (1.0, 2.0)
 
-        mock_attrib1 = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib1.geometry.return_value = mocker.MagicMock()
+    def test_global_to_global(self, obj_test_geo):
+        geo = hou.Geometry()
+        attribs = obj_test_geo.globalAttribs()
 
-        mock_attrib2 = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib2.geometry.return_value.sopNode.return_value = mock_source_node
+        ht.inline.api.copy_attribute_values(obj_test_geo, attribs, geo)
+        assert geo.attribValue("barbles") == 33
+        assert geo.attribValue("foobles") == (1.0, 2.0)
 
-        mock_attrib3 = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib3.geometry.return_value.sopNode.return_value = mock_source_node
+    def test_global_to_vertex(self, obj_test_geo):
+        attribs = obj_test_geo.globalAttribs()
 
-        attribs = [mock_attrib1, mock_attrib2, mock_attrib3]
+        geo = hou.Geometry()
 
-        mock_target_geo = mocker.MagicMock(spec=hou.Geometry)
+        pt1 = geo.createPoint()
+        pr1 = geo.createPolygon()
+        pr1.addVertex(pt1)
+        vtx1 = pr1.vertex(0)
 
-        mock_target = mocker.MagicMock(spec=hou.Point)
-        mock_target.geometry.return_value = mock_target_geo
+        ht.inline.api.copy_attribute_values(obj_test_geo, attribs, vtx1)
+        assert vtx1.attribValue("barbles") == 33
+        assert vtx1.attribValue("foobles") == (1.0, 2)
 
-        mock_target_owner = mocker.MagicMock(spec=int)
-        mock_source_owner = mocker.MagicMock(spec=int)
 
-        mock_get_owner.side_effect = (
-            mock_source_owner,
-            mock_source_owner,
-            mocker.MagicMock(spec=int),
-        )
+class Test_batch_copy_attributes_by_indices(object):
+    """Test ht.inline.api.batch_copy_attributes_by_indices"""
 
-        mock_owner_from_type.side_effect = (mock_target_owner, mock_source_owner)
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        attribs = obj_test_geo.pointAttribs()
 
-        api.copy_attribute_values(mock_source, attribs, mock_target)
+        geo = hou.Geometry()
 
-        mock_target.number.assert_called()
-        mock_read_only.assert_called_with(mock_target_geo)
+        pt1 = geo.createPoint()
+        pt2 = geo.createPoint()
 
-        mock_owner_from_type.assert_has_calls(
-            [mocker.call(type(mock_target)), mocker.call(type(mock_source))]
-        )
+        geo = geo.freeze(True)
 
-        mock_get_owner.assert_has_calls(
-            [
-                mocker.call(mock_attrib1.type.return_value),
-                mocker.call(mock_attrib2.type.return_value),
-                mocker.call(mock_attrib3.type.return_value),
-            ]
-        )
+        with pytest.raises(hou.GeometryPermissionError):
+            ht.inline.api.batch_copy_attributes_by_indices(
+                obj_test_geo, hou.Point, [2, 6], attribs, geo, hou.Point, [0, 1]
+            )
 
-        mock_build.assert_called_with([mock_attrib2.name.return_value])
+    def test_size_mismatch(self, fix_hou_exceptions, obj_test_geo):
+        attribs = obj_test_geo.pointAttribs()
 
-        mock_copy.assert_called_with(
-            mock_target_geo,
-            mock_target_owner,
-            mock_target.number.return_value,
-            mock_source.geometry.return_value,
-            mock_source_owner,
-            mock_source.number.return_value,
-            mock_build.return_value,
-            len(mock_build.return_value),
-        )
+        geo = hou.Geometry()
 
-    def test_geometry(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_owner_from_type = mocker.patch(
-            "ht.inline.utils.get_attrib_owner_from_geometry_entity_type"
-        )
-        mock_build = mocker.patch("ht.inline.utils.build_c_string_array")
-        mock_get_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
-        mock_copy = mocker.patch("ht.inline.api._cpp_methods.copyAttributeValues")
+        pt1 = geo.createPoint()
+        pt2 = geo.createPoint()
 
-        mock_source_node = mocker.MagicMock(spec=hou.SopNode)
+        with pytest.raises(ValueError):
+            ht.inline.api.batch_copy_attributes_by_indices(
+                obj_test_geo, hou.Point, [2], attribs, geo, hou.Point, [0, 1]
+            )
 
-        mock_source = mocker.MagicMock(spec=hou.Geometry)
-        mock_source.sopNode.return_value = mock_source_node
+    def test_copy_points(self, obj_test_geo):
+        attribs = obj_test_geo.pointAttribs()
 
-        mock_attrib1 = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib1.geometry.return_value = mocker.MagicMock()
+        geo = hou.Geometry()
 
-        mock_attrib2 = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib2.geometry.return_value.sopNode.return_value = mock_source_node
+        pt1 = geo.createPoint()
+        pt2 = geo.createPoint()
 
-        mock_attrib3 = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib3.geometry.return_value.sopNode.return_value = mock_source_node
+        ht.inline.api.batch_copy_attributes_by_indices(
+            obj_test_geo, hou.Point, [2, 6], attribs, geo, hou.Point, [0, 1])
 
-        attribs = [mock_attrib1, mock_attrib2, mock_attrib3]
+        # Ensure all the attributes got copied right.
+        assert len(geo.pointAttribs()) == len(attribs)
 
-        mock_target = mocker.MagicMock(spec=hou.Geometry)
+        # Ensure P got copied right.
+        assert pt1.position().isAlmostEqual(hou.Vector3(1.66667, 0, -5))
+        assert pt2.position().isAlmostEqual(hou.Vector3(1.66667, 0, -1.66667))
 
-        mock_target_owner = mocker.MagicMock(spec=int)
-        mock_source_owner = mocker.MagicMock(spec=int)
+    def test_copy_prims(self, obj_test_geo):
+        attribs = obj_test_geo.primAttribs()
 
-        mock_get_owner.side_effect = (
-            mock_source_owner,
-            mock_source_owner,
-            mocker.MagicMock(spec=int),
+        geo = hou.Geometry()
+
+        pr1 = geo.createPolygon()
+        pr2 = geo.createPolygon()
+
+        ht.inline.api.batch_copy_attributes_by_indices(
+            obj_test_geo, hou.Prim, [1, 4], attribs, geo, hou.Prim, [0, 1])
+
+        # Ensure all the attributes got copied right.
+        assert len(geo.primAttribs()) == len(attribs)
+
+        # Ensure P got copied right.
+        assert pr1.attribValue("prnum") == 1
+        assert pr2.attribValue("prnum") == 4
+
+    def test_vertex_to_point(self, obj_test_geo):
+        attribs = obj_test_geo.vertexAttribs()
+
+        geo = hou.Geometry()
+
+        pt1 = geo.createPoint()
+
+        pr1 = obj_test_geo.prims()[1]
+
+        ht.inline.api.batch_copy_attributes_by_indices(obj_test_geo, hou.Vertex, [pr1.vertex(2).linearNumber()],
+                                                            attribs,
+                                                            geo, hou.Point, [0])
+
+        assert pt1.attribValue("id") == 6
+        assert pt1.attribValue("random_vtx") == 0.031702518463134766
+
+    def test_points_to_global(self, obj_test_geo):
+        attribs = obj_test_geo.pointAttribs()
+        geo = hou.Geometry()
+
+        ht.inline.api.batch_copy_attributes_by_indices(
+            obj_test_geo, hou.Point, [2], attribs, geo, hou.Geometry, [0]
         )
 
-        mock_owner_from_type.side_effect = (mock_target_owner, mock_source_owner)
+        # Ensure all the attributes got copied right.
+        assert len(geo.globalAttribs()) == len(attribs)
 
-        api.copy_attribute_values(mock_source, attribs, mock_target)
+        assert geo.attribValue("ptnum") == 2
 
-        mock_read_only.assert_called_with(mock_target)
+        assert geo.attribValue("random") == 0.5108950138092041
 
-        mock_owner_from_type.assert_has_calls(
-            [mocker.call(type(mock_target)), mocker.call(type(mock_source))]
-        )
+    def test_global_to_points(self, obj_test_geo):
+        geo = hou.Geometry()
+        attribs = obj_test_geo.globalAttribs()
+        pt1 = geo.createPoint()
 
-        mock_get_owner.assert_has_calls(
-            [
-                mocker.call(mock_attrib1.type.return_value),
-                mocker.call(mock_attrib2.type.return_value),
-                mocker.call(mock_attrib3.type.return_value),
-            ]
-        )
+        ht.inline.api.batch_copy_attributes_by_indices(obj_test_geo, hou.Geometry, [0], attribs, geo, hou.Point,
+                                                            [0])
 
-        mock_build.assert_called_with([mock_attrib2.name.return_value])
+        assert pt1.attribValue("barbles") == 33
+        assert pt1.attribValue("foobles") == (1.0, 2.0)
 
-        mock_copy.assert_called_with(
-            mock_target,
-            mock_target_owner,
-            0,
-            mock_source,
-            mock_source_owner,
-            0,
-            mock_build.return_value,
-            len(mock_build.return_value),
-        )
+    def test_global_to_global(self, obj_test_geo):
+        geo = hou.Geometry()
+        attribs = obj_test_geo.globalAttribs()
+
+        ht.inline.api.batch_copy_attributes_by_indices(obj_test_geo, hou.Geometry, [0], attribs, geo,
+                                                            hou.Geometry, [0])
+        assert geo.attribValue("barbles") == 33
+        assert geo.attribValue("foobles") == (1.0, 2.0)
+
+    def test_global_to_vertex(self, obj_test_geo):
+        attribs = obj_test_geo.globalAttribs()
+
+        geo = hou.Geometry()
+
+        pt1 = geo.createPoint()
+        pr1 = geo.createPolygon()
+        pr1.addVertex(pt1)
+        vtx1 = pr1.vertex(0)
+
+        ht.inline.api.batch_copy_attributes_by_indices(obj_test_geo, hou.Geometry, [0], attribs, geo, hou.Vertex,
+                                                            [vtx1.linearNumber()])
+        assert vtx1.attribValue("barbles") == 33
+        assert vtx1.attribValue("foobles") == (1.0, 2)
 
 
-def test_point_adjacent_polygons(mocker):
+class Test_batch_copy_attrib_values(object):
+    """Test ht.inline.api.batch_copy_attrib_values"""
+
+    def test_size_mismatch(self, fix_hou_exceptions, obj_test_geo):
+        attribs = obj_test_geo.pointAttribs()
+
+        geo = hou.Geometry()
+
+        pt1 = geo.createPoint()
+        pt2 = geo.createPoint()
+
+        geo = geo.freeze(True)
+
+        with pytest.raises(ValueError):
+            ht.inline.api.batch_copy_attrib_values(
+                [obj_test_geo.iterPoints()[2]], attribs, [pt1, pt2]
+            )
+
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        attribs = obj_test_geo.pointAttribs()
+
+        geo = hou.Geometry()
+
+        pt1 = geo.createPoint()
+        pt2 = geo.createPoint()
+
+        geo = geo.freeze(True)
+        pt1 = geo.iterPoints()[0]
+        pt2 = geo.iterPoints()[1]
+
+        with pytest.raises(hou.GeometryPermissionError):
+            ht.inline.api.batch_copy_attrib_values(
+                [obj_test_geo.iterPoints()[2], obj_test_geo.iterPoints()[6]], attribs, [pt1, pt2]
+            )
+
+    def test_copy_points(self, obj_test_geo):
+        attribs = obj_test_geo.pointAttribs()
+
+        geo = hou.Geometry()
+
+        pt1 = geo.createPoint()
+        pt2 = geo.createPoint()
+
+        ht.inline.api.batch_copy_attrib_values(
+            [obj_test_geo.iterPoints()[2], obj_test_geo.iterPoints()[6]], attribs, [pt1, pt2])
+
+        # Ensure all the attributes got copied right.
+        assert len(geo.pointAttribs()) == len(attribs)
+
+        # Ensure P got copied right.
+        assert pt1.position().isAlmostEqual(hou.Vector3(1.66667, 0, -5))
+        assert pt2.position().isAlmostEqual(hou.Vector3(1.66667, 0, -1.66667))
+
+    def test_copy_prims(self, obj_test_geo):
+        attribs = obj_test_geo.primAttribs()
+
+        geo = hou.Geometry()
+
+        pr1 = geo.createPolygon()
+        pr2 = geo.createPolygon()
+
+        ht.inline.api.batch_copy_attrib_values(
+            [obj_test_geo.iterPrims()[1], obj_test_geo.iterPrims()[4]], attribs, [pr1, pr2])
+
+        # Ensure all the attributes got copied right.
+        assert len(geo.primAttribs()) == len(attribs)
+
+        # Ensure P got copied right.
+        assert pr1.attribValue("prnum") == 1
+        assert pr2.attribValue("prnum") == 4
+
+    def test_vertex_to_point(self, obj_test_geo):
+        attribs = obj_test_geo.vertexAttribs()
+
+        geo = hou.Geometry()
+
+        pt1 = geo.createPoint()
+
+        pr1 = obj_test_geo.prims()[1]
+
+        ht.inline.api.batch_copy_attrib_values([pr1.vertex(2)], attribs, [pt1])
+        assert pt1.attribValue("id") == 6
+        assert pt1.attribValue("random_vtx") == 0.031702518463134766
+
+    def test_points_to_global(self, obj_test_geo):
+        attribs = obj_test_geo.pointAttribs()
+        geo = hou.Geometry()
+
+        ht.inline.api.batch_copy_attrib_values([obj_test_geo.iterPoints()[2]], attribs, [geo])
+
+        # Ensure all the attributes got copied right.
+        assert len(geo.globalAttribs()) == len(attribs)
+
+        assert geo.attribValue("ptnum") == 2
+
+        assert geo.attribValue("random") == 0.5108950138092041
+
+    def test_global_to_points(self, obj_test_geo):
+        geo = hou.Geometry()
+        attribs = obj_test_geo.globalAttribs()
+        pt1 = geo.createPoint()
+
+        ht.inline.api.batch_copy_attrib_values([obj_test_geo], attribs, [pt1])
+
+        assert pt1.attribValue("barbles") == 33
+        assert pt1.attribValue("foobles") == (1.0, 2.0)
+
+    def test_global_to_global(self, obj_test_geo):
+        geo = hou.Geometry()
+        attribs = obj_test_geo.globalAttribs()
+
+        ht.inline.api.batch_copy_attrib_values([obj_test_geo], attribs, [geo])
+        assert geo.attribValue("barbles") == 33
+        assert geo.attribValue("foobles") == (1.0, 2.0)
+
+    def test_global_to_vertex(self, obj_test_geo):
+        attribs = obj_test_geo.globalAttribs()
+
+        geo = hou.Geometry()
+
+        pt1 = geo.createPoint()
+        pr1 = geo.createPolygon()
+        pr1.addVertex(pt1)
+        vtx1 = pr1.vertex(0)
+
+        ht.inline.api.batch_copy_attrib_values([obj_test_geo], attribs, [vtx1])
+        assert vtx1.attribValue("barbles") == 33
+        assert vtx1.attribValue("foobles") == (1.0, 2)
+
+
+class Test_copy_group_membership(object):
+    """Test ht.inline.api.copy_group_membership."""
+
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        geo = hou.Geometry().freeze(True)
+        groups = obj_test_geo.pointGroups()
+
+        with pytest.raises(hou.GeometryPermissionError):
+            ht.inline.api.copy_group_membership(obj_test_geo, groups, geo)
+
+    def test_points(self, obj_test_geo):
+        groups = obj_test_geo.pointGroups()
+
+        geo = hou.Geometry()
+
+        pt1 = geo.createPoint()
+        pt2 = geo.createPoint()
+        pt3 = geo.createPoint()
+
+        ht.inline.api.copy_group_membership(obj_test_geo.iterPoints()[2], groups, pt1)
+        ht.inline.api.copy_group_membership(obj_test_geo.iterPoints()[8], groups, pt2)
+        ht.inline.api.copy_group_membership(obj_test_geo.iterPoints()[10], groups, pt3)
+
+        # Ensure all the groups got copied right.
+        assert len(geo.pointGroups()) == len(groups)
+
+        group1 = geo.findPointGroup("point_group1")
+        group2 = geo.findPointGroup("point_group2")
+
+        assert pt1 in group1.points()
+        assert pt1 not in group2.points()
+
+        assert pt2 in group1.points()
+        assert pt2 in group2.points()
+
+        assert pt3 in group2.points()
+        assert pt3 not in group1.points()
+
+    def test_prims(self, obj_test_geo):
+        groups = obj_test_geo.primGroups()
+
+        geo = hou.Geometry()
+
+        pr1 = geo.createPolygon()
+        pr2 = geo.createPolygon()
+        pr3 = geo.createPolygon()
+
+        ht.inline.api.copy_group_membership(obj_test_geo.iterPrims()[1], groups, pr1)
+        ht.inline.api.copy_group_membership(obj_test_geo.iterPrims()[4], groups, pr2)
+        ht.inline.api.copy_group_membership(obj_test_geo.iterPrims()[5], groups, pr3)
+
+        # Ensure all the attributes got copied right.
+        assert len(geo.primGroups()) == len(groups)
+
+        group1 = geo.findPrimGroup("prim_group1")
+        group2 = geo.findPrimGroup("prim_group2")
+
+        assert pr1 in group1.prims()
+        assert pr1 not in group2.prims()
+
+        assert pr2 in group1.prims()
+        assert pr2 in group2.prims()
+
+        assert pr3 in group2.prims()
+        assert pr3 not in group1.prims()
+
+
+class Test_batch_copy_group_membership_by_indices(object):
+    """Test ht.inline.api.batch_copy_group_membership_by_indices."""
+
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        geo = hou.Geometry().freeze(True)
+        groups = obj_test_geo.pointGroups()
+
+        with pytest.raises(hou.GeometryPermissionError):
+            ht.inline.api.batch_copy_group_membership_by_indices(obj_test_geo, hou.Point, [0], groups, geo,
+                                                                      hou.Point, [0])
+
+    def test_size_missmatch(self, obj_test_geo):
+        groups = obj_test_geo.pointGroups()
+
+        geo = hou.Geometry()
+
+        pt1 = geo.createPoint()
+        pt2 = geo.createPoint()
+        pt3 = geo.createPoint()
+
+        with pytest.raises(ValueError):
+            ht.inline.api.batch_copy_group_membership_by_indices(obj_test_geo, hou.Point, [2, 8], groups, geo,
+                                                                  hou.Point, [0, 2, 1])
+
+    def test_points(self, obj_test_geo):
+        groups = obj_test_geo.pointGroups()
+
+        geo = hou.Geometry()
+
+        pt1 = geo.createPoint()
+        pt2 = geo.createPoint()
+        pt3 = geo.createPoint()
+
+        ht.inline.api.batch_copy_group_membership_by_indices(obj_test_geo, hou.Point, [2, 8, 10], groups, geo,
+                                                                  hou.Point, [0, 2, 1])
+
+        # Ensure all the groups got copied right.
+        assert len(geo.pointGroups()) == len(groups)
+
+        group1 = geo.findPointGroup("point_group1")
+        group2 = geo.findPointGroup("point_group2")
+
+        assert pt1 in group1.points()
+        assert pt1 not in group2.points()
+
+        assert pt3 in group1.points()
+        assert pt3 in group2.points()
+
+        assert pt2 in group2.points()
+        assert pt2 not in group1.points()
+
+    def test_prims(self, obj_test_geo):
+        groups = obj_test_geo.primGroups()
+
+        geo = hou.Geometry()
+
+        pr1 = geo.createPolygon()
+        pr2 = geo.createPolygon()
+        pr3 = geo.createPolygon()
+
+        ht.inline.api.batch_copy_group_membership_by_indices(obj_test_geo, hou.Prim, [1, 4, 5], groups, geo, hou.Prim, [0, 1, 2])
+
+        # Ensure all the attributes got copied right.
+        assert len(geo.primGroups()) == len(groups)
+
+        group1 = geo.findPrimGroup("prim_group1")
+        group2 = geo.findPrimGroup("prim_group2")
+
+        assert pr1 in group1.prims()
+        assert pr1 not in group2.prims()
+
+        assert pr2 in group1.prims()
+        assert pr2 in group2.prims()
+
+        assert pr3 in group2.prims()
+        assert pr3 not in group1.prims()
+
+
+class Test_batch_copy_group_membership(object):
+    """Test ht.inline.api.batch_copy_group_membership."""
+
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        geo = hou.Geometry()
+        pt1 = geo.createPoint()
+
+        geo = geo.freeze(True)
+
+        groups = obj_test_geo.pointGroups()
+
+        with pytest.raises(hou.GeometryPermissionError):
+            ht.inline.api.batch_copy_group_membership(
+                [obj_test_geo.points()[0]], groups, [geo.points()[0]]
+            )
+
+    def test_size_missmatch(self, obj_test_geo):
+        groups = obj_test_geo.pointGroups()
+
+        geo = hou.Geometry()
+
+        pt1 = geo.createPoint()
+        pt2 = geo.createPoint()
+        pt3 = geo.createPoint()
+
+        with pytest.raises(ValueError):
+            ht.inline.api.batch_copy_group_membership(
+                [obj_test_geo.points()[0], obj_test_geo.points()[8]], groups, [geo.points()[0]]
+            )
+
+    def test_points(self, obj_test_geo):
+        groups = obj_test_geo.pointGroups()
+
+        geo = hou.Geometry()
+
+        pt1 = geo.createPoint()
+        pt2 = geo.createPoint()
+        pt3 = geo.createPoint()
+
+        ht.inline.api.batch_copy_group_membership(obj_test_geo.globPoints("2 8 10"), groups, geo.points())
+
+        # Ensure all the groups got copied right.
+        assert len(geo.pointGroups()) == len(groups)
+
+        group1 = geo.findPointGroup("point_group1")
+        group2 = geo.findPointGroup("point_group2")
+
+        assert pt1 in group1.points()
+        assert pt1 not in group2.points()
+
+        assert pt2 in group1.points()
+        assert pt2 in group2.points()
+
+        assert pt3 in group2.points()
+        assert pt3 not in group1.points()
+
+    def test_prims(self, obj_test_geo):
+        groups = obj_test_geo.primGroups()
+
+        geo = hou.Geometry()
+
+        pr1 = geo.createPolygon()
+        pr2 = geo.createPolygon()
+        pr3 = geo.createPolygon()
+
+        ht.inline.api.batch_copy_group_membership(obj_test_geo.globPrims("1 4 5"), groups, geo.prims())
+
+        # Ensure all the attributes got copied right.
+        assert len(geo.primGroups()) == len(groups)
+
+        group1 = geo.findPrimGroup("prim_group1")
+        group2 = geo.findPrimGroup("prim_group2")
+
+        assert pr1 in group1.prims()
+        assert pr1 not in group2.prims()
+
+        assert pr2 in group1.prims()
+        assert pr2 in group2.prims()
+
+        assert pr3 in group2.prims()
+        assert pr3 not in group1.prims()
+
+
+def test_point_adjacent_polygons(obj_test_geo):
     """Test ht.inline.api.point_adjacent_polygons."""
-    mock_adjacent = mocker.patch("ht.inline.api._cpp_methods.pointAdjacentPolygons")
-    mock_get = mocker.patch("ht.inline.api.utils.get_prims_from_list")
+    target = obj_test_geo.globPrims("1 2")
 
-    mock_prim = mocker.MagicMock(spec=hou.Prim)
+    prims = ht.inline.api.point_adjacent_polygons(obj_test_geo.iterPrims()[0])
 
-    result = api.point_adjacent_polygons(mock_prim)
-
-    assert result == mock_get.return_value
-
-    mock_adjacent.assert_called_with(
-        mock_prim.geometry.return_value, mock_prim.number.return_value
-    )
-    mock_get.assert_called_with(
-        mock_prim.geometry.return_value, mock_adjacent.return_value
-    )
+    assert prims == target
 
 
-def test_edge_adjacent_polygons(mocker):
+def test_edge_adjacent_polygons(obj_test_geo):
     """Test ht.inline.api.edge_adjacent_polygons."""
-    mock_adjacent = mocker.patch("ht.inline.api._cpp_methods.edgeAdjacentPolygons")
-    mock_get = mocker.patch("ht.inline.api.utils.get_prims_from_list")
+    target = obj_test_geo.globPrims("2")
 
-    mock_prim = mocker.MagicMock(spec=hou.Prim)
+    prims = ht.inline.api.edge_adjacent_polygons(obj_test_geo.iterPrims()[0])
 
-    result = api.edge_adjacent_polygons(mock_prim)
-
-    assert result == mock_get.return_value
-
-    mock_adjacent.assert_called_with(
-        mock_prim.geometry.return_value, mock_prim.number.return_value
-    )
-    mock_get.assert_called_with(
-        mock_prim.geometry.return_value, mock_adjacent.return_value
-    )
+    assert prims == target
 
 
-def test_connected_points(mocker):
+def test_connected_points(obj_test_geo):
     """Test ht.inline.api.connected_points."""
-    mock_connected = mocker.patch("ht.inline.api._cpp_methods.connectedPoints")
-    mock_get = mocker.patch("ht.inline.api.utils.get_points_from_list")
+    target = obj_test_geo.globPoints("1 3 5 7")
 
-    mock_point = mocker.MagicMock(spec=hou.Point)
+    points = ht.inline.api.connected_points(obj_test_geo.iterPoints()[4])
 
-    result = api.connected_points(mock_point)
-
-    assert result == mock_get.return_value
-
-    mock_connected.assert_called_with(
-        mock_point.geometry.return_value, mock_point.number.return_value
-    )
-    mock_get.assert_called_with(
-        mock_point.geometry.return_value, mock_connected.return_value
-    )
+    assert points == target
 
 
-def test_connected_prims(mocker):
+def test_prims_connected_to_point(obj_test_geo):
     """Test ht.inline.api.connected_prims."""
-    mock_connected = mocker.patch("ht.inline.api._cpp_methods.connectedPrims")
-    mock_get = mocker.patch("ht.inline.api.utils.get_prims_from_list")
+    target = obj_test_geo.prims()
 
-    mock_point = mocker.MagicMock(spec=hou.Point)
+    prims = ht.inline.api.prims_connected_to_point(obj_test_geo.iterPoints()[4])
 
-    result = api.connected_prims(mock_point)
-
-    assert result == mock_get.return_value
-
-    mock_connected.assert_called_with(
-        mock_point.geometry.return_value, mock_point.number.return_value
-    )
-    mock_get.assert_called_with(
-        mock_point.geometry.return_value, mock_connected.return_value
-    )
+    assert prims == target
 
 
-def test_referencing_vertices(mocker):
+def test_referencing_vertices(obj_test_geo):
     """Test ht.inline.api.referencing_vertices."""
-    mock_referencing = mocker.patch("ht.inline.api._cpp_methods.referencingVertices")
+    target = obj_test_geo.globVertices("0v2 1v3 2v1 3v0")
 
-    mock_point = mocker.MagicMock(spec=hou.Prim)
+    vertices = ht.inline.api.referencing_vertices(obj_test_geo.iterPoints()[4])
 
-    mock_result = mocker.MagicMock()
-    mock_result.prims = list(range(3))
-    mock_result.indices = reversed(list(range(3)))
-
-    mock_referencing.return_value = mock_result
-
-    result = api.referencing_vertices(mock_point)
-
-    assert result == mock_point.geometry.return_value.globVertices.return_value
-
-    mock_referencing.assert_called_with(
-        mock_point.geometry.return_value, mock_point.number.return_value
-    )
-
-    mock_point.geometry.return_value.globVertices.assert_called_with("0v2 1v1 2v0")
+    assert vertices == target
 
 
 class Test_string_table_indices(object):
     """Test ht.inline.api.string_table_indices."""
 
-    def test_not_string(self, mocker):
-        mock_attrib = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib.dataType.return_value = hou.attribData.Float
+    def test_error(self, obj_test_geo):
+        # Not a string
+        attr = obj_test_geo.findPointAttrib("not_string")
 
         with pytest.raises(ValueError):
-            api.string_table_indices(mock_attrib)
+            ht.inline.api.string_table_indices(attr)
 
-    def test(self, mocker):
-        mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
-        mock_get = mocker.patch("ht.inline.api._cpp_methods.getStringTableIndices")
+    def test_points(self, obj_test_geo):
+        target = (0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1)
 
-        mock_attrib = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib.dataType.return_value = hou.attribData.String
+        attr = obj_test_geo.findPointAttrib("test")
 
-        result = api.string_table_indices(mock_attrib)
+        assert ht.inline.api.string_table_indices(attr) == target
 
-        assert result == tuple(mock_get.return_value)
+    def test_prims(self, obj_test_geo):
+        target = (0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4)
 
-        mock_owner.assert_called_with(mock_attrib.type.return_value)
-        mock_get.assert_called_with(
-            mock_attrib.geometry.return_value,
-            mock_owner.return_value,
-            mock_attrib.name.return_value,
-        )
+        attr = obj_test_geo.findPrimAttrib("test")
+
+        assert ht.inline.api.string_table_indices(attr) == target
 
 
-class Test_vertex_string_attrib_values(object):
+def test_vertex_string_attrib_values(fix_hou_exceptions, obj_test_geo):
     """Test ht.inline.api.vertex_string_attrib_values."""
+    with pytest.raises(hou.OperationFailed):
+        assert ht.inline.api.vertex_string_attrib_values(obj_test_geo, "foo")
 
-    def test_invalid_attribute(self, mocker, fix_hou_exceptions):
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_geometry.findVertexAttrib.return_value = None
+    with pytest.raises(ValueError):
+        assert ht.inline.api.vertex_string_attrib_values(obj_test_geo, "not_string")
 
-        mock_name = mocker.MagicMock(spec=str)
+    target = (
+        "vertex0",
+        "vertex1",
+        "vertex2",
+        "vertex3",
+        "vertex4",
+        "vertex5",
+        "vertex6",
+        "vertex7",
+    )
 
-        with pytest.raises(hou.OperationFailed):
-            api.vertex_string_attrib_values(mock_geometry, mock_name)
-
-        mock_geometry.findVertexAttrib.assert_called_with(mock_name)
-
-    def test_not_string(self, mocker, fix_hou_exceptions):
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-
-        mock_attrib = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib.dataType.return_value = hou.attribData.Float
-
-        mock_geometry.findVertexAttrib.return_value = mock_attrib
-
-        with pytest.raises(ValueError):
-            api.vertex_string_attrib_values(mock_geometry, mock_name)
-
-        mock_geometry.findVertexAttrib.assert_called_with(mock_name)
-
-    def test(self, mocker, fix_hou_exceptions):
-        mock_get = mocker.patch("ht.inline.api._cpp_methods.vertexStringAttribValues")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-
-        mock_attrib = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib.dataType.return_value = hou.attribData.String
-
-        mock_geometry.findVertexAttrib.return_value = mock_attrib
-
-        result = api.vertex_string_attrib_values(mock_geometry, mock_name)
-
-        assert result == mock_get.return_value
-
-        mock_geometry.findVertexAttrib.assert_called_with(mock_name)
-        mock_get.assert_called_with(mock_geometry, mock_name)
+    assert ht.inline.api.vertex_string_attrib_values(obj_test_geo, "test") == target
 
 
 class Test_set_vertex_string_attrib_values(object):
     """Test ht.inline.api.set_vertex_string_attrib_values."""
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-        mock_values = mocker.MagicMock(spec=list)
-
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
         with pytest.raises(hou.GeometryPermissionError):
-            api.set_vertex_string_attrib_values(mock_geometry, mock_name, mock_values)
+            ht.inline.api.set_vertex_string_attrib_values(obj_test_geo, "test", [])
 
-    def test_invalid_attribute(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
+    def test_success(self, obj_test_geo_copy):
+        target = ("vertex0", "vertex1", "vertex2", "vertex3", "vertex4")
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_geometry.findVertexAttrib.return_value = None
+        attr = obj_test_geo_copy.findVertexAttrib("test")
 
-        mock_name = mocker.MagicMock(spec=str)
-        mock_values = mocker.MagicMock(spec=list)
+        ht.inline.api.set_vertex_string_attrib_values(obj_test_geo_copy, "test", target)
 
+        values = []
+
+        for prim in obj_test_geo_copy.prims():
+            values.extend([vertex.attribValue(attr) for vertex in prim.vertices()])
+
+        assert tuple(values) == target
+
+    def test_invalid_attribute(self, fix_hou_exceptions, obj_test_geo_copy):
         with pytest.raises(hou.OperationFailed):
-            api.set_vertex_string_attrib_values(mock_geometry, mock_name, mock_values)
+            ht.inline.api.set_vertex_string_attrib_values(obj_test_geo_copy, "thing", [])
 
-        mock_geometry.findVertexAttrib.assert_called_with(mock_name)
+    def test_invalid_attribute_type(self, fix_hou_exceptions, obj_test_geo_copy):
+        with pytest.raises(ValueError):
+            ht.inline.api.set_vertex_string_attrib_values(obj_test_geo_copy, "notstring", [])
 
-    def test_not_string(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-        mock_values = mocker.MagicMock(spec=list)
-
-        mock_attrib = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib.dataType.return_value = hou.attribData.Float
-
-        mock_geometry.findVertexAttrib.return_value = mock_attrib
+    def test_invalid_attribute_size(self, fix_hou_exceptions, obj_test_geo_copy):
+        target = ("vertex0", "vertex1", "vertex2", "vertex3")
 
         with pytest.raises(ValueError):
-            api.set_vertex_string_attrib_values(mock_geometry, mock_name, mock_values)
-
-        mock_geometry.findVertexAttrib.assert_called_with(mock_name)
-
-    def test_no_size_match(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_num = mocker.patch("ht.inline.api.num_vertices")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-        mock_values = mocker.MagicMock(spec=list)
-
-        mock_attrib = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib.dataType.return_value = hou.attribData.String
-
-        mock_geometry.findVertexAttrib.return_value = mock_attrib
-
-        with pytest.raises(ValueError):
-            api.set_vertex_string_attrib_values(mock_geometry, mock_name, mock_values)
-
-        mock_geometry.findVertexAttrib.assert_called_with(mock_name)
-        mock_num.assert_called_with(mock_geometry)
-
-    def test(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_num = mocker.patch("ht.inline.api.num_vertices")
-        mock_build = mocker.patch("ht.inline.utils.build_c_string_array")
-        mock_set = mocker.patch(
-            "ht.inline.api._cpp_methods.setVertexStringAttribValues"
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-
-        size = 5
-        mock_values = mocker.MagicMock(spec=list)
-        mock_values.__len__.return_value = size
-        mock_num.return_value = size
-
-        mock_attrib = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib.dataType.return_value = hou.attribData.String
-
-        mock_geometry.findVertexAttrib.return_value = mock_attrib
-
-        api.set_vertex_string_attrib_values(mock_geometry, mock_name, mock_values)
-
-        mock_geometry.findVertexAttrib.assert_called_with(mock_name)
-        mock_num.assert_called_with(mock_geometry)
-
-        mock_build.assert_called_with(mock_values)
-
-        mock_set.assert_called_with(
-            mock_geometry,
-            mock_name,
-            mock_build.return_value,
-            len(mock_build.return_value),
-        )
+            ht.inline.api.set_vertex_string_attrib_values(obj_test_geo_copy, "test", target)
 
 
 class Test_set_shared_point_string_attrib(object):
     """Test ht.inline.api.set_shared_point_string_attrib."""
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-        mock_value = mocker.MagicMock(spec=str)
-
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
         with pytest.raises(hou.GeometryPermissionError):
-            api.set_shared_point_string_attrib(mock_geometry, mock_name, mock_value)
+            ht.inline.api.set_shared_point_string_attrib(obj_test_geo, "foo", "point0")
 
-    def test_invalid_attribute(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
+    def test_no_attribute(self, obj_test_geo_copy):
+        with pytest.raises(ValueError):
+            ht.inline.api.set_shared_point_string_attrib(obj_test_geo_copy, "foo", "point0")
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-        mock_value = mocker.MagicMock(spec=str)
-
-        mock_geometry.findPointAttrib.return_value = None
+    def test_not_string_attribute(self, obj_test_geo_copy):
+        obj_test_geo_copy.addAttrib(hou.attribType.Point, "not_string", 0)
 
         with pytest.raises(ValueError):
-            api.set_shared_point_string_attrib(mock_geometry, mock_name, mock_value)
+            ht.inline.api.set_shared_point_string_attrib(obj_test_geo_copy, "not_string", "point0")
 
-        mock_geometry.findPointAttrib.assert_called_with(mock_name)
+    def test_success(self, obj_test_geo_copy):
+        target = ["point0"] * 10
 
-    def test_not_string(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
+        ht.inline.api.set_shared_point_string_attrib(obj_test_geo_copy, "test", "point0")
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-        mock_value = mocker.MagicMock(spec=str)
+        assert list(obj_test_geo_copy.pointStringAttribValues("test")) == target
 
-        mock_attrib = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib.dataType.return_value = hou.attribData.Float
+    def test_success_group(self, obj_test_geo_copy):
+        target = ["point0"] * 5 + [""] * 5
 
-        mock_geometry.findPointAttrib.return_value = mock_attrib
+        group = obj_test_geo_copy.pointGroups()[0]
 
-        with pytest.raises(ValueError):
-            api.set_shared_point_string_attrib(mock_geometry, mock_name, mock_value)
+        ht.inline.api.set_shared_point_string_attrib(obj_test_geo_copy, "test", "point0", group)
 
-        mock_geometry.findPointAttrib.assert_called_with(mock_name)
-
-    def test_default(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
-        mock_set = mocker.patch("ht.inline.api._cpp_methods.setSharedStringAttrib")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-        mock_value = mocker.MagicMock(spec=str)
-
-        mock_attrib = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib.dataType.return_value = hou.attribData.String
-
-        mock_geometry.findPointAttrib.return_value = mock_attrib
-
-        api.set_shared_point_string_attrib(mock_geometry, mock_name, mock_value)
-
-        mock_geometry.findPointAttrib.assert_called_with(mock_name)
-
-        mock_owner.assert_called_with(mock_attrib.type.return_value)
-        mock_set.assert_called_with(
-            mock_geometry, mock_owner.return_value, mock_name, mock_value, 0
-        )
-
-    def test_group(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
-        mock_set = mocker.patch("ht.inline.api._cpp_methods.setSharedStringAttrib")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-        mock_value = mocker.MagicMock(spec=str)
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-
-        mock_attrib = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib.dataType.return_value = hou.attribData.String
-
-        mock_geometry.findPointAttrib.return_value = mock_attrib
-
-        api.set_shared_point_string_attrib(
-            mock_geometry, mock_name, mock_value, mock_group
-        )
-
-        mock_geometry.findPointAttrib.assert_called_with(mock_name)
-
-        mock_owner.assert_called_with(mock_attrib.type.return_value)
-        mock_set.assert_called_with(
-            mock_geometry,
-            mock_owner.return_value,
-            mock_name,
-            mock_value,
-            mock_group.name.return_value,
-        )
+        assert list(obj_test_geo_copy.pointStringAttribValues("test")) == target
 
 
 class Test_set_shared_prim_string_attrib(object):
     """Test ht.inline.api.set_shared_prim_string_attrib."""
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-        mock_value = mocker.MagicMock(spec=str)
-
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
         with pytest.raises(hou.GeometryPermissionError):
-            api.set_shared_prim_string_attrib(mock_geometry, mock_name, mock_value)
+            ht.inline.api.set_shared_prim_string_attrib(obj_test_geo, "test", "prim0")
 
-    def test_invalid_attribute(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
+    def test_no_attribute(self, obj_test_geo_copy):
+        with pytest.raises(ValueError):
+            ht.inline.api.set_shared_prim_string_attrib(obj_test_geo_copy, "foo", "prim0")
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-        mock_value = mocker.MagicMock(spec=str)
-
-        mock_geometry.findPrimAttrib.return_value = None
+    def test_not_string_attribute(self, obj_test_geo_copy):
+        obj_test_geo_copy.addAttrib(hou.attribType.Prim, "not_string", 0)
 
         with pytest.raises(ValueError):
-            api.set_shared_prim_string_attrib(mock_geometry, mock_name, mock_value)
+            ht.inline.api.set_shared_prim_string_attrib(obj_test_geo_copy, "not_string", "value")
 
-        mock_geometry.findPrimAttrib.assert_called_with(mock_name)
+    def test_success(self, obj_test_geo_copy):
+        target = ["value"] * 5
 
-    def test_not_string(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
+        attr = obj_test_geo_copy.findPrimAttrib("test")
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-        mock_value = mocker.MagicMock(spec=str)
+        ht.inline.api.set_shared_prim_string_attrib(obj_test_geo_copy, attr.name(), "value")
 
-        mock_attrib = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib.dataType.return_value = hou.attribData.Float
+        assert list(obj_test_geo_copy.primStringAttribValues("test")) == target
 
-        mock_geometry.findPrimAttrib.return_value = mock_attrib
+    def test_success_group(self, obj_test_geo_copy):
+        target = ["value"] * 3 + ["", ""]
+
+        attr = obj_test_geo_copy.findPrimAttrib("test")
+
+        group = obj_test_geo_copy.findPrimGroup("group1")
+
+        ht.inline.api.set_shared_prim_string_attrib(obj_test_geo_copy, attr.name(), "value", group)
+
+        assert list(obj_test_geo_copy.primStringAttribValues("test")) == target
+
+
+class Test_attribute_has_uninitialized_string_values(object):
+    """Test ht.inline.api.attribute_has_uninitialized_string_values."""
+
+    def test_not_string_attribute(self, obj_test_geo):
+        attrib = obj_test_geo.findPointAttrib("not_string_attrib")
 
         with pytest.raises(ValueError):
-            api.set_shared_prim_string_attrib(mock_geometry, mock_name, mock_value)
+            ht.inline.api.attribute_has_uninitialized_string_values(attrib)
 
-        mock_geometry.findPrimAttrib.assert_called_with(mock_name)
+    @pytest.mark.parametrize("name, expected", [
+        ("point_attrib_fully_initialized", False),
+        ("point_attrib_not_initialized", True),
+        ("point_attrib_partially_initialized", True),
 
-    def test_default(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
-        mock_set = mocker.patch("ht.inline.api._cpp_methods.setSharedStringAttrib")
+    ]
+    )
+    def test_point_attribs(self, obj_test_geo, name, expected):
+        attrib = obj_test_geo.findPointAttrib(name)
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-        mock_value = mocker.MagicMock(spec=str)
+        result = ht.inline.api.attribute_has_uninitialized_string_values(attrib)
 
-        mock_attrib = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib.dataType.return_value = hou.attribData.String
+        assert result == expected
 
-        mock_geometry.findPrimAttrib.return_value = mock_attrib
+    @pytest.mark.parametrize("name, expected", [
+        ("prim_attrib_fully_initialized", False),
+        ("prim_attrib_not_initialized", True),
+        ("prim_attrib_partially_initialized", True),
 
-        api.set_shared_prim_string_attrib(mock_geometry, mock_name, mock_value)
+    ]
+    )
+    def test_prim_attribs(self, obj_test_geo, name, expected):
+        attrib = obj_test_geo.findPrimAttrib(name)
 
-        mock_geometry.findPrimAttrib.assert_called_with(mock_name)
+        result = ht.inline.api.attribute_has_uninitialized_string_values(attrib)
 
-        mock_owner.assert_called_with(mock_attrib.type.return_value)
-        mock_set.assert_called_with(
-            mock_geometry, mock_owner.return_value, mock_name, mock_value, 0
-        )
+        assert result == expected
 
-    def test_group(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
-        mock_set = mocker.patch("ht.inline.api._cpp_methods.setSharedStringAttrib")
+    @pytest.mark.parametrize("name, expected", [
+        ("vertex_attrib_fully_initialized", False),
+        ("vertex_attrib_not_initialized", True),
+        ("vertex_attrib_partially_initialized", True),
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_name = mocker.MagicMock(spec=str)
-        mock_value = mocker.MagicMock(spec=str)
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
+    ]
+    )
+    def test_vertex_attribs(self, obj_test_geo, name, expected):
+        attrib = obj_test_geo.findVertexAttrib(name)
 
-        mock_attrib = mocker.MagicMock(spec=hou.Attrib)
-        mock_attrib.dataType.return_value = hou.attribData.String
+        result = ht.inline.api.attribute_has_uninitialized_string_values(attrib)
 
-        mock_geometry.findPrimAttrib.return_value = mock_attrib
+        assert result == expected
 
-        api.set_shared_prim_string_attrib(
-            mock_geometry, mock_name, mock_value, mock_group
-        )
+    @pytest.mark.parametrize("name, expected", [
+        ("detail_attrib_fully_initialized", False),
+        ("detail_attrib_not_initialized", True),
 
-        mock_geometry.findPrimAttrib.assert_called_with(mock_name)
+    ]
+    )
+    def test_detail_attribs(self, obj_test_geo, name, expected):
+        attrib = obj_test_geo.findGlobalAttrib(name)
 
-        mock_owner.assert_called_with(mock_attrib.type.return_value)
-        mock_set.assert_called_with(
-            mock_geometry,
-            mock_owner.return_value,
-            mock_name,
-            mock_value,
-            mock_group.name.return_value,
-        )
+        result = ht.inline.api.attribute_has_uninitialized_string_values(attrib)
+
+        assert result == expected
 
 
-def test_face_has_edge(mocker):
+
+
+
+
+
+def test_face_has_edge(obj_test_geo):
     """Test ht.inline.api.face_has_edge."""
-    mock_has = mocker.patch("ht.inline.api._cpp_methods.faceHasEdge")
+    face = obj_test_geo.iterPrims()[0]
 
-    mock_face = mocker.MagicMock(spec=hou.Face)
-    mock_pt1 = mocker.MagicMock(spec=hou.Point)
-    mock_pt2 = mocker.MagicMock(spec=hou.Point)
+    pt0 = obj_test_geo.iterPoints()[0]
+    pt1 = obj_test_geo.iterPoints()[1]
 
-    result = api.face_has_edge(mock_face, mock_pt1, mock_pt2)
+    assert ht.inline.api.face_has_edge(face, pt0, pt1)
 
-    assert result == mock_has.return_value
+    # False
+    face = obj_test_geo.iterPrims()[0]
 
-    mock_has.assert_called_with(
-        mock_face.geometry.return_value,
-        mock_face.number.return_value,
-        mock_pt1.number.return_value,
-        mock_pt2.number.return_value,
-    )
+    pt0 = obj_test_geo.iterPoints()[0]
+    pt2 = obj_test_geo.iterPoints()[2]
+
+    assert ht.inline.api.face_has_edge(face, pt0, pt2)
 
 
-def test_shared_edges(mocker):
+def test_shared_edges(obj_test_geo):
     """Test ht.inline.api.shared_edges."""
-    mock_connected = mocker.patch("ht.inline.api.connected_points")
-    mock_has = mocker.patch("ht.inline.api.face_has_edge")
+    pr0, pr1 = obj_test_geo.prims()
 
-    mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+    edges = ht.inline.api.shared_edges(pr0, pr1)
 
-    mock_point1 = mocker.MagicMock(spec=hou.Point)
-    mock_point1.number.return_value = 1
+    pt2 = obj_test_geo.iterPoints()[2]
+    pt3 = obj_test_geo.iterPoints()[3]
 
-    mock_vertex1 = mocker.MagicMock(spec=hou.Vertex)
-    mock_vertex1.point.return_value = mock_point1
+    edge = obj_test_geo.findEdge(pt2, pt3)
 
-    mock_point2 = mocker.MagicMock(spec=hou.Point)
-    mock_point2.number.return_value = 2
-
-    mock_vertex2 = mocker.MagicMock(spec=hou.Vertex)
-    mock_vertex2.point.return_value = mock_point2
-
-    mock_point3 = mocker.MagicMock(spec=hou.Point)
-    mock_point3.number.return_value = 3
-
-    mock_vertex3 = mocker.MagicMock(spec=hou.Vertex)
-    mock_vertex3.point.return_value = mock_point3
-
-    mock_face1 = mocker.MagicMock(spec=hou.Face)
-    mock_face1.geometry.return_value = mock_geometry
-    mock_face1.vertices.return_value = (mock_vertex1, mock_vertex2, mock_vertex3)
-
-    mock_connected.side_effect = (
-        (mock_point2, mock_point3),
-        (mock_point3, mock_point1),
-        (mock_point1, mock_point2),
-    )
-
-    mock_face2 = mocker.MagicMock(spec=hou.Face)
-
-    # pt 2 and 3 are connected, so we need to have positives when iterating over both.
-    # Duplicate edges are removed via the set.
-    mock_has.side_effect = (False, False, True, True, False, False, True, True)
-
-    result = api.shared_edges(mock_face1, mock_face2)
-
-    assert result == (mock_geometry.findEdge.return_value,)
-
-    mock_geometry.findEdge.assert_called_with(mock_point2, mock_point3)
+    assert edges == (edge,)
 
 
 class Test_insert_vertex(object):
     """Test ht.inline.api.insert_vertex."""
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        face = obj_test_geo.iterPrims()[0]
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_face = mocker.MagicMock(spec=hou.Face)
-        mock_face.geometry.return_value = mock_geometry
-
-        mock_point = mocker.MagicMock(spec=hou.Point)
-        mock_index = mocker.MagicMock(spec=int)
+        pt0 = obj_test_geo.points()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            api.insert_vertex(mock_face, mock_point, mock_index)
+            ht.inline.api.insert_vertex(face, pt0, 2)
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_negative_index(self, obj_test_geo_copy):
+        face = obj_test_geo_copy.iterPrims()[0]
 
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_assert = mocker.patch("ht.inline.api._assert_prim_vertex_index")
-        mock_insert = mocker.patch("ht.inline.api._cpp_methods.insertVertex")
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        new_point = ht.inline.api.create_point_at_position(obj_test_geo_copy, hou.Vector3(0.5, 0, 0.5))
 
-        mock_face = mocker.MagicMock(spec=hou.Face)
-        mock_face.geometry.return_value = mock_geometry
+        # Negative index.
+        with pytest.raises(IndexError):
+            ht.inline.api.insert_vertex(face, new_point, -1)
 
-        mock_point = mocker.MagicMock(spec=hou.Point)
-        mock_index = mocker.MagicMock(spec=int)
+    def test_invalid_index(self, obj_test_geo_copy):
+        face = obj_test_geo_copy.iterPrims()[0]
 
-        result = api.insert_vertex(mock_face, mock_point, mock_index)
+        new_point = ht.inline.api.create_point_at_position(obj_test_geo_copy, hou.Vector3(0.5, 0, 0.5))
 
-        assert result == mock_face.vertex.return_value
+        # Invalid index.
+        with pytest.raises(IndexError):
+            ht.inline.api.insert_vertex(face, new_point, 10)
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_success(self, obj_test_geo_copy):
+        face = obj_test_geo_copy.iterPrims()[0]
 
-        mock_assert.assert_called_with(mock_face, mock_index)
+        new_point = ht.inline.api.create_point_at_position(obj_test_geo_copy, hou.Vector3(0.5, 0, 0.5))
 
-        mock_insert.assert_called_with(
-            mock_geometry,
-            mock_face.number.return_value,
-            mock_point.number.return_value,
-            mock_index,
-        )
+        ht.inline.api.insert_vertex(face, new_point, 2)
 
-        mock_face.vertex.assert_called_with(mock_index)
+        assert face.vertex(2).point() == new_point
 
 
-class Test_delete_vertex_from_face(object):
+class Test_delete_vertex(object):
     """Test ht.inline.api.delete_vertex_from_face."""
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_face = mocker.MagicMock(spec=hou.Face)
-        mock_face.geometry.return_value = mock_geometry
-
-        mock_index = mocker.MagicMock(spec=int)
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        face = obj_test_geo.iterPrims()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            api.delete_vertex_from_face(mock_face, mock_index)
+            ht.inline.api.delete_vertex_from_face(face, 3)
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_negative_index(self, obj_test_geo_copy):
+        face = obj_test_geo_copy.iterPrims()[0]
 
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_assert = mocker.patch("ht.inline.api._assert_prim_vertex_index")
-        mock_delete = mocker.patch("ht.inline.api._cpp_methods.deleteVertexFromFace")
+        with pytest.raises(IndexError):
+            ht.inline.api.delete_vertex_from_face(face, -1)
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+    def test_invalid_index(self, obj_test_geo_copy):
+        face = obj_test_geo_copy.iterPrims()[0]
 
-        mock_face = mocker.MagicMock(spec=hou.Face)
-        mock_face.geometry.return_value = mock_geometry
+        with pytest.raises(IndexError):
+            ht.inline.api.delete_vertex_from_face(face, 10)
 
-        mock_index = mocker.MagicMock(spec=int)
+    def test_success(self, obj_test_geo_copy):
+        face = obj_test_geo_copy.iterPrims()[0]
 
-        api.delete_vertex_from_face(mock_face, mock_index)
+        ht.inline.api.delete_vertex_from_face(face, 3)
 
-        mock_read_only.assert_called_with(mock_geometry)
+        assert len(face.vertices()) == 3
 
-        mock_assert.assert_called_with(mock_face, mock_index)
-
-        mock_delete.assert_called_with(
-            mock_geometry, mock_face.number.return_value, mock_index
-        )
-
-
-class Test_set_face_vertex_point(object):
+def test_set_face_vertex_point(fix_hou_exceptions, obj_test_geo, obj_test_geo_copy):
     """Test ht.inline.api.set_face_vertex_point."""
+    face = obj_test_geo.iterPrims()[0]
+    pt4 = obj_test_geo.iterPoints()[4]
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.set_face_vertex_point(face, 3, pt4)
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+    face = obj_test_geo_copy.iterPrims()[0]
+    pt4 = obj_test_geo_copy.iterPoints()[4]
 
-        mock_face = mocker.MagicMock(spec=hou.Face)
-        mock_face.geometry.return_value = mock_geometry
+    ht.inline.api.set_face_vertex_point(face, 3, pt4)
 
-        mock_point = mocker.MagicMock(spec=hou.Point)
-        mock_index = mocker.MagicMock(spec=int)
+    assert face.vertex(3).point().number() == 4
 
-        with pytest.raises(hou.GeometryPermissionError):
-            api.set_face_vertex_point(mock_face, mock_point, mock_index)
+    # Negative index.
+    with pytest.raises(IndexError):
+        ht.inline.api.set_face_vertex_point(face, -1, pt4)
 
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_assert = mocker.patch("ht.inline.api._assert_prim_vertex_index")
-        mock_set = mocker.patch("ht.inline.api._cpp_methods.setFaceVertexPoint")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_face = mocker.MagicMock(spec=hou.Face)
-        mock_face.geometry.return_value = mock_geometry
-
-        mock_point = mocker.MagicMock(spec=hou.Point)
-        mock_index = mocker.MagicMock(spec=int)
-
-        api.set_face_vertex_point(mock_face, mock_index, mock_point)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_assert.assert_called_with(mock_face, mock_index)
-
-        mock_set.assert_called_with(
-            mock_geometry,
-            mock_face.number.return_value,
-            mock_index,
-            mock_point.number.return_value,
-        )
+    # Invalid index.
+    with pytest.raises(IndexError):
+        ht.inline.api.set_face_vertex_point(face, 10, pt4)
 
 
-def test_primitive_bary_center(mocker):
+def test_primitive_bary_center(obj_test_geo):
     """Test ht.inline.api.primitive_bary_center."""
-    mock_center = mocker.patch("ht.inline.api._cpp_methods.primitiveBaryCenter")
-    mock_hou_vec = mocker.patch("ht.inline.api.hou.Vector3", autospec=True)
+    target = hou.Vector3(1.5, 1, -1)
 
-    mock_prim = mocker.MagicMock(spec=hou.Prim)
+    prim = obj_test_geo.iterPrims()[0]
 
-    mock_result = mocker.MagicMock()
-    mock_center.return_value = mock_result
-
-    result = api.primitive_bary_center(mock_prim)
-    assert result == mock_hou_vec.return_value
-
-    mock_center.assert_called_with(
-        mock_prim.geometry.return_value, mock_prim.number.return_value
-    )
-
-    mock_hou_vec.assert_called_with(mock_result.x, mock_result.y, mock_result.z)
+    assert ht.inline.api.primitive_bary_center(prim) == target
 
 
-def test_primitive_area(mocker):
+def test_primitive_area(obj_test_geo):
     """Test ht.inline.api.primitive_area."""
-    mock_prim = mocker.MagicMock(spec=hou.Prim)
+    target = 4.375
+    prim = obj_test_geo.iterPrims()[0]
 
-    result = api.primitive_area(mock_prim)
-    assert result == mock_prim.intrinsicValue.return_value
-
-    mock_prim.intrinsicValue.assert_called_with("measuredarea")
+    assert ht.inline.api.primitive_area(prim) == target
 
 
-def test_primitive_perimeter(mocker):
+def test_primitive_perimeter(obj_test_geo):
     """Test ht.inline.api.primitive_perimeter."""
-    mock_prim = mocker.MagicMock(spec=hou.Prim)
+    target = 6.5
 
-    result = api.primitive_perimeter(mock_prim)
-    assert result == mock_prim.intrinsicValue.return_value
+    prim = obj_test_geo.iterPrims()[0]
 
-    mock_prim.intrinsicValue.assert_called_with("measuredperimeter")
+    assert ht.inline.api.primitive_perimeter(prim) == target
 
 
-def test_primitive_volume(mocker):
+def test_primitive_volume(obj_test_geo):
     """Test ht.inline.api.primitive_volume."""
+    target = 0.1666666716337204
 
-    mock_prim = mocker.MagicMock(spec=hou.Prim)
+    prim = obj_test_geo.iterPrims()[0]
 
-    result = api.primitive_volume(mock_prim)
-    assert result == mock_prim.intrinsicValue.return_value
-
-    mock_prim.intrinsicValue.assert_called_with("measuredvolume")
+    assert ht.inline.api.primitive_volume(prim) == target
 
 
-class Test_reverse_prim(object):
+class Test_reverse_prim():
     """Test ht.inline.api.reverse_prim."""
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_prim = mocker.MagicMock(spec=hou.Prim)
-        mock_prim.geometry.return_value = mock_geometry
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        prim = obj_test_geo.iterPrims()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            api.reverse_prim(mock_prim)
+            ht.inline.api.reverse_prim(prim)
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_success(self, obj_test_geo_copy):
+        target = hou.Vector3(0, -1, 0)
 
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_reverse = mocker.patch("ht.inline.api._cpp_methods.reversePrimitive")
+        prim = obj_test_geo_copy.iterPrims()[0]
+        ht.inline.api.reverse_prim(prim)
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_prim = mocker.MagicMock(spec=hou.Prim)
-        mock_prim.geometry.return_value = mock_geometry
-
-        api.reverse_prim(mock_prim)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_reverse.assert_called_with(mock_geometry, mock_prim.number.return_value)
+        assert prim.normal() == target
 
 
-class Test_make_primitive_points_unique(object):
-    """Test ht.inline.api.make_primitive_points_unique."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_prim = mocker.MagicMock(spec=hou.Prim)
-        mock_prim.geometry.return_value = mock_geometry
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.make_primitive_points_unique(mock_prim)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_unique = mocker.patch("ht.inline.api._cpp_methods.makePrimitiveUnique")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_prim = mocker.MagicMock(spec=hou.Prim)
-        mock_prim.geometry.return_value = mock_geometry
-
-        api.make_primitive_points_unique(mock_prim)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_unique.assert_called_with(mock_geometry, mock_prim.number.return_value)
-
-
-class Test_check_minimum_polygon_vertex_count(object):
+def test_check_minimum_polygon_vertex_count(obj_test_geo):
     """Test ht.inline.api.check_minimum_polygon_vertex_count."""
+    assert ht.inline.api.check_minimum_polygon_vertex_count(obj_test_geo, 3)
 
-    def test_default(self, mocker):
-        mock_check = mocker.patch(
-            "ht.inline.api._cpp_methods.check_minimum_polygon_vertex_count"
-        )
+    assert not ht.inline.api.check_minimum_polygon_vertex_count(
+        obj_test_geo, 3, ignore_open=False
+    )
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_minimum = mocker.MagicMock(spec=int)
-
-        result = api.check_minimum_polygon_vertex_count(mock_geometry, mock_minimum)
-        assert result == mock_check.return_value
-        mock_check.assert_called_with(mock_geometry, mock_minimum, True)
-
-    def test(self, mocker):
-        mock_check = mocker.patch(
-            "ht.inline.api._cpp_methods.check_minimum_polygon_vertex_count"
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_minimum = mocker.MagicMock(spec=int)
-        mock_ignore = mocker.MagicMock(spec=bool)
-
-        result = api.check_minimum_polygon_vertex_count(
-            mock_geometry, mock_minimum, ignore_open=mock_ignore
-        )
-        assert result == mock_check.return_value
-
-        mock_check.assert_called_with(mock_geometry, mock_minimum, mock_ignore)
+    assert not ht.inline.api.check_minimum_polygon_vertex_count(obj_test_geo, 5)
 
 
-def test_primitive_bounding_box(mocker):
+def test_primitive_bounding_box(obj_test_geo):
     """Test ht.inline.api.primitive_bounding_box."""
-    mock_bounding = mocker.patch("ht.inline.api.hou.BoundingBox")
+    target = hou.BoundingBox(-0.75, 0, -0.875, 0.75, 1.5, 0.875)
 
-    mock_value = mocker.MagicMock()
+    prim = obj_test_geo.iterPrims()[0]
 
-    mock_prim = mocker.MagicMock(spec=hou.Prim)
-    mock_prim.intrinsicValue.return_value = mock_value
+    assert ht.inline.api.primitive_bounding_box(prim) == target
 
-    result = api.primitive_bounding_box(mock_prim)
 
-    assert result == mock_bounding.return_value
-
-    mock_prim.intrinsicValue.assert_called_with("bounds")
-
-    mock_bounding.assert_called_with(
-        mock_value.__getitem__.return_value,
-        mock_value.__getitem__.return_value,
-        mock_value.__getitem__.return_value,
-        mock_value.__getitem__.return_value,
-        mock_value.__getitem__.return_value,
-        mock_value.__getitem__.return_value,
-    )
-
-    mock_value.__getitem__.assert_has_calls(
-        [
-            mocker.call(0),
-            mocker.call(2),
-            mocker.call(4),
-            mocker.call(1),
-            mocker.call(3),
-            mocker.call(5),
-        ]
-    )
-
-
-class Test_compute_point_normals(object):
-    """Test ht.inline.api.compute_point_normals."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.compute_point_normals(mock_geometry)
-
-    def test(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_compute = mocker.patch("ht.inline.api._cpp_methods.computePointNormals")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        api.compute_point_normals(mock_geometry)
-
-        mock_compute.assert_called_with(mock_geometry)
-
-
-class Test_add_point_normal_attribute(object):
-    """Test ht.inline.api.add_point_normal_attribute."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.add_point_normal_attribute(mock_geometry)
-
-    def test(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_add = mocker.patch("ht.inline.api._cpp_methods.addNormalAttribute")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        result = api.add_point_normal_attribute(mock_geometry)
-
-        assert result == mock_geometry.findPointAttrib.return_value
-
-        mock_add.assert_called_with(mock_geometry)
-
-        mock_geometry.findPointAttrib.assert_called_with("N")
-
-
-class Test_add_point_velocity_attribute(object):
-    """Test ht.inline.api.add_point_velocity_attribute."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.add_point_velocity_attribute(mock_geometry)
-
-    def test(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_add = mocker.patch("ht.inline.api._cpp_methods.addVelocityAttribute")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        result = api.add_point_velocity_attribute(mock_geometry)
-
-        assert result == mock_geometry.findPointAttrib.return_value
-
-        mock_add.assert_called_with(mock_geometry)
-
-        mock_geometry.findPointAttrib.assert_called_with("v")
-
-
-class Test_add_color_attribute(object):
-    """Test ht.inline.api.add_color_attribute."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_attrib_type = mocker.MagicMock(spec=hou.attribType)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.add_color_attribute(mock_geometry, mock_attrib_type)
-
-    def test_global(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        with pytest.raises(ValueError):
-            api.add_color_attribute(mock_geometry, hou.attribType.Global)
-
-    def test(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
-        mock_add = mocker.patch("ht.inline.api._cpp_methods.addDiffuseAttribute")
-        mock_find = mocker.patch("ht.inline.api.utils.find_attrib")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_attrib_type = mocker.MagicMock(spec=hou.attribType)
-
-        result = api.add_color_attribute(mock_geometry, mock_attrib_type)
-
-        assert result == mock_find.return_value
-
-        mock_owner.assert_called_with(mock_attrib_type)
-
-        mock_add.assert_called_with(mock_geometry, mock_owner.return_value)
-
-        mock_find.assert_called_with(mock_geometry, mock_attrib_type, "Cd")
-
-
-class Test_convex_polygons(object):
-    """Test ht.inline.api.convex_polygons."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.convex_polygons(mock_geometry)
-
-    def test_default_arg(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_convex = mocker.patch("ht.inline.api._cpp_methods.convexPolygons")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        api.convex_polygons(mock_geometry)
-
-        mock_convex.assert_called_with(mock_geometry, 3)
-
-    def test(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_convex = mocker.patch("ht.inline.api._cpp_methods.convexPolygons")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_max_points = mocker.MagicMock(spec=int)
-
-        api.convex_polygons(mock_geometry, mock_max_points)
-
-        mock_convex.assert_called_with(mock_geometry, mock_max_points)
-
-
-class Test_clip_geometry(object):
-    """Test ht.inline.api.clip_geometry."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_origin = mocker.MagicMock(spec=hou.Vector3)
-        mock_normal = mocker.MagicMock(spec=hou.Vector3)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.clip_geometry(mock_geometry, mock_origin, mock_normal)
-
-    def test_group_below(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_build = mocker.patch("ht.inline.api.hou.hmath.buildTranslate")
-        mock_clip = mocker.patch("ht.inline.api._cpp_methods.clipGeometry")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_origin = mocker.MagicMock(spec=hou.Vector3)
-        mock_normal = mocker.MagicMock(spec=hou.Vector3)
-        mock_dist = mocker.MagicMock(spec=int)
-        mock_group = mocker.MagicMock(spec=hou.PrimGroup)
-
-        api.clip_geometry(
-            mock_geometry,
-            mock_origin,
-            mock_normal,
-            dist=mock_dist,
-            below=True,
-            group=mock_group,
-        )
-
-        mock_origin.__add__.assert_called_with(mock_normal.__mul__.return_value)
-
-        mock_normal.__mul__.assert_has_calls([mocker.call(mock_dist), mocker.call(-1)])
-
-        mock_build.assert_called_with(mock_origin.__add__.return_value)
-
-        mock_clip.assert_called_with(
-            mock_geometry,
-            mock_build.return_value,
-            mock_normal.__mul__.return_value.normalized.return_value,
-            0,
-            mock_group.name.return_value,
-        )
-
-    def test_default_args(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_build = mocker.patch("ht.inline.api.hou.hmath.buildTranslate")
-        mock_clip = mocker.patch("ht.inline.api._cpp_methods.clipGeometry")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_origin = mocker.MagicMock(spec=hou.Vector3)
-        mock_normal = mocker.MagicMock(spec=hou.Vector3)
-
-        api.clip_geometry(mock_geometry, mock_origin, mock_normal)
-
-        mock_origin.__add__.assert_not_called()
-
-        mock_build.assert_called_with(mock_origin)
-
-        mock_clip.assert_called_with(
-            mock_geometry,
-            mock_build.return_value,
-            mock_normal.normalized.return_value,
-            0,
-            "",
-        )
-
-
-class Test_destroy_empty_groups(object):
+def test_destroy_empty_groups(fix_hou_exceptions):
     """Test ht.inline.api.destroy_empty_groups."""
+    geo = hou.Geometry()
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
+    # Read only
+    frozen_geo = geo.freeze(True)
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_attrib_type = mocker.MagicMock(spec=hou.attribType)
+    with pytest.raises(hou.GeometryPermissionError):
+        ht.inline.api.destroy_empty_groups(frozen_geo, hou.attribType.Point)
 
-        with pytest.raises(hou.GeometryPermissionError):
-            api.destroy_empty_groups(mock_geometry, mock_attrib_type)
+    # Global attribute
+    with pytest.raises(ValueError):
+        ht.inline.api.destroy_empty_groups(geo, hou.attribType.Global)
 
-    def test_global(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
+    # Point group
+    geo.createPointGroup("empty")
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+    ht.inline.api.destroy_empty_groups(geo, hou.attribType.Point)
 
-        with pytest.raises(ValueError):
-            api.destroy_empty_groups(mock_geometry, hou.attribType.Global)
+    assert not geo.pointGroups()
 
-    def test(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_owner = mocker.patch("ht.inline.utils.get_attrib_owner")
-        mock_destroy = mocker.patch("ht.inline.api._cpp_methods.destroyEmptyGroups")
+    # Prim group
+    geo.createPrimGroup("empty")
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_attrib_type = mocker.MagicMock(spec=hou.attribType)
+    ht.inline.api.destroy_empty_groups(geo, hou.attribType.Prim)
 
-        api.destroy_empty_groups(mock_geometry, mock_attrib_type)
-
-        mock_owner.assert_called_with(mock_attrib_type)
-        mock_destroy.assert_called_with(mock_geometry, mock_owner.return_value)
-
-
-class Test_destroy_unused_points(object):
-    """Test ht.inline.api.destroy_unused_points."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.destroy_unused_points(mock_geometry)
-
-    def test_group(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_destroy = mocker.patch("ht.inline.api._cpp_methods.destroyUnusedPoints")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-
-        api.destroy_unused_points(mock_geometry, mock_group)
-
-        mock_destroy.assert_called_with(mock_geometry, mock_group.name.return_value)
-
-    def test_no_group(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_destroy = mocker.patch("ht.inline.api._cpp_methods.destroyUnusedPoints")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        api.destroy_unused_points(mock_geometry)
-
-        mock_destroy.assert_called_with(mock_geometry, 0)
-
-
-class Test_consolidate_points(object):
-    """Test ht.inline.api.consolidate_points."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.consolidate_points(mock_geometry)
-
-    def test_group_distance(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_consolidate = mocker.patch("ht.inline.api._cpp_methods.consolidatePoints")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_distance = mocker.MagicMock(spec=float)
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-
-        api.consolidate_points(mock_geometry, mock_distance, mock_group)
-
-        mock_consolidate.assert_called_with(
-            mock_geometry, mock_distance, mock_group.name.return_value
-        )
-
-    def test_no_group(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_consolidate = mocker.patch("ht.inline.api._cpp_methods.consolidatePoints")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        api.consolidate_points(mock_geometry)
-
-        mock_consolidate.assert_called_with(mock_geometry, 0.001, 0)
-
-
-class Test_unique_points(object):
-    """Test ht.inline.api.unique_points."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.unique_points(mock_geometry)
-
-    def test_group(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_unique = mocker.patch("ht.inline.api._cpp_methods.uniquePoints")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-
-        api.unique_points(mock_geometry, mock_group)
-
-        mock_unique.assert_called_with(mock_geometry, mock_group.name.return_value)
-
-    def test_no_group(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_unique = mocker.patch("ht.inline.api._cpp_methods.uniquePoints")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        api.unique_points(mock_geometry)
-
-        mock_unique.assert_called_with(mock_geometry, 0)
+    assert not geo.primGroups()
 
 
 class Test_rename_group(object):
     """Test ht.inline.api.rename_group."""
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=True)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
-
-        mock_new_name = mocker.MagicMock(spec=str)
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        # Read only
+        group = obj_test_geo.pointGroups()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            api.rename_group(mock_group, mock_new_name)
+            ht.inline.api.rename_group(group, "test_group")
 
-    def test_same_name(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
+    def test_existing_group(self):
+        # Existing group
+        geo = hou.Geometry()
+        geo.createPointGroup("foo")
+        bar = geo.createPointGroup("bar")
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
-
-        mock_new_name = mock_group.name.return_value
-
-        with pytest.raises(hou.OperationFailed):
-            api.rename_group(mock_group, mock_new_name)
-
-    def test(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_get_type = mocker.patch("ht.inline.api.utils.get_group_type")
-        mock_rename = mocker.patch(
-            "ht.inline.api._cpp_methods.renameGroup", return_value=True
-        )
-        mock_find = mocker.patch("ht.inline.api.utils.find_group")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
-
-        mock_new_name = mocker.MagicMock(spec=str)
-
-        result = api.rename_group(mock_group, mock_new_name)
-
-        assert result == mock_find.return_value
-
-        mock_get_type.assert_called_with(mock_group)
-
-        mock_rename.assert_called_with(
-            mock_geometry,
-            mock_group.name.return_value,
-            mock_new_name,
-            mock_get_type.return_value,
-        )
-
-        mock_find.assert_called_with(
-            mock_geometry, mock_get_type.return_value, mock_new_name
-        )
-
-    def test_failure(self, mocker, fix_hou_exceptions):
-        mocker.patch("ht.inline.api.is_geometry_read_only", return_value=False)
-        mock_get_type = mocker.patch("ht.inline.api.utils.get_group_type")
-        mock_rename = mocker.patch(
-            "ht.inline.api._cpp_methods.renameGroup", return_value=False
-        )
-        mock_find = mocker.patch("ht.inline.api.utils.find_group")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
-
-        mock_new_name = mocker.MagicMock(spec=str)
-
-        result = api.rename_group(mock_group, mock_new_name)
-
+        result = ht.inline.api.rename_group(bar, "foo")
         assert result is None
 
-        mock_get_type.assert_called_with(mock_group)
+    def test_point_group(self, fix_hou_exceptions ,obj_test_geo_copy):
+        group = obj_test_geo_copy.pointGroups()[0]
 
-        mock_rename.assert_called_with(
-            mock_geometry,
-            mock_group.name.return_value,
-            mock_new_name,
-            mock_get_type.return_value,
-        )
+        result = ht.inline.api.rename_group(group, "test_group")
 
-        mock_find.assert_not_called()
+        assert result is not None
+        assert result.name() == "test_group"
+
+        # Same name.
+        group = obj_test_geo_copy.pointGroups()[0]
+        name = group.name()
+
+        with pytest.raises(hou.OperationFailed):
+            ht.inline.api.rename_group(group, name)
+
+    def test_prim_group(self, fix_hou_exceptions, obj_test_geo_copy):
+        group = obj_test_geo_copy.primGroups()[0]
+
+        result = ht.inline.api.rename_group(group, "test_group")
+
+        assert result is not None
+        assert result.name() == "test_group"
+
+        # Same name
+        group = obj_test_geo_copy.primGroups()[0]
+        name = group.name()
+
+        with pytest.raises(hou.OperationFailed):
+            ht.inline.api.rename_group(group, name)
 
 
-def test_group_bounding_box(mocker):
+    def test_edge_group(self, fix_hou_exceptions, obj_test_geo_copy):
+        # Edge Group
+        group = obj_test_geo_copy.edgeGroups()[0]
+
+        result = ht.inline.api.rename_group(group, "test_group")
+
+        assert result is not None
+        assert result.name() == "test_group"
+
+        # Same name
+        group = obj_test_geo_copy.edgeGroups()[0]
+        name = group.name()
+
+        with pytest.raises(hou.OperationFailed):
+            ht.inline.api.rename_group(group, name)
+
+
+class Test_group_bounding_box(object):
     """Test ht.inline.api.group_bounding_box."""
-    mock_get_type = mocker.patch("ht.inline.api.utils.get_group_type")
-    mock_group_bbox = mocker.patch("ht.inline.api._cpp_methods.groupBoundingBox")
-    mock_bbox = mocker.patch("ht.inline.api.hou.BoundingBox")
 
-    mock_group = mocker.MagicMock(spec=hou.PointGroup)
+    def test_point(self, obj_test_geo):
+        target = hou.BoundingBox(-4, 0, -1, -2, 0, 2)
 
-    result = api.group_bounding_box(mock_group)
-    assert result == mock_bbox.return_value
+        group = obj_test_geo.pointGroups()[0]
+        bbox = ht.inline.api.group_bounding_box(group)
 
-    mock_get_type.assert_called_with(mock_group)
+        assert bbox == target
 
-    mock_group_bbox.assert_called_with(
-        mock_group.geometry.return_value,
-        mock_get_type.return_value,
-        mock_group.name.return_value,
-    )
+    def test_prim(self, obj_test_geo):
+        target = hou.BoundingBox(-5, 0, -4, 4, 0, 5)
 
-    mock_bbox.assert_called_with(*mock_group_bbox.return_value)
+        group = obj_test_geo.primGroups()[0]
+        bbox = ht.inline.api.group_bounding_box(group)
+
+        assert bbox == target
+
+    def test_edge(self, obj_test_geo):
+        target = hou.BoundingBox(-5, 0, -5, 4, 0, 5)
+
+        group = obj_test_geo.edgeGroups()[0]
+        bbox = ht.inline.api.group_bounding_box(group)
+
+        assert bbox == target
 
 
-def test_group_size(mocker):
+class Test_group_size(object):
     """Test ht.inline.api.group_size."""
-    mock_get_type = mocker.patch("ht.inline.api.utils.get_group_type")
-    mock_size = mocker.patch("ht.inline.api._cpp_methods.groupSize")
 
-    mock_group = mocker.MagicMock(spec=hou.PointGroup)
+    def test_point(self, obj_test_geo):
+        group = obj_test_geo.pointGroups()[0]
 
-    result = api.group_size(mock_group)
-    assert result == mock_size.return_value
+        assert ht.inline.api.group_size(group) == 12
 
-    mock_get_type.assert_called_with(mock_group)
+    def test_prim(self, obj_test_geo):
+        group = obj_test_geo.primGroups()[0]
 
-    mock_size.assert_called_with(
-        mock_group.geometry.return_value,
-        mock_group.name.return_value,
-        mock_get_type.return_value,
-    )
+        assert ht.inline.api.group_size(group) == 39
 
+    def test_edge(self, obj_test_geo):
+        group = obj_test_geo.edgeGroups()[0]
 
-class Test_toggle_point_in_group(object):
-    """Test ht.inline.api.toggle_point_in_group."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
-
-        mock_point = mocker.MagicMock(spec=hou.Point)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.toggle_point_in_group(mock_group, mock_point)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_type = mocker.patch("ht.inline.api.utils.get_group_type")
-        mock_toggle = mocker.patch("ht.inline.api._cpp_methods.toggleGroupMembership")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
-
-        mock_point = mocker.MagicMock(spec=hou.Point)
-
-        api.toggle_point_in_group(mock_group, mock_point)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_get_type.assert_called_with(mock_group)
-
-        mock_toggle.assert_called_with(
-            mock_geometry,
-            mock_group.name.return_value,
-            mock_get_type.return_value,
-            mock_point.number.return_value,
-        )
-
-
-class Test_toggle_prim_in_group(object):
-    """Test ht.inline.api.toggle_point_in_group."""
-
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group = mocker.MagicMock(spec=hou.PrimGroup)
-        mock_group.geometry.return_value = mock_geometry
-
-        mock_prim = mocker.MagicMock(spec=hou.Prim)
-
-        with pytest.raises(hou.GeometryPermissionError):
-            api.toggle_prim_in_group(mock_group, mock_prim)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_type = mocker.patch("ht.inline.api.utils.get_group_type")
-        mock_toggle = mocker.patch("ht.inline.api._cpp_methods.toggleGroupMembership")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group = mocker.MagicMock(spec=hou.PrimGroup)
-        mock_group.geometry.return_value = mock_geometry
-
-        mock_prim = mocker.MagicMock(spec=hou.Prim)
-
-        api.toggle_prim_in_group(mock_group, mock_prim)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_get_type.assert_called_with(mock_group)
-
-        mock_toggle.assert_called_with(
-            mock_geometry,
-            mock_group.name.return_value,
-            mock_get_type.return_value,
-            mock_prim.number.return_value,
-        )
+        assert ht.inline.api.group_size(group) == 52
 
 
 class Test_toggle_group_entries(object):
     """Test ht.inline.api.toggle_group_entries."""
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        group = obj_test_geo.pointGroups()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            api.toggle_group_entries(mock_group)
+            ht.inline.api.toggle_group_entries(group)
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_point(self, obj_test_geo_copy):
+        values = obj_test_geo_copy.globPoints(" ".join([str(val) for val in range(1, 100, 2)]))
 
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_type = mocker.patch("ht.inline.api.utils.get_group_type")
-        mock_toggle = mocker.patch("ht.inline.api._cpp_methods.toggleGroupEntries")
+        group = obj_test_geo_copy.pointGroups()[0]
+        ht.inline.api.toggle_group_entries(group)
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        assert group.points() == values
 
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
+    def test_prim(self, obj_test_geo_copy):
+        values = obj_test_geo_copy.globPrims(" ".join([str(val) for val in range(0, 100, 2)]))
 
-        api.toggle_group_entries(mock_group)
+        group = obj_test_geo_copy.primGroups()[0]
+        ht.inline.api.toggle_group_entries(group)
 
-        mock_read_only.assert_called_with(mock_geometry)
+        assert group.prims() == values
 
-        mock_get_type.assert_called_with(mock_group)
+    def test_edge(self, obj_test_geo_copy):
+        group = obj_test_geo_copy.edgeGroups()[0]
+        ht.inline.api.toggle_group_entries(group)
 
-        mock_toggle.assert_called_with(
-            mock_geometry, mock_group.name.return_value, mock_get_type.return_value
-        )
+    #     assert len(group.edges()) == 20
 
 
 class Test_copy_group(object):
     """Test ht.inline.api.copy_group."""
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
-
-        mock_new_name = mocker.MagicMock(spec=str)
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        group = obj_test_geo.pointGroups()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            api.copy_group(mock_group, mock_new_name)
+            ht.inline.api.copy_group(group, "new_group")
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_point(self, obj_test_geo_copy):
+        group = obj_test_geo_copy.pointGroups()[0]
 
-    def test_same_name(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
+        new_group = ht.inline.api.copy_group(group, "new_group")
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        assert group.points() == new_group.points()
 
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
-
-        mock_new_name = mock_group.name.return_value
+    def test_point_same_name(self, fix_hou_exceptions, obj_test_geo_copy):
+        group = obj_test_geo_copy.pointGroups()[0]
 
         with pytest.raises(hou.OperationFailed):
-            api.copy_group(mock_group, mock_new_name)
+            ht.inline.api.copy_group(group, group.name())
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_point_exists(self, fix_hou_exceptions, obj_test_geo_copy):
+        group = obj_test_geo_copy.pointGroups()[-1]
 
-    def test_existing(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_type = mocker.patch("ht.inline.api.utils.get_group_type")
-        mock_find = mocker.patch("ht.inline.api.utils.find_group")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
-
-        mock_new_name = mocker.MagicMock(spec=str)
+        other_group = obj_test_geo_copy.pointGroups()[0]
 
         with pytest.raises(hou.OperationFailed):
-            api.copy_group(mock_group, mock_new_name)
+            ht.inline.api.copy_group(group, other_group.name())
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_point(self, obj_test_geo_copy):
+        group = obj_test_geo_copy.primGroups()[0]
 
-        mock_get_type.assert_called_with(mock_group)
+        new_group = ht.inline.api.copy_group(group, "new_group")
 
-        mock_find.assert_called_with(
-            mock_geometry, mock_get_type.return_value, mock_new_name
-        )
+        assert group.prims() == new_group.prims()
 
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_get_type = mocker.patch("ht.inline.api.utils.get_group_type")
-        mock_find = mocker.patch("ht.inline.api.utils.find_group")
-        mock_get_owner = mocker.patch("ht.inline.api.utils.get_group_attrib_owner")
-        mock_copy = mocker.patch("ht.inline.api._cpp_methods.copyGroup")
+    def test_point_same_name(self, fix_hou_exceptions, obj_test_geo_copy):
+        group = obj_test_geo_copy.primGroups()[0]
 
-        mock_new_group = mocker.MagicMock(spec=hou.PointGroup)
+        with pytest.raises(hou.OperationFailed):
+            ht.inline.api.copy_group(group, group.name())
 
-        mock_find.side_effect = (None, mock_new_group)
+    def test_point_exists(self, fix_hou_exceptions, obj_test_geo_copy):
+        group = obj_test_geo_copy.primGroups()[-1]
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        other_group = obj_test_geo_copy.primGroups()[0]
 
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
+        with pytest.raises(hou.OperationFailed):
+            ht.inline.api.copy_group(group, other_group.name())
 
-        mock_new_name = mocker.MagicMock(spec=str)
 
-        result = api.copy_group(mock_group, mock_new_name)
-        assert result == mock_new_group
+class Test_set_group_string_attribute(object):
+    """Test ht.inline.api.set_group_string_attribute."""
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        group = obj_test_geo.pointGroups()[0]
+        attribute = obj_test_geo.findPointAttrib("point_not_string")
 
-        mock_get_type.assert_called_with(mock_group)
+        with pytest.raises(hou.GeometryPermissionError):
+            ht.inline.api.set_group_string_attribute(group, attribute, "value")
 
-        mock_find.assert_has_calls(
-            [
-                mocker.call(mock_geometry, mock_get_type.return_value, mock_new_name),
-                mocker.call(mock_geometry, mock_get_type.return_value, mock_new_name),
-            ]
-        )
+    def test_not_string(self, obj_test_geo_copy):
+        group = obj_test_geo_copy.pointGroups()[0]
+        attribute = obj_test_geo_copy.findPointAttrib("point_not_string")
 
-        mock_get_owner.assert_called_with(mock_group)
+        with pytest.raises(ValueError):
+            ht.inline.api.set_group_string_attribute(group, attribute, "value")
 
-        mock_copy.assert_called_with(
-            mock_geometry,
-            mock_get_owner.return_value,
-            mock_group.name.return_value,
-            mock_new_name,
-        )
+    def test_point_group(self, obj_test_geo_copy):
+        group = obj_test_geo_copy.pointGroups()[0]
+        attribute = obj_test_geo_copy.findPointAttrib("point_attrib")
+
+        ht.inline.api.set_group_string_attribute(group, attribute, "value")
+
+        expected = tuple(["value"] * 6 + ["default"] * 3)
+
+        assert obj_test_geo_copy.pointStringAttribValues("point_attrib") == expected
+
+    def test_prim_group(self, obj_test_geo_copy):
+        group = obj_test_geo_copy.primGroups()[0]
+        attribute = obj_test_geo_copy.findPrimAttrib("prim_attrib")
+
+        ht.inline.api.set_group_string_attribute(group, attribute, "value")
+
+        expected = tuple(["value"] * 3 + ["default"])
+
+        assert obj_test_geo_copy.primStringAttribValues("prim_attrib") == expected
+
 
 
 class Test_groups_share_elements(object):
     """Test ht.inline.api.groups_share_elements."""
 
-    def test_different_details(self, mocker):
-        mock_match = mocker.patch(
-            "ht.inline.api.utils.geo_details_match", return_value=False
-        )
+    def test_different_details(self, obj_test_geo):
+        group1 = obj_test_geo.pointGroups()[0]
 
-        mock_geometry1 = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group1 = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group1.geometry.return_value = mock_geometry1
-
-        mock_geometry2 = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group2 = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group2.geometry.return_value = mock_geometry2
+        temp_geo = hou.Geometry()
+        group2 = temp_geo.createPointGroup("temp")
 
         with pytest.raises(ValueError):
-            api.groups_share_elements(mock_group1, mock_group2)
+            ht.inline.api.groups_share_elements(group1, group2)
 
-        mock_match.assert_called_with(mock_geometry1, mock_geometry2)
-
-    def test_different_group_types(self, mocker):
-        mock_match = mocker.patch(
-            "ht.inline.api.utils.geo_details_match", return_value=True
-        )
-        mock_get_type = mocker.patch("ht.inline.api.utils.get_group_type")
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group1 = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group1.geometry.return_value = mock_geometry
-
-        mock_group2 = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group2.geometry.return_value = mock_geometry
-
-        mock_get_type.side_effect = (
-            mocker.MagicMock(spec=int),
-            mocker.MagicMock(spec=int),
-        )
+    def test_different_types(self, obj_test_geo):
+        group1 = obj_test_geo.pointGroups()[0]
+        group2 = obj_test_geo.primGroups()[0]
 
         with pytest.raises(TypeError):
-            api.groups_share_elements(mock_group1, mock_group2)
+            ht.inline.api.groups_share_elements(group1, group2)
 
-        mock_match.assert_called_with(mock_geometry, mock_geometry)
+    def test_point_groups_share_elements(self, obj_test_geo):
+        group1 = obj_test_geo.findPointGroup("point_group_every_other")
+        group2 = obj_test_geo.findPointGroup("point_group_all")
 
-        mock_get_type.assert_has_calls(
-            [mocker.call(mock_group1), mocker.call(mock_group2)]
-        )
+        assert ht.inline.api.groups_share_elements(group1, group2)
 
-    def test(self, mocker):
-        mock_match = mocker.patch(
-            "ht.inline.api.utils.geo_details_match", return_value=True
-        )
-        mock_get_type = mocker.patch("ht.inline.api.utils.get_group_type")
-        mock_contains = mocker.patch("ht.inline.api._cpp_methods.groupsShareElements")
+    def test_point_groups_no_shared_elements(self, obj_test_geo):
+        group1 = obj_test_geo.findPointGroup("point_group_every_other")
+        group2 = obj_test_geo.findPointGroup("point_group_empty")
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        assert not ht.inline.api.groups_share_elements(group1, group2)
 
-        mock_group1 = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group1.geometry.return_value = mock_geometry
+    def test_prim_groups_share_elements(self, obj_test_geo):
+        group1 = obj_test_geo.findPrimGroup("prim_group_every_other")
+        group2 = obj_test_geo.findPrimGroup("prim_group_all")
 
-        mock_group2 = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group2.geometry.return_value = mock_geometry
+        assert ht.inline.api.groups_share_elements(group1, group2)
 
-        result = api.groups_share_elements(mock_group1, mock_group2)
+    def test_prim_groups_no_shared_elements(self, obj_test_geo):
+        group1 = obj_test_geo.findPrimGroup("prim_group_every_other")
+        group2 = obj_test_geo.findPrimGroup("prim_group_empty")
 
-        assert result == mock_contains.return_value
-
-        mock_match.assert_called_with(mock_geometry, mock_geometry)
-
-        mock_get_type.assert_has_calls(
-            [mocker.call(mock_group1), mocker.call(mock_group2)]
-        )
-
-        mock_contains.assert_called_with(
-            mock_geometry,
-            mock_group1.name.return_value,
-            mock_group2.name.return_value,
-            mock_get_type.return_value,
-        )
+        assert not ht.inline.api.groups_share_elements(group1, group2)
 
 
 class Test_convert_prim_to_point_group(object):
     """Test ht.inline.api.convert_prim_to_point_group."""
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group = mocker.MagicMock(spec=hou.PrimGroup)
-        mock_group.geometry.return_value = mock_geometry
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        group = obj_test_geo.primGroups()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            api.convert_prim_to_point_group(mock_group)
+            ht.inline.api.convert_prim_to_point_group(group)
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_same_name(self, obj_test_geo_copy):
+        group = obj_test_geo_copy.primGroups()[0]
 
-    def test_name_already_exists(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
+        new_group = ht.inline.api.convert_prim_to_point_group(group)
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        assert len(new_group.iterPoints()) == 12
 
-        mock_group = mocker.MagicMock(spec=hou.PrimGroup)
-        mock_group.geometry.return_value = mock_geometry
+        # Check source group was deleted.
+        assert not obj_test_geo_copy.primGroups()
+
+    def test_new_name(self, obj_test_geo_copy):
+        group = obj_test_geo_copy.primGroups()[0]
+
+        new_group = ht.inline.api.convert_prim_to_point_group(group, "new_group")
+
+        assert new_group.name() == "new_group"
+
+    def test_same_name_no_destroy(self, obj_test_geo_copy):
+        group = obj_test_geo_copy.primGroups()[0]
+
+        ht.inline.api.convert_prim_to_point_group(group, destroy=False)
+
+        # Check source group wasn't deleted.
+        assert len(obj_test_geo_copy.primGroups()) == 1
+
+    def test_target_name_already_exists(self, fix_hou_exceptions, obj_test_geo_copy):
+        group = obj_test_geo_copy.primGroups()[0]
+
+        obj_test_geo_copy.createPointGroup(group.name())
 
         with pytest.raises(hou.OperationFailed):
-            api.convert_prim_to_point_group(mock_group)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_geometry.findPointGroup.assert_called_with(mock_group.name.return_value)
-
-    def test_same_name(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_to_point = mocker.patch("ht.inline.api._cpp_methods.primToPointGroup")
-
-        mock_new_group = mocker.MagicMock(spec=hou.PointGroup)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_geometry.findPointGroup.side_effect = (None, mock_new_group)
-
-        mock_group = mocker.MagicMock(spec=hou.PrimGroup)
-        mock_group.geometry.return_value = mock_geometry
-
-        result = api.convert_prim_to_point_group(mock_group)
-        assert result == mock_new_group
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_geometry.findPointGroup.assert_has_calls(
-            [
-                mocker.call(mock_group.name.return_value),
-                mocker.call(mock_group.name.return_value),
-            ]
-        )
-
-        mock_to_point.assert_called_with(
-            mock_geometry,
-            mock_group.name.return_value,
-            mock_group.name.return_value,
-            True,
-        )
-
-    def test_new_name_no_destroy(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_to_point = mocker.patch("ht.inline.api._cpp_methods.primToPointGroup")
-
-        mock_new_group = mocker.MagicMock(spec=hou.PointGroup)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_geometry.findPointGroup.side_effect = (None, mock_new_group)
-
-        mock_group = mocker.MagicMock(spec=hou.PrimGroup)
-        mock_group.geometry.return_value = mock_geometry
-
-        mock_new_name = mocker.MagicMock(spec=str)
-
-        result = api.convert_prim_to_point_group(mock_group, mock_new_name, False)
-        assert result == mock_new_group
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_geometry.findPointGroup.assert_has_calls(
-            [mocker.call(mock_new_name), mocker.call(mock_new_name)]
-        )
-
-        mock_to_point.assert_called_with(
-            mock_geometry, mock_group.name.return_value, mock_new_name, False
-        )
+            ht.inline.api.convert_prim_to_point_group(group, group.name())
 
 
 class Test_convert_point_to_prim_group(object):
     """Test ht.inline.api.convert_point_to_prim_group."""
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
+        group = obj_test_geo.pointGroups()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            api.convert_point_to_prim_group(mock_group)
+            ht.inline.api.convert_point_to_prim_group(group)
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_same_name(self, obj_test_geo_copy):
+        group = obj_test_geo_copy.pointGroups()[0]
 
-    def test_name_already_exists(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
+        new_group = ht.inline.api.convert_point_to_prim_group(group)
 
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        assert len(new_group.iterPrims()) == 5
 
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
+        # Check source group was deleted.
+        assert not obj_test_geo_copy.pointGroups()
+
+    def test_new_name(self, obj_test_geo_copy):
+        group = obj_test_geo_copy.pointGroups()[0]
+
+        new_group = ht.inline.api.convert_point_to_prim_group(group, "new_group")
+
+        assert new_group.name() == "new_group"
+
+    def test_same_name_no_destroy(self, obj_test_geo_copy):
+        group = obj_test_geo_copy.pointGroups()[0]
+
+        ht.inline.api.convert_point_to_prim_group(group, destroy=False)
+
+        # Check source group wasn't deleted.
+        assert len(obj_test_geo_copy.pointGroups()) == 1
+
+    def test_target_name_already_exists(self, fix_hou_exceptions, obj_test_geo_copy):
+        group = obj_test_geo_copy.pointGroups()[0]
+
+        obj_test_geo_copy.createPrimGroup(group.name())
 
         with pytest.raises(hou.OperationFailed):
-            api.convert_point_to_prim_group(mock_group)
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_geometry.findPrimGroup.assert_called_with(mock_group.name.return_value)
-
-    def test_same_name(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_to_point = mocker.patch("ht.inline.api._cpp_methods.pointToPrimGroup")
-
-        mock_new_group = mocker.MagicMock(spec=hou.PrimGroup)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_geometry.findPrimGroup.side_effect = (None, mock_new_group)
-
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
-
-        result = api.convert_point_to_prim_group(mock_group)
-        assert result == mock_new_group
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_geometry.findPrimGroup.assert_has_calls(
-            [
-                mocker.call(mock_group.name.return_value),
-                mocker.call(mock_group.name.return_value),
-            ]
-        )
-
-        mock_to_point.assert_called_with(
-            mock_geometry,
-            mock_group.name.return_value,
-            mock_group.name.return_value,
-            True,
-        )
-
-    def test_new_name_no_destroy(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_to_point = mocker.patch("ht.inline.api._cpp_methods.pointToPrimGroup")
-
-        mock_new_group = mocker.MagicMock(spec=hou.PrimGroup)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_geometry.findPrimGroup.side_effect = (None, mock_new_group)
-
-        mock_group = mocker.MagicMock(spec=hou.PointGroup)
-        mock_group.geometry.return_value = mock_geometry
-
-        mock_new_name = mocker.MagicMock(spec=str)
-
-        result = api.convert_point_to_prim_group(mock_group, mock_new_name, False)
-        assert result == mock_new_group
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_geometry.findPrimGroup.assert_has_calls(
-            [mocker.call(mock_new_name), mocker.call(mock_new_name)]
-        )
-
-        mock_to_point.assert_called_with(
-            mock_geometry, mock_group.name.return_value, mock_new_name, False
-        )
+            ht.inline.api.convert_point_to_prim_group(group, group.name())
 
 
-def test_geometry_has_ungrouped_points(mocker):
+# =========================================================================
+# UNGROUPED POINTS
+# =========================================================================
+
+
+class Test_geometry_has_ungrouped_points(object):
     """Test ht.inline.api.geometry_has_ungrouped_points."""
 
-    mock_has = mocker.patch("ht.inline.api._cpp_methods.hasUngroupedPoints")
+    def test_has_ungrouped(self):
+        geo = hou.Geometry()
+        geo.createPoint()
 
-    mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+        assert ht.inline.api.geometry_has_ungrouped_points(geo)
 
-    result = api.geometry_has_ungrouped_points(mock_geometry)
-    assert result == mock_has.return_value
-
-    mock_has.assert_called_with(mock_geometry)
+    def test_no_ungrouped(self, obj_test_geo):
+        assert not ht.inline.api.geometry_has_ungrouped_points(obj_test_geo)
 
 
 class Test_group_ungrouped_points(object):
     """Test ht.inline.api.group_ungrouped_points."""
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group_name = mocker.MagicMock(spec=str)
-
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
         with pytest.raises(hou.GeometryPermissionError):
-            api.group_ungrouped_points(mock_geometry, mock_group_name)
+            ht.inline.api.group_ungrouped_points(obj_test_geo, "ungrouped")
 
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_empty_name(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
+    def test_empty_name(self, fix_hou_exceptions, obj_test_geo_copy):
         with pytest.raises(ValueError):
-            api.group_ungrouped_points(mock_geometry, "")
+            ht.inline.api.group_ungrouped_points(obj_test_geo_copy, "")
 
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_group_exists(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group_name = mocker.MagicMock(spec=str)
-        mock_group_name.__len__.return_value = 1
-
+    def test_existing_name(self, obj_test_geo_copy):
         with pytest.raises(hou.OperationFailed):
-            api.group_ungrouped_points(mock_geometry, mock_group_name)
+            ht.inline.api.group_ungrouped_points(obj_test_geo_copy, "group1")
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_ungrouped(self, obj_test_geo_copy):
+        group = ht.inline.api.group_ungrouped_points(obj_test_geo_copy, "ungrouped")
 
-        mock_geometry.findPointGroup.assert_called_with(mock_group_name)
+        assert len(group.points()) == 10
 
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_group_points = mocker.patch(
-            "ht.inline.api._cpp_methods.groupUngroupedPoints"
-        )
+    def test_no_ungrouped(self, obj_test_geo_copy):
+        group = ht.inline.api.group_ungrouped_points(obj_test_geo_copy, "ungrouped")
 
-        mock_new_group = mocker.MagicMock(spec=hou.PointGroup)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_geometry.findPointGroup.side_effect = (None, mock_new_group)
-
-        mock_group_name = mocker.MagicMock(spec=str)
-        mock_group_name.__len__.return_value = 1
-
-        result = api.group_ungrouped_points(mock_geometry, mock_group_name)
-        assert result == mock_new_group
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_geometry.findPointGroup.assert_has_calls(
-            [mocker.call(mock_group_name), mocker.call(mock_group_name)]
-        )
-
-        mock_group_points.assert_called_with(mock_geometry, mock_group_name)
+        assert group is None
 
 
-def test_geometry_has_ungrouped_prims(mocker):
+# =========================================================================
+# UNGROUPED PRIMS
+# =========================================================================
+
+
+class Test_has_ungrouped_prims(object):
     """Test ht.inline.api.geometry_has_ungrouped_prims."""
-    mock_has = mocker.patch("ht.inline.api._cpp_methods.hasUngroupedPrims")
 
-    mock_geometry = mocker.MagicMock(spec=hou.Geometry)
+    def test_has_ungrouped(self):
+        geo = hou.Geometry()
+        geo.createPolygon()
 
-    result = api.geometry_has_ungrouped_prims(mock_geometry)
-    assert result == mock_has.return_value
+        assert ht.inline.api.geometry_has_ungrouped_prims(geo)
 
-    mock_has.assert_called_with(mock_geometry)
+    def test_no_ungrouped(self, obj_test_geo):
+        assert not ht.inline.api.geometry_has_ungrouped_prims(obj_test_geo)
 
 
 class Test_group_ungrouped_prims(object):
     """Test ht.inline.api.group_ungrouped_prims."""
 
-    def test_read_only(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=True
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group_name = mocker.MagicMock(spec=str)
-
+    def test_read_only(self, fix_hou_exceptions, obj_test_geo):
         with pytest.raises(hou.GeometryPermissionError):
-            api.group_ungrouped_prims(mock_geometry, mock_group_name)
+            ht.inline.api.group_ungrouped_prims(obj_test_geo, "ungrouped")
 
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_empty_name(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
+    def test_empty_name(self, fix_hou_exceptions, obj_test_geo_copy):
         with pytest.raises(ValueError):
-            api.group_ungrouped_prims(mock_geometry, "")
+            ht.inline.api.group_ungrouped_prims(obj_test_geo_copy, "")
 
-        mock_read_only.assert_called_with(mock_geometry)
-
-    def test_group_exists(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-
-        mock_group_name = mocker.MagicMock(spec=str)
-        mock_group_name.__len__.return_value = 1
-
+    def test_existing_name(self, obj_test_geo_copy):
         with pytest.raises(hou.OperationFailed):
-            api.group_ungrouped_prims(mock_geometry, mock_group_name)
+            ht.inline.api.group_ungrouped_prims(obj_test_geo_copy, "group1")
 
-        mock_read_only.assert_called_with(mock_geometry)
+    def test_ungrouped(self, obj_test_geo_copy):
+        group = ht.inline.api.group_ungrouped_prims(obj_test_geo_copy, "ungrouped")
 
-        mock_geometry.findPrimGroup.assert_called_with(mock_group_name)
+        assert len(group.iterPrims()) == 3
 
-    def test(self, mocker, fix_hou_exceptions):
-        mock_read_only = mocker.patch(
-            "ht.inline.api.is_geometry_read_only", return_value=False
-        )
-        mock_group_prims = mocker.patch(
-            "ht.inline.api._cpp_methods.groupUngroupedPrims"
-        )
+    def test_no_ungrouped(self, obj_test_geo_copy):
+        group = ht.inline.api.group_ungrouped_prims(obj_test_geo_copy, "ungrouped")
 
-        mock_new_group = mocker.MagicMock(spec=hou.PrimGroup)
-
-        mock_geometry = mocker.MagicMock(spec=hou.Geometry)
-        mock_geometry.findPrimGroup.side_effect = (None, mock_new_group)
-
-        mock_group_name = mocker.MagicMock(spec=str)
-        mock_group_name.__len__.return_value = 1
-
-        result = api.group_ungrouped_prims(mock_geometry, mock_group_name)
-        assert result == mock_new_group
-
-        mock_read_only.assert_called_with(mock_geometry)
-
-        mock_geometry.findPrimGroup.assert_has_calls(
-            [mocker.call(mock_group_name), mocker.call(mock_group_name)]
-        )
-
-        mock_group_prims.assert_called_with(mock_geometry, mock_group_name)
+        assert group is None
 
 
-def test_bounding_box_is_inside(mocker):
+@pytest.mark.parametrize("bbox, expected", [
+    (hou.BoundingBox(-1, -1, -1, 1, 1, 1), True), # Inside
+    (hou.BoundingBox(0, 0, 0, 0.5, 0.5, 0.5), False),  # Not inside
+]
+)
+def test_bounding_box_is_inside(bbox, expected):
     """Test ht.inline.api.bounding_box_is_inside."""
-    mock_is_inside = mocker.patch("ht.inline.api._cpp_methods.boundingBoxIsInside")
+    test_bbox = hou.BoundingBox(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5)
 
-    mock_box1 = mocker.MagicMock(spec=hou.BoundingBox)
-    mock_box2 = mocker.MagicMock(spec=hou.BoundingBox)
-
-    result = api.bounding_box_is_inside(mock_box1, mock_box2)
-    assert result == mock_is_inside.return_value
-
-    mock_is_inside.assert_called_with(mock_box1, mock_box2)
+    assert ht.inline.api.bounding_box_is_inside(test_bbox, bbox) == expected
 
 
-def test_bounding_boxes_intersect(mocker):
+@pytest.mark.parametrize("bbox, expected", [
+    (hou.BoundingBox(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5), True), # Intersects
+    (hou.BoundingBox(-0.5, -0.5, -0.5, -0.1, -0.1, -0.1), False),  # Doesn't intersect
+]
+)
+def test_bounding_boxes_intersect(bbox, expected):
     """Test ht.inline.api.bounding_boxes_intersect."""
-    mock_intersects = mocker.patch("ht.inline.api._cpp_methods.boundingBoxesIntersect")
+    test_bbox = hou.BoundingBox(0, 0, 0, 0.5, 0.5, 0.5)
 
-    mock_box1 = mocker.MagicMock(spec=hou.BoundingBox)
-    mock_box2 = mocker.MagicMock(spec=hou.BoundingBox)
-
-    result = api.bounding_boxes_intersect(mock_box1, mock_box2)
-    assert result == mock_intersects.return_value
-
-    mock_intersects.assert_called_with(mock_box1, mock_box2)
+    assert ht.inline.api.bounding_boxes_intersect(test_bbox, bbox) == expected
 
 
-def test_compute_bounding_box_intersection(mocker):
+def test_compute_bounding_box_intersection():
     """Test ht.inline.api.compute_bounding_box_intersection."""
-    mock_compute = mocker.patch(
-        "ht.inline.api._cpp_methods.computeBoundingBoxIntersection"
-    )
+    bbox1 = hou.BoundingBox(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5)
+    bbox2 = hou.BoundingBox(0, 0, 0, 0.5, 0.5, 0.5)
 
-    mock_box1 = mocker.MagicMock(spec=hou.BoundingBox)
-    mock_box2 = mocker.MagicMock(spec=hou.BoundingBox)
+    assert ht.inline.api.compute_bounding_box_intersection(bbox1, bbox2)
 
-    result = api.compute_bounding_box_intersection(mock_box1, mock_box2)
-    assert result == mock_compute.return_value
+    assert bbox1.minvec() == hou.Vector3()
+    assert bbox1.maxvec() == hou.Vector3(0.5, 0.5, 0.5)
 
-    mock_compute.assert_called_with(mock_box1, mock_box2)
+    # Unable to compute interaction.
+    bbox3 = hou.BoundingBox(-0.5, -0.5, -0.5, -0.1, -0.1, -0.1)
+
+    assert not ht.inline.api.compute_bounding_box_intersection(bbox3, bbox2)
 
 
-def test_expand_bounding_box(mocker):
+def test_expand_bounding_box():
     """Test ht.inline.api.expand_bounding_box."""
-    mock_expand = mocker.patch("ht.inline.api._cpp_methods.expandBoundingBoxBounds")
+    bbox = hou.BoundingBox(-1, -1.75, -3, 1, 1.75, 3)
+    ht.inline.api.expand_bounding_box(bbox, 1, 1, 1)
 
-    mock_box = mocker.MagicMock(spec=hou.BoundingBox)
-
-    mock_delta_x = mocker.MagicMock(spec=float)
-    mock_delta_y = mocker.MagicMock(spec=float)
-    mock_delta_z = mocker.MagicMock(spec=float)
-
-    api.expand_bounding_box(mock_box, mock_delta_x, mock_delta_y, mock_delta_z)
-
-    mock_expand.assert_called_with(mock_box, mock_delta_x, mock_delta_y, mock_delta_z)
+    assert bbox.minvec() == hou.Vector3(-2, -2.75, -4)
+    assert bbox.maxvec() == hou.Vector3(2, 2.75, 4)
 
 
-def test_add_to_bounding_box_min(mocker):
+def test_add_to_bounding_box_min():
     """Test ht.inline.api.add_to_bounding_box_min."""
-    mock_add = mocker.patch("ht.inline.api._cpp_methods.addToBoundingBoxMin")
+    bbox = hou.BoundingBox(-1, -1.75, -3, 1, 1.75, 3)
+    ht.inline.api.add_to_bounding_box_min(bbox, hou.Vector3(1, 0.25, 1))
 
-    mock_box = mocker.MagicMock(spec=hou.BoundingBox)
-
-    mock_vec = mocker.MagicMock(spec=hou.Vector3)
-
-    api.add_to_bounding_box_min(mock_box, mock_vec)
-
-    mock_add.assert_called_with(mock_box, mock_vec)
+    assert bbox.minvec() == hou.Vector3(0, -1.5, -2)
 
 
-def test_add_to_bounding_box_max(mocker):
+def test_add_to_bounding_box_max():
     """Test ht.inline.api.add_to_bounding_box_max."""
-    mock_add = mocker.patch("ht.inline.api._cpp_methods.addToBoundingBoxMax")
+    bbox = hou.BoundingBox(-1, -1.75, -3, 1, 1.75, 3)
+    ht.inline.api.add_to_bounding_box_max(bbox, hou.Vector3(2, 0.25, 1))
 
-    mock_box = mocker.MagicMock(spec=hou.BoundingBox)
-
-    mock_vec = mocker.MagicMock(spec=hou.Vector3)
-
-    api.add_to_bounding_box_max(mock_box, mock_vec)
-
-    mock_add.assert_called_with(mock_box, mock_vec)
+    assert bbox.maxvec() == hou.Vector3(3, 2, 4)
 
 
-def test_bounding_box_area(mocker):
+def test_bounding_box_area():
     """Test ht.inline.api.bounding_box_area."""
-    mock_area = mocker.patch("ht.inline.api._cpp_methods.boundingBoxArea")
+    bbox = hou.BoundingBox(-1, -1.75, -3, 1, 1.75, 3)
 
-    mock_box = mocker.MagicMock(spec=hou.BoundingBox)
-
-    result = api.bounding_box_area(mock_box)
-    assert result == mock_area.return_value
-
-    mock_area.assert_called_with(mock_box)
+    assert ht.inline.api.bounding_box_area(bbox) == 80
 
 
-def test_bounding_box_volume(mocker):
+def test_bounding_box_volume():
     """Test ht.inline.api.bounding_box_volume."""
-    mock_volume = mocker.patch("ht.inline.api._cpp_methods.boundingBoxVolume")
+    bbox = hou.BoundingBox(-1, -1.75, -3, 1, 1.75, 3)
 
-    mock_box = mocker.MagicMock(spec=hou.BoundingBox)
-
-    result = api.bounding_box_volume(mock_box)
-    assert result == mock_volume.return_value
-
-    mock_volume.assert_called_with(mock_box)
+    assert ht.inline.api.bounding_box_volume(bbox) == 42
 
 
-class Test_is_parm_tuple_vector(object):
+# =========================================================================
+# PARMS
+# =========================================================================
+
+
+def test_is_parm_tuple_vector():
     """Test ht.inline.api.is_parm_tuple_vector."""
+    node = OBJ.node("test_is_vector/node")
+    parm = node.parmTuple("vec")
 
-    def test_not_vector(self, mocker):
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_parm_tuple.parmTemplate.return_value.namingScheme.return_value = (
-            hou.parmNamingScheme.RGBA
-        )
+    assert ht.inline.api.is_parm_tuple_vector(parm)
 
-        assert not api.is_parm_tuple_vector(mock_parm_tuple)
+    # Not a vector parameter.
+    parm = node.parmTuple("not_vec")
 
-    def test_is_vector(self, mocker):
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_parm_tuple.parmTemplate.return_value.namingScheme.return_value = (
-            hou.parmNamingScheme.XYZW
-        )
-
-        assert api.is_parm_tuple_vector(mock_parm_tuple)
+    assert not ht.inline.api.is_parm_tuple_vector(parm)
 
 
-class Test_eval_parm_tuple_as_vector(object):
+def test_eval_parm_tuple_as_vector():
     """Test ht.inline.api.eval_parm_tuple_as_vector."""
+    node = OBJ.node("test_eval_as_vector/node")
+    parm = node.parmTuple("vec2")
 
-    def test_not_vector(self, mocker):
-        mock_is_vector = mocker.patch(
-            "ht.inline.api.is_parm_tuple_vector", return_value=False
-        )
+    assert ht.inline.api.eval_parm_tuple_as_vector(parm) == hou.Vector2(1, 2)
 
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
+    parm = node.parmTuple("vec3")
 
-        with pytest.raises(ValueError):
-            api.eval_parm_tuple_as_vector(mock_parm_tuple)
+    assert ht.inline.api.eval_parm_tuple_as_vector(parm) == hou.Vector3(3, 4, 5)
 
-        mock_is_vector.assert_called_with(mock_parm_tuple)
+    parm = node.parmTuple("vec4")
 
-    def test_vector2(self, mocker):
-        mock_is_vector = mocker.patch(
-            "ht.inline.api.is_parm_tuple_vector", return_value=True
-        )
-        mock_hou_vec2 = mocker.patch("ht.inline.api.hou.Vector2", autospec=True)
+    assert ht.inline.api.eval_parm_tuple_as_vector(parm) == hou.Vector4(6, 7, 8, 9)
 
-        mock_value = mocker.MagicMock(spec=tuple)
-        mock_value.__len__.return_value = 2
+    parm = node.parmTuple("not_vec")
 
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_parm_tuple.eval.return_value = mock_value
-
-        result = api.eval_parm_tuple_as_vector(mock_parm_tuple)
-        assert result == mock_hou_vec2.return_value
-
-        mock_is_vector.assert_called_with(mock_parm_tuple)
-
-        mock_hou_vec2.assert_called_with(mock_value)
-
-    def test_vector3(self, mocker):
-        mock_is_vector = mocker.patch(
-            "ht.inline.api.is_parm_tuple_vector", return_value=True
-        )
-        mock_hou_vec3 = mocker.patch("ht.inline.api.hou.Vector3", autospec=True)
-
-        mock_value = mocker.MagicMock(spec=tuple)
-        mock_value.__len__.return_value = 3
-
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_parm_tuple.eval.return_value = mock_value
-
-        result = api.eval_parm_tuple_as_vector(mock_parm_tuple)
-        assert result == mock_hou_vec3.return_value
-
-        mock_is_vector.assert_called_with(mock_parm_tuple)
-
-        mock_hou_vec3.assert_called_with(mock_value)
-
-    def test_vector4(self, mocker):
-        mock_is_vector = mocker.patch(
-            "ht.inline.api.is_parm_tuple_vector", return_value=True
-        )
-        mock_hou_vec4 = mocker.patch("ht.inline.api.hou.Vector4", autospec=True)
-
-        mock_value = mocker.MagicMock(spec=tuple)
-        mock_value.__len__.return_value = 4
-
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_parm_tuple.eval.return_value = mock_value
-
-        result = api.eval_parm_tuple_as_vector(mock_parm_tuple)
-        assert result == mock_hou_vec4.return_value
-
-        mock_is_vector.assert_called_with(mock_parm_tuple)
-
-        mock_hou_vec4.assert_called_with(mock_value)
+    with pytest.raises(ValueError):
+        ht.inline.api.eval_parm_tuple_as_vector(parm)
 
 
-class Test_is_parm_tuple_color(object):
+def test_is_parm_tuple_color():
     """Test ht.inline.api.is_parm_tuple_color."""
+    node = OBJ.node("test_is_color/node")
+    parm = node.parmTuple("color")
 
-    def test_not_color(self, mocker):
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_parm_tuple.parmTemplate.return_value.look.return_value = hou.parmLook.Angle
+    assert ht.inline.api.is_parm_tuple_color(parm)
 
-        assert not api.is_parm_tuple_color(mock_parm_tuple)
+    # Not a color.
+    parm = node.parmTuple("not_color")
 
-    def test_is_color(self, mocker):
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_parm_tuple.parmTemplate.return_value.look.return_value = (
-            hou.parmLook.ColorSquare
-        )
-
-        assert api.is_parm_tuple_color(mock_parm_tuple)
+    assert not ht.inline.api.is_parm_tuple_color(parm)
 
 
-class Test_eval_parm_tuple_as_color(object):
+def test_eval_parm_tuple_as_color():
     """Test ht.inline.api.eval_parm_tuple_as_color."""
+    node = OBJ.node("test_eval_as_color/node")
+    parm = node.parmTuple("color")
 
-    def test_not_color(self, mocker):
-        mock_is_color = mocker.patch(
-            "ht.inline.api.is_parm_tuple_color", return_value=False
-        )
+    assert ht.inline.api.eval_parm_tuple_as_color(parm) == hou.Color(0, 0.5, 0.5)
 
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
+    # Not a color.
+    parm = node.parmTuple("not_color")
 
-        with pytest.raises(ValueError):
-            api.eval_parm_tuple_as_color(mock_parm_tuple)
-
-        mock_is_color.assert_called_with(mock_parm_tuple)
-
-    def test_color(self, mocker):
-        mock_is_color = mocker.patch(
-            "ht.inline.api.is_parm_tuple_color", return_value=True
-        )
-        mock_hou_color = mocker.patch("ht.inline.api.hou.Color", autospec=True)
-
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
-
-        result = api.eval_parm_tuple_as_color(mock_parm_tuple)
-        assert result == mock_hou_color.return_value
-
-        mock_is_color.assert_called_with(mock_parm_tuple)
-
-        mock_hou_color.assert_called_with(mock_parm_tuple.eval.return_value)
+    with pytest.raises(ValueError):
+        ht.inline.api.eval_parm_tuple_as_color(parm)
 
 
-class Test_eval_parm_as_strip(object):
+def test_eval_parm_as_strip():
     """Test ht.inline.api.eval_parm_as_strip."""
+    node = OBJ.node("test_eval_as_strip/node")
 
-    def test_not_menu(self, mocker):
-        mock_template = mocker.MagicMock(spec=hou.ParmTemplate)
+    parm = node.parm("cacheinput")
 
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.parmTemplate.return_value = mock_template
+    with pytest.raises(TypeError):
+        ht.inline.api.eval_parm_as_strip(parm)
 
-        with pytest.raises(TypeError):
-            api.eval_parm_as_strip(mock_parm)
+    parm = node.parm("strip_normal")
 
-    def test_toggle_menu(self, mocker):
-        mock_template = mocker.MagicMock(spec=hou.MenuParmTemplate)
-        mock_template.menuItems.return_value.__len__.return_value = 5
-        mock_template.menuType.return_value = hou.menuType.StringToggle
+    target = (False, True, False, False)
 
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.eval.return_value = 13
-        mock_parm.parmTemplate.return_value = mock_template
+    assert ht.inline.api.eval_parm_as_strip(parm) == target
 
-        result = api.eval_parm_as_strip(mock_parm)
-        assert result == (True, False, True, True, False)
+    # Toggle strip
+    parm = node.parm("strip_toggle")
 
-    def test_replace_menu(self, mocker):
-        mock_template = mocker.MagicMock(spec=hou.MenuParmTemplate)
-        mock_template.menuItems.return_value.__len__.return_value = 5
-        mock_template.menuType.return_value = hou.menuType.StringReplace
+    target = (True, False, True, True)
 
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.eval.return_value = 3
-        mock_parm.parmTemplate.return_value = mock_template
-
-        result = api.eval_parm_as_strip(mock_parm)
-        assert result == (False, False, False, True, False)
+    assert ht.inline.api.eval_parm_as_strip(parm) == target
 
 
-def test_eval_parm_strip_as_string(mocker):
+def test_eval_parm_strip_as_string():
     """Test ht.inline.api.eval_parm_strip_as_string."""
-    mock_eval = mocker.patch("ht.inline.api.eval_parm_as_strip")
+    node = OBJ.node("test_eval_as_strip/node")
+    parm = node.parm("strip_normal")
 
-    mock_eval.return_value = (False, True, True, False, True)
+    target = ("bar",)
 
-    mock_item1 = mocker.MagicMock(spec=str)
-    mock_item2 = mocker.MagicMock(spec=str)
-    mock_item3 = mocker.MagicMock(spec=str)
-    mock_item4 = mocker.MagicMock(spec=str)
-    mock_item5 = mocker.MagicMock(spec=str)
+    assert ht.inline.api.eval_parm_strip_as_string(parm) == target
 
-    mock_template = mocker.MagicMock(spec=hou.MenuParmTemplate)
-    mock_template.menuItems.return_value = (
-        mock_item1,
-        mock_item2,
-        mock_item3,
-        mock_item4,
-        mock_item5,
-    )
+    # Toggle strip.
+    parm = node.parm("strip_toggle")
 
-    mock_parm = mocker.MagicMock(spec=hou.Parm)
-    mock_parm.parmTemplate.return_value = mock_template
+    target = ("foo", "hello", "world")
 
-    result = api.eval_parm_strip_as_string(mock_parm)
-
-    assert result == (mock_item2, mock_item3, mock_item5)
-
-    mock_eval.assert_called_with(mock_parm)
+    assert ht.inline.api.eval_parm_strip_as_string(parm) == target
 
 
-class Test_is_parm_multiparm(object):
+# =========================================================================
+# MULTIPARMS
+# =========================================================================
+
+
+def test_is_parm_multiparm():
     """Test ht.inline.api.is_parm_multiparm."""
+    node = OBJ.node("test_is_multiparm/object_merge")
+    parm = node.parm("numobj")
 
-    def test_folder_is_multiparm(self, mocker):
-        mock_template = mocker.MagicMock(spec=hou.FolderParmTemplate)
+    assert ht.inline.api.is_parm_multiparm(parm)
 
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.parmTemplate.return_value = mock_template
+    parm_tuple = node.parmTuple("numobj")
+    assert ht.inline.api.is_parm_multiparm(parm_tuple)
 
-        assert api.is_parm_multiparm(mock_parm)
+    parm = node.parm("objpath1")
+    assert not ht.inline.api.is_parm_multiparm(parm)
 
-    def test_not_folder(self, mocker):
-        mock_template = mocker.MagicMock(spec=hou.ParmTemplate)
+    parm_tuple = node.parmTuple("objpath1")
+    assert not ht.inline.api.is_parm_multiparm(parm_tuple)
 
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.parmTemplate.return_value = mock_template
+    # Check against all different FolderSet type folders.
+    for folder_name in ("folder_tabs", "folder_collapsible", "folder_simple", "folder_radio"):
+        parm = node.parm(folder_name)
+        assert not ht.inline.api.is_parm_multiparm(parm)
 
-        assert not api.is_parm_multiparm(mock_parm)
+    # Check against additional multiparm types.
+    for folder_name in ("multi_scroll", "multi_tab"):
+        parm = node.parm(folder_name)
+        assert ht.inline.api.is_parm_multiparm(parm)
 
-
-class Test_get_multiparm_instances_per_item(object):
-    """Test ht.inline.api.get_multiparm_instances_per_item."""
-
-    def test_not_multiparm(self, mocker):
-        mocker.patch("ht.inline.api.is_parm_multiparm", return_value=False)
-
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-
-        with pytest.raises(ValueError):
-            api.get_multiparm_instances_per_item(mock_parm)
-
-    def test_parm(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=True
-        )
-        mock_get = mocker.patch(
-            "ht.inline.api._cpp_methods.getMultiParmInstancesPerItem"
-        )
-
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
-
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.tuple.return_value = mock_parm_tuple
-
-        result = api.get_multiparm_instances_per_item(mock_parm)
-        assert result == mock_get.return_value
-
-        mock_is_multiparm.assert_called_with(mock_parm)
-
-        mock_get.assert_called_with(
-            mock_parm_tuple.node.return_value, mock_parm_tuple.name.return_value
-        )
-
-    def test_parm_tuple(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=True
-        )
-        mock_get = mocker.patch(
-            "ht.inline.api._cpp_methods.getMultiParmInstancesPerItem"
-        )
-
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
-
-        result = api.get_multiparm_instances_per_item(mock_parm_tuple)
-        assert result == mock_get.return_value
-
-        mock_is_multiparm.assert_called_with(mock_parm_tuple)
-
-        mock_get.assert_called_with(
-            mock_parm_tuple.node.return_value, mock_parm_tuple.name.return_value
-        )
+        parm_tuple = node.parmTuple(folder_name)
+        assert ht.inline.api.is_parm_multiparm(parm_tuple)
 
 
-class Test_get_multiparm_start_offset(object):
-    """Test ht.inline.api.get_multiparm_start_offset."""
-
-    def test_not_multiparm(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=False
-        )
-
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-
-        with pytest.raises(ValueError):
-            api.get_multiparm_start_offset(mock_parm)
-
-        mock_is_multiparm.assert_called_with(mock_parm)
-
-    def test_default(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=True
-        )
-
-        mock_template = mocker.MagicMock(spec=hou.ParmTemplate)
-        mock_template.tags.return_value = {}
-
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.parmTemplate.return_value = mock_template
-
-        result = api.get_multiparm_start_offset(mock_parm)
-        assert result == 1
-
-        mock_is_multiparm.assert_called_with(mock_parm)
-
-    def test_specific(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=True
-        )
-
-        mock_template = mocker.MagicMock(spec=hou.ParmTemplate)
-        mock_template.tags.return_value = {"multistartoffset": "3"}
-
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.parmTemplate.return_value = mock_template
-
-        result = api.get_multiparm_start_offset(mock_parm)
-        assert result == 3
-
-        mock_is_multiparm.assert_called_with(mock_parm)
-
-
-class Test_get_multiparm_instance_index(object):
+def test_get_multiparm_instance_indices():
     """Test ht.inline.api.get_multiparm_instance_index."""
+    node = OBJ.node("test_get_multiparm_instance_indices/null")
+    parm = node.parm("vecparm0x")
 
-    def test_not_multiparm(self, mocker):
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.isMultiParmInstance.return_value = False
+    assert ht.inline.api.get_multiparm_instance_indices(parm) == (0, )
 
-        with pytest.raises(ValueError):
-            api.get_multiparm_instance_index(mock_parm)
+    parm_tuple = node.parmTuple("vecparm0")
 
-    def test_parm(self, mocker):
-        mock_get = mocker.patch("ht.inline.api._cpp_methods.getMultiParmInstanceIndex")
+    assert ht.inline.api.get_multiparm_instance_indices(parm_tuple) == (0, )
 
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
+    parm_tuple = node.parmTuple("vecparm1")
+    assert ht.inline.api.get_multiparm_instance_indices(parm_tuple) == (1, )
 
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.isMultiParmInstance.return_value = True
-        mock_parm.tuple.return_value = mock_parm_tuple
+    parm_tuple = node.parmTuple("inner0")
 
-        result = api.get_multiparm_instance_index(mock_parm)
-        assert result == tuple(mock_get.return_value)
+    assert ht.inline.api.get_multiparm_instance_indices(parm_tuple) == (0,)
 
-        mock_get.assert_called_with(
-            mock_parm_tuple.node.return_value, mock_parm_tuple.name.return_value
-        )
+    parm = node.parm("leaf0_1")
 
-    def test_parm_tuple(self, mocker):
-        mock_get = mocker.patch("ht.inline.api._cpp_methods.getMultiParmInstanceIndex")
+    assert ht.inline.api.get_multiparm_instance_indices(parm) == (0, 1)
+    assert ht.inline.api.get_multiparm_instance_indices(parm, True) == (0, 0)
 
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_parm_tuple.isMultiParmInstance.return_value = True
+    parm = node.parm("leaf1_5")
 
-        result = api.get_multiparm_instance_index(mock_parm_tuple)
-        assert result == tuple(mock_get.return_value)
+    assert ht.inline.api.get_multiparm_instance_indices(parm) == (1, 5)
+    assert ht.inline.api.get_multiparm_instance_indices(parm, True) == (1, 4)
 
-        mock_get.assert_called_with(
-            mock_parm_tuple.node.return_value, mock_parm_tuple.name.return_value
-        )
+    parm = node.parm("base")
 
+    with pytest.raises(ValueError):
+        ht.inline.api.get_multiparm_instance_indices(parm)
 
-class Test_get_multiparm_instances(object):
-    """Test ht.inline.api.get_multiparm_instances."""
+    parm_tuple = node.parmTuple("base")
 
-    def test_not_multiparm(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=False
-        )
+    with pytest.raises(ValueError):
+        ht.inline.api.get_multiparm_instance_indices(parm_tuple)
 
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
 
-        with pytest.raises(ValueError):
-            api.get_multiparm_instances(mock_parm)
+def test_get_multiparm_siblings():
+    """Test ht.inline.api.get_multiparm_siblings."""
+    node = OBJ.node("test_get_multiparm_siblings/null")
 
-        mock_is_multiparm.assert_called_with(mock_parm)
+    with pytest.raises(ValueError):
+        ht.inline.api.get_multiparm_siblings(node.parm("base"))
 
-    def test_parm(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=True
-        )
-        mock_get = mocker.patch("ht.inline.api._cpp_methods.getMultiParmInstances")
+    parm = node.parm("stringparm0")
 
-        mock_node = mocker.MagicMock(spec=hou.Node)
+    expected = {
+        'inner_multi#': node.parm('inner_multi0'),
+        'vecparm#': node.parmTuple('vecparm0'),
+        'simple_intparm#': node.parm('simple_intparm0'),
+        'tab_intparm1#': node.parm('tab_intparm10'),
+        'collapse_intparm#': node.parm('collapse_intparm0'),
+        'tab_intparm2#': node.parm('tab_intparm20'),
+    }
 
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_parm_tuple.node.return_value = mock_node
+    assert ht.inline.api.get_multiparm_siblings(parm) == expected
 
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.tuple.return_value = mock_parm_tuple
+    parm_tuple = node.parmTuple("vecparm0")
 
-        mock_name1 = mocker.MagicMock(spec=str)
-        mock_name1.__len__.return_value = 1
+    expected = {
+        'inner_multi#': node.parm('inner_multi0'),
+        'stringparm#': node.parm('stringparm0'),
+        'simple_intparm#': node.parm('simple_intparm0'),
+        'tab_intparm1#': node.parm('tab_intparm10'),
+        'collapse_intparm#': node.parm('collapse_intparm0'),
+        'tab_intparm2#': node.parm('tab_intparm20'),
+    }
 
-        mock_name2 = mocker.MagicMock(spec=str)
-        mock_name2.__len__.return_value = 0
+    assert ht.inline.api.get_multiparm_siblings(parm_tuple) == expected
 
-        mock_name3 = mocker.MagicMock(spec=str)
-        mock_name3.__len__.return_value = 1
 
-        mock_name4 = mocker.MagicMock(spec=str)
-        mock_name4.__len__.return_value = 0
+def test_resolve_multiparm_tokens():
+    """Test ht.inline.api.resolve_multiparm_tokens."""
+    assert ht.inline.api.resolve_multiparm_tokens("test#", 3) == "test3"
+    assert ht.inline.api.resolve_multiparm_tokens("test#", (4, )) == "test4"
+    assert ht.inline.api.resolve_multiparm_tokens("test#", [5, ]) == "test5"
 
-        mock_name5 = mocker.MagicMock(spec=str)
-        mock_name5.__len__.return_value = 1
+    assert ht.inline.api.resolve_multiparm_tokens("test#_#_#", (1, 2, 3)) == "test1_2_3"
 
-        mock_get.return_value = (
-            (mock_name1, mock_name2, mock_name3),
-            (mock_name4, mock_name5),
-        )
+    with pytest.raises(ValueError):
+        ht.inline.api.resolve_multiparm_tokens("test#_#", [5, ])
 
-        mock_tuple1 = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_tuple1.__len__.return_value = 2
 
-        mock_tuple3 = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_tuple3.__len__.return_value = 1
+def test_get_multiparm_template_name():
+    """Test ht.inline.api.get_multiparm_template_name."""
+    node = OBJ.node("test_get_multiparm_template_name/null")
 
-        mock_tuple5 = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_tuple5.__len__.return_value = 2
+    parm = node.parm("base")
+    assert ht.inline.api.get_multiparm_template_name(parm) is None
 
-        mock_node.parmTuple.side_effect = (mock_tuple1, mock_tuple3, mock_tuple5)
+    parm = node.parm("inner0")
+    assert ht.inline.api.get_multiparm_template_name(parm) == "inner#"
 
-        expected = ((mock_tuple1, mock_tuple3.__getitem__.return_value), (mock_tuple5,))
+    parm_tuple = node.parmTuple("vecparm0")
+    assert ht.inline.api.get_multiparm_template_name(parm_tuple) == "vecparm#"
 
-        result = api.get_multiparm_instances(mock_parm)
-        assert result == expected
+    parm = node.parm("leaf1_3")
+    assert ht.inline.api.get_multiparm_template_name(parm) == "leaf#_#"
 
-        mock_is_multiparm.assert_called_with(mock_parm)
 
-        mock_get.assert_called_with(mock_node, mock_parm_tuple.name.return_value)
-
-    def test_parm_tuple(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=True
-        )
-        mock_get = mocker.patch("ht.inline.api._cpp_methods.getMultiParmInstances")
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_parm_tuple.node.return_value = mock_node
-
-        mock_name1 = mocker.MagicMock(spec=str)
-        mock_name1.__len__.return_value = 1
-
-        mock_name2 = mocker.MagicMock(spec=str)
-        mock_name2.__len__.return_value = 0
-
-        mock_name3 = mocker.MagicMock(spec=str)
-        mock_name3.__len__.return_value = 1
-
-        mock_name4 = mocker.MagicMock(spec=str)
-        mock_name4.__len__.return_value = 0
-
-        mock_name5 = mocker.MagicMock(spec=str)
-        mock_name5.__len__.return_value = 1
-
-        mock_get.return_value = (
-            (mock_name1, mock_name2, mock_name3),
-            (mock_name4, mock_name5),
-        )
-
-        mock_tuple1 = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_tuple1.__len__.return_value = 2
-
-        mock_tuple3 = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_tuple3.__len__.return_value = 1
-
-        mock_tuple5 = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_tuple5.__len__.return_value = 2
-
-        mock_node.parmTuple.side_effect = (mock_tuple1, mock_tuple3, mock_tuple5)
-
-        expected = ((mock_tuple1, mock_tuple3.__getitem__.return_value), (mock_tuple5,))
-
-        result = api.get_multiparm_instances(mock_parm_tuple)
-        assert result == expected
-
-        mock_is_multiparm.assert_called_with(mock_parm_tuple)
-
-        mock_get.assert_called_with(mock_node, mock_parm_tuple.name.return_value)
-
-
-class Test_get_multiparm_instance_values(object):
-    """Test ht.inline.api.get_multiparm_instance_values."""
-
-    def test_not_multiparm(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=False
-        )
-
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-
-        with pytest.raises(ValueError):
-            api.get_multiparm_instance_values(mock_parm)
-
-        mock_is_multiparm.assert_called_with(mock_parm)
-
-    def test_parm(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=True
-        )
-        mock_get = mocker.patch("ht.inline.api.get_multiparm_instances")
-
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
-
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.tuple.return_value = mock_parm_tuple
-
-        mock_tuple1 = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_tuple2 = mocker.MagicMock(spec=hou.ParmTuple)
-
-        mock_parm1 = mocker.MagicMock(spec=hou.Parm)
-
-        mock_get.return_value = ((mock_tuple1, mock_parm1), (mock_tuple2,))
-
-        expected = (
-            (mock_tuple1.eval.return_value, mock_parm1.eval.return_value),
-            (mock_tuple2.eval.return_value,),
-        )
-
-        result = api.get_multiparm_instance_values(mock_parm)
-        assert result == expected
-
-        mock_is_multiparm.assert_called_with(mock_parm)
-
-        mock_get.assert_called_with(mock_parm_tuple)
-
-    def test_parm_tuple(self, mocker):
-        mock_is_multiparm = mocker.patch(
-            "ht.inline.api.is_parm_multiparm", return_value=True
-        )
-        mock_get = mocker.patch("ht.inline.api.get_multiparm_instances")
-
-        mock_parm_tuple = mocker.MagicMock(spec=hou.ParmTuple)
-
-        mock_tuple1 = mocker.MagicMock(spec=hou.ParmTuple)
-        mock_tuple2 = mocker.MagicMock(spec=hou.ParmTuple)
-
-        mock_parm1 = mocker.MagicMock(spec=hou.Parm)
-
-        mock_get.return_value = ((mock_tuple1, mock_parm1), (mock_tuple2,))
-
-        expected = (
-            (mock_tuple1.eval.return_value, mock_parm1.eval.return_value),
-            (mock_tuple2.eval.return_value,),
-        )
-
-        result = api.get_multiparm_instance_values(mock_parm_tuple)
-        assert result == expected
-
-        mock_is_multiparm.assert_called_with(mock_parm_tuple)
-
-        mock_get.assert_called_with(mock_parm_tuple)
-
-
-class Test_eval_multiparm_instance(object):
+def test_eval_multiparm_instance():
     """Test ht.inline.api.eval_multiparm_instance."""
+    node = OBJ.node("test_eval_multiparm_instance/null")
 
-    def test_invalid_number_signs(self, mocker):
-        mock_node = mocker.MagicMock(spec=hou.Node)
+    # Test name with no tokens.
+    with pytest.raises(ValueError):
+        ht.inline.api.eval_multiparm_instance(node, "base", 0)
 
-        mock_name = mocker.MagicMock(spec=str)
-        mock_name.count.return_value = 2
+    # Test name which does not exist.
+    with pytest.raises(ValueError):
+        ht.inline.api.eval_multiparm_instance(node, "foo#", 0)
 
-        mock_index = mocker.MagicMock(spec=int)
+    expected = [
+        (1.1, 2.2, 3.3, 4.4), 1, 2, 3, 10, str(hou.intFrame()), (5.5, 6.6, 7.7, 8.8), 5, 6, 7, 8 ,9, hou.hipFile.path()
+    ]
 
-        with pytest.raises(ValueError):
-            api.eval_multiparm_instance(mock_node, mock_name, mock_index)
+    results = []
 
-        mock_name.count.assert_called_with("#")
+    for i in range(node.evalParm("base")):
+        # Test a float vector parameter.
+        results.append(ht.inline.api.eval_multiparm_instance(node, "vecparm#", i))
 
-    def test_invalid_parm_name(self, mocker):
-        mock_ptg = mocker.MagicMock(spec=hou.ParmTemplateGroup)
-        mock_ptg.find.return_value = None
+        # Test a bunch of nested int parameters.
+        for j in range(ht.inline.api.eval_multiparm_instance(node, "inner#", i)):
+            results.append(ht.inline.api.eval_multiparm_instance(node, "leaf#_#", (i, j)))
 
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.parmTemplateGroup.return_value = mock_ptg
+        # Test a string parameter which will be expanded.
+        results.append(ht.inline.api.eval_multiparm_instance(node, "string#", i))
 
-        mock_name = mocker.MagicMock(spec=str)
-        mock_name.count.return_value = 1
+    assert results == expected
 
-        mock_index = mocker.MagicMock(spec=int)
+    results = []
 
-        with pytest.raises(ValueError):
-            api.eval_multiparm_instance(mock_node, mock_name, mock_index)
+    # Run the same test again but passing True for raw_indices.
+    for i in range(node.evalParm("base")):
+        # Test a float vector parameter.
+        results.append(ht.inline.api.eval_multiparm_instance(node, "vecparm#", i, True))
 
-        mock_name.count.assert_called_with("#")
+        # Test a bunch of nested int parameters.
+        for j in range(1, ht.inline.api.eval_multiparm_instance(node, "inner#", i, True) + 1):
+            results.append(ht.inline.api.eval_multiparm_instance(node, "leaf#_#", (i, j), True))
 
-    def test_invalid_index(self, mocker):
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.eval.return_value = mocker.MagicMock(spec=int)
+        # Test a string parameter which will be expanded.
+        results.append(ht.inline.api.eval_multiparm_instance(node, "string#", i, True))
 
-        mock_template = mocker.MagicMock(spec=hou.ParmTemplate)
+    assert results == expected
 
-        mock_folder_template1 = mocker.MagicMock(spec=hou.FolderSetParmTemplate)
-        mock_folder_template1.name.return_value = "foo#"
-        mock_folder_template2 = mocker.MagicMock(spec=hou.FolderParmTemplate)
+    with pytest.raises(IndexError):
+        ht.inline.api.eval_multiparm_instance(node, "vecparm#", 10)
 
-        mock_ptg = mocker.MagicMock(spec=hou.ParmTemplateGroup)
-        mock_ptg.containingFolder.side_effect = (mock_folder_template1, mock_folder_template2)
-        mock_ptg.find.return_value = mock_template
 
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.parmTemplateGroup.return_value = mock_ptg
-        mock_node.parm.return_value = mock_parm
+def test_unexpanded_string_multiparm_instance():
+    """Test ht.inline.api.unexpanded_string_multiparm_instance."""
+    node = OBJ.node("test_unexpanded_string_multiparm_instance/null")
 
-        mock_name = mocker.MagicMock(spec=str)
-        mock_name.count.return_value = 1
+    # Test name with no tokens.
+    with pytest.raises(ValueError):
+        ht.inline.api.unexpanded_string_multiparm_instance(node, "base", 0)
 
-        mock_index = mocker.MagicMock()
-        mock_index.__ge__.return_value = True
+    # Test name which does not exist.
+    with pytest.raises(ValueError):
+        ht.inline.api.unexpanded_string_multiparm_instance(node, "foo#", 0)
 
-        with pytest.raises(IndexError):
-            api.eval_multiparm_instance(mock_node, mock_name, mock_index)
+    # Test a non-string parm
+    with pytest.raises(TypeError):
+        ht.inline.api.unexpanded_string_multiparm_instance(node, "float#", 0)
 
-        mock_name.count.assert_called_with("#")
+    expected = [
+        "$F", ("$E", "$C"), ("$EYE", "$HOME"), "$HIPFILE", ("$JOB", "$TEMP"), ("$FOO", "$BAR")
+    ]
 
-        mock_ptg.containingFolder.has_calls(
-            [
-                mocker.call(mock_name),
-                mocker.call("foo#")
-            ]
-        )
-        mock_node.parm.assert_called_with(mock_folder_template2.name.return_value)
+    results = []
 
-        mock_index.__ge__.assert_called_with(mock_parm.eval.return_value)
+    for i in range(node.evalParm("base")):
+        results.append(ht.inline.api.unexpanded_string_multiparm_instance(node, "string#", i))
 
-    def test_float_single_component(self, mocker):
-        mock_get = mocker.patch("ht.inline.api.get_multiparm_start_offset")
-        mock_eval = mocker.patch(
-            "ht.inline.api._cpp_methods.eval_multiparm_instance_float"
-        )
+        for j in range(ht.inline.api.eval_multiparm_instance(node, "inner#", i)):
+            results.append(ht.inline.api.unexpanded_string_multiparm_instance(node, "nested_string#_#", (i, j)))
 
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.eval.return_value = mocker.MagicMock(spec=int)
+    assert results == expected
 
-        mock_template = mocker.MagicMock(spec=hou.ParmTemplate)
-        mock_template.dataType.return_value = hou.parmData.Float
-        mock_template.numComponents.return_value = 1
+    results = []
 
-        mock_folder_template = mocker.MagicMock(spec=hou.FolderParmTemplate)
+    # Run the same test again but passing True for raw_indices.
+    for i in range(node.evalParm("base")):
+        # Test a float vector parameter.
+        results.append(ht.inline.api.unexpanded_string_multiparm_instance(node, "string#", i, True))
 
-        mock_ptg = mocker.MagicMock(spec=hou.ParmTemplateGroup)
-        mock_ptg.containingFolder.return_value = mock_folder_template
-        mock_ptg.find.return_value = mock_template
+        # Test a bunch of nested int parameters.
+        for j in range(1, ht.inline.api.eval_multiparm_instance(node, "inner#", i, True) + 1):
+            results.append(ht.inline.api.unexpanded_string_multiparm_instance(node, "nested_string#_#", (i, j), True))
 
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.parmTemplateGroup.return_value = mock_ptg
-        mock_node.parm.return_value = mock_parm
+    assert results == expected
 
-        mock_name = mocker.MagicMock(spec=str)
-        mock_name.count.return_value = 1
+    with pytest.raises(IndexError):
+        ht.inline.api.unexpanded_string_multiparm_instance(node, "string#", 10)
 
-        mock_index = mocker.MagicMock()
-        mock_index.__ge__.return_value = False
+# =========================================================================
+# NODES AND NODE TYPES
+# =========================================================================
 
-        result = api.eval_multiparm_instance(mock_node, mock_name, mock_index)
-        assert result == mock_eval.return_value
 
-        mock_name.count.assert_called_with("#")
-
-        mock_ptg.containingFolder.assert_called_with(mock_name)
-        mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
-
-        mock_index.__ge__.assert_called_with(mock_parm.eval.return_value)
-
-        mock_get.assert_called_with(mock_parm)
-
-        mock_eval.assert_called_with(
-            mock_node, mock_name, 0, mock_index, mock_get.return_value
-        )
-
-    def test_int_multiple_components(self, mocker):
-        mock_get = mocker.patch("ht.inline.api.get_multiparm_start_offset")
-        mock_eval = mocker.patch(
-            "ht.inline.api._cpp_methods.eval_multiparm_instance_int"
-        )
-
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.eval.return_value = mocker.MagicMock(spec=int)
-
-        mock_template = mocker.MagicMock(spec=hou.ParmTemplate)
-        mock_template.dataType.return_value = hou.parmData.Int
-        mock_template.numComponents.return_value = 2
-
-        mock_folder_template = mocker.MagicMock(spec=hou.FolderParmTemplate)
-
-        mock_ptg = mocker.MagicMock(spec=hou.ParmTemplateGroup)
-        mock_ptg.containingFolder.return_value = mock_folder_template
-        mock_ptg.find.return_value = mock_template
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.parmTemplateGroup.return_value = mock_ptg
-        mock_node.parm.return_value = mock_parm
-
-        mock_name = mocker.MagicMock(spec=str)
-        mock_name.count.return_value = 1
-
-        mock_index = mocker.MagicMock()
-        mock_index.__ge__.return_value = False
-
-        result = api.eval_multiparm_instance(mock_node, mock_name, mock_index)
-        assert result == (mock_eval.return_value, mock_eval.return_value)
-
-        mock_name.count.assert_called_with("#")
-
-        mock_ptg.containingFolder.assert_called_with(mock_name)
-        mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
-
-        mock_index.__ge__.assert_called_with(mock_parm.eval.return_value)
-
-        mock_get.assert_called_with(mock_parm)
-
-        mock_eval.assert_has_calls(
-            [
-                mocker.call(mock_node, mock_name, 0, mock_index, mock_get.return_value),
-                mocker.call(mock_node, mock_name, 1, mock_index, mock_get.return_value),
-            ]
-        )
-
-    def test_string_multiple_components(self, mocker):
-        mock_get = mocker.patch("ht.inline.api.get_multiparm_start_offset")
-        mock_eval = mocker.patch(
-            "ht.inline.api._cpp_methods.eval_multiparm_instance_string"
-        )
-
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.eval.return_value = mocker.MagicMock(spec=int)
-
-        mock_template = mocker.MagicMock(spec=hou.ParmTemplate)
-        mock_template.dataType.return_value = hou.parmData.String
-        mock_template.numComponents.return_value = 3
-
-        mock_folder_template = mocker.MagicMock(spec=hou.FolderParmTemplate)
-
-        mock_ptg = mocker.MagicMock(spec=hou.ParmTemplateGroup)
-        mock_ptg.containingFolder.return_value = mock_folder_template
-        mock_ptg.find.return_value = mock_template
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.parmTemplateGroup.return_value = mock_ptg
-        mock_node.parm.return_value = mock_parm
-
-        mock_name = mocker.MagicMock(spec=str)
-        mock_name.count.return_value = 1
-
-        mock_index = mocker.MagicMock()
-        mock_index.__ge__.return_value = False
-
-        result = api.eval_multiparm_instance(mock_node, mock_name, mock_index)
-        assert result == (
-            mock_eval.return_value,
-            mock_eval.return_value,
-            mock_eval.return_value,
-        )
-
-        mock_name.count.assert_called_with("#")
-
-        mock_ptg.containingFolder.assert_called_with(mock_name)
-        mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
-
-        mock_index.__ge__.assert_called_with(mock_parm.eval.return_value)
-
-        mock_get.assert_called_with(mock_parm)
-
-        mock_eval.assert_has_calls(
-            [
-                mocker.call(mock_node, mock_name, 0, mock_index, mock_get.return_value),
-                mocker.call(mock_node, mock_name, 1, mock_index, mock_get.return_value),
-                mocker.call(mock_node, mock_name, 2, mock_index, mock_get.return_value),
-            ]
-        )
-
-    def test_invalid_type(self, mocker):
-        mock_get = mocker.patch("ht.inline.api.get_multiparm_start_offset")
-        mocker.patch("ht.inline.api._cpp_methods.eval_multiparm_instance_string")
-
-        mock_parm = mocker.MagicMock(spec=hou.Parm)
-        mock_parm.eval.return_value = mocker.MagicMock(spec=int)
-
-        mock_template = mocker.MagicMock(spec=hou.ParmTemplate)
-        mock_template.dataType.return_value = hou.parmData.Data
-        mock_template.numComponents.return_value = 3
-
-        mock_folder_template = mocker.MagicMock(spec=hou.FolderParmTemplate)
-
-        mock_ptg = mocker.MagicMock(spec=hou.ParmTemplateGroup)
-        mock_ptg.containingFolder.return_value = mock_folder_template
-        mock_ptg.find.return_value = mock_template
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.parmTemplateGroup.return_value = mock_ptg
-        mock_node.parm.return_value = mock_parm
-
-        mock_name = mocker.MagicMock(spec=str)
-        mock_name.count.return_value = 1
-
-        mock_index = mocker.MagicMock()
-        mock_index.__ge__.return_value = False
-
-        with pytest.raises(TypeError):
-            api.eval_multiparm_instance(mock_node, mock_name, mock_index)
-
-        mock_name.count.assert_called_with("#")
-
-        mock_ptg.containingFolder.assert_called_with(mock_name)
-        mock_node.parm.assert_called_with(mock_folder_template.name.return_value)
-
-        mock_index.__ge__.assert_called_with(mock_parm.eval.return_value)
-
-        mock_get.assert_called_with(mock_parm)
-
-
-def test_disconnect_all_inputs(mocker):
+def test_disconnect_all_outputs():
     """Test ht.inline.api.disconnect_all_inputs."""
-    mock_undos = mocker.patch("ht.inline.api.hou.undos.group")
+    node = OBJ.node("test_disconnect_all_outputs/file")
 
-    mock_connection1 = mocker.MagicMock(spec=hou.NodeConnection)
-    mock_connection2 = mocker.MagicMock(spec=hou.NodeConnection)
+    ht.inline.api.disconnect_all_outputs(node)
 
-    mock_node = mocker.MagicMock(spec=hou.Node)
-    mock_node.inputConnections.return_value = (mock_connection1, mock_connection2)
-
-    api.disconnect_all_inputs(mock_node)
-
-    mock_undos.assert_called()
-
-    mock_node.setInput.assert_has_calls(
-        [
-            mocker.call(mock_connection2.inputIndex.return_value, None),
-            mocker.call(mock_connection1.inputIndex.return_value, None),
-        ]
-    )
+    assert not node.outputs()
 
 
-def test_disconnect_all_outputs(mocker):
+def test_disconnect_all_inputs():
     """Test ht.inline.api.disconnect_all_outputs."""
-    mock_undos = mocker.patch("ht.inline.api.hou.undos.group")
+    node = OBJ.node("test_disconnect_all_inputs/merge")
 
-    mock_connection1 = mocker.MagicMock(spec=hou.NodeConnection)
-    mock_connection2 = mocker.MagicMock(spec=hou.NodeConnection)
+    ht.inline.api.disconnect_all_inputs(node)
 
-    mock_node = mocker.MagicMock(spec=hou.Node)
-    mock_node.outputConnections.return_value = (mock_connection1, mock_connection2)
-
-    api.disconnect_all_outputs(mock_node)
-
-    mock_undos.assert_called()
-
-    mock_connection1.outputNode.return_value.setInput.assert_called_with(
-        mock_connection1.inputIndex.return_value, None
-    )
-    mock_connection2.outputNode.return_value.setInput.assert_called_with(
-        mock_connection2.inputIndex.return_value, None
-    )
+    assert not node.inputs()
 
 
-class Test_get_node_message_nodes(object):
-    """Test ht.inline.api.get_node_message_nodes."""
-
-    def test(self, mocker):
-        mock_section = mocker.MagicMock(spec=hou.HDASection)
-
-        mock_definition = mocker.MagicMock(spec=hou.HDADefinition)
-        mock_definition.sections.return_value = {"MessageNodes": mock_section}
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value.definition.return_value = mock_definition
-
-        result = api.get_node_message_nodes(mock_node)
-        assert result == mock_node.glob.return_value
-
-        mock_node.glob.assert_called_with(mock_section.contents.return_value)
-
-    def test_no_section(self, mocker):
-        mock_definition = mocker.MagicMock(spec=hou.HDADefinition)
-        mock_definition.sections.return_value = {}
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value.definition.return_value = mock_definition
-
-        result = api.get_node_message_nodes(mock_node)
-        assert result == ()
-
-    def test_not_hda(self, mocker):
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value.definition.return_value = None
-
-        result = api.get_node_message_nodes(mock_node)
-        assert result == ()
-
-
-class Test_get_node_editable_nodes(object):
-    """Test ht.inline.api.get_node_editable_nodes."""
-
-    def test(self, mocker):
-        mock_section = mocker.MagicMock(spec=hou.HDASection)
-
-        mock_definition = mocker.MagicMock(spec=hou.HDADefinition)
-        mock_definition.sections.return_value = {"EditableNodes": mock_section}
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value.definition.return_value = mock_definition
-
-        result = api.get_node_editable_nodes(mock_node)
-        assert result == mock_node.glob.return_value
-
-        mock_node.glob.assert_called_with(mock_section.contents.return_value)
-
-    def test_no_section(self, mocker):
-        mock_definition = mocker.MagicMock(spec=hou.HDADefinition)
-        mock_definition.sections.return_value = {}
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value.definition.return_value = mock_definition
-
-        result = api.get_node_editable_nodes(mock_node)
-        assert result == ()
-
-    def test_not_hda(self, mocker):
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value.definition.return_value = None
-
-        result = api.get_node_editable_nodes(mock_node)
-        assert result == ()
-
-
-class Test_get_node_dive_target(object):
-    """Test ht.inline.api.get_node_dive_target."""
-
-    def test(self, mocker):
-        mock_section = mocker.MagicMock(spec=hou.HDASection)
-
-        mock_definition = mocker.MagicMock(spec=hou.HDADefinition)
-        mock_definition.sections.return_value = {"DiveTarget": mock_section}
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value.definition.return_value = mock_definition
-
-        result = api.get_node_dive_target(mock_node)
-        assert result == mock_node.node.return_value
-
-        mock_node.node.assert_called_with(mock_section.contents.return_value)
-
-    def test_no_section(self, mocker):
-        mock_definition = mocker.MagicMock(spec=hou.HDADefinition)
-        mock_definition.sections.return_value = {}
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value.definition.return_value = mock_definition
-
-        result = api.get_node_dive_target(mock_node)
-        assert result is None
-
-    def test_not_hda(self, mocker):
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value.definition.return_value = None
-
-        result = api.get_node_dive_target(mock_node)
-        assert result is None
-
-
-class Test_get_node_representative_node(object):
-    """Test ht.inline.api.get_node_representative_node."""
-
-    def test(self, mocker):
-        mock_path = mocker.MagicMock(spec=str)
-        mock_path.__len__.return_value = 1
-
-        mock_definition = mocker.MagicMock(spec=hou.HDADefinition)
-        mock_definition.representativeNodePath.return_value = mock_path
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value.definition.return_value = mock_definition
-
-        result = api.get_node_representative_node(mock_node)
-        assert result == mock_node.node.return_value
-
-        mock_node.node.assert_called_with(mock_path)
-
-    def test_empty_path(self, mocker):
-        mock_path = mocker.MagicMock(spec=str)
-        mock_path.__len__.return_value = 0
-
-        mock_definition = mocker.MagicMock(spec=hou.HDADefinition)
-        mock_definition.representativeNodePath.return_value = mock_path
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value.definition.return_value = mock_definition
-
-        result = api.get_node_representative_node(mock_node)
-        assert result is None
-
-        mock_node.node.assert_not_called()
-
-    def test_not_hda(self, mocker):
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value.definition.return_value = None
-
-        result = api.get_node_representative_node(mock_node)
-        assert result is None
-
-
-class Test_node_is_contained_by(object):
+def test_node_is_contained_by():
     """Test ht.inline.api.node_is_contained_by."""
+    node = OBJ.node("test_is_contained_by")
 
-    def test_is_parent(self, mocker):
-        mock_containing = mocker.MagicMock(spec=hou.Node)
+    box = node.node("subnet/box")
 
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.parent.return_value = mock_containing
-
-        assert api.node_is_contained_by(mock_node, mock_containing)
-
-    def test_parent_parent(self, mocker):
-        mock_containing = mocker.MagicMock(spec=hou.Node)
-
-        mock_parent = mocker.MagicMock(spec=hou.Node)
-        mock_parent.parent.return_value = mock_containing
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.parent.return_value = mock_parent
-
-        assert api.node_is_contained_by(mock_node, mock_containing)
-
-    def test_not_contained(self, mocker):
-        mock_containing = mocker.MagicMock(spec=hou.Node)
-
-        mock_parent = mocker.MagicMock(spec=hou.Node)
-        mock_parent.parent.return_value = None
-
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.parent.return_value = mock_parent
-
-        assert not api.node_is_contained_by(mock_node, mock_containing)
+    assert ht.inline.api.node_is_contained_by(box, node)
+    assert not ht.inline.api.node_is_contained_by(node, hou.node("/shop"))
 
 
-def test_node_author_name(mocker):
+def test_author_name():
     """Test ht.inline.api.node_author_name."""
-    mock_get_author = mocker.patch("ht.inline.api._cpp_methods.getNodeAuthor")
+    node = OBJ.node("test_author_name")
 
-    mock_node = mocker.MagicMock(spec=hou.Node)
-
-    result = api.node_author_name(mock_node)
-
-    assert (
-        result
-        == mock_get_author.return_value.split.return_value.__getitem__.return_value
-    )
-
-    mock_get_author.return_value.split.assert_called_with("@")
-    mock_get_author.return_value.split.return_value.__getitem__.assert_called_with(0)
+    assert ht.inline.api.node_author_name(node) == "grahamt"
 
 
-def test_set_node_type_icon(mocker):
-    """Test ht.inline.api.set_node_type_icon."""
-    mock_set_icon = mocker.patch("ht.inline.api._cpp_methods.setNodeTypeIcon")
-
-    mock_type = mocker.MagicMock(spec=hou.NodeType)
-    mock_icon = mocker.MagicMock(spec=str)
-
-    api.set_node_type_icon(mock_type, mock_icon)
-    mock_set_icon.assert_called_with(mock_type, mock_icon)
-
-
-def test_set_node_type_default_icon(mocker):
-    """Test ht.inline.api.set_node_type_default_icon."""
-    mock_set_icon = mocker.patch("ht.inline.api._cpp_methods.setNodeTypeDefaultIcon")
-
-    mock_type = mocker.MagicMock(spec=hou.NodeType)
-
-    api.set_node_type_default_icon(mock_type)
-    mock_set_icon.assert_called_with(mock_type)
-
-
-def test_is_node_type_python(mocker):
+def test_is_node_type_python():
     """Test ht.inline.api.is_node_type_python."""
-    mock_is_python = mocker.patch("ht.inline.api._cpp_methods.isNodeTypePythonType")
+    node_type = hou.nodeType(hou.sopNodeTypeCategory(), "tableimport")
+    assert ht.inline.api.is_node_type_python(node_type)
 
-    mock_type = mocker.MagicMock(spec=hou.NodeType)
+    # Not python
+    node_type = hou.nodeType(hou.sopNodeTypeCategory(), "file")
+    assert not ht.inline.api.is_node_type_python(node_type)
 
-    api.is_node_type_python(mock_type)
-    mock_is_python.assert_called_with(mock_type)
 
-
-def test_is_node_type_subnet(mocker):
+def test_is_node_type_subnet():
     """Test ht.inline.api.is_node_type_subnet."""
-    mock_is_subnet = mocker.patch("ht.inline.api._cpp_methods.isNodeTypeSubnetType")
+    node_type = hou.nodeType(hou.objNodeTypeCategory(), "subnet")
+    assert ht.inline.api.is_node_type_subnet(node_type)
 
-    mock_type = mocker.MagicMock(spec=hou.NodeType)
+    # Not a subnet.
+    node_type = hou.nodeType(hou.objNodeTypeCategory(), "geo")
+    assert not ht.inline.api.is_node_type_subnet(node_type)
 
-    api.is_node_type_subnet(mock_type)
-    mock_is_subnet.assert_called_with(mock_type)
+
+# =========================================================================
+# VECTORS AND MATRICES
+# =========================================================================
 
 
-def test_vector_component_along(mocker):
+def test_vector_component_along():
     """Test ht.inline.api.vector_component_along."""
-    mock_vec1 = mocker.MagicMock(spec=hou.Vector3)
-    mock_vec2 = mocker.MagicMock(spec=hou.Vector3)
+    vec = hou.Vector3(1, 2, 3)
 
-    result = api.vector_component_along(mock_vec1, mock_vec2)
-    assert result == mock_vec1.dot.return_value
-
-    mock_vec1.dot.assert_called_with(mock_vec2.normalized.return_value)
+    assert ht.inline.api.vector_component_along(vec, hou.Vector3(0, 0, 15)) == 3.0
 
 
-class Test_vector_project_along(object):
+def test_vector_project_along():
     """Test ht.inline.api.vector_project_along."""
+    vec = hou.Vector3(-1.3, 0.5, 7.6)
 
-    def test_zero(self, mocker):
-        mock_vec1 = mocker.MagicMock(spec=hou.Vector3)
-        vec2 = hou.Vector3()
+    # Test zero-length vector
+    with pytest.raises(ValueError):
+        ht.inline.api.vector_project_along(vec, hou.Vector3())
 
-        with pytest.raises(ValueError):
-            api.vector_project_along(mock_vec1, vec2)
+    projection = ht.inline.api.vector_project_along(vec, hou.Vector3(2.87, 3.1, -0.5))
 
-    def test(self, mocker):
-        mock_along = mocker.patch("ht.inline.api.vector_component_along")
+    result = hou.Vector3(-0.948531, -1.02455, 0.165249)
 
-        mock_vec1 = mocker.MagicMock(spec=hou.Vector3)
-        mock_vec2 = mocker.MagicMock(spec=hou.Vector3)
-
-        result = api.vector_project_along(mock_vec1, mock_vec2)
-        assert result == mock_vec2.normalized.return_value * mock_along.return_value
-
-        mock_along.assert_called_with(mock_vec1, mock_vec2)
+    assert projection.isAlmostEqual(result)
 
 
-class Test_vector_contains_nans(object):
+@pytest.mark.parametrize("vec, expected", [
+    ((), False),
+    (hou.Vector2(1, 0), False),
+    (hou.Vector2(float("nan"), 1), True),
+    (hou.Vector3(6.5, 1, float("nan")), True),
+    (hou.Vector4(-4., 5, -0, float("nan")), True),
+])
+def test_vector_contains_nans(vec, expected):
     """Test ht.inline.api.vector_contains_nans."""
-
-    def test_contains(self, mocker):
-        mock_is_nan = mocker.patch("ht.inline.api.math.isnan")
-
-        mock_value1 = mocker.MagicMock(spec=float)
-        mock_value2 = mocker.MagicMock(spec=float)
-        mock_value3 = mocker.MagicMock(spec=float)
-
-        values = (mock_value1, mock_value2, mock_value3)
-
-        mock_vec = mocker.MagicMock(spec=hou.Vector3)
-        mock_vec.__getitem__.side_effect = values
-
-        mock_is_nan.side_effect = (False, True, False)
-
-        assert api.vector_contains_nans(mock_vec)
-
-        mock_is_nan.assert_has_calls(
-            [mocker.call(mock_value1), mocker.call(mock_value2)]
-        )
-
-    def test_does_not_contain(self, mocker):
-        mock_is_nan = mocker.patch("ht.inline.api.math.isnan")
-
-        mock_value1 = mocker.MagicMock(spec=float)
-        mock_value2 = mocker.MagicMock(spec=float)
-        mock_value3 = mocker.MagicMock(spec=float)
-
-        values = (mock_value1, mock_value2, mock_value3)
-
-        mock_vec = mocker.MagicMock(spec=hou.Vector3)
-        mock_vec.__getitem__.side_effect = values
-
-        mock_is_nan.side_effect = (False, False, False)
-
-        assert not api.vector_contains_nans(mock_vec)
-
-        mock_is_nan.assert_has_calls(
-            [
-                mocker.call(mock_value1),
-                mocker.call(mock_value2),
-                mocker.call(mock_value3),
-            ]
-        )
+    result = ht.inline.api.vector_contains_nans(vec)
+    assert result == expected
 
 
-def test_vector_compute_dual(mocker):
+def test_vector_compute_dual():
     """Test ht.inline.api.vector_compute_dual."""
-    mock_mat = mocker.patch("ht.inline.api.hou.Matrix3", autospec=True)
-    mock_get = mocker.patch("ht.inline.api._cpp_methods.vector3GetDual")
+    target = hou.Matrix3()
+    target.setTo(((0, -3, 2), (3, 0, -1), (-2, 1, 0)))
 
-    mock_vec = mocker.MagicMock(spec=hou.Vector3)
+    vec = hou.Vector3(1, 2, 3)
 
-    result = api.vector_compute_dual(mock_vec)
-    assert result == mock_mat.return_value
-
-    mock_get.assert_called_with(mock_vec, mock_mat.return_value)
+    assert ht.inline.api.vector_compute_dual(vec) == target
 
 
-class Test_is_identity_matrix(object):
-    """Test ht.inline.api.is_identity_matrix."""
+def test_matrix_is_identity():
+    """Test ht.inline.api.matrix_is_identity."""
+    # Matrix 3
+    mat3 = hou.Matrix3()
+    mat3.setToIdentity()
 
-    def test_mat3_identity(self, mocker):
-        mock_mat = mocker.MagicMock(spec=hou.Matrix3)
+    assert ht.inline.api.matrix_is_identity(mat3)
 
-        mock_mat3 = mocker.patch("ht.inline.api.hou.Matrix3.__new__", autospec=True)
-        mock_mat3.return_value = mock_mat
+    # Not the identity matrix.
+    mat3 = hou.Matrix3()
+    assert not ht.inline.api.matrix_is_identity(mat3)
 
-        assert api.is_identity_matrix(mock_mat)
+    # Matrix4
+    mat4 = hou.Matrix4()
+    mat4.setToIdentity()
 
-        mock_mat3.return_value.setToIdentity.assert_called()
+    assert ht.inline.api.matrix_is_identity(mat4)
 
-    def test_mat3_not_identity(self, mocker):
-        mock_mat = mocker.MagicMock(spec=hou.Matrix3)
-
-        mock_mat3 = mocker.patch("ht.inline.api.hou.Matrix3.__new__", autospec=True)
-        assert not api.is_identity_matrix(mock_mat)
-
-        mock_mat3.return_value.setToIdentity.assert_called()
-
-    def test_mat4_identity(self, mocker):
-        mock_ident = mocker.patch("ht.inline.api.hou.hmath.identityTransform")
-
-        mock_mat = mocker.MagicMock(spec=hou.Matrix4)
-
-        mock_ident.return_value = mock_mat
-
-        assert api.is_identity_matrix(mock_mat)
-
-    def test_mat4_not_identity(self, mocker):
-        mocker.patch("ht.inline.api.hou.hmath.identityTransform")
-
-        mock_mat = mocker.MagicMock(spec=hou.Matrix4)
-
-        assert not api.is_identity_matrix(mock_mat)
+    # Not the identity matrix.
+    mat4 = hou.Matrix4()
+    assert not ht.inline.api.matrix_is_identity(mat4)
 
 
-def test_set_matrix_translates(mocker):
-    """Test ht.inline.api.set_matrix_translates."""
-    mock_mat = mocker.MagicMock(spec=hou.Matrix4)
-    mock_values = mocker.MagicMock(spec=tuple)
+def test_matrix_set_translates():
+    """Test ht.inline.api.matrix_set_translates."""
+    translates = hou.Vector3(1, 2, 3)
+    identity = hou.hmath.identityTransform()
+    ht.inline.api.matrix_set_translates(identity, translates)
 
-    api.set_matrix_translates(mock_mat, mock_values)
-
-    mock_mat.setAt.assert_has_calls(
-        [
-            mocker.call(3, 0, mock_values.__getitem__.return_value),
-            mocker.call(3, 1, mock_values.__getitem__.return_value),
-            mocker.call(3, 2, mock_values.__getitem__.return_value),
-        ]
-    )
-
-    mock_values.__getitem__.assert_has_calls(
-        [mocker.call(0), mocker.call(1), mocker.call(2)]
-    )
+    assert identity.extractTranslates() == translates
 
 
-def test_build_lookat_matrix(mocker):
+def test_build_lookat_matrix():
     """Test ht.inline.api.build_lookat_matrix."""
-    mock_mat3 = mocker.patch("ht.inline.api.hou.Matrix3", autospec=True)
-    mock_build = mocker.patch("ht.inline.api._cpp_methods.buildLookatMatrix")
+    target = hou.Matrix3()
 
-    mock_from_vec = mocker.MagicMock(spec=hou.Vector3)
-    mock_to_vec = mocker.MagicMock(spec=hou.Vector3)
-    mock_up_vec = mocker.MagicMock(spec=hou.Vector3)
-
-    result = api.build_lookat_matrix(mock_from_vec, mock_to_vec, mock_up_vec)
-    assert result == mock_mat3.return_value
-
-    mock_build.assert_called_with(
-        mock_mat3.return_value, mock_from_vec, mock_to_vec, mock_up_vec
+    target.setTo(
+        (
+            (0.70710678118654746, -0.0, 0.70710678118654746),
+            (0.0, 1.0, 0.0),
+            (-0.70710678118654746, 0.0, 0.70710678118654746),
+        )
     )
 
+    mat = ht.inline.api.build_lookat_matrix(
+        hou.Vector3(0, 0, 1), hou.Vector3(1, 0, 0), hou.Vector3(0, 1, 0)
+    )
 
-class Test_get_oriented_point_transform(object):
+    assert mat == target
+
+
+def test_get_oriented_point_transform(fix_hou_exceptions):
     """Test ht.inline.api.get_oriented_point_transform."""
+    # Test against a primitive with no transform.
+    geo = OBJ.node("test_get_oriented_point_transform/RAW").geometry()
+    pt = geo.points()[0]
 
-    def test_face(self, mocker, fix_hou_exceptions):
-        """Test where the bound prim is a hou.Face"""
-        mock_connected = mocker.patch("ht.inline.api.connected_prims")
-        mocker.patch("ht.inline.api._cpp_methods.point_instance_transform")
-        mocker.patch("ht.inline.api.hou.Matrix4", autospec=True)
+    with pytest.raises(hou.OperationFailed):
+        ht.inline.api.get_oriented_point_transform(pt)
 
-        mock_face = mocker.MagicMock(spec=hou.Face)
-
-        mock_connected.return_value = (mock_face,)
-
-        mock_point = mocker.MagicMock(spec=hou.Point)
-
-        with pytest.raises(hou.OperationFailed):
-            api.get_oriented_point_transform(mock_point)
-
-        mock_connected.assert_called_with(mock_point)
-
-    def test_surface(self, mocker, fix_hou_exceptions):
-        """Test where the bound prim is a hou.Surface"""
-        mock_connected = mocker.patch("ht.inline.api.connected_prims")
-        mocker.patch("ht.inline.api._cpp_methods.point_instance_transform")
-        mocker.patch("ht.inline.api.hou.Matrix4", autospec=True)
-
-        mock_surface = mocker.MagicMock(spec=hou.Surface)
-
-        mock_connected.return_value = (mock_surface,)
-
-        mock_point = mocker.MagicMock(spec=hou.Point)
-
-        with pytest.raises(hou.OperationFailed):
-            api.get_oriented_point_transform(mock_point)
-
-        mock_connected.assert_called_with(mock_point)
-
-    def test_valid_prim(self, mocker, fix_hou_exceptions):
-        """Test where the bound prim is a not a hou.Face of hou.Surface"""
-        mock_connected = mocker.patch("ht.inline.api.connected_prims")
-        mocker.patch("ht.inline.api._cpp_methods.point_instance_transform")
-        mock_build = mocker.patch("hou.hmath.buildTranslate")
-        mock_mat4 = mocker.patch("ht.inline.api.hou.Matrix4", autospec=True)
-
-        mock_valid_prim = mocker.MagicMock(spec=hou.PackedPrim)
-        mock_face = mocker.MagicMock(spec=hou.Surface)
-
-        mock_connected.return_value = (mock_valid_prim, mock_face)
-
-        mock_point = mocker.MagicMock(spec=hou.Point)
-
-        result = api.get_oriented_point_transform(mock_point)
-
-        assert result == mock_mat4.return_value * mock_build.return_value
-
-        mock_mat4.assert_called_with(mock_valid_prim.transform.return_value)
-        mock_build.assert_called_with(mock_point.position.return_value)
-
-        mock_connected.assert_called_with(mock_point)
-
-    def test_unattached_point(self, mocker, fix_hou_exceptions):
-        """Test where the point is not attached."""
-        mock_connected = mocker.patch("ht.inline.api.connected_prims", return_value=())
-        mock_point_instance_transform = mocker.patch(
-            "ht.inline.api.point_instance_transform"
+    # Primitive with proper transform.
+    target = hou.Matrix4(
+        (
+            (0.6819891929626465, -0.7313622236251831, 0.0, 0.0),
+            (0.48333778977394104, 0.4507084786891937, -0.7504974603652954, 0.0),
+            (0.5488855242729187, 0.5118311643600464, 0.660873293876648, 0.0),
+            (0.3173518180847168, 0.38005995750427246, -0.6276679039001465, 1.0)
         )
+    )
 
-        mock_point = mocker.MagicMock(spec=hou.Point)
+    geo = OBJ.node("test_get_oriented_point_transform/XFORMED").geometry()
+    pt = geo.points()[0]
 
-        result = api.get_oriented_point_transform(mock_point)
+    result = ht.inline.api.get_oriented_point_transform(pt)
 
-        assert result == mock_point_instance_transform.return_value
+    assert result == target
 
-        mock_connected.assert_called_with(mock_point)
-        mock_point_instance_transform.assert_called_with(mock_point)
+    # Just a lone point.
+
+    target = hou.Matrix4(
+        (
+            (-0.42511632340174754, 0.8177546905539287, -0.38801208441803603, 0.0),
+            (-0.3819913447800112, 0.2265424934082094, 0.895969369562124, 0.0),
+            (0.8205843796286518, 0.5291084621865726, 0.21606830205289468, 0.0),
+            (0.0, 0.0, 0.0, 1.0),
+        )
+    )
+
+    geo = OBJ.node("test_get_oriented_point_transform/SINGLE_POINT").geometry()
+    pt = geo.points()[0]
+
+    result = ht.inline.api.get_oriented_point_transform(pt)
+
+    assert result == target
 
 
-def test_point_instance_transform(mocker):
+def test_point_instance_transform(obj_test_geo):
     """Test ht.inline.api.point_instance_transform."""
-    mock_get_point_xform = mocker.patch(
-        "ht.inline.api._cpp_methods.point_instance_transform"
-    )
-    mock_mat4 = mocker.patch("ht.inline.api.hou.Matrix4", autospec=True)
-
-    mock_point = mocker.MagicMock(spec=hou.Point)
-
-    result = api.point_instance_transform(mock_point)
-
-    assert result == mock_mat4.return_value
-
-    mock_get_point_xform.assert_called_with(
-        mock_point.geometry.return_value, mock_point.number.return_value
+    target = hou.Matrix4(
+        (
+            (-0.42511632340174754, 0.8177546905539287, -0.38801208441803603, 0.0),
+            (-0.3819913447800112, 0.2265424934082094, 0.895969369562124, 0.0),
+            (0.8205843796286518, 0.5291084621865726, 0.21606830205289468, 0.0),
+            (0.0, 0.0, 0.0, 1.0),
+        )
     )
 
-    mock_mat4.assert_called_with(mock_get_point_xform.return_value)
+    pt = obj_test_geo.points()[0]
+
+    result = ht.inline.api.point_instance_transform(pt)
+
+    assert result == target
 
 
-class Test_build_instance_matrix(object):
+def test_build_instance_matrix():
     """Test ht.inline.api.build_instance_matrix."""
-
-    def test_orient(self, mocker):
-        mocker.patch("ht.inline.api.hou.Vector3", autospec=True)
-        mock_build_scale = mocker.patch("ht.inline.api.hou.hmath.buildScale")
-        mock_mat4 = mocker.patch("ht.inline.api.hou.Matrix4", autospec=True)
-        mock_build_trans = mocker.patch("ht.inline.api.hou.hmath.buildTranslate")
-
-        mock_pos = mocker.MagicMock(spec=hou.Vector3)
-        mock_dir = mocker.MagicMock(spec=hou.Vector3)
-        mock_pscale = mocker.MagicMock(spec=float)
-        mock_scale = mocker.MagicMock(spec=hou.Vector3)
-        mock_up_vector = mocker.MagicMock(spec=hou.Vector3)
-        mock_rot = mocker.MagicMock(spec=hou.Quaternion)
-        mock_trans = mocker.MagicMock(spec=hou.Vector3)
-        mock_pivot = mocker.MagicMock(spec=hou.Vector3)
-        mock_orient = mocker.MagicMock(spec=hou.Quaternion)
-
-        result = api.build_instance_matrix(
-            mock_pos,
-            mock_dir,
-            mock_pscale,
-            mock_scale,
-            mock_up_vector,
-            mock_rot,
-            mock_trans,
-            mock_pivot,
-            mock_orient,
+    target = hou.Matrix4(
+        (
+            (1.0606601717798214, -1.0606601717798214, 0.0, 0.0),
+            (0.61237243569579436, 0.61237243569579436, -1.2247448713915889, 0.0),
+            (0.86602540378443882, 0.86602540378443882, 0.86602540378443882, 0.0),
+            (-1.0, 2.0, 4.0, 1.0),
         )
-
-        assert (
-            result
-            == mock_build_trans.return_value
-            * mock_build_scale.return_value
-            * mock_mat4.return_value
-            * mock_mat4.return_value
-            * mock_build_trans.return_value
-        )
-
-        mock_scale.__mul__.assert_called_with(mock_pscale)
-        mock_build_scale.assert_called_with(mock_scale.__mul__.return_value)
-
-        mock_build_trans.assert_has_calls(
-            [mocker.call(mock_pivot), mocker.call(mock_pos + mock_trans)]
-        )
-
-        mock_mat4.assert_has_calls(
-            [
-                mocker.call(mock_rot.extractRotationMatrix3.return_value),
-                mocker.call(mock_orient.extractRotationMatrix3.return_value),
-            ]
-        )
-
-    def test_up_vector(self, mocker):
-        mock_vec3 = mocker.patch("ht.inline.api.hou.Vector3", autospec=True)
-        mock_build_scale = mocker.patch("ht.inline.api.hou.hmath.buildScale")
-        mock_mat4 = mocker.patch("ht.inline.api.hou.Matrix4", autospec=True)
-        mock_build_trans = mocker.patch("ht.inline.api.hou.hmath.buildTranslate")
-        mock_build_lookat = mocker.patch("ht.inline.api.build_lookat_matrix")
-
-        mock_pos = mocker.MagicMock(spec=hou.Vector3)
-        mock_dir = mocker.MagicMock(spec=hou.Vector3)
-        mock_pscale = mocker.MagicMock(spec=float)
-        mock_scale = mocker.MagicMock(spec=hou.Vector3)
-        mock_up_vector = mocker.MagicMock(spec=hou.Vector3)
-        mock_rot = mocker.MagicMock(spec=hou.Quaternion)
-        mock_trans = mocker.MagicMock(spec=hou.Vector3)
-        mock_pivot = mocker.MagicMock(spec=hou.Vector3)
-
-        result = api.build_instance_matrix(
-            mock_pos,
-            mock_dir,
-            mock_pscale,
-            mock_scale,
-            mock_up_vector,
-            mock_rot,
-            mock_trans,
-            mock_pivot,
-            None,
-        )
-
-        assert (
-            result
-            == mock_build_trans.return_value
-            * mock_build_scale.return_value
-            * mock_mat4.return_value
-            * mock_mat4.return_value
-            * mock_build_trans.return_value
-        )
-
-        mock_scale.__mul__.assert_called_with(mock_pscale)
-        mock_build_scale.assert_called_with(mock_scale.__mul__.return_value)
-
-        mock_build_trans.assert_has_calls(
-            [mocker.call(mock_pivot), mocker.call(mock_pos + mock_trans)]
-        )
-
-        mock_mat4.assert_has_calls(
-            [
-                mocker.call(mock_rot.extractRotationMatrix3.return_value),
-                mocker.call(mock_build_lookat.return_value),
-            ]
-        )
-
-        mock_build_lookat.assert_called_with(
-            mock_dir, mock_vec3.return_value, mock_up_vector
-        )
-
-    def test_up_vector_is_zero_vec(self, mocker):
-        mock_vec3 = mocker.patch("ht.inline.api.hou.Vector3", autospec=True)
-        mock_build_scale = mocker.patch("ht.inline.api.hou.hmath.buildScale")
-        mock_mat4 = mocker.patch("ht.inline.api.hou.Matrix4", autospec=True)
-        mock_build_trans = mocker.patch("ht.inline.api.hou.hmath.buildTranslate")
-
-        mock_pos = mocker.MagicMock(spec=hou.Vector3)
-        mock_dir = mocker.MagicMock(spec=hou.Vector3)
-        mock_pscale = mocker.MagicMock(spec=float)
-        mock_scale = mocker.MagicMock(spec=hou.Vector3)
-        mock_up_vector = mock_vec3.return_value
-        mock_rot = mocker.MagicMock(spec=hou.Quaternion)
-        mock_trans = mocker.MagicMock(spec=hou.Vector3)
-        mock_pivot = mocker.MagicMock(spec=hou.Vector3)
-
-        result = api.build_instance_matrix(
-            mock_pos,
-            mock_dir,
-            mock_pscale,
-            mock_scale,
-            mock_up_vector,
-            mock_rot,
-            mock_trans,
-            mock_pivot,
-            None,
-        )
-
-        assert (
-            result
-            == mock_build_trans.return_value
-            * mock_build_scale.return_value
-            * mock_vec3.return_value.matrixToRotateTo.return_value
-            * mock_mat4.return_value
-            * mock_build_trans.return_value
-        )
-
-        mock_scale.__mul__.assert_called_with(mock_pscale)
-        mock_build_scale.assert_called_with(mock_scale.__mul__.return_value)
-
-        mock_build_trans.assert_has_calls(
-            [mocker.call(mock_pivot), mocker.call(mock_pos + mock_trans)]
-        )
-
-        mock_mat4.assert_has_calls(
-            [mocker.call(mock_rot.extractRotationMatrix3.return_value)]
-        )
-
-        mock_vec3.return_value.matrixToRotateTo.assert_called_with(mock_dir)
-
-
-class Test_is_node_digital_asset(object):
-    """Test ht.inline.api.is_node_digital_asset."""
-
-    def test_true(self, mocker):
-        mock_node = mocker.MagicMock(spec=hou.Node)
-
-        assert api.is_node_digital_asset(mock_node)
-
-    def test_false(self, mocker):
-        mock_node = mocker.MagicMock(spec=hou.Node)
-        mock_node.type.return_value.definition.return_value = None
-
-        assert not api.is_node_digital_asset(mock_node)
-
-
-class Test_asset_file_meta_source(object):
-    """Test ht.inline.api.asset_file_meta_source."""
-
-    def test_not_installed(self, mocker):
-        mocker.patch("ht.inline.api.hou.hda.loadedFiles", return_value=())
-
-        mock_path = mocker.MagicMock(spec=str)
-
-        assert api.asset_file_meta_source(mock_path) is None
-
-    def test(self, mocker):
-        mock_loaded = mocker.patch("ht.inline.api.hou.hda.loadedFiles")
-        mock_get = mocker.patch("ht.inline.api._cpp_methods.getMetaSourceForPath")
-
-        mock_path = mocker.MagicMock(spec=str)
-
-        mock_loaded.return_value = (mock_path,)
-
-        result = api.asset_file_meta_source(mock_path)
-        assert result == mock_get.return_value
-
-        mock_get.assert_called_with(mock_path)
-
-
-def test_get_definition_meta_source(mocker):
-    """Test ht.inline.api.get_definition_meta_source."""
-    mock_source = mocker.patch("ht.inline.api.asset_file_meta_source")
-
-    mock_definition = mocker.MagicMock(spec=hou.HDADefinition)
-
-    result = api.get_definition_meta_source(mock_definition)
-    assert result == mock_source.return_value
-
-    mock_source.assert_called_with(mock_definition.libraryFilePath.return_value)
-
-
-def test_remove_meta_source(mocker):
-    """Test ht.inline.api.remove_meta_source."""
-    mock_remove = mocker.patch("ht.inline.api._cpp_methods.removeMetaSource")
-
-    mock_source_name = mocker.MagicMock(spec=str)
-
-    result = api.remove_meta_source(mock_source_name)
-    assert result == mock_remove.return_value
-
-    mock_remove.assert_called_with(mock_source_name)
-
-
-def test_libraries_in_meta_source(mocker):
-    """Test ht.inline.api.libraries_in_meta_source."""
-    mock_get = mocker.patch("ht.inline.api._cpp_methods.getLibrariesInMetaSource")
-    mock_clean = mocker.patch("ht.inline.utils.clean_string_values")
-
-    mock_source_name = mocker.MagicMock(spec=str)
-
-    result = api.libraries_in_meta_source(mock_source_name)
-    assert result == mock_clean.return_value
-
-    mock_clean.assert_called_with(mock_get.return_value)
-
-
-def test_is_dummy_definition(mocker):
-    """Test ht.inline.api.is_dummy_definition."""
-    mock_is_dummy = mocker.patch("ht.inline.api._cpp_methods.isDummyDefinition")
-
-    mock_definition = mocker.MagicMock(spec=hou.HDADefinition)
-
-    result = api.is_dummy_definition(mock_definition)
-    assert result == mock_is_dummy.return_value
-
-    mock_is_dummy.assert_called_with(
-        mock_definition.libraryFilePath.return_value,
-        mock_definition.nodeTypeCategory.return_value.name.return_value,
-        mock_definition.nodeTypeName.return_value,
     )
+
+    mat = ht.inline.api.build_instance_matrix(
+        hou.Vector3(-1, 2, 4),
+        hou.Vector3(1, 1, 1),
+        pscale=1.5,
+        up_vector=hou.Vector3(1, 1, -1),
+    )
+
+    assert mat == target
+
+    target = hou.Matrix4(
+        (
+            (0.4999999701976776, -1.0000000298023224, -1.0000000298023224, 0.0),
+            (-1.0000000298023224, 0.4999999701976776, -1.0000000298023224, 0.0),
+            (-1.0000000298023224, -1.0000000298023224, 0.4999999701976776, 0.0),
+            (-1.0, 2.0, 4.0, 1.0),
+        )
+    )
+
+    # Test up vector is zero-vector
+    mat = ht.inline.api.build_instance_matrix(
+        hou.Vector3(-1, 2, 4),
+        hou.Vector3(1, 1, 1),
+        pscale=1.5,
+        up_vector=hou.Vector3(),
+    )
+
+    assert mat == target
+
+    # By orient
+    target = hou.Matrix4(
+        (
+            (0.33212996389891691, 0.3465703971119134, -0.87725631768953083, 0.0),
+            (-0.53068592057761732, 0.83754512635379064, 0.1299638989169675, 0.0),
+            (0.77978339350180514, 0.42238267148014441, 0.46209386281588438, 0.0),
+            (-1.0, 2.0, 4.0, 1.0),
+        )
+    )
+
+    mat = ht.inline.api.build_instance_matrix(
+        hou.Vector3(-1, 2, 4), orient=hou.Quaternion(0.3, -1.7, -0.9, -2.7)
+    )
+
+    assert mat == target
+
+
+# =========================================================================
+# DIGITAL ASSETS
+# =========================================================================
+
+@pytest.mark.parametrize("node_name, expected_node", [
+    ("valid", "d/s"),
+    ("no_message_nodes", None),
+    ("not_otl", None),
+])
+def test_get_node_message_nodes(node_name, expected_node):
+    """Test ht.inline.api.get_node_message_nodes."""
+    node = OBJ.node("test_message_nodes/{}".format(node_name))
+
+    if expected_node is not None:
+        target = (node.node(expected_node),)
+
+    else:
+        target = ()
+
+    assert ht.inline.api.get_node_message_nodes(node) == target
+
+
+@pytest.mark.parametrize("node_name, expected_node", [
+    ("valid", "d/s"),
+    ("no_message_nodes", None),
+    ("not_otl", None),
+])
+def test_get_node_editable_nodes(node_name, expected_node):
+    """Test ht.inline.api.get_node_editable_nodes."""
+    node = OBJ.node("test_message_nodes/{}".format(node_name))
+
+    if expected_node is not None:
+        target = (node.node(expected_node),)
+
+    else:
+        target = ()
+
+    assert ht.inline.api.get_node_editable_nodes(node) == target
+
+
+@pytest.mark.parametrize("node_name, expected_node", [
+    ("valid", "d/s"),
+    ("no_message_nodes", None),
+    ("not_otl", None),
+])
+def test_get_node_dive_target(node_name, expected_node):
+    """Test ht.inline.api.get_node_dive_target."""
+    node = OBJ.node("test_message_nodes/{}".format(node_name))
+
+    if expected_node is not None:
+        target = node.node(expected_node)
+
+    else:
+        target = None
+
+    assert ht.inline.api.get_node_dive_target(node) == target
+
+
+@pytest.mark.parametrize("node_name, expected_node", [
+    ("test_representative_node", "stereo_camera"),
+    ("test_representative_node/left_camera", None),
+    ("test_representative_node/visualization_root", None),
+    ("test_message_nodes/valid", None),
+])
+def test_get_node_representative_node(node_name, expected_node):
+    """Test ht.inline.api.get_node_representative_node."""
+    node = OBJ.node(node_name)
+
+    if expected_node is not None:
+        target = node.node(expected_node)
+
+    else:
+        target = None
+
+    assert ht.inline.api.get_node_representative_node(node) == target
+
+
+@pytest.mark.parametrize("node_name, expected", [
+    ("test_is_node_digital_asset/is_digital_asset", True),
+    ("test_is_node_digital_asset/not_digital_asset", False),
+])
+def test_is_node_digital_asset(node_name, expected):
+    """Test ht.inline.api.is_node_digital_asset."""
+    node = OBJ.node(node_name)
+
+    assert ht.inline.api.is_node_digital_asset(node) == expected
+
+
+def test_asset_file_meta_source():
+    """Test ht.inline.api.asset_file_meta_source."""
+    target = "Scanned Asset Library Directories"
+
+    if hou.applicationVersion() >= (18, ):
+        path = hou.text.expandString("$HH/otls/OPlibSop.hda")
+
+    else:
+        path = hou.expandString("$HH/otls/OPlibSop.hda")
+
+    assert ht.inline.api.asset_file_meta_source(path) == target
+
+    assert ht.inline.api.asset_file_meta_source("/some/fake/pat") is None
+
+
+def test_get_definition_meta_source():
+    """Test ht.inline.api.get_definition_meta_source."""
+    target = "Scanned Asset Library Directories"
+
+    node_type = hou.nodeType(hou.sopNodeTypeCategory(), "explodedview")
+
+    assert ht.inline.api.get_definition_meta_source(node_type.definition()) == target
+
+
+def test_libraries_in_meta_source():
+    """Test ht.inline.api.libraries_in_meta_source."""
+    libs = ht.inline.api.libraries_in_meta_source("Scanned Asset Library Directories")
+    assert libs
+
+
+def test_remove_meta_source():
+    """Test ht.inline.api.remove_meta_source."""
+    subnet = OBJ.createNode("subnet")
+    asset = subnet.createDigitalAsset("dummysrcop", "Embedded", "Dummy")
+    definition = asset.type().definition()
+
+    asset.destroy()
+
+    assert definition.isInstalled()
+
+    result = ht.inline.api.remove_meta_source("Current HIP File")
+    assert result
+
+    assert not definition.isInstalled()
+
+
+def test_is_dummy_definition():
+    """Test ht.inline.api.is_dummy_definition."""
+    geo = OBJ.createNode("geo")
+    subnet = geo.createNode("subnet")
+
+    # Create a new digital asset.
+    asset = subnet.createDigitalAsset("dummyop", "Embedded", "Dummy")
+    node_type = asset.type()
+
+    # Not a dummy so far.
+    assert not ht.inline.api.is_dummy_definition(node_type.definition())
+
+    # Destroy the definition.
+    node_type.definition().destroy()
+
+    # Now it's a dummy.
+    assert ht.inline.api.is_dummy_definition(node_type.definition())
+
+    # Destroy the instance.
+    asset.destroy()
+
+    # Destroy the dummy definition.
+    node_type.definition().destroy()
+

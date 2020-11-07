@@ -19,6 +19,90 @@ import inlinecpp
 
 _FUNCTION_SOURCES = [
     """
+RunPythonException run_python_statements(const char *code)
+{
+    PY_Result py_result;
+    RunPythonException exc;
+
+    exc.occurred = 0;
+
+    py_result = PYrunPythonStatements(code);
+
+    if (py_result.myResultType == PY_Result::ERR)
+    {
+        exc.occurred = 1;
+        exc.value = py_result.myErrValue.toStdString();
+        exc.detailed = py_result.myDetailedErrValue.toStdString();
+        exc.name = py_result.myExceptionClass.toStdString();
+    }
+
+    return exc;
+}
+""",
+    """
+RunPythonException run_python_statements_in_new_context(const char *code)
+{
+    RunPythonException exc;
+    PY_Result py_result;
+
+    exc.occurred = 0;
+
+    py_result = PYrunPythonStatementsInNewContext(code);
+
+    if (py_result.myResultType == PY_Result::ERR)
+    {
+        exc.occurred = 1;
+        exc.value = py_result.myErrValue.toStdString();
+        exc.detailed = py_result.myDetailedErrValue.toStdString();
+        exc.name = py_result.myExceptionClass.toStdString();
+    }
+
+    return exc;
+}
+""",
+    """
+void
+clearUserData(OP_Node *node)
+{
+    node->clearUserData(false);
+}
+""",
+    """
+bool
+hasUserData(OP_Node *node, const char *data_name)
+{
+    UT_StringHolder name(data_name);
+
+    return node->hasUserData(name);
+}
+""",
+    """
+void
+setUserData(OP_Node *node, const char *data_name, const char *data_value)
+{
+    UT_StringHolder name(data_name);
+    UT_StringHolder value(data_value);
+
+    node->setUserData(name, value, false);
+}
+""",
+    """
+void
+deleteUserData(OP_Node *node, const char *data_name)
+{
+    UT_StringHolder name(data_name);
+
+    node->deleteUserData(name, false);
+}
+""",
+    """
+int
+hashString(const char *value)
+{
+    return SYSstring_hash(value);
+}
+""",
+    """
 void
 clearCacheByName(const char* cache_name)
 {
@@ -318,149 +402,6 @@ getNodeAuthor(OP_Node *node)
 """,
     """
 void
-packGeometry(GU_Detail *source, GU_Detail *target)
-{
-    GU_DetailHandle gdh;
-    gdh.allocateAndSet(source, false);
-
-    GU_ConstDetailHandle const_handle(gdh);
-
-    GU_PrimPacked *prim = GU_PackedGeometry::packGeometry(
-        *target,
-        const_handle
-    );
-}
-""",
-    """
-void
-sortGeometryByAttribute(GU_Detail *gdp,
-                int attribute_type,
-                const char *attrib_name,
-                int index,
-                bool reverse)
-{
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    // Get the index map for the specify attribute type.
-    GA_IndexMap &map = gdp->getIndexMap(owner);
-
-    // Build an attribute compare object for the attribute.
-    GA_IndexMap::AttributeCompare compare(map, attrib_name, index);
-
-    // Sort by the attribute.
-    map.sortIndices(compare);
-
-    // Reverse the sorted list.
-    if (reverse)
-    {
-        map.reverseIndices();
-    }
-}
-""",
-    """
-void
-sortGeometryAlongAxis(GU_Detail *gdp, int attribute_type, int axis)
-{
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    // Convert the int value to the axis type.
-    GU_AxisType axis_type = static_cast<GU_AxisType>(axis);
-
-    switch(owner)
-    {
-        case GA_ATTRIB_POINT:
-            gdp->sortPointList(axis_type);
-            break;
-
-        case GA_ATTRIB_PRIMITIVE:
-            gdp->sortPrimitiveList(axis_type);
-            break;
-    }
-}
-""",
-    """
-void
-sortGeometryRandomly(GU_Detail *gdp, int attribute_type, float seed)
-{
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    switch(owner)
-    {
-        case GA_ATTRIB_POINT:
-            gdp->sortPointList(seed);
-            break;
-
-        case GA_ATTRIB_PRIMITIVE:
-            gdp->sortPrimitiveList(seed);
-            break;
-    }
-}
-""",
-    """
-void
-shiftGeometry(GU_Detail *gdp, int attribute_type, int offset)
-{
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    switch(owner)
-    {
-        case GA_ATTRIB_POINT:
-            gdp->shiftPointList(offset);
-            break;
-
-        case GA_ATTRIB_PRIMITIVE:
-            gdp->shiftPrimitiveList(offset);
-            break;
-    }
-}
-""",
-    """
-void
-reverseSortGeometry(GU_Detail *gdp, int attribute_type)
-{
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    switch(owner)
-    {
-        case GA_ATTRIB_POINT:
-            gdp->reversePointList();
-            break;
-
-        case GA_ATTRIB_PRIMITIVE:
-            gdp->reversePrimitiveList();
-            break;
-    }
-}
-""",
-    """
-void
-sortGeometryByProximity(GU_Detail *gdp, int attribute_type, const UT_Vector3D *point)
-{
-    UT_Vector3                  pos(*point);
-
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    switch(owner)
-    {
-        case GA_ATTRIB_POINT:
-            gdp->proximityToPointList(pos);
-            break;
-
-        case GA_ATTRIB_PRIMITIVE:
-            gdp->proximityToPrimitiveList(pos);
-            break;
-    }
-}
-""",
-    """
-void
-sortGeometryByVertexOrder(GU_Detail *gdp)
-{
-    gdp->sortByVertexOrder();
-}
-""",
-    """
-void
 sortGeometryByValues(GU_Detail *gdp, int attribute_type, fpreal *values)
 {
     GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
@@ -475,20 +416,6 @@ sortGeometryByValues(GU_Detail *gdp, int attribute_type, fpreal *values)
             gdp->sortPrimitiveList(values);
             break;
     }
-}
-""",
-    """
-void
-setNodeTypeIcon(OP_Operator *op, const char *icon_name)
-{
-    op->setIconName(icon_name);
-}
-""",
-    """
-void
-setNodeTypeDefaultIcon(OP_Operator *op)
-{
-    op->setDefaultIconName();
 }
 """,
     """
@@ -588,7 +515,8 @@ copyAttributeValues(GU_Detail *dest_gdp,
                     int src_entity_type,
                     int src_entity_num,
                     const char **attribute_names,
-                    int num_attribs)
+                    int num_attribs,
+                    bool attributes_are_groups)
 {
     GA_AttributeOwner           dest_owner, src_owner;
 
@@ -612,7 +540,11 @@ copyAttributeValues(GU_Detail *dest_gdp,
 
         // Get the attribute reference from the source geometry.
 
-        attrib = src_gdp->findAttribute(src_owner, attr_name);
+        if (attributes_are_groups)
+            attrib = src_gdp->findAttribute(src_owner, GA_SCOPE_GROUP, attr_name);
+
+        else
+            attrib = src_gdp->findAttribute(src_owner, GA_SCOPE_PUBLIC, attr_name);
 
         if (attrib)
         {
@@ -683,18 +615,28 @@ copyAttributeValues(GU_Detail *dest_gdp,
 """,
     """
 void
-copyPointAttributeValues(GU_Detail *dest_gdp,
-                         int dest_pt,
-                         const GU_Detail *src_gdp,
-                         int src_pt,
-                         const char **attribute_names,
-                         int num_attribs)
+batchCopyAttributeValues(int num_entities,
+                    GU_Detail *dest_gdp,
+                    int dest_entity_type,
+                    int *dest_entity_nums,
+                    const GU_Detail *src_gdp,
+                    int src_entity_type,
+                    int *src_entity_nums,
+                    const char **attribute_names,
+                    int num_attribs,
+                    bool attributes_are_groups)
 {
+    int                         dest_entity_num, src_entity_num;
+    GA_AttributeOwner           dest_owner, src_owner;
+
     GA_Attribute                *dest_attrib;
     const GA_Attribute          *attrib;
-    GA_Offset                   srcOff, destOff;
+    GA_Offset                   dest_off, src_off;
 
     UT_String                   attr_name;
+
+    dest_owner = static_cast<GA_AttributeOwner>(dest_entity_type);
+    src_owner = static_cast<GA_AttributeOwner>(src_entity_type);
 
     // Build an attribute reference map between the geometry.
     GA_AttributeRefMap hmap(*dest_gdp, src_gdp);
@@ -706,17 +648,30 @@ copyPointAttributeValues(GU_Detail *dest_gdp,
         attr_name = attribute_names[i];
 
         // Get the attribute reference from the source geometry.
-        attrib = src_gdp->findPointAttribute(attr_name);
+
+        if (attributes_are_groups)
+            attrib = src_gdp->findAttribute(src_owner, GA_SCOPE_GROUP, attr_name);
+
+        else
+            attrib = src_gdp->findAttribute(src_owner, GA_SCOPE_PUBLIC, attr_name);
+
 
         if (attrib)
         {
-            // Try to find the same attribute on the destination geometry.
-            dest_attrib = dest_gdp->findPointAttrib(*attrib);
+            dest_attrib = dest_gdp->findAttribute(
+                dest_owner,
+                attrib->getScope(),
+                attrib->getName()
+            );
 
-            // If it doesn't exist, create it.
             if (!dest_attrib)
             {
-                dest_attrib = dest_gdp->addPointAttrib(attrib);
+                dest_attrib = dest_gdp->getAttributes().cloneAttribute(
+                    dest_owner,
+                    attrib->getName(),
+                    *attrib,
+                    true
+                );
             }
 
             // Add a mapping between the source and dest attributes.
@@ -724,64 +679,106 @@ copyPointAttributeValues(GU_Detail *dest_gdp,
         }
     }
 
-    // Get the point offsets.
-    srcOff = src_gdp->pointOffset(src_pt);
-    destOff = dest_gdp->pointOffset(dest_pt);
+    for (int i=0; i<num_entities; ++i)
+    {
+        src_entity_num = src_entity_nums[i];
+        dest_entity_num = dest_entity_nums[i];
 
-    // Copy the attribute value.
-    hmap.copyValue(GA_ATTRIB_POINT, destOff, GA_ATTRIB_POINT, srcOff);
+        switch(src_owner)
+        {
+            case GA_ATTRIB_VERTEX:
+                // Already a vertex offset.
+                src_off = src_entity_num;
+                break;
+
+            case GA_ATTRIB_POINT:
+                src_off = src_gdp->pointOffset(src_entity_num);
+                break;
+
+            case GA_ATTRIB_PRIMITIVE:
+                src_off = src_gdp->primitiveOffset(src_entity_num);
+                break;
+
+            case GA_ATTRIB_GLOBAL:
+                src_off = 0;
+                break;
+        }
+
+        switch(dest_owner)
+        {
+            case GA_ATTRIB_VERTEX:
+                // Already a vertex offset.
+                dest_off = dest_entity_num;
+                break;
+
+            case GA_ATTRIB_POINT:
+                dest_off = dest_gdp->pointOffset(dest_entity_num);
+                break;
+
+            case GA_ATTRIB_PRIMITIVE:
+                dest_off = dest_gdp->primitiveOffset(dest_entity_num);
+                break;
+
+            case GA_ATTRIB_GLOBAL:
+                dest_off = 0;
+                break;
+        }
+
+        // Copy the attribute value.
+        hmap.copyValue(dest_owner, dest_off, src_owner, src_off);
+    }
 }
 """,
     """
 void
-copyPrimAttributeValues(GU_Detail *dest_gdp,
-                        int dest_pr,
-                        const GU_Detail *src_gdp,
-                        int src_pr,
-                        const char **attribute_names,
-                        int num_attribs)
+mergePackedPrims(GU_Detail *gdp, const GU_Detail *source_geo, int *src_nums, int *target_nums, int num_prims)
 {
-    GA_Attribute                *dest_attrib;
-    const GA_Attribute          *attrib;
-    GA_Offset                   srcOff, destOff;
+    int                         source_idx, target_idx;
 
-    UT_String                   attr_name;
+    GEO_PrimPacked              *prim;
+    const GEO_PrimPacked        *src_prim;
 
-    // Build an attribute reference map between the geometry.
-    GA_AttributeRefMap hmap(*dest_gdp, src_gdp);
+    GA_Offset                   pt_off;
 
-    // Iterate over all the attribute names.
-    for (int i=0; i < num_attribs; ++i)
+    UT_Matrix4D                 instance_transform;
+
+    GA_AttributeInstanceMatrix  instance_attribs;
+
+    // Use a GA_AttributeInstanceMatrix bound to the geometry attributes
+    // to handle wrangling all the necessary/optional attributes for building
+    // the instance transform.
+    instance_attribs.initialize(gdp->pointAttribs());
+
+    for (exint pr_idx=0; pr_idx<num_prims; ++pr_idx)
     {
-        // Get the attribute name.
-        attr_name = attribute_names[i];
+        // The target primitive number for this point.
+        source_idx = src_nums[pr_idx];
+        target_idx = target_nums[pr_idx];
 
-        // Get the attribute reference from the source geometry.
-        attrib = src_gdp->findPrimitiveAttribute(attr_name);
+        // Get the point offset we want to attach to.
+        pt_off = gdp->pointOffset(target_idx);
 
-        if (attrib)
-        {
-            // Try to find the same attribute on the destination geometry.
-            dest_attrib = dest_gdp->findPrimAttrib(*attrib);
+        // Get the transform matrix from the point.
+        instance_attribs.getMatrix(instance_transform, gdp->getPos3(pt_off), pt_off);
 
-            // If it doesn't exist, create it.
-            if (!dest_attrib)
-            {
-                dest_attrib = dest_gdp->addPrimAttrib(attrib);
-            }
+        // The source packed primitive.
+        src_prim = (GEO_PrimPacked *)source_geo->getPrimitiveByIndex(source_idx);
 
-            // Add a mapping between the source and dest attributes.
-            hmap.append(dest_attrib, attrib);
-        }
+        // Construct a new packed primitive of the source type.
+        prim = (GEO_PrimPacked *)gdp->appendPrimitive(src_prim->getTypeId());
+
+        // Assign the primitive to the point.  This internally handles creating
+        // and assigning a vertex for the prim/point.
+        prim->setVertexPoint(pt_off);
+
+        // Copy all the member data from the source to the new primitive.
+        prim->copyMemberDataFrom(*src_prim);
+
+        // Set the rot/scale portion of the transform as the local transform.
+        prim->setLocalTransform(UT_Matrix3D(instance_transform));
     }
-
-    // Get the primitive offsets.
-    srcOff = src_gdp->primitiveOffset(src_pr);
-    destOff = dest_gdp->primitiveOffset(dest_pr);
-
-    // Copy the attribute value.
-    hmap.copyValue(GA_ATTRIB_PRIMITIVE, destOff, GA_ATTRIB_PRIMITIVE, srcOff);
 }
+
 """,
     """
 IntArray
@@ -1117,6 +1114,57 @@ setSharedStringAttrib(GU_Detail *gdp,
     s_t->setString(attrib, range, value, 0);
 }
 """,
+ """
+bool
+hasUninitializedStringValues(const GU_Detail *gdp, int attribute_type, const char *attrib_name)
+{
+    const GA_AIFSharedStringTuple       *s_t;
+    const GA_Attribute          *attrib;
+    GA_StringIndexType          handle;
+
+    GA_Range                    elements;
+
+    bool has_uninitialized = false;
+
+    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
+
+    switch (owner)
+    {
+        case GA_ATTRIB_VERTEX:
+            elements = gdp->getVertexRange();
+            break;
+
+        case GA_ATTRIB_POINT:
+            elements = gdp->getPointRange();
+            break;
+
+        case GA_ATTRIB_PRIMITIVE:
+            elements = gdp->getPrimitiveRange();
+            break;
+
+        case GA_ATTRIB_GLOBAL:
+            elements = gdp->getGlobalRange();
+            break;
+    }
+
+    attrib = gdp->findStringTuple(owner, attrib_name);
+
+    s_t = attrib->getAIFSharedStringTuple();
+
+    for (GA_Iterator it(elements); !it.atEnd(); ++it)
+    {
+        handle = s_t->getHandle(attrib, *it, 0);
+
+        if (handle == GA_INVALID_STRING_INDEX)
+        {
+            has_uninitialized = true;
+            break;
+        }
+    }
+
+    return has_uninitialized;
+}
+""",
     """
 bool
 faceHasEdge(const GU_Detail *gdp,
@@ -1280,118 +1328,12 @@ groupBoundingBox(const GU_Detail *gdp, int group_type, const char *group_name)
 }
 """,
     """
-bool
-addNormalAttribute(GU_Detail *gdp)
-{
-    GA_Attribute                *attrib;
-
-    attrib = gdp->addNormalAttribute(GA_ATTRIB_POINT);
-
-    // Return true if the attribute was created.
-    if (attrib)
-    {
-        return true;
-    }
-
-    // False otherwise.
-    return false;
-}
-""",
-    """
-bool
-addVelocityAttribute(GU_Detail *gdp)
-{
-    GA_Attribute                *attrib;
-
-    attrib = gdp->addVelocityAttribute(GA_ATTRIB_POINT);
-
-    // Return true if the attribute was created.
-    if (attrib)
-    {
-        return true;
-    }
-
-    // False otherwise.
-    return false;
-}
-""",
-    """
-bool
-addDiffuseAttribute(GU_Detail *gdp, int attribute_type)
-{
-    GA_Attribute                *attrib;
-
-    GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
-
-    attrib = gdp->addDiffuseAttribute(owner);
-
-    // Return true if the attribute was created.
-    if (attrib)
-    {
-        return true;
-    }
-
-    // False otherwise.
-    return false;
-}
-""",
-    """
-void
-computePointNormals(GU_Detail *gdp)
-{
-    gdp->normal();
-}
-""",
-    """
-void
-convexPolygons(GU_Detail *gdp, unsigned maxpts=3)
-{
-    gdp->convex(maxpts);
-}
-""",
-    """
 void
 destroyEmptyGroups(GU_Detail *gdp, int attribute_type)
 {
     GA_AttributeOwner owner = static_cast<GA_AttributeOwner>(attribute_type);
 
     gdp->destroyEmptyGroups(owner);
-}
-""",
-    """
-void
-destroyUnusedPoints(GU_Detail *gdp, const char *group_name)
-{
-    GA_PointGroup               *group = 0;
-
-    // If we passed in a valid group, try to find it.
-    if (group_name)
-    {
-        group = gdp->findPointGroup(group_name);
-    }
-
-    gdp->destroyUnusedPoints(group);
-}
-""",
-    """
-void
-consolidatePoints(GU_Detail *gdp, double distance, const char *group_name)
-{
-    GA_PointGroup               *group = 0;
-
-    if (group_name)
-    {
-        group = gdp->findPointGroup(group_name);
-    }
-
-    gdp->fastConsolidatePoints(distance, group);
-}
-""",
-    """
-void
-uniquePoints(GU_Detail *gdp, const char *group_name)
-{
-    gdp->uniquePoints(gdp->findPointGroup(group_name));
 }
 """,
     """
@@ -1421,34 +1363,6 @@ groupSize(const GU_Detail *gdp, const char *group_name, int group_type)
     }
 
     return group->entries();
-}
-""",
-    """
-void
-toggleGroupMembership(GU_Detail *gdp,
-                 const char *group_name,
-                 int group_type,
-                 int elem_num)
-{
-    GA_ElementGroup             *group;
-    GA_Offset                   elem_offset;
-
-    GA_GroupType type = static_cast<GA_GroupType>(group_type);
-
-    switch (type)
-    {
-        case GA_GROUP_POINT:
-            group = gdp->findPointGroup(group_name);
-            elem_offset = gdp->pointOffset(elem_num);
-            break;
-
-        case GA_GROUP_PRIMITIVE:
-            group = gdp->findPrimitiveGroup(group_name);
-            elem_offset = gdp->primitiveOffset(elem_num);
-            break;
-    }
-
-    group->toggleOffset(elem_offset);
 }
 """,
     """
@@ -1536,6 +1450,40 @@ groupsShareElements(const GU_Detail *gdp,
     }
 
     return group->containsAny(range);
+}
+""",
+   """
+void
+setGroupStringAttribute(GU_Detail *gdp, int group_type, const char *group_name, const char *attrib_name, const char *value)
+{
+    GA_AttributeOwner           owner;
+    const GA_ElementGroup       *group;
+
+    GA_Attribute                        *attr;
+    const GA_AIFSharedStringTuple       *s_t;
+
+    GA_GroupType type = static_cast<GA_GroupType>(group_type);
+
+    switch (type)
+    {
+        // Point group.
+        case GA_GROUP_POINT:
+            group = gdp->findPointGroup(group_name);
+            owner = GA_ATTRIB_POINT;
+            break;
+
+        // Prim group.
+        case GA_GROUP_PRIMITIVE:
+            group = gdp->findPrimitiveGroup(group_name);
+            owner = GA_ATTRIB_PRIMITIVE;
+            break;
+    }
+
+    attr = gdp->findStringTuple(owner, attrib_name);
+
+    s_t = attr->getAIFSharedStringTuple();
+
+    s_t->setString(attr, GA_Range(*group), value, 0);
 }
 """,
     """
@@ -1728,42 +1676,55 @@ check_minimum_polygon_vertex_count(const GU_Detail *gdp, int count, bool ignore_
 }
 """,
     """
-void
-clipGeometry(GU_Detail *gdp,
-     UT_DMatrix4 *xform,
-     UT_Vector3D *normal,
-     float dist,
-     const char *group_name)
+bool
+hasPrimsWithSharedVertexPoints(const GU_Detail *gdp)
 {
-    GA_PrimitiveGroup           *group = 0;
+    const GA_Primitive  *prim;
 
-    UT_Matrix4 mat(*xform);
-    UT_Vector3 dir(*normal);
-
-    // Invert the matrix to move the geometry from our cutting location to the
-    // origin and transform it.
-    mat.invert();
-    gdp->transform(mat);
-
-    // Find the primitive group if necessary.
-    if (group_name)
+    GA_FOR_ALL_PRIMITIVES(gdp, prim)
     {
-        group = gdp->findPrimitiveGroup(group_name);
+        GA_OffsetArray seen_points;
+
+        for (GA_Iterator pt_it(prim->getPointRange()); !pt_it.atEnd(); ++pt_it)
+        {
+            if (seen_points.find(*pt_it) != -1)
+            {
+                return true;
+            }
+
+            seen_points.append(*pt_it);
+        }
+
     }
 
-    // Construct a new GQ Detail to do the clipping.
-    GQ_Detail *gqd = new GQ_Detail(gdp, group);
+    return false;
+}
+""",
+    """
+IntArray
+getPrimsWithSharedVertexPoints(const GU_Detail *gdp)
+{
+    std::vector<int>            prim_nums;
 
-    // Clip the geometry.
-    gqd->clip(dir, -dist, 0);
+    const GA_Primitive  *prim;
 
-    // Remove the detail.
-    delete gqd;
+    GA_FOR_ALL_PRIMITIVES(gdp, prim)
+    {
+        GA_OffsetArray seen_points;
 
-    // Invert the matrix again and move the geometry back to its original
-    // position.
-    mat.invert();
-    gdp->transform(mat);
+        for (GA_Iterator pt_it(prim->getPointRange()); !pt_it.atEnd(); ++pt_it)
+        {
+            if (seen_points.find(*pt_it) != -1)
+            {
+                prim_nums.push_back(prim->getMapIndex());
+                break;
+            }
+            seen_points.append(*pt_it);
+        }
+
+    }
+
+    return prim_nums;
 }
 """,
     """
@@ -1827,21 +1788,6 @@ void
 disconnectAllOutputs(OP_Node *node)
 {
     node->disconnectAllOutputs();
-}
-""",
-    """
-int
-getMultiParmInstancesPerItem(OP_Node *node, const char *parm_name)
-{
-    int                         instances;
-
-    PRM_Parm                    *parm;
-
-    PRM_Parm &multiparm = node->getParm(parm_name);
-
-    instances = multiparm.getMultiParmInstancesPerItem();
-
-    return instances;
 }
 """,
     """
@@ -2046,6 +1992,7 @@ cpp_methods = inlinecpp.createLibrary(
 #include <PRM/PRM_Name.h>
 #include <PRM/PRM_Parm.h>
 #include <PRM/PRM_Template.h>
+#include <PY/PY_Python.h>
 #include <ROP/ROP_RenderManager.h>
 #include <UT/UT_StdUtil.h>
 #include <UT/UT_Version.h>
@@ -2074,6 +2021,7 @@ void validateStringVector(std::vector<std::string> &string_vec)
         ("StringTuple", "*StringArray"),
         ("VertexMap", (("prims", "*i"), ("indices", "*i"))),
         ("Position3D", (("x", "d"), ("y", "d"), ("z", "d"))),
+        ("RunPythonException", (("occurred", "i"), ("name", "*c"), ("value", "*c"), ("detailed", "*c"),),),
     ],
     function_sources=_FUNCTION_SOURCES,
 )

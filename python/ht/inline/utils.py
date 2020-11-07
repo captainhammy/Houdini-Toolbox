@@ -57,7 +57,7 @@ _GEOMETRY_TYPE_MAP = {
 }
 
 # Mapping between group types and corresponding GA_AttributeOwner values.
-_GROUP_ATTRIB_MAP = {hou.PointGroup: 1, hou.PrimGroup: 2}
+_GROUP_ATTRIB_MAP = {hou.VertexGroup: 0, hou.PointGroup: 1, hou.PrimGroup: 2}
 
 # Mapping between group types and corresponding GA_GroupType values.
 _GROUP_TYPE_MAP = {hou.PointGroup: 0, hou.PrimGroup: 1, hou.EdgeGroup: 2, hou.VertexGroup: 3}
@@ -282,6 +282,68 @@ def get_attrib_storage(data_type):
 
     except KeyError:
         raise ValueError("Invalid data type: {}".format(data_type))
+
+
+def get_entity_data(entity):
+    """Get entity data from a list of entities.
+
+    :param entity: A geometry entity.
+    :type entity: hou.Geometry or hou.Point or hou.Prim or hou.Vertex
+    :return: The entity type, geometry for the entities and the entity indices.
+    :rtype: tuple(hou.Geometry or hou.Point or hou.Prim or hou.Vertex, hou.Geometry, int)
+
+    """
+    # Copying to a geometry entity.
+    if not isinstance(entity, hou.Geometry):
+        # Get the source entity's geometry.
+        geometry = entity.geometry()
+
+        if isinstance(entity, hou.Vertex):
+            entity_num = entity.linearNumber()
+
+        else:
+            entity_num = entity.number()
+
+    # hou.Geometry means copying to detail attributes.
+    else:
+        geometry = entity
+        entity_num = 0
+
+    # Using __class__ is ghetto, but easier for testing since a spec'ed MagicMock will
+    # return the desired value whereas type() will not :(
+    return entity.__class__, geometry, entity_num
+
+
+def get_entity_data_from_list(entities):
+    """Get entity data from a list of entities.
+
+    :param entities: A list of geometry entities.
+    :type entities: list(hou.Geometry) or list(hou.Point) or list(hou.Prim) or list(hou.Vertex)
+    :return: The entity type, geometry for the entities and the entity indices.
+    :rtype: tuple(hou.Geometry or hou.Point or hou.Prim or hou.Vertex, hou.Geometry, list(int))
+
+    """
+    entity = entities[0]
+
+    # Copying to a geometry entity.
+    if not isinstance(entity, hou.Geometry):
+        # Get the source entity's geometry.
+        geometry = entity.geometry()
+
+        if isinstance(entity, hou.Vertex):
+            entity_nums = [ent.linearNumber() for ent in entities]
+
+        else:
+            entity_nums = [ent.number() for ent in entities]
+
+    # hou.Geometry means copying to detail attributes.
+    else:
+        geometry = entity
+        entity_nums = [0]
+
+    # Using __class__ is ghetto, but easier for testing since a spec'ed MagicMock will
+    # return the desired value whereas type() will not :(
+    return entity.__class__, geometry, entity_nums
 
 
 def get_group_attrib_owner(group):

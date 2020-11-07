@@ -36,7 +36,7 @@ class Test__valid_to_convert_to_absolute_reference(object):
 
         assert not result
 
-        mock_parm.unexpandedString.assert_not_called()
+        mock_parm.keyframes.assert_not_called()
 
     def test_not_relative(self, mocker):
         """Test when the path does not seem to be relative."""
@@ -56,7 +56,27 @@ class Test__valid_to_convert_to_absolute_reference(object):
         assert not result
 
         mock_path.startswith.assert_called_with("..")
+        mock_parm.keyframes.assert_not_called()
 
+    def test_keyframes(self, mocker):
+        """Test when the parameter has keyframes."""
+        mock_template = mocker.MagicMock(spec=hou.StringParmTemplate)
+        mock_template.stringType.return_value = hou.stringParmType.NodeReference
+
+        mock_path = mocker.MagicMock(spec=str)
+        mock_path.__len__.return_value = 1
+        mock_path.startswith.return_value = True
+
+        mock_parm = mocker.MagicMock(spec=hou.Parm)
+        mock_parm.eval.return_value = mock_path
+        mock_parm.parmTemplate.return_value = mock_template
+
+        result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+
+        assert not result
+
+        mock_path.startswith.assert_called_with("..")
+        mock_parm.keyframes.assert_called()
         mock_parm.unexpandedString.assert_not_called()
 
     def test(self, mocker):
@@ -70,6 +90,7 @@ class Test__valid_to_convert_to_absolute_reference(object):
 
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.eval.return_value = mock_path
+        mock_parm.keyframes.return_value = ()
         mock_parm.unexpandedString.return_value = mock_path
         mock_parm.parmTemplate.return_value = mock_template
         mock_parm.evalAsNode.return_value = mocker.MagicMock(spec=hou.Node)
@@ -79,6 +100,7 @@ class Test__valid_to_convert_to_absolute_reference(object):
         assert result
 
         mock_path.startswith.assert_called_with("..")
+        mock_parm.keyframes.assert_called()
         mock_parm.evalAsNode.assert_called()
 
     def test_invalid_path(self, mocker):
@@ -92,6 +114,7 @@ class Test__valid_to_convert_to_absolute_reference(object):
 
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.eval.return_value = mock_path
+        mock_parm.keyframes.return_value = ()
         mock_parm.unexpandedString.return_value = mock_path
         mock_parm.parmTemplate.return_value = mock_template
         mock_parm.evalAsNode.return_value = None
@@ -101,6 +124,7 @@ class Test__valid_to_convert_to_absolute_reference(object):
         assert not result
 
         mock_path.startswith.assert_called_with("..")
+        mock_parm.keyframes.assert_called()
         mock_parm.evalAsNode.assert_called()
 
     def test_expression(self, mocker):
@@ -114,6 +138,7 @@ class Test__valid_to_convert_to_absolute_reference(object):
 
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.eval.return_value = mock_path
+        mock_parm.keyframes.return_value = ()
         mock_parm.unexpandedString.return_value = mocker.MagicMock(spec=str)
         mock_parm.parmTemplate.return_value = mock_template
 
@@ -122,6 +147,7 @@ class Test__valid_to_convert_to_absolute_reference(object):
         assert not result
 
         mock_path.startswith.assert_called_with("..")
+        mock_parm.keyframes.assert_called()
         mock_parm.evalAsNode.assert_not_called()
 
     def test_not_node_reference(self, mocker):
@@ -168,7 +194,7 @@ class Test__valid_to_convert_to_relative_reference(object):
 
         assert not result
 
-        mock_parm.unexpandedString.assert_not_called()
+        mock_parm.keyframes.assert_not_called()
 
     def test_not_absolute(self, mocker):
         """Test when the path does not seem to be absolute."""
@@ -188,7 +214,27 @@ class Test__valid_to_convert_to_relative_reference(object):
         assert not result
 
         mock_path.startswith.assert_called_with("/")
+        mock_parm.keyframes.assert_not_called()
 
+    def test_keyframes(self, mocker):
+        """Test when the parameter has keyframes."""
+        mock_template = mocker.MagicMock(spec=hou.StringParmTemplate)
+        mock_template.stringType.return_value = hou.stringParmType.NodeReference
+
+        mock_path = mocker.MagicMock(spec=str)
+        mock_path.__len__.return_value = 1
+        mock_path.startswith.return_value = True
+
+        mock_parm = mocker.MagicMock(spec=hou.Parm)
+        mock_parm.eval.return_value = mock_path
+        mock_parm.parmTemplate.return_value = mock_template
+
+        result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+
+        assert not result
+
+        mock_path.startswith.assert_called_with("/")
+        mock_parm.keyframes.assert_called()
         mock_parm.unexpandedString.assert_not_called()
 
     def test(self, mocker):
@@ -202,6 +248,7 @@ class Test__valid_to_convert_to_relative_reference(object):
 
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.eval.return_value = mock_path
+        mock_parm.keyframes.return_value = ()
         mock_parm.unexpandedString.return_value = mock_path
         mock_parm.parmTemplate.return_value = mock_template
         mock_parm.evalAsNode.return_value = mocker.MagicMock(spec=hou.Node)
@@ -211,6 +258,7 @@ class Test__valid_to_convert_to_relative_reference(object):
         assert result
 
         mock_path.startswith.assert_called_with("/")
+        mock_parm.keyframes.assert_called()
         mock_parm.evalAsNode.assert_called()
 
     def test_invalid_path(self, mocker):
@@ -224,6 +272,7 @@ class Test__valid_to_convert_to_relative_reference(object):
 
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.eval.return_value = mock_path
+        mock_parm.keyframes.return_value = ()
         mock_parm.unexpandedString.return_value = mock_path
         mock_parm.parmTemplate.return_value = mock_template
         mock_parm.evalAsNode.return_value = None
@@ -233,6 +282,7 @@ class Test__valid_to_convert_to_relative_reference(object):
         assert not result
 
         mock_path.startswith.assert_called_with("/")
+        mock_parm.keyframes.assert_called()
         mock_parm.evalAsNode.assert_called()
 
     def test_expression(self, mocker):
@@ -246,6 +296,7 @@ class Test__valid_to_convert_to_relative_reference(object):
 
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.eval.return_value = mock_path
+        mock_parm.keyframes.return_value = ()
         mock_parm.unexpandedString.return_value = mocker.MagicMock(spec=str)
         mock_parm.parmTemplate.return_value = mock_template
 
@@ -254,6 +305,7 @@ class Test__valid_to_convert_to_relative_reference(object):
         assert not result
 
         mock_path.startswith.assert_called_with("/")
+        mock_parm.keyframes.assert_called()
         mock_parm.evalAsNode.assert_not_called()
 
     def test_not_node_reference(self, mocker):
