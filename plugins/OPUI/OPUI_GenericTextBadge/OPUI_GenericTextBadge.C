@@ -8,10 +8,6 @@
 #include <OPUI/OPUI_GraphProxyDescriptor.h>
 #include <OPUI/OPUI_GraphTextBadge.h>
 
-#include <PY/PY_CPythonAPI.h>
-#include <PY/PY_Python.h>
-#include <PY/PY_InterpreterAutoLock.h>
-
 #include "OPUI_GenericTextBadge.h"
 
 

@@ -8,10 +8,6 @@
 #include <OPUI/OPUI_GraphProxyDescriptor.h>
 #include <OPUI/OPUI_GraphTextBadge.h>
 
-#include <PY/PY_CPythonAPI.h>
-#include <PY/PY_Python.h>
-#include <PY/PY_InterpreterAutoLock.h>
-
 #include <UT/UT_DSOVersion.h>
 
 #include "OPUI_GenericImageBadge.h"
@@ -65,26 +61,3 @@ OPUIaddBadges(OPUI_GraphBadgeArray *add_badges)
 void
 OPUIaddTextBadges(OPUI_GraphTextBadgeArray *add_textbadges)
 {}
-
-PY_PyObject *
-Get_Badge_Data_Name(PY_PyObject*, PY_PyObject*)
-{
-    return PY_PyString_FromString(GENERIC_IMAGE_BADGE_DATA_NAME.c_str());
-}
-
-
-void
-HOMextendLibrary()
-{
-    {
-	PY_InterpreterAutoLock interpreter_auto_lock;
-
-        static PY_PyMethodDef hom_extension_methods[] = {
-            {"get_generic_image_key", Get_Badge_Data_Name, PY_METH_VARARGS(), ""},
-            {NULL, NULL, 0, NULL}
-        };
-
-        PY_Py_InitModule("_ht_generic_image_badge", hom_extension_methods);
-    }
-}
-
