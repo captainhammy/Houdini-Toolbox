@@ -243,31 +243,6 @@ class HoudiniBuildData:
         self._versions = data["versions"]
 
     # -------------------------------------------------------------------------
-    # NON-PUBLIC METHODS
-    # -------------------------------------------------------------------------
-
-    def _get_eula_date(self, extract_path):
-        """Get any EULA accept date in the install script, if any.
-
-        :param extract_path: The path to the extracted archive.
-        :type extract_path: str
-        :return: The EULA date, if any.
-        :rtype: str or None
-
-        """
-        install_script = os.path.join(extract_path, "houdini.install")
-
-        if not os.path.exists(install_script):
-            return
-
-        with open(install_script) as handle:
-            for line in handle:
-                if line.startswith("LICENSE_DATE"):
-                    return line.split("=")[1].strip()
-
-        return None
-
-    # -------------------------------------------------------------------------
     # PROPERTIES
     # -------------------------------------------------------------------------
 
@@ -337,7 +312,7 @@ class HoudiniBuildData:
             eula_key = "--accept-EULA"
 
             if eula_key in all_args:
-                eula_date = self._get_eula_date(extract_path)
+                eula_date = _get_eula_date(extract_path)
 
                 if eula_date is not None:
                     idx = all_args.index(eula_key)
@@ -1201,6 +1176,28 @@ def _get_build_to_download(build):
     # the web api will treat the candidate version as the build number and the
     # the 3 main components as the version.
     return ".".join(components[: num_components - 1]), components[-1]
+
+
+def _get_eula_date(extract_path):
+    """Get any EULA accept date in the install script, if any.
+
+    :param extract_path: The path to the extracted archive.
+    :type extract_path: str
+    :return: The EULA date, if any.
+    :rtype: str or None
+
+    """
+    install_script = os.path.join(extract_path, "houdini.install")
+
+    if not os.path.exists(install_script):
+        return None
+
+    with open(install_script) as handle:
+        for line in handle:
+            if line.startswith("LICENSE_DATE"):
+                return line.split("=")[1].strip()
+
+    return None
 
 
 def _set_variable(name, value):
