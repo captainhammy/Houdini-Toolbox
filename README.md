@@ -6,7 +6,18 @@ In order to use most of the features contained in this repo it is necessary to a
 - HOUDINI_PATH
 - PYTHONPATH
 
-Each entry must include the path to the relevant folders within the Houdini-Toolbox repo, where TOOLBOXDIR is the location you have placed the repo (eg. $HOME/Houdini-Toolbox, D:\Houdini-Toolbox, etc):
+The following instructions assume **TOOLBOXDIR** is the location where you have downloaded this repository: ($HOME/Houdini-Toolbox, D:\Houdini-Toolbox, etc)
+
+### Using Houdini Packages
+
+The easiest way to get this working is to use [Houdini Packages](https://www.sidefx.com/docs/houdini/ref/plugins.html).
+
+Simply add {TOOLBOXDIR} to **$HOUDINI_PACKAGE_DIR** in order for Houdini to find the package definition and load it.
+
+### Manual Setup
+
+You'll need to add the relevant folders within {TOOLBOXDIR} to the previously mentioned paths:
+
 - HOUDINI_PATH needs to include '{TOOLBOXDIR}/houdini'
 - PYTHONPATH needs to include '{TOOLBOXDIR}/python'
 
@@ -14,25 +25,8 @@ NOTE: When adding to the HOUDINI_PATH you MUST be sure to also include $HH ($HFS
 
 See http://www.sidefx.com/docs/houdini/basics/config_env for more info about configuring Houdini paths and variables.
 
-On a unix based systems where you are launching Houdini from a terminal it is as simple as setting the variables in the shell before you launch.  For example in tcsh:
+On a unix based systems where you are launching Houdini from a terminal it is as simple as setting the variables in the shell before you launch.  For example in bash:
 ```
-setenv HOUDINI_PATH "${HOME}/Houdini-Toolbox/houdini:&"
-setenv PYTHONPATH "${HOME}/Houdini-Toolbox/python:${PYTHONPATH}"
-```
-
-### Using houdini.env
-You can also use the `houdini.env` file to setup these variables.  This is often easier for Windows.
-
-NOTE: Unix and Windows will use different path split characters so ensure you are using the correct one for your platform:
-- **:** for unix: `/some/path:&`
-- **;** for Windows: `c:\some\path;&`
-
-```
-Unix:
-HOUDINI_PATH = "${HOME}/Houdini-Toolbox/houdini:&"
-PYTHONPATH = "${HOME}/Houdini-Toolbox/python"
-
-Windows:
-HOUDINI_PATH = "D:\Houdini-Toolbox\houdini;&"
-PYTHONPATH = "D:\Houdini-Toolbox\python"
+export HOUDINI_PATH="${HOME}/Houdini-Toolbox/houdini:&"
+export PYTHONPATH="${HOME}/Houdini-Toolbox/python:${PYTHONPATH}"
 ```

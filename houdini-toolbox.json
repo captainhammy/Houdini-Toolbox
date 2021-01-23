@@ -1,0 +1,11 @@
+{
+    "path" : "$HOUDINI_PACKAGE_PATH/houdini",
+    "env": [
+        {
+            "HOUDINI_TOOLBOX_DIR": "$HOUDINI_PACKAGE_PATH"
+        },
+        {
+            "PYTHONPATH":"$HOUDINI_PACKAGE_PATH/python"
+        }
+    ]
+}
