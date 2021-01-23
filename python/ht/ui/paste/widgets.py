@@ -5,7 +5,6 @@
 # ==============================================================================
 
 # Standard Library Imports
-from builtins import range
 import re
 
 # Third Party Imports
@@ -37,7 +36,7 @@ class _CustomButtonBox(QtWidgets.QDialogButtonBox):
     """
 
     def __init__(self, icon, label, parent=None):
-        super(_CustomButtonBox, self).__init__(
+        super().__init__(
             QtWidgets.QDialogButtonBox.Cancel, parent=parent
         )
 
@@ -78,7 +77,7 @@ class BasicSourceItemTable(QtWidgets.QTableView):
         allow_delete=False,
         parent=None,
     ):
-        super(BasicSourceItemTable, self).__init__(parent)
+        super().__init__(parent)
         self.source = source
         self.context = context
 
@@ -224,7 +223,7 @@ class BasicSourceItemTable(QtWidgets.QTableView):
 
             return
 
-        super(BasicSourceItemTable, self).keyPressEvent(event)
+        super().keyPressEvent(event)
 
     def open_menu(self, position):
         """Open the RMB context menu.
@@ -259,7 +258,7 @@ class CopyButtonBox(_CustomButtonBox):
     """
 
     def __init__(self, parent=None):
-        super(CopyButtonBox, self).__init__(
+        super().__init__(
             hou.qt.createIcon("BUTTONS_copy"), "Copy", parent
         )
 
@@ -278,7 +277,7 @@ class CopyItemNameWidget(QtWidgets.QWidget):
     valid_source_signal = QtCore.Signal(bool)
 
     def __init__(self, invalid_names=None, parent=None):
-        super(CopyItemNameWidget, self).__init__(parent)
+        super().__init__(parent)
 
         if invalid_names is None:
             invalid_names = ()
@@ -358,7 +357,7 @@ class NewOrExistingWidget(QtWidgets.QComboBox):
     """
 
     def __init__(self, parent=None):
-        super(NewOrExistingWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.addItem("New File")
         self.addItem("Existing File")
@@ -382,7 +381,7 @@ class PasteButtonBox(_CustomButtonBox):
     """
 
     def __init__(self, parent=None):
-        super(PasteButtonBox, self).__init__(
+        super().__init__(
             hou.qt.createIcon("BUTTONS_paste"), "Paste", parent
         )
 
@@ -396,7 +395,7 @@ class RepositoryWidget(QtWidgets.QWidget):
     """
 
     def __init__(self, parent=None):
-        super(RepositoryWidget, self).__init__(parent)
+        super().__init__(parent)
 
         layout = QtWidgets.QHBoxLayout()
         self.setLayout(layout)
@@ -442,7 +441,7 @@ class WarningWidget(QtWidgets.QWidget):
     """
 
     def __init__(self, parent=None):
-        super(WarningWidget, self).__init__(parent)
+        super().__init__(parent)
 
         layout = QtWidgets.QHBoxLayout()
         self.setLayout(layout)

@@ -5,8 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from __future__ import absolute_import
-from builtins import object
 import logging
 
 # Third Party Imports
@@ -42,7 +40,7 @@ def init_adapter(mocker):
 # =============================================================================
 
 
-class Test_HoudiniLoggerAdapter(object):
+class Test_HoudiniLoggerAdapter:
     """Test ht.logging.adapters.HoudiniLoggerAdapter."""
 
     def test___init__(self, mocker):
@@ -431,7 +429,7 @@ def test__patch_logger(mocker):
     assert mock_logger.__class__ == original_class
 
 
-class Test__pre_process_args(object):
+class Test__pre_process_args:
     """Test ht.logging.adapters._pre_process_args."""
 
     def test_all_kwargs(self, mocker):

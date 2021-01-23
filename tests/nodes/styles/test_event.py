@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
-from builtins import object
 import ht.nodes.styles.event
 from ht.events.item import HoudiniEventItem
 from ht.events.types import NodeEvents
@@ -19,7 +18,7 @@ import hou
 # =============================================================================
 
 
-class Test_StyleNodeEvent(object):
+class Test_StyleNodeEvent:
     """Test ht.nodes.styles.event.StyleNodeEvent class."""
 
     def test___init__(self):

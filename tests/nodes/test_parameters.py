@@ -61,6 +61,7 @@ def test_find_parameters_using_variable():
         hou.parm("/out/mantra1/vm_dcmfilename"),
         hou.parm("/out/mantra1/vm_dsmfilename"),
         hou.parm("/out/mantra1/vm_tmpsharedstorage"),
+        hou.parm("/stage/rendergallerysource"),
         hou.parm("/tasks/topnet1/taskgraphfile"),
         hou.parm("/tasks/topnet1/localscheduler/pdg_workingdir"),
     )
@@ -71,6 +72,7 @@ def test_find_parameters_using_variable():
 
     expected = (
         hou.parm("/out/mantra1/vm_picture"),
+        hou.parm("/stage/rendergallerysource"),
         hou.parm("/tasks/topnet1/taskgraphfile"),
         hou.parm("/tasks/topnet1/localscheduler/tempdircustom"),
     )

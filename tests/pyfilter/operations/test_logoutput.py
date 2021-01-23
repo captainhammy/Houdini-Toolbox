@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Third Party Imports
-from builtins import object
 import pytest
 
 # Houdini Toolbox Imports
@@ -39,7 +38,7 @@ def patch_logger(mocker):
 # =============================================================================
 
 
-class Test_LogOutput(object):
+class Test_LogOutput:
     """Test the ht.pyfilter.operations.logoutput.LogOutput object."""
 
     # Methods

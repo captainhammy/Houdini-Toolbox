@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import sys
 
 # Third Party Imports
@@ -20,7 +19,7 @@ from ht.pyfilter import property as prop
 # =============================================================================
 
 
-class Test__parse_string_for_bool(object):
+class Test__parse_string_for_bool:
     """Test ht.pyfilter.property._parse_string_for_bool."""
 
     def test_false(self):
@@ -35,7 +34,7 @@ class Test__parse_string_for_bool(object):
         assert prop._parse_string_for_bool("test") == "test"
 
 
-class Test__prep_value_to_set(object):
+class Test__prep_value_to_set:
     """Test ht.pyfilter.property._prep_value_to_set."""
 
     def test_none(self):
@@ -118,7 +117,7 @@ class Test__prep_value_to_set(object):
         assert result == value
 
 
-class Test__transform_values(object):
+class Test__transform_values:
     """Test ht.pyfilter.property._transform_values."""
 
     def test_none(self):

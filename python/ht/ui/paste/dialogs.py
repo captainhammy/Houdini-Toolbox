@@ -32,7 +32,7 @@ class CopyItemsDialog(QtWidgets.QDialog):
     """
 
     def __init__(self, items, parent_node, parent=None):
-        super(CopyItemsDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.parent_node = parent_node
         self.items = items
@@ -108,7 +108,7 @@ class PasteItemsDialog(QtWidgets.QDialog):
     """
 
     def __init__(self, editor, pos, mousepos, parent=None):
-        super(PasteItemsDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.editor = editor
         self.pos = pos

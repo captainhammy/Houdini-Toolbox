@@ -5,9 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import str
-from builtins import range
-from builtins import object
 import os
 import pickle
 
@@ -35,7 +32,7 @@ class AOVManagerWidget(QtWidgets.QWidget):
     selected_aov_contained_signal = QtCore.Signal(bool)
 
     def __init__(self, node=None, parent=None):
-        super(AOVManagerWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self._node = None
 
@@ -151,7 +148,7 @@ class AOVViewerToolBar(QtWidgets.QToolBar):
     """This class represents a base toolbar class used for AOVs."""
 
     def __init__(self, parent=None):
-        super(AOVViewerToolBar, self).__init__(parent)
+        super().__init__(parent)
 
         self.setStyleSheet(uidata.AOVVIEWERTOOLBAR_STYLE)
         self.setIconSize(QtCore.QSize(24, 24))
@@ -174,7 +171,7 @@ class AOVSelectTreeWidget(
     uninstall_items_signal = QtCore.Signal(models.AOVBaseNode)
 
     def __init__(self, parent=None):
-        super(AOVSelectTreeWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.root = models.TreeNode()
 
@@ -437,7 +434,7 @@ class AOVSelectTreeWidget(
             self.edit_selected()
             return
 
-        super(AOVSelectTreeWidget, self).keyPressEvent(event)
+        super().keyPressEvent(event)
 
     def mark_items_installed(self, items):
         """Mark items as currently installed in the tree."""
@@ -612,7 +609,7 @@ class AOVInstallBarWidget(QtWidgets.QWidget):
     uninstall_signal = QtCore.Signal()
 
     def __init__(self, parent=None):
-        super(AOVInstallBarWidget, self).__init__(parent)
+        super().__init__(parent)
 
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
@@ -689,7 +686,7 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
     new_group_signal = QtCore.Signal()
 
     def __init__(self, parent=None):
-        super(AvailableAOVsToolBar, self).__init__(parent)
+        super().__init__(parent)
 
         import ht.ui.aovs.dialogs
 
@@ -831,7 +828,7 @@ class AOVSelectWidget(QtWidgets.QWidget):
     enable_info_button_signal = QtCore.Signal(bool)
 
     def __init__(self, parent=None):
-        super(AOVSelectWidget, self).__init__(parent)
+        super().__init__(parent)
 
         layout = QtWidgets.QHBoxLayout()
         self.setLayout(layout)
@@ -987,7 +984,7 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
     """
 
     def __init__(self, parent=None):
-        super(AOVsToAddTreeWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.root = models.TreeNode(None)
 
@@ -1099,7 +1096,7 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
 
         # Call the superclass dropEvent() with our possibly modified data to
         # pass the work to the model dropMimeData() method.
-        super(AOVsToAddTreeWidget, self).dropEvent(event)
+        super().dropEvent(event)
 
     def expand_selected(self):
         """Expand selected AOVGroups."""
@@ -1156,7 +1153,7 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
             self.extract_selected()
             return
 
-        super(AOVsToAddTreeWidget, self).keyPressEvent(event)
+        super().keyPressEvent(event)
 
     def get_tree_node_model_index(self, node):
         """Given an tree node, attempt to find its index in the trees model."""
@@ -1266,7 +1263,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
     clear_aovs_signal = QtCore.Signal()
 
     def __init__(self, parent=None):
-        super(AOVsToAddToolBar, self).__init__(parent)
+        super().__init__(parent)
 
         # Button and action to apply AOVs at render time.
         self.apply_button = QtWidgets.QToolButton(self)
@@ -1404,7 +1401,7 @@ class AOVsToAddWidget(QtWidgets.QWidget):
     update_enabled_signal = QtCore.Signal()
 
     def __init__(self, node=None, parent=None):
-        super(AOVsToAddWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self._node = node
 
@@ -1582,7 +1579,7 @@ class NewGroupAOVListWidget(QtWidgets.QListView):
     """This widget allows editing of group AOV membership."""
 
     def __init__(self, parent=None):
-        super(NewGroupAOVListWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
 
@@ -1608,7 +1605,7 @@ class InfoTableView(QtWidgets.QTableView):
     """This class represents a generic table view for information."""
 
     def __init__(self, parent=None):
-        super(InfoTableView, self).__init__(parent)
+        super().__init__(parent)
 
         self.setAlternatingRowColors(True)
         self.verticalHeader().setVisible(False)
@@ -1655,7 +1652,7 @@ class AOVInfoTableView(InfoTableView):
     """This class represents the AOV information table."""
 
     def __init__(self, aov, parent=None):
-        super(AOVInfoTableView, self).__init__(parent)
+        super().__init__(parent)
 
         model = models.AOVInfoTableModel()
         model.init_data_from_aov(aov)
@@ -1666,7 +1663,7 @@ class AOVGroupInfoTableWidget(InfoTableView):
     """This class represents the AOVGroup information table."""
 
     def __init__(self, group, parent=None):
-        super(AOVGroupInfoTableWidget, self).__init__(parent)
+        super().__init__(parent)
 
         model = models.AOVGroupInfoTableModel()
         model.init_data_from_group(group)
@@ -1677,7 +1674,7 @@ class GroupMemberListWidget(QtWidgets.QListView):
     """This widget is for displaying AOVGroup membership."""
 
     def __init__(self, group, parent=None):
-        super(GroupMemberListWidget, self).__init__(parent)
+        super().__init__(parent)
 
         model = models.AOVGroupMemberListModel()
 
@@ -1699,7 +1696,7 @@ class ComboBox(QtWidgets.QComboBox):
     """Custom ComboBox class."""
 
     def __init__(self, parent=None):
-        super(ComboBox, self).__init__(parent)
+        super().__init__(parent)
 
         self.setView(QtWidgets.QListView())
 
@@ -1708,7 +1705,7 @@ class FileChooser(QtWidgets.QWidget):
     """This class represents a file choosing widget."""
 
     def __init__(self, parent=None):
-        super(FileChooser, self).__init__(parent)
+        super().__init__(parent)
 
         layout = QtWidgets.QHBoxLayout()
         self.setLayout(layout)
@@ -1784,7 +1781,7 @@ class FilterWidget(QtWidgets.QWidget):
     """This class represents a Filter widget."""
 
     def __init__(self, parent=None):
-        super(FilterWidget, self).__init__(parent)
+        super().__init__(parent)
 
         layout = QtWidgets.QHBoxLayout()
         self.setLayout(layout)
@@ -1803,7 +1800,7 @@ class HelpButton(QtWidgets.QPushButton):
     """Generic Help button."""
 
     def __init__(self, name, parent=None):
-        super(HelpButton, self).__init__(
+        super().__init__(
             hou.qt.createIcon("BUTTONS_help"), "", parent=parent
         )
 
@@ -1837,7 +1834,7 @@ class HelpButton(QtWidgets.QPushButton):
         browser.displayHelpPath("/aov_manager/{}".format(self._name))
 
 
-class MenuFieldMode(object):
+class MenuFieldMode:
     """Mode settings for MenuFields."""
 
     Replace = 0
@@ -1851,7 +1848,7 @@ class MenuField(QtWidgets.QWidget):
     """
 
     def __init__(self, menu_items, mode=MenuFieldMode.Replace, parent=None):
-        super(MenuField, self).__init__(parent)
+        super().__init__(parent)
 
         layout = QtWidgets.QHBoxLayout()
         self.setLayout(layout)
@@ -1925,7 +1922,7 @@ class StatusMessageWidget(QtWidgets.QWidget):
     Info = 2
 
     def __init__(self, parent=None):
-        super(StatusMessageWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self._error_mappings = {}
         self._warning_mappings = {}

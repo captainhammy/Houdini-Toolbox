@@ -14,7 +14,7 @@ from scipy.spatial import KDTree
 # =============================================================================
 
 
-class PointCloud(object):
+class PointCloud:
     """A wrapper around scipy.spatial.KDTree to represent point positions.
 
     :param geometry: The source geometry.

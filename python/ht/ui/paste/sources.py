@@ -12,10 +12,6 @@ import json
 import os
 import platform
 
-# Third Party Imports
-from builtins import object
-from future.utils import with_metaclass
-
 # Houdini Toolbox Imports
 from ht.ui.paste import utils
 import ht.ui.paste.helpers
@@ -38,7 +34,7 @@ else:
 # ==============================================================================
 
 
-class SourceManager(object):
+class SourceManager:
     """Manager class for all source objects."""
 
     def __init__(self):
@@ -57,7 +53,7 @@ class SourceManager(object):
 # Sources
 
 
-class CopyPasteSource(with_metaclass(abc.ABCMeta, object)):
+class CopyPasteSource(abc.ABC):
     """Base class for managing copy/paste items.
 
     """
@@ -69,11 +65,13 @@ class CopyPasteSource(with_metaclass(abc.ABCMeta, object)):
     # PROPERTIES
     # -------------------------------------------------------------------------
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def display_name(self):
         """str: The source display name."""
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def icon(self):
         """PySide2.QtGui.QIcon: The icon for the source."""
 
@@ -136,7 +134,7 @@ class HomeDirSource(CopyPasteSource):
     _base_path = os.path.join(os.path.expanduser("~"), "copypaste")
 
     def __init__(self):
-        super(HomeDirSource, self).__init__()
+        super().__init__()
 
         self._init_sources()
 
@@ -342,7 +340,7 @@ class HomeDirSource(CopyPasteSource):
 # Item Sources
 
 
-class CopyPasteItemSource(with_metaclass(abc.ABCMeta, object)):
+class CopyPasteItemSource(abc.ABC):
     """Class responsible for loading and saving items from a source.
 
     :param context: The operator context.
@@ -357,7 +355,8 @@ class CopyPasteItemSource(with_metaclass(abc.ABCMeta, object)):
     # PROPERTIES
     # -------------------------------------------------------------------------
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def author(self):
         """str: The name of the item author."""
 
@@ -366,15 +365,18 @@ class CopyPasteItemSource(with_metaclass(abc.ABCMeta, object)):
         """str: The operator context name."""
         return self._context
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def date(self):
         """datetime.datetime: The date of creation."""
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def description(self):
         """str: The item description."""
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def name(self):
         """str: The item name."""
 
@@ -429,7 +431,7 @@ class CPIOContextCopyPasteItemFile(CopyPasteItemSource):
     _extension = ".cpio"
 
     def __init__(self, file_path, context, name, sidecar_path=None):
-        super(CPIOContextCopyPasteItemFile, self).__init__(context)
+        super().__init__(context)
 
         self._author = None
         self._date = None

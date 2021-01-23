@@ -12,9 +12,6 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-from __future__ import print_function
-
 # Houdini Toolbox Imports
 from ht.nodes import helpcard
 

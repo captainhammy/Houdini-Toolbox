@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Third Party Imports
-from builtins import object
 import pytest
 
 # Houdini Toolbox Imports
@@ -20,7 +19,7 @@ import hou
 # =============================================================================
 
 
-class Test__valid_to_convert_to_absolute_reference(object):
+class Test__valid_to_convert_to_absolute_reference:
     """Test ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference."""
 
     def test_empty_string(self, mocker):
@@ -178,7 +177,7 @@ class Test__valid_to_convert_to_absolute_reference(object):
         assert not result
 
 
-class Test__valid_to_convert_to_relative_reference(object):
+class Test__valid_to_convert_to_relative_reference:
     """Test ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference."""
 
     def test_empty_string(self, mocker):
@@ -336,7 +335,7 @@ class Test__valid_to_convert_to_relative_reference(object):
         assert not result
 
 
-class Test_convert_absolute_to_relative_path_context(object):
+class Test_convert_absolute_to_relative_path_context:
     """Test ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context."""
 
     def test_none(self, mocker):
@@ -407,7 +406,7 @@ def test_convert_absolute_to_relative_path(mocker):
     )
 
 
-class Test_convert_relative_to_absolute_path_context(object):
+class Test_convert_relative_to_absolute_path_context:
     """Test ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context."""
 
     def test_none(self, mocker):
@@ -475,7 +474,7 @@ def test_convert_relative_to_absolute_path(mocker):
     )
 
 
-class Test_promote_parameter_to_node(object):
+class Test_promote_parameter_to_node:
     """Test ht.ui.menus.parmmenu.promote_parameter_to_node."""
 
     def test_target_is_source(self, mocker, mock_hou_ui, fix_hou_exceptions):

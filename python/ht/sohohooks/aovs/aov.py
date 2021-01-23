@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import copy
 
 # Houdini Toolbox Imports
@@ -53,7 +52,7 @@ _DEFAULT_AOV_DATA = {
 # =============================================================================
 
 
-class AOV(object):
+class AOV:
     """This class represents an AOV to be exported.
 
     :param data: AOV data.
@@ -498,7 +497,7 @@ class AOV(object):
 # =============================================================================
 
 
-class AOVGroup(object):
+class AOVGroup:
     """This class represents a group of AOV definitions.
 
     :param name: The group name.
@@ -689,7 +688,7 @@ class IntrinsicAOVGroup(AOVGroup):
     """
 
     def __init__(self, name):
-        super(IntrinsicAOVGroup, self).__init__(name)
+        super().__init__(name)
 
         self._comment = "Automatically generated"
 
@@ -715,7 +714,7 @@ class InvalidAOVValueError(AOVError):  # pragma: no cover
     """
 
     def __init__(self, name, value):
-        super(InvalidAOVValueError, self).__init__()
+        super().__init__()
         self.name = name
         self.value = value
 
@@ -742,7 +741,7 @@ class MissingVexTypeError(AOVError):  # pragma: no cover
     """
 
     def __init__(self, variable):
-        super(MissingVexTypeError, self).__init__()
+        super().__init__()
         self.variable = variable
 
     def __str__(self):

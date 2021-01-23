@@ -6,7 +6,6 @@ uses Python decorators to attach the functions to the corresponding HOM classes
 and modules they are meant to extend.
 
 """
-# pylint: disable=bad-continuation
 
 # =============================================================================
 # IMPORTS
@@ -194,7 +193,7 @@ getGlobalVariableNames(int dirty=0)
     table->getVariableNames(names, dirty);
 
     UTarrayToStdVectorOfStrings(names, result);
-    
+
     // Check for an empty vector.
     validateStringVector(result);
 
@@ -1812,14 +1811,14 @@ inlinecpp::BinaryString
 resolve_multiparm_tokens(const char *parm_name, int *indices, int num_indices)
 {
     UT_String       value(parm_name);
-   
+
     PRM_Parm::instanceMultiString(
         value,
         indices,
         num_indices,
         false
     );
-    
+
     return value.toStdString();
 }
 """,
@@ -1828,15 +1827,15 @@ inlinecpp::BinaryString
 get_multiparm_template_name(const PRM_Parm *parm)
 {
     const PRM_Template          *parm_template;
-    
+
     parm_template = parm->findMultiParmTemplate();
-    
+
     if (parm_template)
     {
         UT_StringRef token = parm_template->getToken();
         return token.toStdString();
     }
-    
+
     return std::string();
 }
 """,

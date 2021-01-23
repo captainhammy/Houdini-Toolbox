@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import argparse
 
 # Third Party Imports
@@ -37,7 +36,7 @@ def init_operation(mocker):
 # =============================================================================
 
 
-class Test_PyFilterOperation(object):
+class Test_PyFilterOperation:
     """Test the ht.pyfilter.operations.operation.PyFilterOperation object."""
 
     def test___init__(self, mocker):

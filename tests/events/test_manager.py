@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Third Party Imports
-from builtins import object
 import pytest
 
 # Houdini Toolbox Imports
@@ -38,7 +37,7 @@ def init_manager(mocker):
 # =============================================================================
 
 
-class Test_HoudiniEventManager(object):
+class Test_HoudiniEventManager:
     """Test ht.events.manager.HoudiniEventManager class."""
 
     def test___init__(self):
@@ -470,7 +469,7 @@ def test_register_event_group(mocker):
     mock_manager.register_event_group.assert_called_with(mock_group)
 
 
-class Test_register_function(object):
+class Test_register_function:
     """Test ht.events.manager.register_function."""
 
     def test_not_callable(self, mocker):
@@ -507,7 +506,7 @@ class Test_register_function(object):
         mock_register_item.assert_called_with(mock_cls.return_value, mock_event_name)
 
 
-class Test_register_item(object):
+class Test_register_item:
     """Test ht.events.manager.register_item."""
 
     def test_not_item(self, mocker):

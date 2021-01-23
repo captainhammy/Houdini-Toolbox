@@ -1,19 +1,12 @@
 """This module contains the Houdini event group class."""
 
-# =============================================================================
-# IMPORTS
-# =============================================================================
-
-# Third Party Imports
-from builtins import object
-
 
 # =============================================================================
 # CLASSES
 # =============================================================================
 
 
-class HoudiniEventGroup(object):
+class HoudiniEventGroup:
     """The Houdini event group class.
 
     This class acts as a way to associate multiple event methods together.

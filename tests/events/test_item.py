@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import copy
 
 # Third Party Imports
@@ -50,7 +49,7 @@ def init_item(mocker):
 # =============================================================================
 
 
-class Test_HoudiniEventItem(object):
+class Test_HoudiniEventItem:
     """Test ht.events.item.HoudiniEventItem class."""
 
     def test___init__(self, mocker):
@@ -247,7 +246,7 @@ class Test_HoudiniEventItem(object):
         assert scriptargs == {"key": "value"}
 
 
-class Test_ExclusiveHoudiniEventItem(object):
+class Test_ExclusiveHoudiniEventItem:
     """Test ht.events.item.ExclusiveHoudiniEventItem class."""
 
     # __init__

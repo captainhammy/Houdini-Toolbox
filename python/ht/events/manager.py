@@ -8,14 +8,7 @@ events in Houdini.
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
-
-try:
-    from collections.abc import Callable
-
-except ImportError:
-    from collections import Callable
-
+from collections.abc import Callable
 from contextlib import contextmanager
 
 # Houdini Toolbox Imports
@@ -29,7 +22,7 @@ from ht.events.item import HoudiniEventItem
 # =============================================================================
 
 
-class HoudiniEventManager(object):
+class HoudiniEventManager:
     """Manager and execute events in Houdini."""
 
     def __init__(self):

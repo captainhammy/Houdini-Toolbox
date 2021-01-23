@@ -4,11 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Third Party Imports
-from builtins import object
-
 # Houdini Toolbox Imports
-from builtins import object
 from ht.events.stats import HoudiniEventItemStats
 
 
@@ -17,7 +13,7 @@ from ht.events.stats import HoudiniEventItemStats
 # =============================================================================
 
 
-class HoudiniEventItem(object):
+class HoudiniEventItem:
     """Class responsible for calling callable methods.
 
     :param callables: A list of callables to run.
@@ -149,7 +145,7 @@ class ExclusiveHoudiniEventItem(HoudiniEventItem):
     _exclusive_map = {}
 
     def __init__(self, callables, name, priority=1, stat_tags=None):
-        super(ExclusiveHoudiniEventItem, self).__init__(
+        super().__init__(
             callables, name, priority, stat_tags
         )
 
@@ -176,4 +172,4 @@ class ExclusiveHoudiniEventItem(HoudiniEventItem):
         """
         # Only run this item if this item is the exclusive item for the name.
         if self._exclusive_map[self.name] == self:
-            super(ExclusiveHoudiniEventItem, self).run(scriptargs)
+            super().run(scriptargs)

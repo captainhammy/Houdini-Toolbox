@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import argparse
 
 # Third Party Library Imports
@@ -76,7 +75,7 @@ def properties(mocker):
     _mock_get = mocker.patch("ht.pyfilter.operations.setproperties.get_property")
     _mock_set = mocker.patch("ht.pyfilter.operations.setproperties.set_property")
 
-    class Properties(object):
+    class Properties:
         """Fake class for accessing and setting properties."""
 
         @property
@@ -97,7 +96,7 @@ def properties(mocker):
 # =============================================================================
 
 
-class Test_PropertySetterManager(object):
+class Test_PropertySetterManager:
     """Test the ht.pyfilter.operations.setproperties.PropertySetterManager class."""
 
     def test___init__(self):
@@ -246,7 +245,7 @@ class Test_PropertySetterManager(object):
         mock_property.set_property.assert_not_called()
 
 
-class Test_PropertySetter(object):
+class Test_PropertySetter:
     """Test the ht.pyfilter.operations.setproperties.PropertySetter class."""
 
     def test___init___no_findfile(self, mocker):
@@ -399,7 +398,7 @@ class Test_PropertySetter(object):
         )
 
 
-class Test_MaskedPropertySetter(object):
+class Test_MaskedPropertySetter:
     """Test the ht.pyfilter.operations.setproperties.MaskedPropertySetter class."""
 
     def test___init__(self, mocker):
@@ -509,7 +508,7 @@ class Test_MaskedPropertySetter(object):
         mock_super_set.assert_called()
 
 
-class Test_SetProperties(object):
+class Test_SetProperties:
     """Test the ht.pyfilter.operations.setproperties.SetProperties class."""
 
     def test___init__(self, mocker):
@@ -756,7 +755,7 @@ class Test_SetProperties(object):
         assert result
 
 
-class Test__create_property_setter(object):
+class Test__create_property_setter:
     """Test the ht.pyfilter.operations.setproperties._create_property_setter."""
 
     def test_property(self, mocker):
@@ -869,7 +868,7 @@ class Test__create_property_setter(object):
         mock_setter.assert_called_with(mock_name, mock_block)
 
 
-class Test__process_block(object):
+class Test__process_block:
     """Test the ht.pyfilter.operations.setproperties._process_block."""
 
     def test_dict(self, mocker):
@@ -924,7 +923,7 @@ class Test__process_block(object):
         mock_create.assert_not_called()
 
 
-class Test__process_rendertype_block(object):
+class Test__process_rendertype_block:
     """Test the ht.pyfilter.operations.setproperties._process_rendertype_block."""
 
     def test_dict(self, mocker):

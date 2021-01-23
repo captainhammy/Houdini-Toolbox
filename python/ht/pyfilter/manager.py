@@ -7,7 +7,7 @@ actions.
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
+# TODO: REMOVE THIS
 import builtins
 import argparse
 import importlib
@@ -22,7 +22,7 @@ _logger = logging.getLogger(__name__)
 # =============================================================================
 
 
-class PyFilterManager(object):
+class PyFilterManager:
     """Manager class for PyFilter operations."""
 
     def __init__(self):

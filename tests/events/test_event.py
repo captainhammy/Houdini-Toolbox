@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Third Party Imports
-from builtins import object
 import pytest
 
 # Houdini Toolbox Imports
@@ -35,7 +34,7 @@ def init_event(mocker):
 # =============================================================================
 
 
-class Test_HoudiniEventFactory(object):
+class Test_HoudiniEventFactory:
     """Test ht.events.event.HoudiniEventFactory class."""
 
     def test_get_event_type__mapped(self, mocker):
@@ -102,7 +101,7 @@ class Test_HoudiniEventFactory(object):
         assert mappings == {mock_event_name: mock_event}
 
 
-class Test_HoudiniEvent(object):
+class Test_HoudiniEvent:
     """Test ht.events.event.HoudiniEvent class."""
 
     def test___init__(self, mocker):

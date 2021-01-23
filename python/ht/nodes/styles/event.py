@@ -20,7 +20,7 @@ class StyleNodeEvent(HoudiniEventGroup):
     """Event to style Houdini nodes based on events."""
 
     def __init__(self):
-        super(StyleNodeEvent, self).__init__()
+        super().__init__()
 
         self.event_map.update(
             {

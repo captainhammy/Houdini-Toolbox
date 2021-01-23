@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 from collections import OrderedDict
 
 # Third Party Imports
@@ -13,7 +12,6 @@ import pytest
 
 # Houdini Toolbox Imports
 import ht.events.stats
-from future.utils import with_metaclass
 
 
 # =============================================================================
@@ -51,7 +49,7 @@ def init_stats(mocker):
 def init_tester():
     """Create a tester class object for StatsMeta"""
 
-    class _Tester(with_metaclass(ht.events.stats._StatsMeta, object)):
+    class _Tester(metaclass=ht.events.stats._StatsMeta):
         def __init__(self, name, tags=None, post_report=False):
             self._post_report = post_report
 
@@ -71,7 +69,7 @@ def init_tester():
 # =============================================================================
 
 
-class Test__StatsMeta(object):
+class Test__StatsMeta:
     """Test ht.events.stats._StatsMeta metaclass."""
 
     def test_new(self, init_tester, mocker):
@@ -162,7 +160,7 @@ class Test__StatsMeta(object):
         assert inst1 is inst2
 
 
-class Test_HoudiniEventStats(object):
+class Test_HoudiniEventStats:
     """Test ht.events.stats.HoudiniEventStats class."""
 
     def test___init___no_tags(self, mocker):
@@ -330,7 +328,7 @@ class Test_HoudiniEventStats(object):
         assert stats._total_time == 0
 
 
-class Test_HoudiniEventItemStats(object):
+class Test_HoudiniEventItemStats:
     """Test ht.events.stats.HoudiniEventItemStats class."""
 
     def test___init__(self, mocker):
@@ -461,7 +459,7 @@ def test__get_matching_stats(mocker):
     assert result == (mock_stats1,)
 
 
-class Test_get_event_stats(object):
+class Test_get_event_stats:
     """Test ht.events.stats.get_event_stats."""
 
     def test_none(self, mocker):
@@ -521,7 +519,7 @@ class Test_get_event_stats(object):
         mock_matching.assert_called_with([mock_stats], [mock_tag])
 
 
-class Test_get_item_stats(object):
+class Test_get_item_stats:
     """Test ht.events.stats.get_item_stats."""
 
     def test_none(self, mocker):

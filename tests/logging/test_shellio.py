@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import logging
 
 # Third Party Imports
@@ -41,7 +40,7 @@ def init_handler(mocker):
 # =============================================================================
 
 
-class Test_PythonShellHandler(object):
+class Test_PythonShellHandler:
     """Test ht.logging.shellio.PythonShellHandler object."""
 
     def test_emit__shellio(self, init_handler, mocker):

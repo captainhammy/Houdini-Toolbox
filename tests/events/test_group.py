@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
-from builtins import object
 import ht.events.group
 
 
@@ -14,7 +13,7 @@ import ht.events.group
 # =============================================================================
 
 
-class Test_HoudiniEventGroup(object):
+class Test_HoudiniEventGroup:
     """Test ht.events.group.HoudiniEventGroup class."""
 
     def test___init__(self):

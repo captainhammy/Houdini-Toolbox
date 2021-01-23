@@ -5,8 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from past.builtins import basestring
-from builtins import str
 import logging
 
 # Houdini Toolbox Imports
@@ -30,7 +28,7 @@ class SetDeepImage(PyFilterOperation):
     """
 
     def __init__(self, manager):
-        super(SetDeepImage, self).__init__(manager)
+        super().__init__(manager)
 
         self._all_passes = False
         self._disable_deep_image = False
@@ -221,7 +219,7 @@ class SetDeepImage(PyFilterOperation):
             args.append("--deep-compression={}".format(compression))
 
         if depth_planes is not None:
-            if not isinstance(depth_planes, basestring):
+            if not isinstance(depth_planes, str):
                 depth_planes = ",".join(depth_planes)
 
             args.append("--deep-depth-planes={}".format(depth_planes))

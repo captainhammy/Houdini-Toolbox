@@ -10,10 +10,6 @@ from contextlib import contextmanager
 import logging
 import time
 
-# Third Party Imports
-from builtins import object
-from future.utils import with_metaclass
-
 _logger = logging.getLogger(__name__)
 
 
@@ -84,7 +80,7 @@ class _StatsMeta(type):
         return inst
 
 
-class HoudiniEventStats(with_metaclass(_StatsMeta, object)):
+class HoudiniEventStats(metaclass=_StatsMeta):
     """The base statistics class.
 
     :param name: Name for the stats.
@@ -208,7 +204,7 @@ class HoudiniEventItemStats(HoudiniEventStats):
     """
 
     def __init__(self, name, tags=None, post_report=False):
-        super(HoudiniEventItemStats, self).__init__(
+        super().__init__(
             name, tags=tags, post_report=post_report
         )
 
@@ -248,7 +244,7 @@ class HoudiniEventItemStats(HoudiniEventStats):
         :return:
 
         """
-        super(HoudiniEventItemStats, self).reset()
+        super().reset()
 
         self.item_stats.clear()
 

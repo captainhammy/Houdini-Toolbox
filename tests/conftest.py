@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import os
 import sys
 from xml.etree import ElementTree
@@ -326,7 +325,7 @@ def patch_soho(mocker):
     mock_settings = mocker.MagicMock()
     mock_soho = mocker.MagicMock()
 
-    class MockSoho(object):
+    class MockSoho:
         """Mock object for accessing patched mantra/SOHO modules."""
         IFDapi = mock_api
         IFDhooks = mock_hooks
