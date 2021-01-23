@@ -27,7 +27,7 @@ import hou
 # =============================================================================
 
 _PATH = os.path.join(
-    os.path.expandvars("$TOOLBOXDIR"), "resources", "help_template.yaml"
+    os.path.expandvars("$HOUDINI_TOOLBOX_DIR"), "resources", "help_template.yaml"
 )
 
 with open(_PATH) as handle:
