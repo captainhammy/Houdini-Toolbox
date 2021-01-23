@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Third Party Imports
-from builtins import object
 import pytest
 
 # Houdini Toolbox Imports
@@ -46,7 +45,7 @@ def mock_logger(mocker):
 # =============================================================================
 
 
-class Test_RopRenderEvent(object):
+class Test_RopRenderEvent:
     """Test ht.events.events.rop_render.RopRenderEvent class."""
 
     def test___init__(self, mocker):
@@ -257,7 +256,7 @@ def test__get_target_file(mocker, type_name, return_value, expected):
         assert result is None
 
 
-class Test__print_frame_write(object):
+class Test__print_frame_write:
     """Test ht.events.events.rop_render._print_frame_write."""
 
     def test_no_path(self, mocker):
@@ -305,7 +304,7 @@ class Test__print_frame_write(object):
         mock_logger.info.assert_called()
 
 
-class Test_build_scriptargs(object):
+class Test_build_scriptargs:
     """Test ht.events.events.rop_render.build_scriptargs."""
 
     def test_no_args(self, mocker):

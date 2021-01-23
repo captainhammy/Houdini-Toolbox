@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import argparse
 
 # Third Party Imports
@@ -39,7 +38,7 @@ def init_manager(mocker):
 # =============================================================================
 
 
-class TestManager(object):
+class TestManager:
     """Test ht.pyfilter.manager.PyFilterManager object."""
 
     def test___init__(self, mocker):
@@ -300,7 +299,7 @@ def test_build_parser():
     assert isinstance(result, argparse.ArgumentParser)
 
 
-class Test__find_operation_files(object):
+class Test__find_operation_files:
     """Test ht.pyfilter.manager._find_operation_files."""
 
     def test_no_files(self, mocker, fix_hou_exceptions):
@@ -318,7 +317,7 @@ class Test__find_operation_files(object):
         assert result == mock_find.return_value
 
 
-class Test__get_class(object):
+class Test__get_class:
     """Test ht.pyfilter.manager._get_class."""
 
     def test_importerror(self, mocker):
@@ -355,7 +354,7 @@ class Test__get_class(object):
         mock_import.assert_called_with(mock_module_name)
 
 
-class Test__get_operation_data(object):
+class Test__get_operation_data:
     """Test ht.pyfilter.manager._get_operation_data."""
 
     def test_ioerror(self, mocker):

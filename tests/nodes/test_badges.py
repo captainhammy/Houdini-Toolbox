@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Third Party Imports
-from builtins import object
 import pytest
 
 # Houdini Toolbox Imports
@@ -21,7 +20,7 @@ import hou
 # =============================================================================
 
 
-class Test_clear_generic_image_badge(object):
+class Test_clear_generic_image_badge:
     """Test ht.nodes.badges.clear_generic_image_badge."""
 
     def test_no_data(self, mocker, fix_hou_exceptions):
@@ -55,7 +54,7 @@ class Test_clear_generic_image_badge(object):
         mock_node.destroyUserData.assert_called_with(mock_data_name.return_value)
 
 
-class Test_clear_generic_text_badge(object):
+class Test_clear_generic_text_badge:
     """Test ht.nodes.badges.clear_generic_text_badge."""
 
     def test_no_data(self, mocker, fix_hou_exceptions):
@@ -99,7 +98,7 @@ class Test_clear_generic_text_badge(object):
         mock_clear_color.assert_called()
 
 
-class Test_clear_generic_text_badge_color(object):
+class Test_clear_generic_text_badge_color:
     """Test ht.nodes.badges.clear_generic_text_badge_color."""
 
     def test_no_data(self, mocker, fix_hou_exceptions):
@@ -149,7 +148,7 @@ def test_set_generic_image_badge(mocker):
     mock_node.setUserData.assert_called_with(mock_data_name.return_value, mock_value)
 
 
-class Test_set_generic_text_badge(object):
+class Test_set_generic_text_badge:
     """Test ht.nodes.badges.set_generic_text_badge."""
 
     def test_no_color(self, mocker):

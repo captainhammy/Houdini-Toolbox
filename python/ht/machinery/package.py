@@ -507,6 +507,8 @@ class HoudiniBuildManager:
 
             # If a default name was given then filter the builds based on that.
             if default_name is not None:
+                if default_product:
+                    default_name = "{}-{}".format(default_name, default_product)
                 default = find_matching_builds(default_name, builds)
 
         # If the default could not be found (or none was specified) use the
@@ -1261,6 +1263,13 @@ def find_matching_builds(match_string, builds):
         for build in builds
         if str(build).startswith(version) and build.product == product
     ]
+
+    if not matching:
+        matching = [
+            build
+            for build in builds
+            if str(build).startswith(version)
+        ]
 
     # If there are any that match, use the latest/only one.
     if matching:

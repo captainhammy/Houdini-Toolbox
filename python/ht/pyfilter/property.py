@@ -5,15 +5,7 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import zip
-from past.builtins import basestring
-
-try:
-    from collections.abc import Iterable
-
-except ImportError:
-    from collections import Iterable
-
+from collections.abc import Iterable
 import json
 
 
@@ -57,7 +49,7 @@ def _prep_value_to_set(value):
         value = []
 
     # Convert to a list of a single string value.
-    elif isinstance(value, basestring):
+    elif isinstance(value, str):
         value = [value]
 
     elif isinstance(value, dict):

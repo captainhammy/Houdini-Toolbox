@@ -28,7 +28,7 @@ class SetPrimaryImage(PyFilterOperation):
     """
 
     def __init__(self, manager):
-        super(SetPrimaryImage, self).__init__(manager)
+        super().__init__(manager)
 
         self._disable_primary_image = False
         self._primary_image_path = None

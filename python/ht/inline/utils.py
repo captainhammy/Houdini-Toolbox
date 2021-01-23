@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import str
 import ctypes
 
 # Houdini Imports
@@ -216,8 +215,8 @@ def get_attrib_owner(attribute_type):
     try:
         return _ATTRIB_TYPE_MAP[attribute_type]
 
-    except KeyError:
-        raise ValueError("Invalid attribute type: {}".format(attribute_type))
+    except KeyError as exc:
+        raise ValueError("Invalid attribute type: {}".format(attribute_type)) from exc
 
 
 def get_attrib_owner_from_geometry_entity_type(entity_type):
@@ -263,9 +262,9 @@ def get_attrib_owner_from_geometry_type(geometry_type):
     try:
         return _GEOMETRY_TYPE_MAP[geometry_type]
 
-    except KeyError:
+    except KeyError as exc:
         # Something went wrong so raise an exception.
-        raise ValueError("Invalid geometry type: {}".format(geometry_type))
+        raise ValueError("Invalid geometry type: {}".format(geometry_type)) from exc
 
 
 def get_attrib_storage(data_type):
@@ -280,8 +279,8 @@ def get_attrib_storage(data_type):
     try:
         return _ATTRIB_STORAGE_MAP[data_type]
 
-    except KeyError:
-        raise ValueError("Invalid data type: {}".format(data_type))
+    except KeyError as exc:
+        raise ValueError("Invalid data type: {}".format(data_type)) from exc
 
 
 def get_entity_data(entity):
@@ -358,8 +357,8 @@ def get_group_attrib_owner(group):
     try:
         return _GROUP_ATTRIB_MAP[type(group)]
 
-    except KeyError:
-        raise ValueError("Invalid group type")
+    except KeyError as exc:
+        raise ValueError("Invalid group type") from exc
 
 
 def get_group_type(group):
@@ -374,8 +373,8 @@ def get_group_type(group):
     try:
         return _GROUP_TYPE_MAP[type(group)]
 
-    except KeyError:
-        raise ValueError("Invalid group type")
+    except KeyError as exc:
+        raise ValueError("Invalid group type") from exc
 
 
 def get_multiparm_containing_folders(name, parm_template_group):

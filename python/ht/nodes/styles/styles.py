@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import re
 
 
@@ -14,7 +13,7 @@ import re
 # =============================================================================
 
 
-class StyleConstant(object):
+class StyleConstant:
     """This class represents a named constant style.
 
     :param name: The constant's name.
@@ -132,16 +131,16 @@ class StyleConstant(object):
             node.setUserData("nodeshape", self.shape)
 
 
-class StyleRule(object):
+class StyleRule:
     """This class represents a color application bound to a name.
 
-    :param name: The rules's name.
+    :param name: The rule's name.
     :type name: str
-    :param color: The rules's color.
+    :param color: The rule's color.
     :type color: hou.Color
-    :param color_type: The rules's color type.
+    :param color_type: The rule's color type.
     :type color_type: str
-    :param shape: The rules's shape.
+    :param shape: The rule's shape.
     :type shape: str
     :param file_path: The path to the definition file.
     :type file_path: str
@@ -249,10 +248,10 @@ class StyleRule(object):
             node.setUserData("nodeshape", self.shape)
 
 
-class ConstantRule(object):
+class ConstantRule:
     """This class represents a style application bound to a named constant.
 
-    :param name: The rules's name.
+    :param name: The rule's name.
     :type name: str
     :param constant_name: The constant name.
     :type constant_name: str

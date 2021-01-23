@@ -23,7 +23,7 @@ class SetTileCallback(PyFilterOperation):
     """
 
     def __init__(self, manager):
-        super(SetTileCallback, self).__init__(manager)
+        super().__init__(manager)
 
         # This could also be hardcoded and we could not bother with
         # parsing args or anything like that.

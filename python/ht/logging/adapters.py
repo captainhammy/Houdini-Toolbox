@@ -5,11 +5,11 @@
 # ==============================================================================
 
 # Standard Library Imports
-from __future__ import absolute_import
 from contextlib import contextmanager
 import logging
 
 # Third Party Imports
+# TODO: REMOVE THIS?
 from logquacious.backport_configurable_stacklevel import patch_logger
 
 # Houdini Imports
@@ -38,7 +38,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
     """
 
     def __init__(self, base_logger, dialog=False, node=None, status_bar=False):
-        super(HoudiniLoggerAdapter, self).__init__(base_logger, {})
+        super().__init__(base_logger, {})
 
         self._dialog = dialog
         self._node = node

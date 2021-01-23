@@ -5,8 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from __future__ import absolute_import
-from builtins import object
 import os
 
 # Houdini Toolbox Imports
@@ -17,7 +15,7 @@ import ht.logging.config
 # =============================================================================
 
 
-class Test_init_config(object):
+class Test_init_config:
     """Test ht.logging.config.init_config."""
 
     def test_config_exists(self, mocker):

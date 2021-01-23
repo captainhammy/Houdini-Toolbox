@@ -29,7 +29,7 @@ class _BaseCopyHelperWidget(QtWidgets.QWidget):
     """
 
     def __init__(self, source, context, parent=None):
-        super(_BaseCopyHelperWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.context = context
         self.source = source
@@ -56,7 +56,7 @@ class _BasePasteHelperWidget(QtWidgets.QWidget):
 
     def __init__(self, source, context, parent=None):
 
-        super(_BasePasteHelperWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.context = context
         self.source = source
@@ -84,7 +84,7 @@ class HomeToolDirItemsCopyHelperWidget(_BaseCopyHelperWidget):
     valid_source_signal = QtCore.Signal(bool)
 
     def __init__(self, source, context, parent=None):
-        super(HomeToolDirItemsCopyHelperWidget, self).__init__(source, context, parent)
+        super().__init__(source, context, parent)
 
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
@@ -167,7 +167,7 @@ class HomeToolDirItemsPasteHelperWidget(_BasePasteHelperWidget):
     valid_sources_signal = QtCore.Signal(bool)
 
     def __init__(self, source, context, parent=None):
-        super(HomeToolDirItemsPasteHelperWidget, self).__init__(source, context, parent)
+        super().__init__(source, context, parent)
 
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)

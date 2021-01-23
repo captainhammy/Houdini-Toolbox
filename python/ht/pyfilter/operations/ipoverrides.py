@@ -27,7 +27,7 @@ class IpOverrides(PyFilterOperation):
     """
 
     def __init__(self, manager):
-        super(IpOverrides, self).__init__(manager)
+        super().__init__(manager)
 
         self._bucket_size = None
         self._disable_aovs = False

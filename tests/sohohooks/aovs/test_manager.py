@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import os
 
 # Third Party Imports
@@ -51,7 +50,7 @@ def init_manager(mocker):
 # =============================================================================
 
 
-class Test_AOVManager(object):
+class Test_AOVManager:
     """Test ht.sohohooks.aovs.manager.AOVManager object."""
 
     def test___init__(self, mocker):
@@ -819,7 +818,7 @@ class Test_AOVManager(object):
             assert groups == {mock_group2.name: mock_group2}
 
 
-class Test_AOVFile(object):
+class Test_AOVFile:
     """Test ht.sohohooks.aovs.manager.AOVFile object."""
 
     @pytest.mark.parametrize("exists", (True, False))
@@ -1200,7 +1199,7 @@ class Test_AOVFile(object):
         mock_dump.assert_called_with(expected, mock_handle.return_value, indent=4)
 
 
-class Test__find_aov_files(object):
+class Test__find_aov_files:
     """Test ht.sohohooks.aovs.manager._find_aov_files."""
 
     def test_aov_path(self, mocker):
@@ -1253,7 +1252,7 @@ class Test__find_aov_files(object):
         mock_glob.assert_called_with(os.path.join(folder_path, "*.json"))
 
 
-class Test__find_houdinipath_aov_folders(object):
+class Test__find_houdinipath_aov_folders:
     """Test ht.sohohooks.aovs.manager._find_houdinipath_aov_folders."""
 
     def test_no_dirs(self, mocker, fix_hou_exceptions):
@@ -1274,7 +1273,7 @@ class Test__find_houdinipath_aov_folders(object):
         assert result == mock_find.return_value
 
 
-class Test__get_aov_path_folders(object):
+class Test__get_aov_path_folders:
     """Test ht.sohohooks.aovs.manager._get_aov_path_folders."""
 
     def test_no_hpath(self, mocker):
@@ -1320,7 +1319,7 @@ class Test__get_aov_path_folders(object):
         assert result == ("path1", "path2", "hpath1", "hpath2")
 
 
-class Test_build_menu_script(object):
+class Test_build_menu_script:
     """Test ht.sohohooks.aovs.manager.build_menu_script."""
 
     def test_no_groups(self, mocker):

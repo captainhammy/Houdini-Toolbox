@@ -5,8 +5,6 @@
 # =============================================================================
 
 # Third Party Imports
-from builtins import str
-from builtins import object
 import pytest
 
 # Houdini Toolbox Imports
@@ -59,7 +57,7 @@ def init_style_rule(mocker):
 # =============================================================================
 
 
-class Test_StyleConstant(object):
+class Test_StyleConstant:
     """Test ht.nodes.styles.styles.StyleConstant."""
 
     def test___init__(self, mocker):
@@ -228,7 +226,7 @@ class Test_StyleConstant(object):
         mock_node.setUserData.assert_not_called()
 
 
-class Test_StyleRule(object):
+class Test_StyleRule:
     """Test ht.nodes.styles.styles.StyleRule."""
 
     def test___init__(self, mocker):
@@ -430,7 +428,7 @@ class Test_StyleRule(object):
         mock_node.setUserData.assert_not_called()
 
 
-class Test_ConstantRule(object):
+class Test_ConstantRule:
     """Test ht.nodes.styles.styles.ConstantRule."""
 
     def test___init__(self, mocker):

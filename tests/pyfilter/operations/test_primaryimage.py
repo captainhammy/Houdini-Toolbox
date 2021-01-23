@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import argparse
 
 # Third Party Imports
@@ -37,7 +36,7 @@ def init_operation(mocker):
 # =============================================================================
 
 
-class Test_SetPrimaryImage(object):
+class Test_SetPrimaryImage:
     """Test the ht.pyfilter.operations.primaryimage.SetPrimaryImage object."""
 
     def test___init__(self, mocker):

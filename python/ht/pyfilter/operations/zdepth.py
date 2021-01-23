@@ -28,7 +28,7 @@ class ZDepthPass(PyFilterOperation):
     CONST_SHADER = "opdef:/Shop/v_constant clr 0 0 0"
 
     def __init__(self, manager):
-        super(ZDepthPass, self).__init__(manager)
+        super().__init__(manager)
 
         # Should the operation be run.
         self._active = False

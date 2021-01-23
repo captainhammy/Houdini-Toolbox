@@ -8,15 +8,9 @@ file path.
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
+# TODO: REMOVE THIS
 import builtins
-
-try:
-    from collections.abc import Iterable
-
-except ImportError:
-    from collections import Iterable
-
+from collections.abc import Iterable
 import json
 import logging
 
@@ -32,7 +26,7 @@ _logger = logging.getLogger(__name__)
 # =============================================================================
 
 
-class PropertySetterManager(object):
+class PropertySetterManager:
     """Class for creating and managing PropertySetters."""
 
     def __init__(self):
@@ -126,7 +120,7 @@ class PropertySetterManager(object):
                 prop.set_property()
 
 
-class PropertySetter(object):
+class PropertySetter:
     """An object representing a Mantra property being set by PyFilter.
 
     :param name: The property name.
@@ -235,7 +229,7 @@ class MaskedPropertySetter(PropertySetter):
     # -------------------------------------------------------------------------
 
     def __init__(self, name, property_block, mask_property_name):
-        super(MaskedPropertySetter, self).__init__(name, property_block)
+        super().__init__(name, property_block)
 
         # Look for a mask property.
         self._mask = property_block["mask"]
@@ -293,7 +287,7 @@ class MaskedPropertySetter(PropertySetter):
                 return
 
         # Call the super class function to set the property.
-        super(MaskedPropertySetter, self).set_property()
+        super().set_property()
 
 
 class SetProperties(PyFilterOperation):
@@ -305,7 +299,7 @@ class SetProperties(PyFilterOperation):
     """
 
     def __init__(self, manager):
-        super(SetProperties, self).__init__(manager)
+        super().__init__(manager)
 
         self._property_manager = PropertySetterManager()
 

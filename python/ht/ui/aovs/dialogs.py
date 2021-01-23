@@ -8,7 +8,6 @@ AOVGroups.
 # =============================================================================
 
 # Standard Library Imports
-from builtins import str
 import os
 import re
 
@@ -40,7 +39,7 @@ class _BaseHoudiniStyleDialog(QtWidgets.QDialog):
     """
 
     def __init__(self, parent=None):
-        super(_BaseHoudiniStyleDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.setProperty("houdiniStyle", True)
 
@@ -53,7 +52,7 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
     valid_input_signal = QtCore.Signal(bool)
 
     def __init__(self, parent=None):  # pylint: disable=too-many-statements
-        super(_BaseAOVDialog, self).__init__(parent)
+        super().__init__(parent)
 
         # UI elements are valid.
         self._variable_valid = False
@@ -600,7 +599,7 @@ class NewAOVDialog(_BaseAOVDialog):
     new_aov_signal = QtCore.Signal(AOV)
 
     def __init__(self, parent=None):
-        super(NewAOVDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.variable_name.setFocus()
         self.variable_name.textChanged.connect(self.validate_variable_name)
@@ -687,7 +686,7 @@ class NewAOVDialog(_BaseAOVDialog):
 
         self.new_aov_signal.emit(aov)
 
-        return super(NewAOVDialog, self).accept()
+        return super().accept()
 
 
 class EditAOVDialog(_BaseAOVDialog):
@@ -696,7 +695,7 @@ class EditAOVDialog(_BaseAOVDialog):
     aov_updated_signal = QtCore.Signal(AOV)
 
     def __init__(self, aov, parent=None):
-        super(EditAOVDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.variable_name.setEnabled(False)
 
@@ -745,11 +744,11 @@ class EditAOVDialog(_BaseAOVDialog):
 
         self.aov_updated_signal.emit(self.aov)
 
-        return super(EditAOVDialog, self).accept()
+        return super().accept()
 
     def initialize_from_aov(self):  # pylint: disable=arguments-differ
         """Initialize the dialog from its AOV."""
-        super(EditAOVDialog, self).initialize_from_aov(self.aov)
+        super().initialize_from_aov(self.aov)
 
     def reset(self):
         """Reset any changes made."""
@@ -762,7 +761,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
     valid_input_signal = QtCore.Signal(bool)
 
     def __init__(self, parent=None):
-        super(_BaseGroupDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self._group_name_valid = False
         self._file_valid = False
@@ -986,7 +985,7 @@ class NewGroupDialog(_BaseGroupDialog):
     new_aov_group_signal = QtCore.Signal(AOVGroup)
 
     def __init__(self, parent=None):
-        super(NewGroupDialog, self).__init__(parent)
+        super().__init__(parent)
 
         # Set default messages for new groups.
         self.status_widget.add_info(0, "Enter a group name")
@@ -1022,7 +1021,7 @@ class NewGroupDialog(_BaseGroupDialog):
 
                 self.status_widget.add_warning(0, msg)
 
-        super(NewGroupDialog, self)._additional_group_name_validation(group_name)
+        super()._additional_group_name_validation(group_name)
 
     # -------------------------------------------------------------------------
     # METHODS
@@ -1045,7 +1044,7 @@ class NewGroupDialog(_BaseGroupDialog):
 
         self.new_aov_group_signal.emit(group)
 
-        return super(NewGroupDialog, self).accept()
+        return super().accept()
 
 
 class EditGroupDialog(_BaseGroupDialog):
@@ -1054,7 +1053,7 @@ class EditGroupDialog(_BaseGroupDialog):
     group_updated_signal = QtCore.Signal(AOVGroup)
 
     def __init__(self, group, parent=None):
-        super(EditGroupDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self.group_name.setEnabled(False)
         self.file_widget.enable(False)
@@ -1101,7 +1100,7 @@ class EditGroupDialog(_BaseGroupDialog):
 
         self.group_updated_signal.emit(group)
 
-        return super(EditGroupDialog, self).accept()
+        return super().accept()
 
     def initialize_from_group(self):
         """Initialize the UI values from the group."""
@@ -1132,7 +1131,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
     aov_updated_signal = QtCore.Signal(AOV)
 
     def __init__(self, aov, parent=None):
-        super(AOVInfoDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self._edit_dialog = None
 
@@ -1282,7 +1281,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
     group_updated_signal = QtCore.Signal(AOVGroup)
 
     def __init__(self, group, parent=None):
-        super(AOVGroupInfoDialog, self).__init__(parent)
+        super().__init__(parent)
 
         self._group = group
         self._edit_dialog = None

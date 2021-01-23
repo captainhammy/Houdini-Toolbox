@@ -4,9 +4,6 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-from __future__ import print_function
-
 # Houdini Imports
 import hou
 import hutil.cppinline

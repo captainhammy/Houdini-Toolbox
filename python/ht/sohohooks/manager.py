@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import traceback
 
 
@@ -14,7 +13,7 @@ import traceback
 # =============================================================================
 
 
-class SohoHookManager(object):
+class SohoHookManager:
     """This class manages custom soho hooks."""
 
     def __init__(self):

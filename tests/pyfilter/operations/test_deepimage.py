@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import argparse
 
 # Third Party Imports
@@ -46,7 +45,7 @@ def properties(mocker):
     _mock_get = mocker.patch("ht.pyfilter.operations.deepimage.get_property")
     _mock_set = mocker.patch("ht.pyfilter.operations.deepimage.set_property")
 
-    class Properties(object):
+    class Properties:
         """Fake class for accessing and setting properties."""
 
         @property
@@ -67,7 +66,7 @@ def properties(mocker):
 # =============================================================================
 
 
-class Test_DeepImage(object):
+class Test_DeepImage:
     """Test the ht.pyfilter.operations.deepimage.DeepImage class."""
 
     def test___init__(self, mocker):

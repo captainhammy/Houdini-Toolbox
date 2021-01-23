@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Third Party Imports
-from builtins import object
 from contextlib import contextmanager
 import pytest
 
@@ -52,7 +51,7 @@ def does_not_raise():
 # =============================================================================
 
 
-class Test_AOV(object):
+class Test_AOV:
     """Test ht.sohohooks.aovs.AOV object."""
 
     def test___init__(self, mocker):
@@ -1033,7 +1032,7 @@ class Test_AOV(object):
         mock_export.assert_has_calls(calls)
 
 
-class Test_AOVGroup(object):
+class Test_AOVGroup:
     """Test ht.sohohooks.aovs.AOVGroup object."""
 
     # __init__
@@ -1493,7 +1492,7 @@ class Test_AOVGroup(object):
         mock_aov2.write_to_ifd.assert_called_with(mock_wrangler, mock_cam, mock_now)
 
 
-class Test_IntrinsicAOVGroup(object):
+class Test_IntrinsicAOVGroup:
     def test___init__(self, mocker):
         mock_super_init = mocker.patch("ht.sohohooks.aovs.aov.AOVGroup.__init__")
 
@@ -1505,7 +1504,7 @@ class Test_IntrinsicAOVGroup(object):
         assert result._comment == "Automatically generated"
 
 
-class Test__build_category_map(object):
+class Test__build_category_map:
     def test_no_parm(self, mocker):
         mock_light1 = mocker.MagicMock()
 
@@ -1556,7 +1555,7 @@ class Test__build_category_map(object):
         }
 
 
-class Test__call_post_defplane(object):
+class Test__call_post_defplane:
     def test(self, mocker, patch_soho):
         mock_variable = mocker.MagicMock(spec=str)
         mock_vextype = mocker.MagicMock(spec=str)
@@ -1589,7 +1588,7 @@ class Test__call_post_defplane(object):
         )
 
 
-class Test__call_pre_defplane(object):
+class Test__call_pre_defplane:
     def test(self, mocker, patch_soho):
         mock_variable = mocker.MagicMock(spec=str)
         mock_vextype = mocker.MagicMock(spec=str)
@@ -1622,7 +1621,7 @@ class Test__call_pre_defplane(object):
         )
 
 
-class Test__write_data_to_ifd(object):
+class Test__write_data_to_ifd:
     def test_pre_defplane(self, mocker, patch_soho):
         mock_pre = mocker.patch(
             "ht.sohohooks.aovs.aov._call_pre_defplane", return_value=True
@@ -1806,7 +1805,7 @@ class Test__write_data_to_ifd(object):
         patch_soho.IFDapi.ray_end.assert_not_called()
 
 
-class Test__write_light(object):
+class Test__write_light:
     def test_suffix_prefix(self, mocker, patch_soho):
         mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
 
@@ -1944,7 +1943,7 @@ class Test__write_light(object):
         )
 
 
-class Test__write_per_category(object):
+class Test__write_per_category:
     def test_no_category(self, mocker):
         mock_build = mocker.patch("ht.sohohooks.aovs.aov._build_category_map")
         mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
@@ -2017,7 +2016,7 @@ class Test__write_per_category(object):
         )
 
 
-class Test__write_single_channel(object):
+class Test__write_single_channel:
     def test_lights(self, mocker):
         mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
 

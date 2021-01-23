@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import os
 
 # Third Party Imports
@@ -47,7 +46,7 @@ pytestmark = pytest.mark.usefixtures("load_test_file")
 # =============================================================================
 
 
-class Test_PointCloud(object):
+class Test_PointCloud:
     """Test ht.geometry.pointcloud.PointCloud."""
 
     def test_no_points(self):

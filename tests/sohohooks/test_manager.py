@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Third Party Imports
-from builtins import object
 import pytest
 
 # Houdini Toolbox Imports
@@ -33,7 +32,7 @@ def init_manager(mocker):
 # =============================================================================
 
 
-class Test_SohoHookManager(object):
+class Test_SohoHookManager:
     """Test ht.sohohooks.manager.SohoHookManager object."""
 
     def test___init__(self):

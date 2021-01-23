@@ -8,7 +8,7 @@ with AOVs.
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
+# TODO: REMOVE THIS
 import builtins
 import glob
 import json
@@ -27,7 +27,7 @@ import hou
 # =============================================================================
 
 
-class AOVManager(object):
+class AOVManager:
     """This class is for managing and applying AOVs at render time."""
 
     def __init__(self):
@@ -357,7 +357,7 @@ class AOVManager(object):
                 self.interface.group_removed_signal.emit(group)
 
 
-class AOVFile(object):
+class AOVFile:
     """Class to handle reading and writing AOV .json files.
 
     :param path: The path to the file.

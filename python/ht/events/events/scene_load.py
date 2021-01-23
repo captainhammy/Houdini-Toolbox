@@ -22,7 +22,7 @@ class SceneLoadEvent(HoudiniEventGroup):
     """Event to run on scene load (456)."""
 
     def __init__(self):
-        super(SceneLoadEvent, self).__init__()
+        super().__init__()
 
         load_item = HoudiniEventItem((self.clear_session_settings,))
 

@@ -34,7 +34,7 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
     header_labels = ("Name", "Description", "Author", "Date")
 
     def __init__(self, source, context, parent=None):
-        super(BasicSourceItemTableModel, self).__init__(parent)
+        super().__init__(parent)
 
         self.context = context
         self.source = source

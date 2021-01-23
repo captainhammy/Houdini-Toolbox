@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 from functools import wraps
 import logging
 
@@ -17,7 +16,7 @@ _logger = logging.getLogger(__name__)
 # =============================================================================
 
 
-class PyFilterOperation(object):
+class PyFilterOperation:
     """Base class of operations for PyFilter.
 
     :param manager: The manager this operation is registered with.

@@ -5,10 +5,6 @@
 # =============================================================================
 
 # Third Party Imports
-from builtins import str
-from builtins import zip
-from builtins import range
-from builtins import object
 from PySide2 import QtCore, QtGui
 
 # Houdini Toolbox Imports
@@ -26,7 +22,7 @@ import hou
 # =============================================================================
 
 
-class TreeNode(object):
+class TreeNode:
     """The base tree node class for use in AOV and group display.
 
     """
@@ -147,7 +143,7 @@ class FolderNode(TreeNode):
     """Tree node representing a folder."""
 
     def __init__(self, name, parent=None):
-        super(FolderNode, self).__init__(parent)
+        super().__init__(parent)
 
         self._name = name
 
@@ -177,7 +173,7 @@ class AOVBaseNode(TreeNode):
     """
 
     def __init__(self, item, parent=None):
-        super(AOVBaseNode, self).__init__(parent)
+        super().__init__(parent)
 
         self._item = item
 
@@ -286,7 +282,7 @@ class AOVGroupNode(AOVBaseNode):
     """Node representing an AOVGroup."""
 
     def __init__(self, group, parent=None):
-        super(AOVGroupNode, self).__init__(group, parent)
+        super().__init__(group, parent)
 
         # Create child nodes for the group's AOVs.
         for aov in group.aovs:
@@ -368,7 +364,7 @@ class LeafFilterProxyModel(QtCore.QSortFilterProxyModel):
     """
 
     def __init__(self, parent=None):
-        super(LeafFilterProxyModel, self).__init__(parent)
+        super().__init__(parent)
 
         # Make filter case insensitive.
         self.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
@@ -407,7 +403,7 @@ class LeafFilterProxyModel(QtCore.QSortFilterProxyModel):
 
     def filter_accepts_row_itself(self, row_num, source_parent):
         """Check if this filter accepts this row."""
-        return super(LeafFilterProxyModel, self).filterAcceptsRow(
+        return super().filterAcceptsRow(
             row_num, source_parent
         )
 
@@ -448,7 +444,7 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
     sortRole = QtCore.Qt.UserRole + 1
 
     def __init__(self, root, parent=None):
-        super(BaseAOVTreeModel, self).__init__(parent)
+        super().__init__(parent)
 
         self._root = root
 
@@ -591,7 +587,7 @@ class AOVSelectModel(BaseAOVTreeModel):
     """The model for the 'AOVs and Groups' tree."""
 
     def __init__(self, root, parent=None):
-        super(AOVSelectModel, self).__init__(root, parent)
+        super().__init__(root, parent)
 
         self._installed = set()
 
@@ -950,7 +946,7 @@ class AOVGroupEditListModel(QtCore.QAbstractListModel):
     """This class represents data defining AOVs belonging to an AOVGroup."""
 
     def __init__(self, parent=None):
-        super(AOVGroupEditListModel, self).__init__(parent)
+        super().__init__(parent)
 
         # Grab all the possible AOVs at time of creation.
         self._aovs = list(manager.MANAGER.aovs.values())
@@ -1033,7 +1029,7 @@ class InfoTableModel(QtCore.QAbstractTableModel):
     """Base class for information table models."""
 
     def __init__(self, parent=None):
-        super(InfoTableModel, self).__init__(parent)
+        super().__init__(parent)
 
         # Store the titles and values in lists since the count my vary
         # depending on the data set on the group.  This prevents having to do
@@ -1193,7 +1189,7 @@ class AOVGroupMemberListModel(QtCore.QAbstractListModel):
     """This class represents a list of AOVs belonging to an AOVGroup."""
 
     def __init__(self, parent=None):
-        super(AOVGroupMemberListModel, self).__init__(parent)
+        super().__init__(parent)
 
         self._aovs = []
 

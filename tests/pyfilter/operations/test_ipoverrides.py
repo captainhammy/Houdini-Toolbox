@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import argparse
 import copy
 
@@ -89,7 +88,7 @@ def properties(mocker):
     _mock_get = mocker.patch("ht.pyfilter.operations.ipoverrides.get_property")
     _mock_set = mocker.patch("ht.pyfilter.operations.ipoverrides.set_property")
 
-    class Properties(object):
+    class Properties:
         """Fake class for accessing and setting properties."""
 
         @property
@@ -110,7 +109,7 @@ def properties(mocker):
 # =============================================================================
 
 
-class Test_IpOverrides(object):
+class Test_IpOverrides:
     """Test the ht.pyfilter.operations.ipoverrides.IpOverride class."""
 
     def test___init__(self, mocker):
@@ -750,7 +749,7 @@ def test__scale_sample_value(samples, scale, expected):
     assert ipoverrides._scale_samples(samples, scale) == expected
 
 
-class Test_build_arg_string_from_node(object):
+class Test_build_arg_string_from_node:
     """Test the ht.pyfilter.operations.ipoverrides.build_arg_string_from_node."""
 
     def test(self, mocker):
@@ -868,7 +867,7 @@ def test_build_pixel_sample_scale_display(mocker):
     assert result == "{}x{}".format(target_samples[0], target_samples[1])
 
 
-class Test_build_resolution_scale_display(object):
+class Test_build_resolution_scale_display:
     """Test the ht.pyfilter.operations.ipoverrides.build_resolution_scale_display."""
 
     def test_no_camera(self, mocker):

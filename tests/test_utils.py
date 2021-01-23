@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Third Party Imports
-from builtins import object
 import pytest
 
 # Houdini Toolbox Imports
@@ -40,7 +39,7 @@ def test_restore_update_mode(mocker, mock_hou_ui):
     )
 
 
-class Test_timer(object):
+class Test_timer:
     """Test ht.utils.timer."""
 
     def test_label(self, mocker):

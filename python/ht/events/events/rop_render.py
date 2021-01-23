@@ -31,7 +31,7 @@ class RopRenderEvent(HoudiniEventGroup):
     """Event to run on ROP render script events."""
 
     def __init__(self):
-        super(RopRenderEvent, self).__init__()
+        super().__init__()
 
         self._frame_start = None
         self._render_start = None

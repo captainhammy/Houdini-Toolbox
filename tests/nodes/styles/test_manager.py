@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Standard Library Imports
-from builtins import object
 import os
 
 # Third Party Imports
@@ -40,7 +39,7 @@ def init_manager(mocker):
 # =============================================================================
 
 
-class Test_StyleManager(object):
+class Test_StyleManager:
     """Test ht.nodes.styles.manager.StyleManager."""
 
     def test___init__(self, mocker):
@@ -1112,7 +1111,7 @@ class Test_StyleManager(object):
         mock_build.assert_called()
 
 
-class Test__build_category_rules(object):
+class Test__build_category_rules:
     """Test ht.nodes.styles.manager._build_category_rules."""
 
     def test_invalid_constant(self, mocker):
@@ -1196,7 +1195,7 @@ class Test__build_category_rules(object):
         mock_const_rule.assert_not_called()
 
 
-class Test__build_color(object):
+class Test__build_color:
     """Test ht.nodes.styles.manager._build_color."""
 
     def test_no_data(self):
@@ -1331,7 +1330,7 @@ class Test__build_color(object):
         mock_color().setXYZ.assert_called_with(mock_value)
 
 
-class Test__build_shape(object):
+class Test__build_shape:
     """Test ht.nodes.styles.manager._build_shape."""
 
     def test(self):
@@ -1350,7 +1349,7 @@ class Test__build_shape(object):
         assert result is None
 
 
-class Test__find_files(object):
+class Test__find_files:
     """Test ht.nodes.styles.manager._find_files."""
 
     def test_no_dirs(self, mocker, fix_hou_exceptions):
@@ -1393,7 +1392,7 @@ class Test__find_files(object):
         mock_glob.assert_has_calls(calls)
 
 
-class Test__get_tool_menu_locations(object):
+class Test__get_tool_menu_locations:
     """Test ht.nodes.styles.manager._get_tool_menu_locations."""
 
     def test_no_match(self, mocker):

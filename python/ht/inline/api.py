@@ -12,8 +12,6 @@ and modules they are meant to extend.
 # =============================================================================
 
 # Standard Library Imports
-from builtins import zip
-from builtins import range
 import ast
 import math
 
@@ -41,7 +39,7 @@ class RunPyStatementsError(Exception):
     """
 
     def __init__(self, message, exception_name=None):
-        super(RunPyStatementsError, self).__init__(message)
+        super().__init__(message)
 
         self.exception_name = exception_name
 
@@ -949,7 +947,7 @@ def batch_copy_group_membership(source_elements, source_groups, target_elements)
     )
 
 
-def copy_packed_prims_to_points(
+def copy_packed_prims_to_points(  # pylint: disable=too-many-arguments
     geometry, source_geometry, prim_list, point_list, copy_attribs=True, attribs=None, copy_groups=True, groups=None,
 ):
     """Copy packed primitives to points by index, optionally copying attributes.

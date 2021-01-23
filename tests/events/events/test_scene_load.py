@@ -5,7 +5,6 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
-from builtins import object
 import ht.events.events.scene_load
 from ht.events.item import HoudiniEventItem
 from ht.events.types import SceneEvents
@@ -16,7 +15,7 @@ from ht.events.types import SceneEvents
 # =============================================================================
 
 
-class Test_SceneLoadEvent(object):
+class Test_SceneLoadEvent:
     """Test ht.events.events.scene_load.SceneLoadEvent class."""
 
     def test___init__(self, mocker):
