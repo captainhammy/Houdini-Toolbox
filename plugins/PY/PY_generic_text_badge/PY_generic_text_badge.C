@@ -32,25 +32,15 @@ Get_Badge_Color_Data_Name(PY_PyObject*, PY_PyObject*)
     return PY_PyString_FromString(TEXT_BADGE_COLOR_DATA_NAME.c_str());
 }
 
-#if PY_MAJOR_VERSION >= 3
 extern "C" __attribute__((visibility("default"))) PyObject*
-#else
-PyMODINIT_FUNC __attribute__((visibility("default")))
-#endif
 
-#if PY_MAJOR_VERSION >= 3
 PyInit__ht_generic_text_badge(void)
-#else
-init_ht_generic_text_badge(void)
-#endif
 {
     //
     // This is the initialization function that Python calls when
     // importing the extension module.
     //
-#if PY_MAJOR_VERSION >= 3
     PY_PyObject *module = nullptr;
-#endif
     {
         // A PY_InterpreterAutoLock will grab the Python global interpreter
         // lock (GIL).  It's important that we have the GIL before making
@@ -65,13 +55,8 @@ init_ht_generic_text_badge(void)
             {NULL, NULL, 0, NULL}
         };
 
-#if PY_MAJOR_VERSION >= 3
-        module =
-#endif
-        PY_Py_InitModule("_ht_generic_text_badge", hom_extension_methods);
+        module = PY_Py_InitModule("_ht_generic_text_badge", hom_extension_methods);
     }
-#if PY_MAJOR_VERSION >= 3
     return reinterpret_cast<PyObject *>(module);
-#endif
 }
 
