@@ -237,7 +237,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 # NON-PUBLIC FUNCTIONS
 # ==============================================================================
 
-
+# This is necessary until using Python 3.8.
 @contextmanager
 def _patch_logger(logger):
     """Patch the __class__ of the logger for the duration so we can utilize the

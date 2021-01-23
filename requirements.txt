@@ -1,4 +1,3 @@
-future
 humanfriendly
 Jinja2
 logquacious
