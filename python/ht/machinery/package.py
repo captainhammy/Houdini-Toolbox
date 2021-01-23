@@ -128,6 +128,9 @@ class HoudiniBase:
         if self.candidate is not None:
             version = "{}.{}".format(version, self.candidate)
 
+        if self.product is not None:
+            version = "{}-{}".format(version, self.product)
+
         return version
 
     # -------------------------------------------------------------------------
@@ -147,12 +150,7 @@ class HoudiniBase:
     @property
     def display_name(self):
         """str: The name to display ({version}{-product})."""
-        value = str(self)
-
-        if self.product is not None:
-            value = "{}-{}".format(value, self.product)
-
-        return value
+        return str(self)
 
     @property
     def major(self):
