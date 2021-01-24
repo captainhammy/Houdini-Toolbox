@@ -36,7 +36,12 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
 
     header_labels = ("Name", "Description", "Author", "Date")
 
-    def __init__(self, source: CopyPasteSource, context: str, parent: Optional[QtWidgets.QWidget] = None):
+    def __init__(
+        self,
+        source: CopyPasteSource,
+        context: str,
+        parent: Optional[QtWidgets.QWidget] = None,
+    ):
         super().__init__(parent)
 
         self.context = context
@@ -47,7 +52,7 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
         self.refresh()
 
     def columnCount(  # pylint: disable=unused-argument
-        self, parent: QtCore.QModelIndex=QtCore.QModelIndex()
+        self, parent: QtCore.QModelIndex = QtCore.QModelIndex()
     ) -> int:
         """The number of columns.
 
@@ -89,7 +94,9 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:  # pylint: disable=no-self-use,unused-argument
+    def flags(
+        self, index: QtCore.QModelIndex  # pylint: disable=no-self-use,unused-argument
+    ) -> QtCore.Qt.ItemFlags:
         """Item flags.
 
         We want items to be enabled and selectable.
@@ -101,7 +108,10 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
         return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
     def headerData(
-        self, section: int, orientation: QtCore.Qt.Orientation, role: int = QtCore.Qt.DisplayRole
+        self,
+        section: int,
+        orientation: QtCore.Qt.Orientation,
+        role: int = QtCore.Qt.DisplayRole,
     ) -> Any:
         """Populate column headers with our labels.
 
@@ -116,7 +126,9 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
 
         return QtCore.QAbstractTableModel.headerData(self, section, orientation, role)
 
-    def index(self, row: int, column: int, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> QtCore.QModelIndex:
+    def index(
+        self, row: int, column: int, parent: QtCore.QModelIndex = QtCore.QModelIndex()
+    ) -> QtCore.QModelIndex:
         """Create model indexes for items.
 
         :param row: The item row.

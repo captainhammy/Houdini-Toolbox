@@ -17,7 +17,9 @@ _logger = logging.getLogger(__name__)
 # =============================================================================
 
 
-def build_pyfilter_command(pyfilter_args: Optional[List[str]] = None, pyfilter_path: Optional[str] = None) -> str:
+def build_pyfilter_command(
+    pyfilter_args: Optional[List[str]] = None, pyfilter_path: Optional[str] = None
+) -> str:
     """Build a PyFilter -P command.
 
     :param pyfilter_args: Optional list of args to pass to the command.

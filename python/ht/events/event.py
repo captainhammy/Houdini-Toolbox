@@ -50,6 +50,7 @@ class HoudiniEventFactory:
             return cls()
 
         return HoudiniEvent(event.value)
+
     #
     # @staticmethod
     # def register_event_class(name: enum.Enum, event_class: HoudiniEvent):

@@ -48,7 +48,7 @@ class HoudiniBase:
     def __init__(self, path: str, version: List[int], product: str = None):
         self._path = path
 
-        self._major, self._minor, self._build  = version[:3]
+        self._major, self._minor, self._build = version[:3]
 
         self._candidate = None
 
@@ -311,7 +311,7 @@ class HoudiniBuildData:
 
                 if eula_date is not None:
                     idx = all_args.index(eula_key)
-                    all_args.insert(idx+1, eula_date[1:-1])
+                    all_args.insert(idx + 1, eula_date[1:-1])
 
         return tuple(all_args)
 
@@ -443,7 +443,9 @@ class HoudiniBuildManager:
                 package.install(create_symlink)
 
     @staticmethod
-    def download_builds(build_numbers: List[str], product: str = "houdini") -> List[str]:
+    def download_builds(
+        build_numbers: List[str], product: str = "houdini"
+    ) -> List[str]:
         """Download and a list of builds.
 
         Build numbers can be explicit numbers or major.minor versions.
@@ -693,7 +695,11 @@ class HoudiniInstallFile(HoudiniBase):
         cmd = [os.path.join(extract_path, "houdini.install")]
 
         # Get any installer arguments.
-        cmd.extend(_SETTINGS_MANAGER.build_data.get_install_args(self.major_minor, extract_path))
+        cmd.extend(
+            _SETTINGS_MANAGER.build_data.get_install_args(
+                self.major_minor, extract_path
+            )
+        )
 
         # Last arg is the target path.
         cmd.append(install_path)
@@ -828,9 +834,7 @@ class HoudiniPluginSettings:
 
 
 class HoudiniSettingsManager:
-    """This class manages Houdini package settings.
-
-    """
+    """This class manages Houdini package settings."""
 
     def __init__(self):
         self._environment = None
@@ -962,9 +966,7 @@ class HoudiniSystemSettings:
 
 
 class InstalledHoudiniBuild(HoudiniBase):
-    """This class represents an installed Houdini build.
-
-    """
+    """This class represents an installed Houdini build."""
 
     def __init__(self, path: str):
         # Get the install folder name template.
@@ -1196,7 +1198,9 @@ def _set_variable(name: str, value: Any):
 # =============================================================================
 
 
-def find_matching_builds(match_string: str, builds: List[Union[HoudiniInstallFile, InstalledHoudiniBuild]]) -> Union[HoudiniInstallFile, InstalledHoudiniBuild, None]:
+def find_matching_builds(
+    match_string: str, builds: List[Union[HoudiniInstallFile, InstalledHoudiniBuild]]
+) -> Union[HoudiniInstallFile, InstalledHoudiniBuild, None]:
     """Find a matching build given a string and list of builds.
 
     :param match_string: The string to match against.
@@ -1219,11 +1223,7 @@ def find_matching_builds(match_string: str, builds: List[Union[HoudiniInstallFil
     ]
 
     if not matching:
-        matching = [
-            build
-            for build in builds
-            if str(build).startswith(version)
-        ]
+        matching = [build for build in builds if str(build).startswith(version)]
 
     # If there are any that match, use the latest/only one.
     if matching:

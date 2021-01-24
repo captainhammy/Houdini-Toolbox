@@ -119,7 +119,6 @@ def log_filter_call(method_or_name: Union[Callable, str]) -> Callable:
     """
 
     def decorator(func):  # pylint: disable=missing-docstring
-
         @wraps(func)
         def wrapper(*args, **kwargs):  # pylint: disable=missing-docstring
             func_name = func.__name__

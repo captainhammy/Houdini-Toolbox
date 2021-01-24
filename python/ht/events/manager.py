@@ -212,7 +212,13 @@ def register_event_group(event_group: HoudiniEventGroup):
     MANAGER.register_event_group(event_group)
 
 
-def register_function(func: Callable, event_name: enum.Enum, item_name: Optional[str] = None, priority: int = 1, stat_tags: Optional[List[str]]= None):
+def register_function(
+    func: Callable,
+    event_name: enum.Enum,
+    item_name: Optional[str] = None,
+    priority: int = 1,
+    stat_tags: Optional[List[str]] = None,
+):
     """Register a function for a given event name.
 
     :param func: The function to register.

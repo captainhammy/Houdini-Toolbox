@@ -122,7 +122,9 @@ class StyleManager:
 
                         _build_category_rules(rules, category_map, path, self.constants)
 
-    def _get_manager_generator_style(self, node_type: hou.NodeType) -> Optional[Union[StyleConstant, StyleRule]]:
+    def _get_manager_generator_style(
+        self, node_type: hou.NodeType
+    ) -> Optional[Union[StyleConstant, StyleRule]]:
         """Look for a style match based on the node type being a manager or
         generator type.
 
@@ -162,7 +164,9 @@ class StyleManager:
 
         return None
 
-    def _get_name_style(self, node: hou.Node) -> Optional[Union[StyleConstant, StyleRule]]:
+    def _get_name_style(
+        self, node: hou.Node
+    ) -> Optional[Union[StyleConstant, StyleRule]]:
         """Look for a style match based on the node name.
 
         :param node: Node to style by name.
@@ -184,7 +188,9 @@ class StyleManager:
 
         return None
 
-    def _get_node_type_style(self, node_type: hou.NodeType) -> Optional[Union[StyleConstant, StyleRule]]:
+    def _get_node_type_style(
+        self, node_type: hou.NodeType
+    ) -> Optional[Union[StyleConstant, StyleRule]]:
         """Look for a style match based on the node type's name.
 
         :param node_type: Node type to style by name
@@ -208,7 +214,9 @@ class StyleManager:
 
         return None
 
-    def _get_tool_style(self, node_type: hou.NodeType) -> Optional[Union[StyleConstant, StyleRule]]:
+    def _get_tool_style(
+        self, node_type: hou.NodeType
+    ) -> Optional[Union[StyleConstant, StyleRule]]:
         """Look for a color match based on the node type's Tab menu
         locations.
 
@@ -232,7 +240,9 @@ class StyleManager:
 
         return None
 
-    def _resolve_rule(self, rule: Union[ConstantRule, StyleRule]) -> Union[StyleConstant, StyleRule]:
+    def _resolve_rule(
+        self, rule: Union[ConstantRule, StyleRule]
+    ) -> Union[StyleConstant, StyleRule]:
         """Resolve the entry to a color.
 
         The entry might a style or a constant so this will return the actual
@@ -362,7 +372,9 @@ class InvalidColorTypeError(Exception):
 # =============================================================================
 
 
-def _build_category_rules(rules: List[dict], category_map: dict, path: str, constant_map: dict):
+def _build_category_rules(
+    rules: List[dict], category_map: dict, path: str, constant_map: dict
+):
     """Build constant and style rules.
 
     :param rules: Rule data

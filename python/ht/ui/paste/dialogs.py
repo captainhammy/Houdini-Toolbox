@@ -32,7 +32,12 @@ class CopyItemsDialog(QtWidgets.QDialog):
 
     """
 
-    def __init__(self, items: List[hou.NetworkItem], parent_node: hou.Node, parent: Optional[QtWidgets.QWidget] = None):
+    def __init__(
+        self,
+        items: List[hou.NetworkItem],
+        parent_node: hou.Node,
+        parent: Optional[QtWidgets.QWidget] = None,
+    ):
         super().__init__(parent)
 
         self.parent_node = parent_node
@@ -104,7 +109,13 @@ class PasteItemsDialog(QtWidgets.QDialog):
 
     """
 
-    def __init__(self, editor: hou.NetworkEditor, pos: hou.Vector2, mousepos: hou.Vector2, parent: Optional[QtWidgets.QWidget] = None):
+    def __init__(
+        self,
+        editor: hou.NetworkEditor,
+        pos: hou.Vector2,
+        mousepos: hou.Vector2,
+        parent: Optional[QtWidgets.QWidget] = None,
+    ):
         super().__init__(parent)
 
         self.editor = editor

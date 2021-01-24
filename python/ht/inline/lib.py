@@ -1113,7 +1113,7 @@ setSharedStringAttrib(GU_Detail *gdp,
     s_t->setString(attrib, range, value, 0);
 }
 """,
- """
+    """
 bool
 hasUninitializedStringValues(const GU_Detail *gdp, int attribute_type, const char *attrib_name)
 {
@@ -1451,7 +1451,7 @@ groupsShareElements(const GU_Detail *gdp,
     return group->containsAny(range);
 }
 """,
-   """
+    """
 void
 setGroupStringAttribute(GU_Detail *gdp, int group_type, const char *group_name, const char *attrib_name, const char *value)
 {
@@ -2020,7 +2020,15 @@ void validateStringVector(std::vector<std::string> &string_vec)
         ("StringTuple", "*StringArray"),
         ("VertexMap", (("prims", "*i"), ("indices", "*i"))),
         ("Position3D", (("x", "d"), ("y", "d"), ("z", "d"))),
-        ("RunPythonException", (("occurred", "i"), ("name", "*c"), ("value", "*c"), ("detailed", "*c"),),),
+        (
+            "RunPythonException",
+            (
+                ("occurred", "i"),
+                ("name", "*c"),
+                ("value", "*c"),
+                ("detailed", "*c"),
+            ),
+        ),
     ],
     function_sources=_FUNCTION_SOURCES,
 )

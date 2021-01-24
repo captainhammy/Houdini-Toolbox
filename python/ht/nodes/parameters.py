@@ -17,7 +17,9 @@ import hou
 # =============================================================================
 
 
-def _find_parameters_with_value(target_value: str, check_func: Callable) -> Tuple[hou.Parm]:
+def _find_parameters_with_value(
+    target_value: str, check_func: Callable
+) -> Tuple[hou.Parm]:
     """Find parameters which contain the target value.
 
     :param target_value: The string value to search for.

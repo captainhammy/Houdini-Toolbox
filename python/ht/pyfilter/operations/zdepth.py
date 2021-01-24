@@ -57,7 +57,9 @@ class ZDepthPass(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def build_arg_string(active: bool=False) -> str:  # pylint: disable=arguments-differ
+    def build_arg_string(  # pylint: disable=arguments-differ
+        active: bool = False,
+    ) -> str:
         """Build an argument string for this operation.
 
         :param active: Whether or not to run the operation.

@@ -87,7 +87,9 @@ def set_generic_image_badge(node: hou.Node, image: str):
         node.setUserData(_ht_generic_image_badge.get_generic_image_key(), image)
 
 
-def set_generic_text_badge(node: hou.Node, value: str, color: Optional[hou.Color] = None):
+def set_generic_text_badge(
+    node: hou.Node, value: str, color: Optional[hou.Color] = None
+):
     """Set the node's generic text badge.
 
     :param node: The node to set the badge for.

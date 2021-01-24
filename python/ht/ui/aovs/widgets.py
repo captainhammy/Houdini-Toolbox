@@ -1800,9 +1800,7 @@ class HelpButton(QtWidgets.QPushButton):
     """Generic Help button."""
 
     def __init__(self, name, parent=None):
-        super().__init__(
-            hou.qt.createIcon("BUTTONS_help"), "", parent=parent
-        )
+        super().__init__(hou.qt.createIcon("BUTTONS_help"), "", parent=parent)
 
         self._name = name
 

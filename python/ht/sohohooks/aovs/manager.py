@@ -484,7 +484,7 @@ class AOVFile:
         """
         return aov in self.aovs
 
-    def contains_group(self, group:AOVGroup) -> bool:
+    def contains_group(self, group: AOVGroup) -> bool:
         """Check if this file contains a group with the same name.
 
         :param group: The group to check.

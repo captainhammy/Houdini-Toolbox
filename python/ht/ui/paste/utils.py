@@ -79,7 +79,12 @@ def find_current_pane_tab(scriptargs: dict) -> Optional[hou.NetworkEditor]:
     return pane
 
 
-def paste_items_from_sources(sources: List[CopyPasteItemSource], editor: hou.NetworkEditor, pos: Optional[List[float, float]] = None, mousepos: Optional[List[float, float]] = None):
+def paste_items_from_sources(
+    sources: List[CopyPasteItemSource],
+    editor: hou.NetworkEditor,
+    pos: Optional[List[float, float]] = None,
+    mousepos: Optional[List[float, float]] = None,
+):
     """Paste sources to the current location.
 
     :param sources: A list of sources to paste.
@@ -114,7 +119,9 @@ def paste_items_from_sources(sources: List[CopyPasteItemSource], editor: hou.Net
             nodegraphutils.updateCurrentItem(editor)
 
 
-def save_items_to_source(source: CopyPasteItemSource, parent: hou.Node, items: Tuple[hou.NetworkItem]):
+def save_items_to_source(
+    source: CopyPasteItemSource, parent: hou.Node, items: Tuple[hou.NetworkItem]
+):
     """Save a list of items to a source.
 
     :param source: The target source.

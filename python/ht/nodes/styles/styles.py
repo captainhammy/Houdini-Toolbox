@@ -29,7 +29,14 @@ class StyleConstant:
 
     """
 
-    def __init__(self, name: str, color, color_type: str, shape: str, file_path: Optional[str] = None):
+    def __init__(
+        self,
+        name: str,
+        color,
+        color_type: str,
+        shape: str,
+        file_path: Optional[str] = None,
+    ):
         self._color = color
         self._color_type = color_type
         self._shape = shape
@@ -126,7 +133,14 @@ class StyleRule:
 
     """
 
-    def __init__(self, name: str, color: hou.Color, color_type: str, shape: str, file_path: Optional[str] = None):
+    def __init__(
+        self,
+        name: str,
+        color: hou.Color,
+        color_type: str,
+        shape: str,
+        file_path: Optional[str] = None,
+    ):
         self._color = color
         self._color_type = color_type
         self._shape = shape

@@ -395,10 +395,7 @@ def _scale_resolution(resolution: List[int], scale: float) -> List[int]:
     :return: The scaled resolution.
 
     """
-    return [
-        int(round(value * scale))
-        for value in resolution
-    ]
+    return [int(round(value * scale)) for value in resolution]
 
 
 def _scale_samples(samples: List[int], scale: float) -> List[int]:

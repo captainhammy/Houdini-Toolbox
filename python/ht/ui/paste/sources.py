@@ -59,9 +59,7 @@ class SourceManager:
 
 
 class CopyPasteSource(abc.ABC):
-    """Base class for managing copy/paste items.
-
-    """
+    """Base class for managing copy/paste items."""
 
     def __init__(self):
         self._sources = {}
@@ -90,7 +88,9 @@ class CopyPasteSource(abc.ABC):
     # -------------------------------------------------------------------------
 
     @abc.abstractmethod
-    def copy_helper_widget(self) -> ht.ui.paste.helpers._BaseCopyHelperWidget:  # pylint: disable=protected-access
+    def copy_helper_widget(
+        self,
+    ) -> ht.ui.paste.helpers._BaseCopyHelperWidget:  # pylint: disable=protected-access
         """Get the copy helper widget for this source.
 
         :return: The helper widget to copy items to this source.
@@ -111,7 +111,9 @@ class CopyPasteSource(abc.ABC):
         """
 
     @abc.abstractmethod
-    def paste_helper_widget(self) -> ht.ui.paste.helpers._BasePasteHelperWidget:  # pylint: disable=protected-access
+    def paste_helper_widget(
+        self,
+    ) -> ht.ui.paste.helpers._BasePasteHelperWidget:  # pylint: disable=protected-access
         """Get the paste helper widget for this source.
 
         :return: The helper widget to paste items from this source.
@@ -227,7 +229,9 @@ class HomeDirSource(CopyPasteSource):
     # METHODS
     # -------------------------------------------------------------------------
 
-    def copy_helper_widget(self, *args, **kwargs) -> ht.ui.paste.helpers.HomeToolDirItemsCopyHelperWidget:  # pylint: disable=arguments-differ
+    def copy_helper_widget(
+        self, *args, **kwargs
+    ) -> ht.ui.paste.helpers.HomeToolDirItemsCopyHelperWidget:  # pylint: disable=arguments-differ
         """Get the copy helper widget for this source.
 
         :return: The helper widget to copy items to this source.
@@ -238,7 +242,7 @@ class HomeDirSource(CopyPasteSource):
         )
 
     def create_source(  # pylint: disable=arguments-differ
-        self, context: str, name: str, description: Optional[str]=None
+        self, context: str, name: str, description: Optional[str] = None
     ) -> CPIOContextCopyPasteItemFile:
         """Create a new item source.
 
@@ -300,7 +304,9 @@ class HomeDirSource(CopyPasteSource):
         """
         return self.sources.get(context, [])
 
-    def paste_helper_widget(self, *args, **kwargs) -> ht.ui.paste.helpers.HomeToolDirItemsPasteHelperWidget:  # pylint: disable=arguments-differ
+    def paste_helper_widget(
+        self, *args, **kwargs
+    ) -> ht.ui.paste.helpers.HomeToolDirItemsPasteHelperWidget:  # pylint: disable=arguments-differ
         """Get the paste helper widget for this source.
 
         :return: The helper widget to paste items from this source.
@@ -408,7 +414,13 @@ class CPIOContextCopyPasteItemFile(CopyPasteItemSource):
 
     _extension = ".cpio"
 
-    def __init__(self, file_path: str, context: str, name: str, sidecar_path: Optional[str] = None):
+    def __init__(
+        self,
+        file_path: str,
+        context: str,
+        name: str,
+        sidecar_path: Optional[str] = None,
+    ):
         super().__init__(context)
 
         self._author = None
