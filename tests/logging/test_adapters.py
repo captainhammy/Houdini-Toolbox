@@ -374,14 +374,17 @@ class Test_HoudiniLoggerAdapter:
 
         mock_node_prop.assert_not_called()
 
-    @pytest.mark.parametrize("level, severity, extra", [
-        ("info", hou.severityType.ImportantMessage, {}),
-        ("warning", hou.severityType.Warning, {}),
-        ("error", hou.severityType.Error, {}),
-        ("critical", hou.severityType.Error, {}),
-        ("debug", hou.severityType.Message, {}),
-        ("exception", hou.severityType.Error, {"exc_info": 1}),
-    ])
+    @pytest.mark.parametrize(
+        "level, severity, extra",
+        [
+            ("info", hou.severityType.ImportantMessage, {}),
+            ("warning", hou.severityType.Warning, {}),
+            ("error", hou.severityType.Error, {}),
+            ("critical", hou.severityType.Error, {}),
+            ("debug", hou.severityType.Message, {}),
+            ("exception", hou.severityType.Error, {"exc_info": 1}),
+        ],
+    )
     def test_calls(self, init_adapter, mocker, level, severity, extra):
         """Test the various log calls."""
         mock_process = mocker.patch("ht.logging.adapters.HoudiniLoggerAdapter.process")
@@ -398,7 +401,7 @@ class Test_HoudiniLoggerAdapter:
 
         mock_msg = mocker.MagicMock(spec=str)
 
-        args = (mocker.MagicMock(), )
+        args = (mocker.MagicMock(),)
 
         kwargs = {"foo": mocker.MagicMock()}
         kwargs.update(extra)
@@ -412,7 +415,9 @@ class Test_HoudiniLoggerAdapter:
 
         mock_patch.assert_called_with(mock_logger)
 
-        getattr(mock_logger, level).assert_called_with(mock_process_msg, *args, **kwargs)
+        getattr(mock_logger, level).assert_called_with(
+            mock_process_msg, *args, **kwargs
+        )
 
 
 def test__patch_logger(mocker):
@@ -454,7 +459,9 @@ class Test__pre_process_args:
             "stacklevel": mock_stacklevel,
         }
 
-        ht.logging.adapters._pre_process_args(hou.severityType.Error, (mock_arg1, mock_arg2), kwargs)
+        ht.logging.adapters._pre_process_args(
+            hou.severityType.Error, (mock_arg1, mock_arg2), kwargs
+        )
 
         # The expected extra dict values.
         expected = {
@@ -464,7 +471,10 @@ class Test__pre_process_args:
             "notify_send": mock_notify,
             "severity": hou.severityType.Error,
             "title": mock_title,
-            "message_args": (mock_arg1, mock_arg2,),
+            "message_args": (
+                mock_arg1,
+                mock_arg2,
+            ),
         }
 
         assert kwargs["extra"] == expected

@@ -166,7 +166,9 @@ class Test_HoudiniEvent:
         mock_map = {}
 
         mocker.patch.object(
-            ht.events.event.HoudiniEvent, "item_map", new_callable=mocker.PropertyMock(return_value=mock_map)
+            ht.events.event.HoudiniEvent,
+            "item_map",
+            new_callable=mocker.PropertyMock(return_value=mock_map),
         )
 
         # Mock the item via the reference in the module so that the isinstance()

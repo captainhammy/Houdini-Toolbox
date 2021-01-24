@@ -35,6 +35,7 @@ class Test_StyleNodeEvent:
     # Methods
 
     def test_style_node_by_name(self, mocker):
+        """Test styling a node by name."""
         mocker.patch.object(
             ht.nodes.styles.event.StyleNodeEvent, "__init__", lambda x: None
         )
@@ -51,6 +52,7 @@ class Test_StyleNodeEvent:
         mock_manager.style_node_by_name.assert_called_with(mock_node)
 
     def test_style_node_on_creation(self, mocker):
+        """Test styling a node on creation."""
         mocker.patch.object(
             ht.nodes.styles.event.StyleNodeEvent, "__init__", lambda x: None
         )

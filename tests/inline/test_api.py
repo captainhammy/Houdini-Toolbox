@@ -49,6 +49,7 @@ pytestmark = pytest.mark.usefixtures("load_test_file")
 # TESTS
 # =============================================================================
 
+
 def test__get_names_in_folder():
     """Test ht.inline.api._get_names_in_folder."""
     node = OBJ.node("test__get_names_in_folder/null")
@@ -56,33 +57,46 @@ def test__get_names_in_folder():
 
     result = ht.inline.api._get_names_in_folder(parm_template)
 
-    assert result == ('stringparm#', 'vecparm#', 'collapse_intparm#', 'simple_intparm#', 'tab_intparm1#', 'tab_intparm2#', 'inner_multi#')
+    assert result == (
+        "stringparm#",
+        "vecparm#",
+        "collapse_intparm#",
+        "simple_intparm#",
+        "tab_intparm1#",
+        "tab_intparm2#",
+        "inner_multi#",
+    )
 
 
-def test_clear_caches_specific():
-    OBJ.node("test_clear_caches").displayNode().cook(True)
-    result = hou.hscript("sopcache -l")[0].split("\n")[1]
-    old_nodes = int(result.split(": ")[1])
+class Test_clear_caches:
+    """Test ht.inline.api.clear_caches."""
 
-    ht.inline.api.clear_caches(["SOP Cache"])
+    def test_specific(self):
+        """Test clearing specific caches."""
+        OBJ.node("test_clear_caches").displayNode().cook(True)
+        result = hou.hscript("sopcache -l")[0].split("\n")[1]
+        old_nodes = int(result.split(": ")[1])
 
-    result = hou.hscript("sopcache -l")[0].split("\n")[1]
-    current_nodes = int(result.split(": ")[1])
+        ht.inline.api.clear_caches(["SOP Cache"])
 
-    assert current_nodes != old_nodes
+        result = hou.hscript("sopcache -l")[0].split("\n")[1]
+        current_nodes = int(result.split(": ")[1])
+
+        assert current_nodes != old_nodes
 
 
-def test_clear_caches_all():
-    OBJ.node("test_clear_caches").displayNode().cook(True)
-    result = hou.hscript("sopcache -l")[0].split("\n")[1]
-    old_nodes = int(result.split(": ")[1])
+    def test_all(self):
+        """Test clearing all caches."""
+        OBJ.node("test_clear_caches").displayNode().cook(True)
+        result = hou.hscript("sopcache -l")[0].split("\n")[1]
+        old_nodes = int(result.split(": ")[1])
 
-    ht.inline.api.clear_caches()
+        ht.inline.api.clear_caches()
 
-    result = hou.hscript("sopcache -l")[0].split("\n")[1]
-    current_nodes = int(result.split(": ")[1])
+        result = hou.hscript("sopcache -l")[0].split("\n")[1]
+        current_nodes = int(result.split(": ")[1])
 
-    assert current_nodes != old_nodes
+        assert current_nodes != old_nodes
 
 
 def test_run_python_statements(fix_hou_exceptions):
@@ -147,8 +161,6 @@ def test_set_user_data(obj_test_node):
     # not generate any undo entries.
     current_undo_stack = hou.undos.undoLabels()
 
-    user_data = obj_test_node.userDataDict()
-
     assert "set_data" not in obj_test_node.userDataDict()
 
     ht.inline.api.set_user_data(obj_test_node, "set_data", "data")
@@ -165,8 +177,6 @@ def test_delete_user_data(obj_test_node):
     # not generate any undo entries.
     current_undo_stack = hou.undos.undoLabels()
 
-    user_data = obj_test_node.userDataDict()
-
     assert "data_to_remove" in obj_test_node.userDataDict()
 
     ht.inline.api.delete_user_data(obj_test_node, "data_to_remove")
@@ -176,18 +186,22 @@ def test_delete_user_data(obj_test_node):
     # Ensure no entries were created.
     assert hou.undos.undoLabels() == current_undo_stack
 
-@pytest.mark.parametrize("value_to_hash, expected", [
-    ("foo", 143856),
-    ("foo1", 5322721),
-    ("fooo", 5322783),
-    ("fo", 3885),
-    ("123", 68982),
-    ("1234", 2552386),
-    ("1230", 2552382),
-    ("1230", 2552382),
-    ("123_123", 439236239),
-    ("foo_bar", -968684932),
-])
+
+@pytest.mark.parametrize(
+    "value_to_hash, expected",
+    [
+        ("foo", 143856),
+        ("foo1", 5322721),
+        ("fooo", 5322783),
+        ("fo", 3885),
+        ("123", 68982),
+        ("1234", 2552386),
+        ("1230", 2552382),
+        ("1230", 2552382),
+        ("123_123", 439236239),
+        ("foo_bar", -968684932),
+    ],
+)
 def test_hash_string(value_to_hash, expected):
     """Test ht.inline.api.hash_string."""
     assert ht.inline.api.hash_string(value_to_hash) == expected
@@ -205,7 +219,7 @@ def test_is_rendering(obj_test_node):
 
     # The test didn't fail for some reason so we need to fail the test.
     else:
-        raise RuntimeError("Cooking succeeded but should have failed.")
+        pytest.fail("Cooking succeeded but should have failed.")
 
     # Execute the ROP which should cool the node and have it not fail since
     # it will be rendering.
@@ -214,7 +228,7 @@ def test_is_rendering(obj_test_node):
 
     # The cook failed for some reason so fail the test.
     except hou.OperationFailed:
-        raise RuntimeError("Render failed but should have succeeded.")
+        pytest.fail("Render failed but should have succeeded.")
 
 
 def test_get_global_variable_names():
@@ -287,7 +301,7 @@ def test_get_variable_value__syntax_error():
 
     result = ht.inline.api.get_variable_value("ERROR_THING")
 
-    assert result == '1.1.1'
+    assert result == "1.1.1"
 
 
 def test_set_variable():
@@ -346,7 +360,9 @@ class Test_geometry_has_prims_with_shared_vertex_points(object):
         assert ht.inline.api.geometry_has_prims_with_shared_vertex_points(obj_test_geo)
 
     def test_false(self, obj_test_geo):
-        assert not ht.inline.api.geometry_has_prims_with_shared_vertex_points(obj_test_geo)
+        assert not ht.inline.api.geometry_has_prims_with_shared_vertex_points(
+            obj_test_geo
+        )
 
 
 class Test_get_primitives_with_shared_vertex_points(object):
@@ -354,7 +370,7 @@ class Test_get_primitives_with_shared_vertex_points(object):
 
     def test_shared(self, obj_test_geo):
         result = ht.inline.api.get_primitives_with_shared_vertex_points(obj_test_geo)
-        assert result == (obj_test_geo.prims()[-1], )
+        assert result == (obj_test_geo.prims()[-1],)
 
     def test_none(self, obj_test_geo):
         result = ht.inline.api.get_primitives_with_shared_vertex_points(obj_test_geo)
@@ -380,11 +396,15 @@ class Test_sort_geometry_by_values(object):
 
     def test_not_enough_points(self, fix_hou_exceptions, obj_test_geo_copy):
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.sort_geometry_by_values(obj_test_geo_copy, hou.geometryType.Points, [1])
+            ht.inline.api.sort_geometry_by_values(
+                obj_test_geo_copy, hou.geometryType.Points, [1]
+            )
 
     def test_not_enough_prims(self, fix_hou_exceptions, obj_test_geo_copy):
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.sort_geometry_by_values(obj_test_geo_copy, hou.geometryType.Primitives, [1, 2])
+            ht.inline.api.sort_geometry_by_values(
+                obj_test_geo_copy, hou.geometryType.Primitives, [1, 2]
+            )
 
     def test_invalid_geometry_type(self, fix_hou_exceptions, obj_test_geo_copy):
         with pytest.raises(ValueError):
@@ -393,14 +413,18 @@ class Test_sort_geometry_by_values(object):
     def test_points(self, obj_test_geo_copy):
         values = obj_test_geo_copy.pointFloatAttribValues("id")
 
-        ht.inline.api.sort_geometry_by_values(obj_test_geo_copy, hou.geometryType.Points, values)
+        ht.inline.api.sort_geometry_by_values(
+            obj_test_geo_copy, hou.geometryType.Points, values
+        )
 
         assert list(obj_test_geo_copy.pointFloatAttribValues("id")) == sorted(values)
 
     def test_prims(self, obj_test_geo_copy):
         values = obj_test_geo_copy.primFloatAttribValues("id")
 
-        ht.inline.api.sort_geometry_by_values(obj_test_geo_copy, hou.geometryType.Primitives, values)
+        ht.inline.api.sort_geometry_by_values(
+            obj_test_geo_copy, hou.geometryType.Primitives, values
+        )
 
         assert list(obj_test_geo_copy.primFloatAttribValues("id")) == sorted(values)
 
@@ -553,8 +577,8 @@ class Test_copy_packed_prims_to_points(object):
         geo.merge(box_geo)
         geo.merge(box_geo)
 
-        id_attrib = geo.addAttrib(hou.attribType.Prim, "orig_id", (1, ))
-        other_attrib = geo.addAttrib(hou.attribType.Prim, "other", ("", ))
+        id_attrib = geo.addAttrib(hou.attribType.Prim, "orig_id", (1,))
+        other_attrib = geo.addAttrib(hou.attribType.Prim, "other", ("",))
 
         for idx, prim in enumerate(geo.prims()):
             prim.setAttribValue(id_attrib, idx)
@@ -578,10 +602,10 @@ class Test_copy_packed_prims_to_points(object):
                 list(range(3)),
             )
 
-    def test_size_missmatch(self, obj_test_geo_copy):
+    def test_size_mismatch(self, obj_test_geo_copy):
         source_geo = self._build_source_prims()
 
-        prim_order =[2, 0, 1]
+        prim_order = [2, 0, 1]
 
         with pytest.raises(ValueError):
             ht.inline.api.copy_packed_prims_to_points(
@@ -594,7 +618,7 @@ class Test_copy_packed_prims_to_points(object):
     def test_copy_all(self, obj_test_geo_copy):
         source_geo = self._build_source_prims()
 
-        prim_order =[2, 0, 1]
+        prim_order = [2, 0, 1]
 
         ht.inline.api.copy_packed_prims_to_points(
             obj_test_geo_copy,
@@ -644,7 +668,6 @@ class Test_copy_packed_prims_to_points(object):
         assert len(obj_test_geo_copy.primAttribs()) == 0
 
         for pt_idx in range(3):
-            pr_idx = prim_order[pt_idx]
             prim = obj_test_geo_copy.iterPrims()[pt_idx]
             pt = obj_test_geo_copy.iterPoints()[pt_idx]
 
@@ -810,8 +833,8 @@ class Test_batch_copy_attributes_by_indices(object):
 
         geo = hou.Geometry()
 
-        pt1 = geo.createPoint()
-        pt2 = geo.createPoint()
+        geo.createPoint()
+        geo.createPoint()
 
         geo = geo.freeze(True)
 
@@ -825,8 +848,8 @@ class Test_batch_copy_attributes_by_indices(object):
 
         geo = hou.Geometry()
 
-        pt1 = geo.createPoint()
-        pt2 = geo.createPoint()
+        geo.createPoint()
+        geo.createPoint()
 
         with pytest.raises(ValueError):
             ht.inline.api.batch_copy_attributes_by_indices(
@@ -842,7 +865,8 @@ class Test_batch_copy_attributes_by_indices(object):
         pt2 = geo.createPoint()
 
         ht.inline.api.batch_copy_attributes_by_indices(
-            obj_test_geo, hou.Point, [2, 6], attribs, geo, hou.Point, [0, 1])
+            obj_test_geo, hou.Point, [2, 6], attribs, geo, hou.Point, [0, 1]
+        )
 
         # Ensure all the attributes got copied right.
         assert len(geo.pointAttribs()) == len(attribs)
@@ -860,7 +884,8 @@ class Test_batch_copy_attributes_by_indices(object):
         pr2 = geo.createPolygon()
 
         ht.inline.api.batch_copy_attributes_by_indices(
-            obj_test_geo, hou.Prim, [1, 4], attribs, geo, hou.Prim, [0, 1])
+            obj_test_geo, hou.Prim, [1, 4], attribs, geo, hou.Prim, [0, 1]
+        )
 
         # Ensure all the attributes got copied right.
         assert len(geo.primAttribs()) == len(attribs)
@@ -878,9 +903,15 @@ class Test_batch_copy_attributes_by_indices(object):
 
         pr1 = obj_test_geo.prims()[1]
 
-        ht.inline.api.batch_copy_attributes_by_indices(obj_test_geo, hou.Vertex, [pr1.vertex(2).linearNumber()],
-                                                            attribs,
-                                                            geo, hou.Point, [0])
+        ht.inline.api.batch_copy_attributes_by_indices(
+            obj_test_geo,
+            hou.Vertex,
+            [pr1.vertex(2).linearNumber()],
+            attribs,
+            geo,
+            hou.Point,
+            [0],
+        )
 
         assert pt1.attribValue("id") == 6
         assert pt1.attribValue("random_vtx") == 0.031702518463134766
@@ -905,8 +936,9 @@ class Test_batch_copy_attributes_by_indices(object):
         attribs = obj_test_geo.globalAttribs()
         pt1 = geo.createPoint()
 
-        ht.inline.api.batch_copy_attributes_by_indices(obj_test_geo, hou.Geometry, [0], attribs, geo, hou.Point,
-                                                            [0])
+        ht.inline.api.batch_copy_attributes_by_indices(
+            obj_test_geo, hou.Geometry, [0], attribs, geo, hou.Point, [0]
+        )
 
         assert pt1.attribValue("barbles") == 33
         assert pt1.attribValue("foobles") == (1.0, 2.0)
@@ -915,8 +947,9 @@ class Test_batch_copy_attributes_by_indices(object):
         geo = hou.Geometry()
         attribs = obj_test_geo.globalAttribs()
 
-        ht.inline.api.batch_copy_attributes_by_indices(obj_test_geo, hou.Geometry, [0], attribs, geo,
-                                                            hou.Geometry, [0])
+        ht.inline.api.batch_copy_attributes_by_indices(
+            obj_test_geo, hou.Geometry, [0], attribs, geo, hou.Geometry, [0]
+        )
         assert geo.attribValue("barbles") == 33
         assert geo.attribValue("foobles") == (1.0, 2.0)
 
@@ -930,8 +963,15 @@ class Test_batch_copy_attributes_by_indices(object):
         pr1.addVertex(pt1)
         vtx1 = pr1.vertex(0)
 
-        ht.inline.api.batch_copy_attributes_by_indices(obj_test_geo, hou.Geometry, [0], attribs, geo, hou.Vertex,
-                                                            [vtx1.linearNumber()])
+        ht.inline.api.batch_copy_attributes_by_indices(
+            obj_test_geo,
+            hou.Geometry,
+            [0],
+            attribs,
+            geo,
+            hou.Vertex,
+            [vtx1.linearNumber()],
+        )
         assert vtx1.attribValue("barbles") == 33
         assert vtx1.attribValue("foobles") == (1.0, 2)
 
@@ -968,7 +1008,9 @@ class Test_batch_copy_attrib_values(object):
 
         with pytest.raises(hou.GeometryPermissionError):
             ht.inline.api.batch_copy_attrib_values(
-                [obj_test_geo.iterPoints()[2], obj_test_geo.iterPoints()[6]], attribs, [pt1, pt2]
+                [obj_test_geo.iterPoints()[2], obj_test_geo.iterPoints()[6]],
+                attribs,
+                [pt1, pt2],
             )
 
     def test_copy_points(self, obj_test_geo):
@@ -980,7 +1022,10 @@ class Test_batch_copy_attrib_values(object):
         pt2 = geo.createPoint()
 
         ht.inline.api.batch_copy_attrib_values(
-            [obj_test_geo.iterPoints()[2], obj_test_geo.iterPoints()[6]], attribs, [pt1, pt2])
+            [obj_test_geo.iterPoints()[2], obj_test_geo.iterPoints()[6]],
+            attribs,
+            [pt1, pt2],
+        )
 
         # Ensure all the attributes got copied right.
         assert len(geo.pointAttribs()) == len(attribs)
@@ -998,7 +1043,10 @@ class Test_batch_copy_attrib_values(object):
         pr2 = geo.createPolygon()
 
         ht.inline.api.batch_copy_attrib_values(
-            [obj_test_geo.iterPrims()[1], obj_test_geo.iterPrims()[4]], attribs, [pr1, pr2])
+            [obj_test_geo.iterPrims()[1], obj_test_geo.iterPrims()[4]],
+            attribs,
+            [pr1, pr2],
+        )
 
         # Ensure all the attributes got copied right.
         assert len(geo.primAttribs()) == len(attribs)
@@ -1024,7 +1072,9 @@ class Test_batch_copy_attrib_values(object):
         attribs = obj_test_geo.pointAttribs()
         geo = hou.Geometry()
 
-        ht.inline.api.batch_copy_attrib_values([obj_test_geo.iterPoints()[2]], attribs, [geo])
+        ht.inline.api.batch_copy_attrib_values(
+            [obj_test_geo.iterPoints()[2]], attribs, [geo]
+        )
 
         # Ensure all the attributes got copied right.
         assert len(geo.globalAttribs()) == len(attribs)
@@ -1141,21 +1191,23 @@ class Test_batch_copy_group_membership_by_indices(object):
         groups = obj_test_geo.pointGroups()
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.batch_copy_group_membership_by_indices(obj_test_geo, hou.Point, [0], groups, geo,
-                                                                      hou.Point, [0])
+            ht.inline.api.batch_copy_group_membership_by_indices(
+                obj_test_geo, hou.Point, [0], groups, geo, hou.Point, [0]
+            )
 
-    def test_size_missmatch(self, obj_test_geo):
+    def test_size_mismatch(self, obj_test_geo):
         groups = obj_test_geo.pointGroups()
 
         geo = hou.Geometry()
 
-        pt1 = geo.createPoint()
-        pt2 = geo.createPoint()
-        pt3 = geo.createPoint()
+        geo.createPoint()
+        geo.createPoint()
+        geo.createPoint()
 
         with pytest.raises(ValueError):
-            ht.inline.api.batch_copy_group_membership_by_indices(obj_test_geo, hou.Point, [2, 8], groups, geo,
-                                                                  hou.Point, [0, 2, 1])
+            ht.inline.api.batch_copy_group_membership_by_indices(
+                obj_test_geo, hou.Point, [2, 8], groups, geo, hou.Point, [0, 2, 1]
+            )
 
     def test_points(self, obj_test_geo):
         groups = obj_test_geo.pointGroups()
@@ -1166,8 +1218,9 @@ class Test_batch_copy_group_membership_by_indices(object):
         pt2 = geo.createPoint()
         pt3 = geo.createPoint()
 
-        ht.inline.api.batch_copy_group_membership_by_indices(obj_test_geo, hou.Point, [2, 8, 10], groups, geo,
-                                                                  hou.Point, [0, 2, 1])
+        ht.inline.api.batch_copy_group_membership_by_indices(
+            obj_test_geo, hou.Point, [2, 8, 10], groups, geo, hou.Point, [0, 2, 1]
+        )
 
         # Ensure all the groups got copied right.
         assert len(geo.pointGroups()) == len(groups)
@@ -1193,7 +1246,9 @@ class Test_batch_copy_group_membership_by_indices(object):
         pr2 = geo.createPolygon()
         pr3 = geo.createPolygon()
 
-        ht.inline.api.batch_copy_group_membership_by_indices(obj_test_geo, hou.Prim, [1, 4, 5], groups, geo, hou.Prim, [0, 1, 2])
+        ht.inline.api.batch_copy_group_membership_by_indices(
+            obj_test_geo, hou.Prim, [1, 4, 5], groups, geo, hou.Prim, [0, 1, 2]
+        )
 
         # Ensure all the attributes got copied right.
         assert len(geo.primGroups()) == len(groups)
@@ -1216,7 +1271,7 @@ class Test_batch_copy_group_membership(object):
 
     def test_read_only(self, fix_hou_exceptions, obj_test_geo):
         geo = hou.Geometry()
-        pt1 = geo.createPoint()
+        geo.createPoint()
 
         geo = geo.freeze(True)
 
@@ -1227,18 +1282,20 @@ class Test_batch_copy_group_membership(object):
                 [obj_test_geo.points()[0]], groups, [geo.points()[0]]
             )
 
-    def test_size_missmatch(self, obj_test_geo):
+    def test_size_mismatch(self, obj_test_geo):
         groups = obj_test_geo.pointGroups()
 
         geo = hou.Geometry()
 
-        pt1 = geo.createPoint()
-        pt2 = geo.createPoint()
-        pt3 = geo.createPoint()
+        geo.createPoint()
+        geo.createPoint()
+        geo.createPoint()
 
         with pytest.raises(ValueError):
             ht.inline.api.batch_copy_group_membership(
-                [obj_test_geo.points()[0], obj_test_geo.points()[8]], groups, [geo.points()[0]]
+                [obj_test_geo.points()[0], obj_test_geo.points()[8]],
+                groups,
+                [geo.points()[0]],
             )
 
     def test_points(self, obj_test_geo):
@@ -1250,7 +1307,9 @@ class Test_batch_copy_group_membership(object):
         pt2 = geo.createPoint()
         pt3 = geo.createPoint()
 
-        ht.inline.api.batch_copy_group_membership(obj_test_geo.globPoints("2 8 10"), groups, geo.points())
+        ht.inline.api.batch_copy_group_membership(
+            obj_test_geo.globPoints("2 8 10"), groups, geo.points()
+        )
 
         # Ensure all the groups got copied right.
         assert len(geo.pointGroups()) == len(groups)
@@ -1276,7 +1335,9 @@ class Test_batch_copy_group_membership(object):
         pr2 = geo.createPolygon()
         pr3 = geo.createPolygon()
 
-        ht.inline.api.batch_copy_group_membership(obj_test_geo.globPrims("1 4 5"), groups, geo.prims())
+        ht.inline.api.batch_copy_group_membership(
+            obj_test_geo.globPrims("1 4 5"), groups, geo.prims()
+        )
 
         # Ensure all the attributes got copied right.
         assert len(geo.primGroups()) == len(groups)
@@ -1389,7 +1450,6 @@ def test_vertex_string_attrib_values(fix_hou_exceptions, obj_test_geo):
 class Test_set_vertex_string_attrib_values(object):
     """Test ht.inline.api.set_vertex_string_attrib_values."""
 
-
     def test_read_only(self, fix_hou_exceptions, obj_test_geo):
         with pytest.raises(hou.GeometryPermissionError):
             ht.inline.api.set_vertex_string_attrib_values(obj_test_geo, "test", [])
@@ -1410,17 +1470,23 @@ class Test_set_vertex_string_attrib_values(object):
 
     def test_invalid_attribute(self, fix_hou_exceptions, obj_test_geo_copy):
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.set_vertex_string_attrib_values(obj_test_geo_copy, "thing", [])
+            ht.inline.api.set_vertex_string_attrib_values(
+                obj_test_geo_copy, "thing", []
+            )
 
     def test_invalid_attribute_type(self, fix_hou_exceptions, obj_test_geo_copy):
         with pytest.raises(ValueError):
-            ht.inline.api.set_vertex_string_attrib_values(obj_test_geo_copy, "notstring", [])
+            ht.inline.api.set_vertex_string_attrib_values(
+                obj_test_geo_copy, "notstring", []
+            )
 
     def test_invalid_attribute_size(self, fix_hou_exceptions, obj_test_geo_copy):
         target = ("vertex0", "vertex1", "vertex2", "vertex3")
 
         with pytest.raises(ValueError):
-            ht.inline.api.set_vertex_string_attrib_values(obj_test_geo_copy, "test", target)
+            ht.inline.api.set_vertex_string_attrib_values(
+                obj_test_geo_copy, "test", target
+            )
 
 
 class Test_set_shared_point_string_attrib(object):
@@ -1432,18 +1498,24 @@ class Test_set_shared_point_string_attrib(object):
 
     def test_no_attribute(self, obj_test_geo_copy):
         with pytest.raises(ValueError):
-            ht.inline.api.set_shared_point_string_attrib(obj_test_geo_copy, "foo", "point0")
+            ht.inline.api.set_shared_point_string_attrib(
+                obj_test_geo_copy, "foo", "point0"
+            )
 
     def test_not_string_attribute(self, obj_test_geo_copy):
         obj_test_geo_copy.addAttrib(hou.attribType.Point, "not_string", 0)
 
         with pytest.raises(ValueError):
-            ht.inline.api.set_shared_point_string_attrib(obj_test_geo_copy, "not_string", "point0")
+            ht.inline.api.set_shared_point_string_attrib(
+                obj_test_geo_copy, "not_string", "point0"
+            )
 
     def test_success(self, obj_test_geo_copy):
         target = ["point0"] * 10
 
-        ht.inline.api.set_shared_point_string_attrib(obj_test_geo_copy, "test", "point0")
+        ht.inline.api.set_shared_point_string_attrib(
+            obj_test_geo_copy, "test", "point0"
+        )
 
         assert list(obj_test_geo_copy.pointStringAttribValues("test")) == target
 
@@ -1452,7 +1524,9 @@ class Test_set_shared_point_string_attrib(object):
 
         group = obj_test_geo_copy.pointGroups()[0]
 
-        ht.inline.api.set_shared_point_string_attrib(obj_test_geo_copy, "test", "point0", group)
+        ht.inline.api.set_shared_point_string_attrib(
+            obj_test_geo_copy, "test", "point0", group
+        )
 
         assert list(obj_test_geo_copy.pointStringAttribValues("test")) == target
 
@@ -1466,20 +1540,26 @@ class Test_set_shared_prim_string_attrib(object):
 
     def test_no_attribute(self, obj_test_geo_copy):
         with pytest.raises(ValueError):
-            ht.inline.api.set_shared_prim_string_attrib(obj_test_geo_copy, "foo", "prim0")
+            ht.inline.api.set_shared_prim_string_attrib(
+                obj_test_geo_copy, "foo", "prim0"
+            )
 
     def test_not_string_attribute(self, obj_test_geo_copy):
         obj_test_geo_copy.addAttrib(hou.attribType.Prim, "not_string", 0)
 
         with pytest.raises(ValueError):
-            ht.inline.api.set_shared_prim_string_attrib(obj_test_geo_copy, "not_string", "value")
+            ht.inline.api.set_shared_prim_string_attrib(
+                obj_test_geo_copy, "not_string", "value"
+            )
 
     def test_success(self, obj_test_geo_copy):
         target = ["value"] * 5
 
         attr = obj_test_geo_copy.findPrimAttrib("test")
 
-        ht.inline.api.set_shared_prim_string_attrib(obj_test_geo_copy, attr.name(), "value")
+        ht.inline.api.set_shared_prim_string_attrib(
+            obj_test_geo_copy, attr.name(), "value"
+        )
 
         assert list(obj_test_geo_copy.primStringAttribValues("test")) == target
 
@@ -1490,7 +1570,9 @@ class Test_set_shared_prim_string_attrib(object):
 
         group = obj_test_geo_copy.findPrimGroup("group1")
 
-        ht.inline.api.set_shared_prim_string_attrib(obj_test_geo_copy, attr.name(), "value", group)
+        ht.inline.api.set_shared_prim_string_attrib(
+            obj_test_geo_copy, attr.name(), "value", group
+        )
 
         assert list(obj_test_geo_copy.primStringAttribValues("test")) == target
 
@@ -1504,12 +1586,13 @@ class Test_attribute_has_uninitialized_string_values(object):
         with pytest.raises(ValueError):
             ht.inline.api.attribute_has_uninitialized_string_values(attrib)
 
-    @pytest.mark.parametrize("name, expected", [
-        ("point_attrib_fully_initialized", False),
-        ("point_attrib_not_initialized", True),
-        ("point_attrib_partially_initialized", True),
-
-    ]
+    @pytest.mark.parametrize(
+        "name, expected",
+        [
+            ("point_attrib_fully_initialized", False),
+            ("point_attrib_not_initialized", True),
+            ("point_attrib_partially_initialized", True),
+        ],
     )
     def test_point_attribs(self, obj_test_geo, name, expected):
         attrib = obj_test_geo.findPointAttrib(name)
@@ -1518,12 +1601,13 @@ class Test_attribute_has_uninitialized_string_values(object):
 
         assert result == expected
 
-    @pytest.mark.parametrize("name, expected", [
-        ("prim_attrib_fully_initialized", False),
-        ("prim_attrib_not_initialized", True),
-        ("prim_attrib_partially_initialized", True),
-
-    ]
+    @pytest.mark.parametrize(
+        "name, expected",
+        [
+            ("prim_attrib_fully_initialized", False),
+            ("prim_attrib_not_initialized", True),
+            ("prim_attrib_partially_initialized", True),
+        ],
     )
     def test_prim_attribs(self, obj_test_geo, name, expected):
         attrib = obj_test_geo.findPrimAttrib(name)
@@ -1532,12 +1616,13 @@ class Test_attribute_has_uninitialized_string_values(object):
 
         assert result == expected
 
-    @pytest.mark.parametrize("name, expected", [
-        ("vertex_attrib_fully_initialized", False),
-        ("vertex_attrib_not_initialized", True),
-        ("vertex_attrib_partially_initialized", True),
-
-    ]
+    @pytest.mark.parametrize(
+        "name, expected",
+        [
+            ("vertex_attrib_fully_initialized", False),
+            ("vertex_attrib_not_initialized", True),
+            ("vertex_attrib_partially_initialized", True),
+        ],
     )
     def test_vertex_attribs(self, obj_test_geo, name, expected):
         attrib = obj_test_geo.findVertexAttrib(name)
@@ -1546,11 +1631,12 @@ class Test_attribute_has_uninitialized_string_values(object):
 
         assert result == expected
 
-    @pytest.mark.parametrize("name, expected", [
-        ("detail_attrib_fully_initialized", False),
-        ("detail_attrib_not_initialized", True),
-
-    ]
+    @pytest.mark.parametrize(
+        "name, expected",
+        [
+            ("detail_attrib_fully_initialized", False),
+            ("detail_attrib_not_initialized", True),
+        ],
     )
     def test_detail_attribs(self, obj_test_geo, name, expected):
         attrib = obj_test_geo.findGlobalAttrib(name)
@@ -1558,11 +1644,6 @@ class Test_attribute_has_uninitialized_string_values(object):
         result = ht.inline.api.attribute_has_uninitialized_string_values(attrib)
 
         assert result == expected
-
-
-
-
-
 
 
 def test_face_has_edge(obj_test_geo):
@@ -1611,7 +1692,9 @@ class Test_insert_vertex(object):
     def test_negative_index(self, obj_test_geo_copy):
         face = obj_test_geo_copy.iterPrims()[0]
 
-        new_point = ht.inline.api.create_point_at_position(obj_test_geo_copy, hou.Vector3(0.5, 0, 0.5))
+        new_point = ht.inline.api.create_point_at_position(
+            obj_test_geo_copy, hou.Vector3(0.5, 0, 0.5)
+        )
 
         # Negative index.
         with pytest.raises(IndexError):
@@ -1620,7 +1703,9 @@ class Test_insert_vertex(object):
     def test_invalid_index(self, obj_test_geo_copy):
         face = obj_test_geo_copy.iterPrims()[0]
 
-        new_point = ht.inline.api.create_point_at_position(obj_test_geo_copy, hou.Vector3(0.5, 0, 0.5))
+        new_point = ht.inline.api.create_point_at_position(
+            obj_test_geo_copy, hou.Vector3(0.5, 0, 0.5)
+        )
 
         # Invalid index.
         with pytest.raises(IndexError):
@@ -1629,7 +1714,9 @@ class Test_insert_vertex(object):
     def test_success(self, obj_test_geo_copy):
         face = obj_test_geo_copy.iterPrims()[0]
 
-        new_point = ht.inline.api.create_point_at_position(obj_test_geo_copy, hou.Vector3(0.5, 0, 0.5))
+        new_point = ht.inline.api.create_point_at_position(
+            obj_test_geo_copy, hou.Vector3(0.5, 0, 0.5)
+        )
 
         ht.inline.api.insert_vertex(face, new_point, 2)
 
@@ -1663,6 +1750,7 @@ class Test_delete_vertex(object):
         ht.inline.api.delete_vertex_from_face(face, 3)
 
         assert len(face.vertices()) == 3
+
 
 def test_set_face_vertex_point(fix_hou_exceptions, obj_test_geo, obj_test_geo_copy):
     """Test ht.inline.api.set_face_vertex_point."""
@@ -1723,7 +1811,7 @@ def test_primitive_volume(obj_test_geo):
     assert ht.inline.api.primitive_volume(prim) == target
 
 
-class Test_reverse_prim():
+class Test_reverse_prim:
     """Test ht.inline.api.reverse_prim."""
 
     def test_read_only(self, fix_hou_exceptions, obj_test_geo):
@@ -1804,12 +1892,12 @@ class Test_rename_group(object):
         # Existing group
         geo = hou.Geometry()
         geo.createPointGroup("foo")
-        bar = geo.createPointGroup("bar")
+        bar_group = geo.createPointGroup("bar")
 
-        result = ht.inline.api.rename_group(bar, "foo")
+        result = ht.inline.api.rename_group(bar_group, "foo")
         assert result is None
 
-    def test_point_group(self, fix_hou_exceptions ,obj_test_geo_copy):
+    def test_point_group(self, fix_hou_exceptions, obj_test_geo_copy):
         group = obj_test_geo_copy.pointGroups()[0]
 
         result = ht.inline.api.rename_group(group, "test_group")
@@ -1838,7 +1926,6 @@ class Test_rename_group(object):
 
         with pytest.raises(hou.OperationFailed):
             ht.inline.api.rename_group(group, name)
-
 
     def test_edge_group(self, fix_hou_exceptions, obj_test_geo_copy):
         # Edge Group
@@ -1914,7 +2001,9 @@ class Test_toggle_group_entries(object):
             ht.inline.api.toggle_group_entries(group)
 
     def test_point(self, obj_test_geo_copy):
-        values = obj_test_geo_copy.globPoints(" ".join([str(val) for val in range(1, 100, 2)]))
+        values = obj_test_geo_copy.globPoints(
+            " ".join([str(val) for val in range(1, 100, 2)])
+        )
 
         group = obj_test_geo_copy.pointGroups()[0]
         ht.inline.api.toggle_group_entries(group)
@@ -1922,7 +2011,9 @@ class Test_toggle_group_entries(object):
         assert group.points() == values
 
     def test_prim(self, obj_test_geo_copy):
-        values = obj_test_geo_copy.globPrims(" ".join([str(val) for val in range(0, 100, 2)]))
+        values = obj_test_geo_copy.globPrims(
+            " ".join([str(val) for val in range(0, 100, 2)])
+        )
 
         group = obj_test_geo_copy.primGroups()[0]
         ht.inline.api.toggle_group_entries(group)
@@ -1966,20 +2057,20 @@ class Test_copy_group(object):
         with pytest.raises(hou.OperationFailed):
             ht.inline.api.copy_group(group, other_group.name())
 
-    def test_point(self, obj_test_geo_copy):
+    def test_prim(self, obj_test_geo_copy):
         group = obj_test_geo_copy.primGroups()[0]
 
         new_group = ht.inline.api.copy_group(group, "new_group")
 
         assert group.prims() == new_group.prims()
 
-    def test_point_same_name(self, fix_hou_exceptions, obj_test_geo_copy):
+    def test_prim_same_name(self, fix_hou_exceptions, obj_test_geo_copy):
         group = obj_test_geo_copy.primGroups()[0]
 
         with pytest.raises(hou.OperationFailed):
             ht.inline.api.copy_group(group, group.name())
 
-    def test_point_exists(self, fix_hou_exceptions, obj_test_geo_copy):
+    def test_prim_exists(self, fix_hou_exceptions, obj_test_geo_copy):
         group = obj_test_geo_copy.primGroups()[-1]
 
         other_group = obj_test_geo_copy.primGroups()[0]
@@ -2024,7 +2115,6 @@ class Test_set_group_string_attribute(object):
         expected = tuple(["value"] * 3 + ["default"])
 
         assert obj_test_geo_copy.primStringAttribValues("prim_attrib") == expected
-
 
 
 class Test_groups_share_elements(object):
@@ -2245,10 +2335,12 @@ class Test_group_ungrouped_prims(object):
         assert group is None
 
 
-@pytest.mark.parametrize("bbox, expected", [
-    (hou.BoundingBox(-1, -1, -1, 1, 1, 1), True), # Inside
-    (hou.BoundingBox(0, 0, 0, 0.5, 0.5, 0.5), False),  # Not inside
-]
+@pytest.mark.parametrize(
+    "bbox, expected",
+    [
+        (hou.BoundingBox(-1, -1, -1, 1, 1, 1), True),  # Inside
+        (hou.BoundingBox(0, 0, 0, 0.5, 0.5, 0.5), False),  # Not inside
+    ],
 )
 def test_bounding_box_is_inside(bbox, expected):
     """Test ht.inline.api.bounding_box_is_inside."""
@@ -2257,10 +2349,15 @@ def test_bounding_box_is_inside(bbox, expected):
     assert ht.inline.api.bounding_box_is_inside(test_bbox, bbox) == expected
 
 
-@pytest.mark.parametrize("bbox, expected", [
-    (hou.BoundingBox(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5), True), # Intersects
-    (hou.BoundingBox(-0.5, -0.5, -0.5, -0.1, -0.1, -0.1), False),  # Doesn't intersect
-]
+@pytest.mark.parametrize(
+    "bbox, expected",
+    [
+        (hou.BoundingBox(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5), True),  # Intersects
+        (
+            hou.BoundingBox(-0.5, -0.5, -0.5, -0.1, -0.1, -0.1),
+            False,
+        ),  # Doesn't intersect
+    ],
 )
 def test_bounding_boxes_intersect(bbox, expected):
     """Test ht.inline.api.bounding_boxes_intersect."""
@@ -2452,7 +2549,12 @@ def test_is_parm_multiparm():
     assert not ht.inline.api.is_parm_multiparm(parm_tuple)
 
     # Check against all different FolderSet type folders.
-    for folder_name in ("folder_tabs", "folder_collapsible", "folder_simple", "folder_radio"):
+    for folder_name in (
+        "folder_tabs",
+        "folder_collapsible",
+        "folder_simple",
+        "folder_radio",
+    ):
         parm = node.parm(folder_name)
         assert not ht.inline.api.is_parm_multiparm(parm)
 
@@ -2470,14 +2572,14 @@ def test_get_multiparm_instance_indices():
     node = OBJ.node("test_get_multiparm_instance_indices/null")
     parm = node.parm("vecparm0x")
 
-    assert ht.inline.api.get_multiparm_instance_indices(parm) == (0, )
+    assert ht.inline.api.get_multiparm_instance_indices(parm) == (0,)
 
     parm_tuple = node.parmTuple("vecparm0")
 
-    assert ht.inline.api.get_multiparm_instance_indices(parm_tuple) == (0, )
+    assert ht.inline.api.get_multiparm_instance_indices(parm_tuple) == (0,)
 
     parm_tuple = node.parmTuple("vecparm1")
-    assert ht.inline.api.get_multiparm_instance_indices(parm_tuple) == (1, )
+    assert ht.inline.api.get_multiparm_instance_indices(parm_tuple) == (1,)
 
     parm_tuple = node.parmTuple("inner0")
 
@@ -2514,12 +2616,12 @@ def test_get_multiparm_siblings():
     parm = node.parm("stringparm0")
 
     expected = {
-        'inner_multi#': node.parm('inner_multi0'),
-        'vecparm#': node.parmTuple('vecparm0'),
-        'simple_intparm#': node.parm('simple_intparm0'),
-        'tab_intparm1#': node.parm('tab_intparm10'),
-        'collapse_intparm#': node.parm('collapse_intparm0'),
-        'tab_intparm2#': node.parm('tab_intparm20'),
+        "inner_multi#": node.parm("inner_multi0"),
+        "vecparm#": node.parmTuple("vecparm0"),
+        "simple_intparm#": node.parm("simple_intparm0"),
+        "tab_intparm1#": node.parm("tab_intparm10"),
+        "collapse_intparm#": node.parm("collapse_intparm0"),
+        "tab_intparm2#": node.parm("tab_intparm20"),
     }
 
     assert ht.inline.api.get_multiparm_siblings(parm) == expected
@@ -2527,12 +2629,12 @@ def test_get_multiparm_siblings():
     parm_tuple = node.parmTuple("vecparm0")
 
     expected = {
-        'inner_multi#': node.parm('inner_multi0'),
-        'stringparm#': node.parm('stringparm0'),
-        'simple_intparm#': node.parm('simple_intparm0'),
-        'tab_intparm1#': node.parm('tab_intparm10'),
-        'collapse_intparm#': node.parm('collapse_intparm0'),
-        'tab_intparm2#': node.parm('tab_intparm20'),
+        "inner_multi#": node.parm("inner_multi0"),
+        "stringparm#": node.parm("stringparm0"),
+        "simple_intparm#": node.parm("simple_intparm0"),
+        "tab_intparm1#": node.parm("tab_intparm10"),
+        "collapse_intparm#": node.parm("collapse_intparm0"),
+        "tab_intparm2#": node.parm("tab_intparm20"),
     }
 
     assert ht.inline.api.get_multiparm_siblings(parm_tuple) == expected
@@ -2541,13 +2643,26 @@ def test_get_multiparm_siblings():
 def test_resolve_multiparm_tokens():
     """Test ht.inline.api.resolve_multiparm_tokens."""
     assert ht.inline.api.resolve_multiparm_tokens("test#", 3) == "test3"
-    assert ht.inline.api.resolve_multiparm_tokens("test#", (4, )) == "test4"
-    assert ht.inline.api.resolve_multiparm_tokens("test#", [5, ]) == "test5"
+    assert ht.inline.api.resolve_multiparm_tokens("test#", (4,)) == "test4"
+    assert (
+        ht.inline.api.resolve_multiparm_tokens(
+            "test#",
+            [
+                5,
+            ],
+        )
+        == "test5"
+    )
 
     assert ht.inline.api.resolve_multiparm_tokens("test#_#_#", (1, 2, 3)) == "test1_2_3"
 
     with pytest.raises(ValueError):
-        ht.inline.api.resolve_multiparm_tokens("test#_#", [5, ])
+        ht.inline.api.resolve_multiparm_tokens(
+            "test#_#",
+            [
+                5,
+            ],
+        )
 
 
 def test_get_multiparm_template_name():
@@ -2580,7 +2695,19 @@ def test_eval_multiparm_instance():
         ht.inline.api.eval_multiparm_instance(node, "foo#", 0)
 
     expected = [
-        (1.1, 2.2, 3.3, 4.4), 1, 2, 3, 10, str(hou.intFrame()), (5.5, 6.6, 7.7, 8.8), 5, 6, 7, 8 ,9, hou.hipFile.path()
+        (1.1, 2.2, 3.3, 4.4),
+        1,
+        2,
+        3,
+        10,
+        str(hou.intFrame()),
+        (5.5, 6.6, 7.7, 8.8),
+        5,
+        6,
+        7,
+        8,
+        9,
+        hou.hipFile.path(),
     ]
 
     results = []
@@ -2591,7 +2718,9 @@ def test_eval_multiparm_instance():
 
         # Test a bunch of nested int parameters.
         for j in range(ht.inline.api.eval_multiparm_instance(node, "inner#", i)):
-            results.append(ht.inline.api.eval_multiparm_instance(node, "leaf#_#", (i, j)))
+            results.append(
+                ht.inline.api.eval_multiparm_instance(node, "leaf#_#", (i, j))
+            )
 
         # Test a string parameter which will be expanded.
         results.append(ht.inline.api.eval_multiparm_instance(node, "string#", i))
@@ -2606,8 +2735,12 @@ def test_eval_multiparm_instance():
         results.append(ht.inline.api.eval_multiparm_instance(node, "vecparm#", i, True))
 
         # Test a bunch of nested int parameters.
-        for j in range(1, ht.inline.api.eval_multiparm_instance(node, "inner#", i, True) + 1):
-            results.append(ht.inline.api.eval_multiparm_instance(node, "leaf#_#", (i, j), True))
+        for j in range(
+            1, ht.inline.api.eval_multiparm_instance(node, "inner#", i, True) + 1
+        ):
+            results.append(
+                ht.inline.api.eval_multiparm_instance(node, "leaf#_#", (i, j), True)
+            )
 
         # Test a string parameter which will be expanded.
         results.append(ht.inline.api.eval_multiparm_instance(node, "string#", i, True))
@@ -2635,16 +2768,27 @@ def test_unexpanded_string_multiparm_instance():
         ht.inline.api.unexpanded_string_multiparm_instance(node, "float#", 0)
 
     expected = [
-        "$F", ("$E", "$C"), ("$EYE", "$HOME"), "$HIPFILE", ("$JOB", "$TEMP"), ("$FOO", "$BAR")
+        "$F",
+        ("$E", "$C"),
+        ("$EYE", "$HOME"),
+        "$HIPFILE",
+        ("$JOB", "$TEMP"),
+        ("$FOO", "$BAR"),
     ]
 
     results = []
 
     for i in range(node.evalParm("base")):
-        results.append(ht.inline.api.unexpanded_string_multiparm_instance(node, "string#", i))
+        results.append(
+            ht.inline.api.unexpanded_string_multiparm_instance(node, "string#", i)
+        )
 
         for j in range(ht.inline.api.eval_multiparm_instance(node, "inner#", i)):
-            results.append(ht.inline.api.unexpanded_string_multiparm_instance(node, "nested_string#_#", (i, j)))
+            results.append(
+                ht.inline.api.unexpanded_string_multiparm_instance(
+                    node, "nested_string#_#", (i, j)
+                )
+            )
 
     assert results == expected
 
@@ -2653,16 +2797,25 @@ def test_unexpanded_string_multiparm_instance():
     # Run the same test again but passing True for raw_indices.
     for i in range(node.evalParm("base")):
         # Test a float vector parameter.
-        results.append(ht.inline.api.unexpanded_string_multiparm_instance(node, "string#", i, True))
+        results.append(
+            ht.inline.api.unexpanded_string_multiparm_instance(node, "string#", i, True)
+        )
 
         # Test a bunch of nested int parameters.
-        for j in range(1, ht.inline.api.eval_multiparm_instance(node, "inner#", i, True) + 1):
-            results.append(ht.inline.api.unexpanded_string_multiparm_instance(node, "nested_string#_#", (i, j), True))
+        for j in range(
+            1, ht.inline.api.eval_multiparm_instance(node, "inner#", i, True) + 1
+        ):
+            results.append(
+                ht.inline.api.unexpanded_string_multiparm_instance(
+                    node, "nested_string#_#", (i, j), True
+                )
+            )
 
     assert results == expected
 
     with pytest.raises(IndexError):
         ht.inline.api.unexpanded_string_multiparm_instance(node, "string#", 10)
+
 
 # =========================================================================
 # NODES AND NODE TYPES
@@ -2751,13 +2904,16 @@ def test_vector_project_along():
     assert projection.isAlmostEqual(result)
 
 
-@pytest.mark.parametrize("vec, expected", [
-    ((), False),
-    (hou.Vector2(1, 0), False),
-    (hou.Vector2(float("nan"), 1), True),
-    (hou.Vector3(6.5, 1, float("nan")), True),
-    (hou.Vector4(-4., 5, -0, float("nan")), True),
-])
+@pytest.mark.parametrize(
+    "vec, expected",
+    [
+        ((), False),
+        (hou.Vector2(1, 0), False),
+        (hou.Vector2(float("nan"), 1), True),
+        (hou.Vector3(6.5, 1, float("nan")), True),
+        (hou.Vector4(-4.0, 5, -0, float("nan")), True),
+    ],
+)
 def test_vector_contains_nans(vec, expected):
     """Test ht.inline.api.vector_contains_nans."""
     result = ht.inline.api.vector_contains_nans(vec)
@@ -2840,7 +2996,7 @@ def test_get_oriented_point_transform(fix_hou_exceptions):
             (0.6819891929626465, -0.7313622236251831, 0.0, 0.0),
             (0.48333778977394104, 0.4507084786891937, -0.7504974603652954, 0.0),
             (0.5488855242729187, 0.5118311643600464, 0.660873293876648, 0.0),
-            (0.3173518180847168, 0.38005995750427246, -0.6276679039001465, 1.0)
+            (0.3173518180847168, 0.38005995750427246, -0.6276679039001465, 1.0),
         )
     )
 
@@ -2948,11 +3104,15 @@ def test_build_instance_matrix():
 # DIGITAL ASSETS
 # =========================================================================
 
-@pytest.mark.parametrize("node_name, expected_node", [
-    ("valid", "d/s"),
-    ("no_message_nodes", None),
-    ("not_otl", None),
-])
+
+@pytest.mark.parametrize(
+    "node_name, expected_node",
+    [
+        ("valid", "d/s"),
+        ("no_message_nodes", None),
+        ("not_otl", None),
+    ],
+)
 def test_get_node_message_nodes(node_name, expected_node):
     """Test ht.inline.api.get_node_message_nodes."""
     node = OBJ.node("test_message_nodes/{}".format(node_name))
@@ -2966,11 +3126,14 @@ def test_get_node_message_nodes(node_name, expected_node):
     assert ht.inline.api.get_node_message_nodes(node) == target
 
 
-@pytest.mark.parametrize("node_name, expected_node", [
-    ("valid", "d/s"),
-    ("no_message_nodes", None),
-    ("not_otl", None),
-])
+@pytest.mark.parametrize(
+    "node_name, expected_node",
+    [
+        ("valid", "d/s"),
+        ("no_message_nodes", None),
+        ("not_otl", None),
+    ],
+)
 def test_get_node_editable_nodes(node_name, expected_node):
     """Test ht.inline.api.get_node_editable_nodes."""
     node = OBJ.node("test_message_nodes/{}".format(node_name))
@@ -2984,11 +3147,14 @@ def test_get_node_editable_nodes(node_name, expected_node):
     assert ht.inline.api.get_node_editable_nodes(node) == target
 
 
-@pytest.mark.parametrize("node_name, expected_node", [
-    ("valid", "d/s"),
-    ("no_message_nodes", None),
-    ("not_otl", None),
-])
+@pytest.mark.parametrize(
+    "node_name, expected_node",
+    [
+        ("valid", "d/s"),
+        ("no_message_nodes", None),
+        ("not_otl", None),
+    ],
+)
 def test_get_node_dive_target(node_name, expected_node):
     """Test ht.inline.api.get_node_dive_target."""
     node = OBJ.node("test_message_nodes/{}".format(node_name))
@@ -3002,12 +3168,15 @@ def test_get_node_dive_target(node_name, expected_node):
     assert ht.inline.api.get_node_dive_target(node) == target
 
 
-@pytest.mark.parametrize("node_name, expected_node", [
-    ("test_representative_node", "stereo_camera"),
-    ("test_representative_node/left_camera", None),
-    ("test_representative_node/visualization_root", None),
-    ("test_message_nodes/valid", None),
-])
+@pytest.mark.parametrize(
+    "node_name, expected_node",
+    [
+        ("test_representative_node", "stereo_camera"),
+        ("test_representative_node/left_camera", None),
+        ("test_representative_node/visualization_root", None),
+        ("test_message_nodes/valid", None),
+    ],
+)
 def test_get_node_representative_node(node_name, expected_node):
     """Test ht.inline.api.get_node_representative_node."""
     node = OBJ.node(node_name)
@@ -3021,10 +3190,13 @@ def test_get_node_representative_node(node_name, expected_node):
     assert ht.inline.api.get_node_representative_node(node) == target
 
 
-@pytest.mark.parametrize("node_name, expected", [
-    ("test_is_node_digital_asset/is_digital_asset", True),
-    ("test_is_node_digital_asset/not_digital_asset", False),
-])
+@pytest.mark.parametrize(
+    "node_name, expected",
+    [
+        ("test_is_node_digital_asset/is_digital_asset", True),
+        ("test_is_node_digital_asset/not_digital_asset", False),
+    ],
+)
 def test_is_node_digital_asset(node_name, expected):
     """Test ht.inline.api.is_node_digital_asset."""
     node = OBJ.node(node_name)
@@ -3036,7 +3208,7 @@ def test_asset_file_meta_source():
     """Test ht.inline.api.asset_file_meta_source."""
     target = "Scanned Asset Library Directories"
 
-    if hou.applicationVersion() >= (18, ):
+    if hou.applicationVersion() >= (18,):
         path = hou.text.expandString("$HH/otls/OPlibSop.hda")
 
     else:
@@ -3101,4 +3273,3 @@ def test_is_dummy_definition():
 
     # Destroy the dummy definition.
     node_type.definition().destroy()
-

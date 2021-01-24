@@ -167,7 +167,9 @@ class Test_AOVManager:
 
         mock_add.assert_called_with(mock_aov)
 
-    def test__init_reader_aovs__matches_existing_priority_same(self, init_manager, mocker):
+    def test__init_reader_aovs__matches_existing_priority_same(
+        self, init_manager, mocker
+    ):
         """Test initializing a new aov when the name matches an existing one of the same priority."""
         mock_aovs = mocker.patch.object(
             manager.AOVManager, "aovs", new_callable=mocker.PropertyMock
@@ -712,11 +714,14 @@ class Test_AOVManager:
         mock_clear.assert_called()
         mock_init.assert_called()
 
-    @pytest.mark.parametrize("has_match, has_interface", [
-        (False, False),
-        (True, False),
-        (True, True),
-    ])
+    @pytest.mark.parametrize(
+        "has_match, has_interface",
+        [
+            (False, False),
+            (True, False),
+            (True, True),
+        ],
+    )
     def test_remove_aov(self, init_manager, mocker, has_match, has_interface):
         """Test removing an aov."""
         mock_aovs = mocker.patch.object(
@@ -758,11 +763,14 @@ class Test_AOVManager:
         else:
             assert aovs == {mock_aov2.variable: mock_aov2}
 
-    @pytest.mark.parametrize("has_match, has_interface", [
-        (False, False),
-        (True, False),
-        (True, True),
-    ])
+    @pytest.mark.parametrize(
+        "has_match, has_interface",
+        [
+            (False, False),
+            (True, False),
+            (True, True),
+        ],
+    )
     def test_remove_group(self, init_manager, mocker, has_match, has_interface):
         """Test removing a group."""
         mock_groups = mocker.patch.object(

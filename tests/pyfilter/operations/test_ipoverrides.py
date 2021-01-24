@@ -43,7 +43,9 @@ def init_operation(mocker):
     """Fixture to initialize an operation."""
     mocker.patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
 
-    def _create(prop_map: dict = None, as_properties: bool = False) -> ipoverrides.IpOverrides:
+    def _create(
+        prop_map: dict = None, as_properties: bool = False
+    ) -> ipoverrides.IpOverrides:
         """Function which instantiates the operation.
 
         :param prop_map: Map of property name:values to set.
@@ -462,7 +464,7 @@ class Test_IpOverrides:
 
         values = {"object:matte": True, "object:phantom": False}
 
-        properties.mock_get.side_effect = lambda name: values.get(name)
+        properties.mock_get.side_effect = values.get
 
         op.filter_instance()
 
@@ -480,7 +482,7 @@ class Test_IpOverrides:
 
         values = {"object:matte": False, "object:phantom": True}
 
-        properties.mock_get.side_effect = lambda name: values.get(name)
+        properties.mock_get.side_effect = values.get
 
         op.filter_instance()
 
@@ -504,7 +506,7 @@ class Test_IpOverrides:
             "object:surface": "opdef:/Shop/v_matte",
         }
 
-        properties.mock_get.side_effect = lambda name: values.get(name)
+        properties.mock_get.side_effect = values.get
 
         op.filter_instance()
 
@@ -532,7 +534,7 @@ class Test_IpOverrides:
             "object:surface": "opdef:/Shop/v_thing",
         }
 
-        properties.mock_get.side_effect = lambda name: values.get(name)
+        properties.mock_get.side_effect = values.get
 
         op.filter_instance()
 

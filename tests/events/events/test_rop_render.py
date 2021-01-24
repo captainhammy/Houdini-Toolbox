@@ -50,10 +50,14 @@ class Test_RopRenderEvent:
 
     def test___init__(self, mocker):
         """Test object initialization."""
-        mock_super_init = mocker.patch.object(ht.events.rop_render.HoudiniEventGroup, "__init__")
+        mock_super_init = mocker.patch.object(
+            ht.events.rop_render.HoudiniEventGroup, "__init__"
+        )
 
         event_map = {}
-        mocker.patch.object(ht.events.events.rop_render.RopRenderEvent, "event_map", event_map)
+        mocker.patch.object(
+            ht.events.events.rop_render.RopRenderEvent, "event_map", event_map
+        )
 
         event = ht.events.events.rop_render.RopRenderEvent()
 
@@ -103,13 +107,18 @@ class Test_RopRenderEvent:
         mock_end = mocker.MagicMock(spec=int)
         mock_inc = mocker.MagicMock(spec=int)
 
-        scriptargs = {"time": mock_time, "frame_range": (mock_start, mock_end, mock_inc)}
+        scriptargs = {
+            "time": mock_time,
+            "frame_range": (mock_start, mock_end, mock_inc),
+        }
 
         event.pre_render(scriptargs)
 
         assert event._render_start == mock_time
 
-        mock_logger.info.assert_called_with("Starting render: %s-%s:%s", mock_start, mock_end, mock_inc)
+        mock_logger.info.assert_called_with(
+            "Starting render: %s-%s:%s", mock_start, mock_end, mock_inc
+        )
 
     def test_pre_render__no_frame_range(self, init_event, mocker, mock_logger):
         """Test with no frame range."""
@@ -147,7 +156,9 @@ class Test_RopRenderEvent:
 
         mock_print.assert_called_with(scriptargs)
 
-        mock_logger.info.assert_called_with("Completed Frame: %s (%0.5fs)", mock_frame, mock_time-event._frame_start)
+        mock_logger.info.assert_called_with(
+            "Completed Frame: %s (%0.5fs)", mock_frame, mock_time - event._frame_start
+        )
 
     def test_post_frame__no_start_frame(self, init_event, mocker, mock_logger):
         """Test when no start time is known."""
@@ -179,7 +190,9 @@ class Test_RopRenderEvent:
 
         event.post_render(scriptargs)
 
-        mock_logger.info.assert_called_with("Completed Render: %0.5fs", mock_time-event._render_start)
+        mock_logger.info.assert_called_with(
+            "Completed Render: %0.5fs", mock_time - event._render_start
+        )
 
     def test_post_render__no_start_time(self, init_event, mock_logger):
         """Test when no start time is known."""
@@ -199,14 +212,13 @@ class Test_RopRenderEvent:
         mock_frame = mocker.MagicMock(spec=int)
         mock_path = mocker.MagicMock(spec=str)
 
-        scriptargs = {
-            "frame": mock_frame,
-            "path": mock_path
-        }
+        scriptargs = {"frame": mock_frame, "path": mock_path}
 
         event.post_write(scriptargs)
 
-        mock_logger.info.assert_called_with("Wrote frame %s to %s", mock_frame, mock_path)
+        mock_logger.info.assert_called_with(
+            "Wrote frame %s to %s", mock_frame, mock_path
+        )
 
     def test_post_write__no_path(self, init_event, mocker, mock_logger):
         """Test when the output path is unknown."""
@@ -223,15 +235,18 @@ class Test_RopRenderEvent:
         mock_logger.info.assert_called()
 
 
-@pytest.mark.parametrize("type_name, return_value, expected", [
-    ("geometry", None, ("sopoutput", )),
-    ("rop_geometry", None, ("sopoutput", )),
-    ("alembic", None, ("filename", )),
-    ("rop_alembic", None, ("filename", )),
-    ("ifd", True, ("soho_outputmode", "soho_diskfile")),
-    ("ifd", False, ("vm_picture", )),
-    (None, None, None),
-])
+@pytest.mark.parametrize(
+    "type_name, return_value, expected",
+    [
+        ("geometry", None, ("sopoutput",)),
+        ("rop_geometry", None, ("sopoutput",)),
+        ("alembic", None, ("filename",)),
+        ("rop_alembic", None, ("filename",)),
+        ("ifd", True, ("soho_outputmode", "soho_diskfile")),
+        ("ifd", False, ("vm_picture",)),
+        (None, None, None),
+    ],
+)
 def test__get_target_file(mocker, type_name, return_value, expected):
     """Test ht.events.events.rop_render._get_target_file."""
     mock_type = mocker.MagicMock(spec=hou.NodeType)

@@ -271,19 +271,20 @@ class Test_AOV:
 
     # _light_export_planes
 
-    @pytest.mark.parametrize("export_value", [
-        consts.LIGHTEXPORT_PER_LIGHT_KEY,
-        consts.LIGHTEXPORT_SINGLE_KEY,
-        consts.LIGHTEXPORT_PER_CATEGORY_KEY,
-        "foo",
-        None
-    ])
+    @pytest.mark.parametrize(
+        "export_value",
+        [
+            consts.LIGHTEXPORT_PER_LIGHT_KEY,
+            consts.LIGHTEXPORT_SINGLE_KEY,
+            consts.LIGHTEXPORT_PER_CATEGORY_KEY,
+            "foo",
+            None,
+        ],
+    )
     def test__light_export_planes(self, init_aov, mocker, export_value):
         mocker.patch(
             "ht.sohohooks.aovs.aov.AOV.lightexport",
-            new_callable=mocker.PropertyMock(
-                return_value=export_value
-            ),
+            new_callable=mocker.PropertyMock(return_value=export_value),
         )
         mock_scope = mocker.patch(
             "ht.sohohooks.aovs.aov.AOV.lightexport_scope",
@@ -295,7 +296,9 @@ class Test_AOV:
         )
         mock_write_light = mocker.patch("ht.sohohooks.aovs.aov._write_light")
         mock_write_single = mocker.patch("ht.sohohooks.aovs.aov._write_single_channel")
-        mock_write_per_category = mocker.patch("ht.sohohooks.aovs.aov._write_per_category")
+        mock_write_per_category = mocker.patch(
+            "ht.sohohooks.aovs.aov._write_per_category"
+        )
         mock_write_to_ifd = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
 
         inst = init_aov()
@@ -322,19 +325,38 @@ class Test_AOV:
 
             if export_value is not None:
                 mock_cam.objectList.assert_called_with(
-                    "objlist:light", mock_now, mock_scope.return_value, mock_select.return_value
+                    "objlist:light",
+                    mock_now,
+                    mock_scope.return_value,
+                    mock_select.return_value,
                 )
 
             if export_value == consts.LIGHTEXPORT_PER_LIGHT_KEY:
                 mock_write_light.assert_has_calls(
                     [
-                        mocker.call(mock_light1, mock_channel, data, mock_wrangler, mock_cam, mock_now),
-                        mocker.call(mock_light2, mock_channel, data, mock_wrangler, mock_cam, mock_now),
+                        mocker.call(
+                            mock_light1,
+                            mock_channel,
+                            data,
+                            mock_wrangler,
+                            mock_cam,
+                            mock_now,
+                        ),
+                        mocker.call(
+                            mock_light2,
+                            mock_channel,
+                            data,
+                            mock_wrangler,
+                            mock_cam,
+                            mock_now,
+                        ),
                     ]
                 )
 
             elif export_value == consts.LIGHTEXPORT_SINGLE_KEY:
-                mock_write_single.assert_called_with(lights, data, mock_wrangler, mock_cam, mock_now)
+                mock_write_single.assert_called_with(
+                    lights, data, mock_wrangler, mock_cam, mock_now
+                )
 
             elif export_value == consts.LIGHTEXPORT_PER_CATEGORY_KEY:
                 mock_write_per_category.assert_called_with(
@@ -342,13 +364,18 @@ class Test_AOV:
                 )
 
             elif export_value is None:
-                mock_write_to_ifd.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
+                mock_write_to_ifd.assert_called_with(
+                    data, mock_wrangler, mock_cam, mock_now
+                )
 
-    @pytest.mark.parametrize("variable, vextype, raises", [
-        (None, None, pytest.raises(aov.MissingVariableError)),
-        ("variable", None, pytest.raises(aov.MissingVexTypeError)),
-        ("variable", "vextype", does_not_raise()),
-    ])
+    @pytest.mark.parametrize(
+        "variable, vextype, raises",
+        [
+            (None, None, pytest.raises(aov.MissingVariableError)),
+            ("variable", None, pytest.raises(aov.MissingVexTypeError)),
+            ("variable", "vextype", does_not_raise()),
+        ],
+    )
     def test__verify_internal_data(self, init_aov, mocker, variable, vextype, raises):
         """Test verifying internal data."""
         mocker.patch(
@@ -700,8 +727,7 @@ class Test_AOV:
         }
         assert result == expected
 
-    def test_as_data__values_exports_components(self, init_aov,
-                                                mocker):
+    def test_as_data__values_exports_components(self, init_aov, mocker):
         """Test converting to a data dictionary with exports and components."""
         mocker.patch.object(aov.AOV, "variable", new_callable=mocker.PropertyMock)
         mocker.patch.object(aov.AOV, "vextype", new_callable=mocker.PropertyMock)
@@ -1493,6 +1519,8 @@ class Test_AOVGroup:
 
 
 class Test_IntrinsicAOVGroup:
+    """Test the ht.sohohooks.aovs.IntrinsicAOVGroup object."""
+
     def test___init__(self, mocker):
         mock_super_init = mocker.patch("ht.sohohooks.aovs.aov.AOVGroup.__init__")
 
@@ -1505,6 +1533,8 @@ class Test_IntrinsicAOVGroup:
 
 
 class Test__build_category_map:
+    """Test ht.sohohooks.aovs._build_category_map."""
+
     def test_no_parm(self, mocker):
         mock_light1 = mocker.MagicMock()
 
@@ -1555,73 +1585,75 @@ class Test__build_category_map:
         }
 
 
-class Test__call_post_defplane:
-    def test(self, mocker, patch_soho):
-        mock_variable = mocker.MagicMock(spec=str)
-        mock_vextype = mocker.MagicMock(spec=str)
-        mock_planefile = mocker.MagicMock(spec=str)
-        mock_lightexport = mocker.MagicMock(spec=str)
+def test__call_post_defplane(mocker, patch_soho):
+    """Test ht.sohohooks.aovs._call_post_defplane."""
+    mock_variable = mocker.MagicMock(spec=str)
+    mock_vextype = mocker.MagicMock(spec=str)
+    mock_planefile = mocker.MagicMock(spec=str)
+    mock_lightexport = mocker.MagicMock(spec=str)
 
-        data = {
-            consts.VARIABLE_KEY: mock_variable,
-            consts.VEXTYPE_KEY: mock_vextype,
-            consts.PLANEFILE_KEY: mock_planefile,
-            consts.LIGHTEXPORT_KEY: mock_lightexport,
-        }
+    data = {
+        consts.VARIABLE_KEY: mock_variable,
+        consts.VEXTYPE_KEY: mock_vextype,
+        consts.PLANEFILE_KEY: mock_planefile,
+        consts.LIGHTEXPORT_KEY: mock_lightexport,
+    }
 
-        mock_wrangler = mocker.MagicMock()
-        mock_cam = mocker.MagicMock()
-        mock_now = mocker.MagicMock(spec=float)
+    mock_wrangler = mocker.MagicMock()
+    mock_cam = mocker.MagicMock()
+    mock_now = mocker.MagicMock(spec=float)
 
-        aov._call_post_defplane(data, mock_wrangler, mock_cam, mock_now)
+    aov._call_post_defplane(data, mock_wrangler, mock_cam, mock_now)
 
-        patch_soho.IFDhooks.call.assert_called_with(
-            "post_defplane",
-            mock_variable,
-            mock_vextype,
-            -1,
-            mock_wrangler,
-            mock_cam,
-            mock_now,
-            mock_planefile,
-            mock_lightexport,
-        )
+    patch_soho.IFDhooks.call.assert_called_with(
+        "post_defplane",
+        mock_variable,
+        mock_vextype,
+        -1,
+        mock_wrangler,
+        mock_cam,
+        mock_now,
+        mock_planefile,
+        mock_lightexport,
+    )
 
 
-class Test__call_pre_defplane:
-    def test(self, mocker, patch_soho):
-        mock_variable = mocker.MagicMock(spec=str)
-        mock_vextype = mocker.MagicMock(spec=str)
-        mock_planefile = mocker.MagicMock(spec=str)
-        mock_lightexport = mocker.MagicMock(spec=str)
+def test__call_pre_defplane(mocker, patch_soho):
+    """Test ht.sohohooks.aovs._call_pre_defplane."""
+    mock_variable = mocker.MagicMock(spec=str)
+    mock_vextype = mocker.MagicMock(spec=str)
+    mock_planefile = mocker.MagicMock(spec=str)
+    mock_lightexport = mocker.MagicMock(spec=str)
 
-        data = {
-            consts.VARIABLE_KEY: mock_variable,
-            consts.VEXTYPE_KEY: mock_vextype,
-            consts.PLANEFILE_KEY: mock_planefile,
-            consts.LIGHTEXPORT_KEY: mock_lightexport,
-        }
+    data = {
+        consts.VARIABLE_KEY: mock_variable,
+        consts.VEXTYPE_KEY: mock_vextype,
+        consts.PLANEFILE_KEY: mock_planefile,
+        consts.LIGHTEXPORT_KEY: mock_lightexport,
+    }
 
-        mock_wrangler = mocker.MagicMock()
-        mock_cam = mocker.MagicMock()
-        mock_now = mocker.MagicMock(spec=float)
+    mock_wrangler = mocker.MagicMock()
+    mock_cam = mocker.MagicMock()
+    mock_now = mocker.MagicMock(spec=float)
 
-        aov._call_pre_defplane(data, mock_wrangler, mock_cam, mock_now)
+    aov._call_pre_defplane(data, mock_wrangler, mock_cam, mock_now)
 
-        patch_soho.IFDhooks.call.assert_called_with(
-            "pre_defplane",
-            mock_variable,
-            mock_vextype,
-            -1,
-            mock_wrangler,
-            mock_cam,
-            mock_now,
-            mock_planefile,
-            mock_lightexport,
-        )
+    patch_soho.IFDhooks.call.assert_called_with(
+        "pre_defplane",
+        mock_variable,
+        mock_vextype,
+        -1,
+        mock_wrangler,
+        mock_cam,
+        mock_now,
+        mock_planefile,
+        mock_lightexport,
+    )
 
 
 class Test__write_data_to_ifd:
+    """Test ht.sohohooks.aovs._write_data_to_ifd."""
+
     def test_pre_defplane(self, mocker, patch_soho):
         mock_pre = mocker.patch(
             "ht.sohohooks.aovs.aov._call_pre_defplane", return_value=True
@@ -1806,6 +1838,7 @@ class Test__write_data_to_ifd:
 
 
 class Test__write_light:
+    """Test ht.sohohooks.aovs._write_light."""
     def test_suffix_prefix(self, mocker, patch_soho):
         mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
 
@@ -1816,7 +1849,7 @@ class Test__write_light:
 
         mock_light.getDefaultedString.return_value = [mock_suffix]
 
-        def eval_string(name, now, prefix):
+        def eval_string(name, now, prefix):  # pylint: disable=unused-argument
             """Fake string evaluation that appends a value."""
             prefix.append(mock_prefix)
             return True
@@ -1944,6 +1977,7 @@ class Test__write_light:
 
 
 class Test__write_per_category:
+    """Test ht.sohohooks.aovs._write_per_category."""
     def test_no_category(self, mocker):
         mock_build = mocker.patch("ht.sohohooks.aovs.aov._build_category_map")
         mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
@@ -2017,6 +2051,7 @@ class Test__write_per_category:
 
 
 class Test__write_single_channel:
+    """Test ht.sohohooks.aovs._write_single_channel."""
     def test_lights(self, mocker):
         mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
 
