@@ -53,7 +53,7 @@ def restore_update_mode(update_mode: hou.updateMode):
 
 
 @contextlib.contextmanager
-def timer(label: Optional[str]=None):
+def timer(label: Optional[str] = None):
     """Context manager for outputting timing information.
 
     >>> with timer("sleeping"):

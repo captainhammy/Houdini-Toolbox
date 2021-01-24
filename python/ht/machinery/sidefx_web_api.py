@@ -56,7 +56,11 @@ class _Service:
         return _APIFunction(attr_name, self)
 
     def get_available_builds(
-        self, product: str, version: Optional[str] = None, platform: Optional[str] = None, only_production: bool = False
+        self,
+        product: str,
+        version: Optional[str] = None,
+        platform: Optional[str] = None,
+        only_production: bool = False,
     ) -> List[dict]:
         """Get a list of available builds matching the criteria.
 
@@ -80,7 +84,9 @@ class _Service:
 
         return releases_list
 
-    def get_daily_build_download(self, product: str, version: str, build: str, platform: str) -> dict:
+    def get_daily_build_download(
+        self, product: str, version: str, build: str, platform: str
+    ) -> dict:
         """Get the release information for a specific build.
 
         :param product: The name of the product to download.
@@ -156,7 +162,9 @@ class AuthorizationError(Exception):
 # =============================================================================
 
 
-def _get_access_token_and_expiry_time(access_token_url: str, client_id: str, client_secret_key: str) -> Tuple[str, float]:
+def _get_access_token_and_expiry_time(
+    access_token_url: str, client_id: str, client_secret_key: str
+) -> Tuple[str, float]:
     """Given an API client (id and secret key) that is allowed to make API
     calls, return an access token that can be used to make calls.
 
@@ -169,7 +177,7 @@ def _get_access_token_and_expiry_time(access_token_url: str, client_id: str, cli
     response = requests.post(
         access_token_url,
         headers={
-            "Authorization": u"Basic {}".format(
+            "Authorization": "Basic {}".format(
                 base64.b64encode(
                     "{}:{}".format(client_id, client_secret_key).encode()
                 ).decode("utf-8")
@@ -344,7 +352,7 @@ def _verify_file_checksum(file_path: str, hash_value: str):
 def download_build(  # pylint: disable=too-many-locals
     download_path: str,
     version: str,
-    build: Optional[str]=None,
+    build: Optional[str] = None,
     product: str = "houdini",
     platform: str = "linux",
     only_production: bool = False,
@@ -400,7 +408,13 @@ def download_build(  # pylint: disable=too-many-locals
             )
         )
 
-        with tqdm(desc="Downloading build", total=file_size, unit='MB', unit_scale=True, unit_divisor=1024) as progress_bar:
+        with tqdm(
+            desc="Downloading build",
+            total=file_size,
+            unit="MB",
+            unit_scale=True,
+            unit_divisor=1024,
+        ) as progress_bar:
             with open(target_path, "wb") as handle:
                 for chunk in request.iter_content(chunk_size=chunk_size):
                     progress_bar.update(chunk_size)
@@ -418,7 +432,10 @@ def download_build(  # pylint: disable=too-many-locals
 
 
 def list_builds(
-    version: Optional[str] = None, product: str = "houdini", platform: str = "linux", only_production: bool = False
+    version: Optional[str] = None,
+    product: str = "houdini",
+    platform: str = "linux",
+    only_production: bool = False,
 ):
     """Display a table of builds available to download.
 

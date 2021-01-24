@@ -36,7 +36,13 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 
     """
 
-    def __init__(self, base_logger: logging.Logger, dialog: bool = False, node: Optional[hou.Node] = None, status_bar: bool = False):
+    def __init__(
+        self,
+        base_logger: logging.Logger,
+        dialog: bool = False,
+        node: Optional[hou.Node] = None,
+        status_bar: bool = False,
+    ):
         super().__init__(base_logger, {})
 
         self._dialog = dialog
@@ -48,7 +54,13 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
     # --------------------------------------------------------------------------
 
     @classmethod
-    def from_name(cls, name: str, dialog: bool = False, node: Optional[hou.Node] = None, status_bar: bool = False) -> HoudiniLoggerAdapter:
+    def from_name(
+        cls,
+        name: str,
+        dialog: bool = False,
+        node: Optional[hou.Node] = None,
+        status_bar: bool = False,
+    ) -> HoudiniLoggerAdapter:
         """Create a new HoudiniLoggerAdapter from a name.
 
         This is a convenience function around the following code:
@@ -227,6 +239,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 # ==============================================================================
 # NON-PUBLIC FUNCTIONS
 # ==============================================================================
+
 
 @contextmanager
 def _patch_logger(logger: logging.Logger):

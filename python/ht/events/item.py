@@ -28,7 +28,13 @@ class HoudiniEventItem:
 
     """
 
-    def __init__(self, callables: Union[List[Callable], Tuple[Callable]], name: str = None, priority: int = 1, stat_tags: List[str] = None):
+    def __init__(
+        self,
+        callables: Union[List[Callable], Tuple[Callable]],
+        name: str = None,
+        priority: int = 1,
+        stat_tags: List[str] = None,
+    ):
         self._callables = list(callables)
         self._name = name
         self._priority = priority
@@ -145,10 +151,14 @@ class ExclusiveHoudiniEventItem(HoudiniEventItem):
     # Name to item mapping.
     _exclusive_map = {}
 
-    def __init__(self, callables: Union[List[Callable], Tuple[Callable]], name: str = None, priority: int = 1, stat_tags: List[str] = None):
-        super().__init__(
-            callables, name, priority, stat_tags
-        )
+    def __init__(
+        self,
+        callables: Union[List[Callable], Tuple[Callable]],
+        name: str = None,
+        priority: int = 1,
+        stat_tags: List[str] = None,
+    ):
+        super().__init__(callables, name, priority, stat_tags)
 
         # Get the current entry (or add this item if one isn't set.)
         exclusive_item = self._exclusive_map.setdefault(name, self)

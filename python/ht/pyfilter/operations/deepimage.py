@@ -169,7 +169,7 @@ class SetDeepImage(PyFilterOperation):
         compression: Optional[int] = None,
         depth_planes: Optional[Union[List[str], str]] = None,
         mipmaps: Optional[bool] = None,
-        ofsize: Optional[int]=None,
+        ofsize: Optional[int] = None,
         ofstorage: Optional[str] = None,
         pzstorage: Optional[str] = None,
         zbias: Optional[float] = None,

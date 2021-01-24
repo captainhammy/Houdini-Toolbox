@@ -29,7 +29,9 @@ class PointCloud:
 
     """
 
-    def __init__(self, geometry: hou.Geometry, pattern: Optional[str] = None, leaf_size: int = 10):
+    def __init__(
+        self, geometry: hou.Geometry, pattern: Optional[str] = None, leaf_size: int = 10
+    ):
         # The source geometry. We need this to be able to glob points.
         self._geometry = geometry
 
@@ -111,7 +113,9 @@ class PointCloud:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def find_all_close_points(self, position: hou.Vector3, maxdist: float) -> Tuple[hou.Point]:
+    def find_all_close_points(
+        self, position: hou.Vector3, maxdist: float
+    ) -> Tuple[hou.Point]:
         """Find all points within the maxdist from the position.
 
         :param position: A search position.
@@ -133,7 +137,12 @@ class PointCloud:
         # Return any points that are found.
         return self._get_result_points(result[0])
 
-    def find_nearest_points(self, position: hou.Vector3, num_points: int = 1, maxdist: Optional[float] = None) -> Tuple[hou.Point]:
+    def find_nearest_points(
+        self,
+        position: hou.Vector3,
+        num_points: int = 1,
+        maxdist: Optional[float] = None,
+    ) -> Tuple[hou.Point]:
         """Find the closest N points to the position.
 
         :param position: A search position.

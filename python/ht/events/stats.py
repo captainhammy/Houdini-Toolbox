@@ -92,7 +92,9 @@ class HoudiniEventStats(metaclass=_StatsMeta):
 
     """
 
-    def __init__(self, name: str, tags: Optional[List[str]] = None, post_report: bool = False):
+    def __init__(
+        self, name: str, tags: Optional[List[str]] = None, post_report: bool = False
+    ):
         self._last_run_time = 0
         self._last_started = 0
         self._name = name
@@ -199,10 +201,10 @@ class HoudiniEventItemStats(HoudiniEventStats):
 
     """
 
-    def __init__(self, name: str, tags: Optional[List[str]] = None, post_report: bool = False):
-        super().__init__(
-            name, tags=tags, post_report=post_report
-        )
+    def __init__(
+        self, name: str, tags: Optional[List[str]] = None, post_report: bool = False
+    ):
+        super().__init__(name, tags=tags, post_report=post_report)
 
         self._item_stats = OrderedDict()
 
@@ -270,7 +272,9 @@ class HoudiniEventItemStats(HoudiniEventStats):
 # =============================================================================
 
 
-def _get_matching_stats(stats: List[HoudiniEventStats], tags: List[str]) -> Tuple[HoudiniEventStats]:
+def _get_matching_stats(
+    stats: List[HoudiniEventStats], tags: List[str]
+) -> Tuple[HoudiniEventStats]:
     """Filter a list of stats for ones which match the tags.
 
     :param stats: An list of stats objects to search.

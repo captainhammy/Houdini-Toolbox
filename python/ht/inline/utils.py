@@ -61,7 +61,12 @@ _GEOMETRY_TYPE_MAP = {
 _GROUP_ATTRIB_MAP = {hou.VertexGroup: 0, hou.PointGroup: 1, hou.PrimGroup: 2}
 
 # Mapping between group types and corresponding GA_GroupType values.
-_GROUP_TYPE_MAP = {hou.PointGroup: 0, hou.PrimGroup: 1, hou.EdgeGroup: 2, hou.VertexGroup: 3}
+_GROUP_TYPE_MAP = {
+    hou.PointGroup: 0,
+    hou.PrimGroup: 1,
+    hou.EdgeGroup: 2,
+    hou.VertexGroup: 3,
+}
 
 
 # =============================================================================
@@ -116,7 +121,9 @@ def clean_string_values(values: List[str]) -> Tuple[str]:
     return tuple([string_decode(val) for val in values if val])
 
 
-def find_attrib(geometry: hou.Geometry, attrib_type: hou.attribType, name: str) -> Optional[hou.Attrib]:
+def find_attrib(
+    geometry: hou.Geometry, attrib_type: hou.attribType, name: str
+) -> Optional[hou.Attrib]:
     """Find an attribute with a given name and type on the geometry.
 
     :param geometry: The geometry to find an attribute on.
@@ -140,7 +147,9 @@ def find_attrib(geometry: hou.Geometry, attrib_type: hou.attribType, name: str) 
     raise ValueError("Expected hou.attribType, got {}".format(type(attrib_type)))
 
 
-def find_group(geometry: hou.Geometry, group_type: int, name: str) -> Optional[Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup, hou.VertexGroup]]:
+def find_group(
+    geometry: hou.Geometry, group_type: int, name: str
+) -> Optional[Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup, hou.VertexGroup]]:
     """Find a group with a given name and type.
 
     group_type corresponds to the integer returned by _get_group_type()
@@ -200,7 +209,9 @@ def get_attrib_owner(attribute_type: hou.attribType) -> int:
         raise ValueError("Invalid attribute type: {}".format(attribute_type)) from exc
 
 
-def get_attrib_owner_from_geometry_entity_type(entity_type: Union[hou.Point, hou.Prim, hou.Vertex]) -> int:
+def get_attrib_owner_from_geometry_entity_type(
+    entity_type: Union[hou.Point, hou.Prim, hou.Vertex]
+) -> int:
     """Get an HDK compatible attribute owner value from a geometry class.
 
     The type can be of hou.Geometry, hou.Point, hou.Prim (or subclasses) or hou.Vertex.
@@ -258,7 +269,9 @@ def get_attrib_storage(data_type: hou.attribType) -> int:
         raise ValueError("Invalid data type: {}".format(data_type)) from exc
 
 
-def get_entity_data(entity: Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex]) -> Tuple[Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex], hou.Geometry, int]:
+def get_entity_data(
+    entity: Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex]
+) -> Tuple[Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex], hou.Geometry, int]:
     """Get entity data from a list of entities.
 
     :param entity: A geometry entity.
@@ -286,7 +299,11 @@ def get_entity_data(entity: Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex]
     return entity.__class__, geometry, entity_num
 
 
-def get_entity_data_from_list(entities: List[Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex]]) -> Tuple[Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex], hou.Geometry, List[int]]:
+def get_entity_data_from_list(
+    entities: List[Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex]]
+) -> Tuple[
+    Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex], hou.Geometry, List[int]
+]:
     """Get entity data from a list of entities.
 
     :param entities: List of geometry entities.
@@ -344,7 +361,9 @@ def get_group_type(group: Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup]) -
         raise ValueError("Invalid group type") from exc
 
 
-def get_multiparm_containing_folders(name: str, parm_template_group: hou.ParmTemplateGroup) -> Tuple[hou.FolderParmTemplate]:
+def get_multiparm_containing_folders(
+    name: str, parm_template_group: hou.ParmTemplateGroup
+) -> Tuple[hou.FolderParmTemplate]:
     """Given a parameter template name, return a list of containing multiparms.
 
     If the name is contained in one or more multiparm folders, the returned templates
@@ -385,7 +404,9 @@ def get_multiparm_containing_folders(name: str, parm_template_group: hou.ParmTem
     return tuple(containing_folders)
 
 
-def get_multiparm_container_offsets(name: str, parm_template_group: hou.ParmTemplateGroup) -> Tuple[int]:
+def get_multiparm_container_offsets(
+    name: str, parm_template_group: hou.ParmTemplateGroup
+) -> Tuple[int]:
     """Given a parameter template name, return a list of containing multiparm folder
     offsets.
 
@@ -445,7 +466,9 @@ def get_nodes_from_paths(paths: List[str]) -> Tuple[hou.Node]:
     return tuple(hou.node(path) for path in paths if path)
 
 
-def get_points_from_list(geometry: hou.Geometry, point_list: List[int]) -> Tuple[hou.Point]:
+def get_points_from_list(
+    geometry: hou.Geometry, point_list: List[int]
+) -> Tuple[hou.Point]:
     """Convert a list of point numbers to hou.Point objects.
 
     :param geometry: The geometry to get points for.
@@ -464,7 +487,9 @@ def get_points_from_list(geometry: hou.Geometry, point_list: List[int]) -> Tuple
     return geometry.globPoints(point_str)
 
 
-def get_prims_from_list(geometry: hou.Geometry, prim_list: List[int]) -> Tuple[hou.Prim]:
+def get_prims_from_list(
+    geometry: hou.Geometry, prim_list: List[int]
+) -> Tuple[hou.Prim]:
     """Convert a list of primitive numbers to hou.Prim objects.
 
     :param geometry: The geometry to get prims for.
@@ -493,7 +518,11 @@ def is_parm_template_multiparm_folder(parm_template: hou.ParmTemplate) -> bool:
     if not isinstance(parm_template, hou.FolderParmTemplate):
         return False
 
-    return parm_template.folderType() in (hou.folderType.MultiparmBlock, hou.folderType.ScrollingMultiparmBlock, hou.folderType.TabbedMultiparmBlock)
+    return parm_template.folderType() in (
+        hou.folderType.MultiparmBlock,
+        hou.folderType.ScrollingMultiparmBlock,
+        hou.folderType.TabbedMultiparmBlock,
+    )
 
 
 def string_decode(value: Union[bytes, str]) -> str:
@@ -538,8 +567,6 @@ def validate_multiparm_resolve_values(name: str, indices: Union[List[int], Tuple
     if multi_token_count > len(indices):
         raise ValueError(
             "Not enough indices provided. Parameter {} expects {}, {} token(s) provided.".format(
-                name,
-                multi_token_count,
-                len(indices)
+                name, multi_token_count, len(indices)
             )
         )

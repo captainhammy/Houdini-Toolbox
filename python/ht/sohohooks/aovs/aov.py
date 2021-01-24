@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Standard Library Imports
-from __future__ import  annotations
+from __future__ import annotations
 import copy
 from typing import TYPE_CHECKING, Any, List
 
@@ -119,7 +119,9 @@ class AOV:
     # NON-PUBLIC METHODS
     # -------------------------------------------------------------------------
 
-    def _light_export_planes(self, data: dict, wrangler: Any, cam: soho.SohoObject, now: float):
+    def _light_export_planes(
+        self, data: dict, wrangler: Any, cam: soho.SohoObject, now: float
+    ):
         """Handle exporting the image planes based on their export settings.
 
         :param data: The data to write.
@@ -778,7 +780,9 @@ def _build_category_map(lights: List[soho.SohoObject], now: float) -> dict:
     return category_map
 
 
-def _call_post_defplane(data: dict, wrangler: Any, cam: soho.SohoObject, now: float) -> bool:
+def _call_post_defplane(
+    data: dict, wrangler: Any, cam: soho.SohoObject, now: float
+) -> bool:
     """Call the post_defplane hook.
 
     :param data: AOV data.
@@ -803,7 +807,9 @@ def _call_post_defplane(data: dict, wrangler: Any, cam: soho.SohoObject, now: fl
     )
 
 
-def _call_pre_defplane(data: dict, wrangler: Any, cam: soho.SohoObject, now: float) -> bool:
+def _call_pre_defplane(
+    data: dict, wrangler: Any, cam: soho.SohoObject, now: float
+) -> bool:
     """Call the pre_defplane hook.
 
     :param data: AOV data.
@@ -886,7 +892,14 @@ def _write_data_to_ifd(data: dict, wrangler: Any, cam: soho.SohoObject, now: flo
     IFDapi.ray_end()
 
 
-def _write_light(light: soho.SohoObject, base_channel: str, data: dict, wrangler: Any, cam: soho.SohoObject, now: float):
+def _write_light(
+    light: soho.SohoObject,
+    base_channel: str,
+    data: dict,
+    wrangler: Any,
+    cam: soho.SohoObject,
+    now: float,
+):
     """Write a light to the ifd.
 
     :param light: The light to write.
@@ -935,7 +948,14 @@ def _write_light(light: soho.SohoObject, base_channel: str, data: dict, wrangler
     _write_data_to_ifd(data, wrangler, cam, now)
 
 
-def _write_per_category(lights: List[soho.SohoObject], base_channel: str, data: dict, wrangler: Any, cam: soho.SohoObject, now: float):
+def _write_per_category(
+    lights: List[soho.SohoObject],
+    base_channel: str,
+    data: dict,
+    wrangler: Any,
+    cam: soho.SohoObject,
+    now: float,
+):
     """Write lights to the ifd based on their category.
 
     :param lights: The light to write.
@@ -970,7 +990,13 @@ def _write_per_category(lights: List[soho.SohoObject], base_channel: str, data: 
         _write_data_to_ifd(data, wrangler, cam, now)
 
 
-def _write_single_channel(lights: List[soho.SohoObject], data: dict, wrangler: Any, cam: soho.SohoObject, now: float):
+def _write_single_channel(
+    lights: List[soho.SohoObject],
+    data: dict,
+    wrangler: Any,
+    cam: soho.SohoObject,
+    now: float,
+):
     """Write lights to the ifd as a single channel.
 
     :param lights: The lights to write.

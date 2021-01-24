@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <shelfDocument>
   <!-- This file contains definitions of shelves, toolbars, and tools.
  It should not be hand-edited when it is being used by the application.
@@ -34,14 +34,16 @@ if target_node is not None:
         options,
         message="Choose help card options",
         num_visible_rows=len(options),
-        clear_on_cancel=True
+        clear_on_cancel=True,
     )
 
     inputs = 0 in choices
     related = 1 in choices
     using = 2 in choices
 
-    help_text = helpcard.generate_help_card(target_node, inputs=inputs, related=related, using=using)
+    help_text = helpcard.generate_help_card(
+        target_node, inputs=inputs, related=related, using=using
+    )
 
     type_definition = target_node.type().definition()
 
@@ -54,7 +56,7 @@ if target_node is not None:
             overwrite = hou.ui.displayMessage(
                 "Help card exists.  Overwrite?",
                 ("Yes", "No"),
-                severity=hou.severityType.Warning
+                severity=hou.severityType.Warning,
             )
 
             if overwrite == 0:

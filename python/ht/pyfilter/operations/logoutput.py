@@ -26,7 +26,9 @@ class LogOutput(PyFilterOperation):
     # METHODS
     # -------------------------------------------------------------------------
 
-    def filter_error(self, level: int, message: str, prefix: str) -> bool:  # pylint: disable=no-self-use
+    def filter_error( # pylint: disable=no-self-use
+        self, level: int, message: str, prefix: str
+    ) -> bool:
         """Handle message outputting.
 
         :param level: The output level.

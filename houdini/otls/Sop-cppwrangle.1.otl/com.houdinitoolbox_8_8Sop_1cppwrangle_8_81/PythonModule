@@ -26,9 +26,16 @@ if TYPE_CHECKING:
 # =============================================================================
 
 _COMMON_INCLUDES = {
-    "base" : ["GU/GU_Detail.h", "OP/OP_Node.h"],
+    "base": ["GU/GU_Detail.h", "OP/OP_Node.h"],
     "nodes": ["OP/OP_Director.h", "PRM/PRM_Parm.h"],
-    "geo": ["GA/GA_AttributeRefMap.h", "GEO/GEO_Face.h", "GEO/GEO_PointTree.h", "GQ/GQ_Detail.h", "GU/GU_PackedGeometry.h", "GU/GU_PrimPacked.h"],
+    "geo": [
+        "GA/GA_AttributeRefMap.h",
+        "GEO/GEO_Face.h",
+        "GEO/GEO_PointTree.h",
+        "GQ/GQ_Detail.h",
+        "GU/GU_PackedGeometry.h",
+        "GU/GU_PrimPacked.h",
+    ],
 }
 
 _DEFAULT_STRUCTS = [
@@ -44,6 +51,7 @@ _DEFAULT_STRUCTS = [
 # =============================================================================
 # CLASSES
 # =============================================================================
+
 
 class CPPWrangleCompilerHook(inlinecpp.HcustomCompilerHook):
     """Custom hcustom compiler hook for use with C++ Wrangle.
@@ -66,10 +74,7 @@ class CPPWrangleCompilerHook(inlinecpp.HcustomCompilerHook):
         :return: The default shared library file.
 
         """
-        return os.path.join(
-            self.target_directory,
-            self._houdini_path_subdir_name()
-        )
+        return os.path.join(self.target_directory, self._houdini_path_subdir_name())
 
     def find_shared_library(self, shared_library_file_name: str) -> str:
         """Find a shared library with a given name.
@@ -79,8 +84,7 @@ class CPPWrangleCompilerHook(inlinecpp.HcustomCompilerHook):
 
         """
         path = os.path.join(
-            self.default_shared_library_directory(),
-            shared_library_file_name
+            self.default_shared_library_directory(), shared_library_file_name
         )
 
         return path if os.path.isfile(path) else None
@@ -89,6 +93,7 @@ class CPPWrangleCompilerHook(inlinecpp.HcustomCompilerHook):
 # =============================================================================
 # EXCEPTIONS
 # =============================================================================
+
 
 class NoFunctionSourcesError(Exception):
     """Exception to indicate that there were no valid functions when
@@ -100,6 +105,7 @@ class NoFunctionSourcesError(Exception):
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
+
 
 def _get_compile_target_folder(node: hou.SopNode) -> Optional[str]:
     """Determine which folder to compile to.
@@ -233,7 +239,9 @@ def _get_structs(node: hou.SopNode) -> List[Tuple[str, str]]:
 # =============================================================================
 
 
-def build_library(node: hou.SopNode) -> hutil.cppinline._Library:  # pylint: disable=protected-access
+def build_library(
+    node: hou.SopNode,
+) -> hutil.cppinline._Library:  # pylint: disable=protected-access
     """Build the library based on specified data.
 
     :param node: A C++ Wrangle node.

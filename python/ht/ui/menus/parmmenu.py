@@ -151,10 +151,10 @@ def convert_relative_to_absolute_path_context(scriptargs: dict) -> bool:
 def convert_relative_to_absolute_path(scriptargs: dict):
     """Convert any absolute node paths to absolute paths.
 
-      :param scriptargs: kwargs dict from PARMmenu entry.
-      :return:
+    :param scriptargs: kwargs dict from PARMmenu entry.
+    :return:
 
-      """
+    """
     parms = scriptargs["parms"]
 
     for parm in parms:

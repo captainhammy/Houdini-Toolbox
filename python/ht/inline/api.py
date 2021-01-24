@@ -96,15 +96,15 @@ def _get_names_in_folder(parent_template: hou.FolderParmTemplate) -> StringTuple
             # If the template is a folder (but not a multiparm folder) then we
             # need to get the parms inside it as well since they are technically siblings.
             if not utils.is_parm_template_multiparm_folder(parm_template):
-            # if parm_template.folderType() in (hou.folderType.Simple, hou.folderType.Collapsible):
+                # if parm_template.folderType() in (hou.folderType.Simple, hou.folderType.Collapsible):
                 names.extend(_get_names_in_folder(parm_template))
 
             else:
-            # elif utils.is_parm_template_multiparm_folder(parm_template):
+                # elif utils.is_parm_template_multiparm_folder(parm_template):
                 names.append(parm_template.name())
 
         # else:
-            #     names.append(parm_template.name())
+        #     names.append(parm_template.name())
 
         else:
             names.append(parm_template.name())
@@ -404,7 +404,9 @@ def num_prim_vertices(prim: hou.Prim) -> int:
     return prim.intrinsicValue("vertexcount")
 
 
-def sort_geometry_by_values(geometry: hou.Geometry, geometry_type: hou.geometryType, values: List[float]):
+def sort_geometry_by_values(
+    geometry: hou.Geometry, geometry_type: hou.geometryType, values: List[float]
+):
     """Sort points or primitives based on a list of corresponding values.
 
     The list of values must be the same length as the number of geometry
@@ -447,7 +449,9 @@ def sort_geometry_by_values(geometry: hou.Geometry, geometry_type: hou.geometryT
     _cpp_methods.sortGeometryByValues(geometry, attrib_owner, c_values)
 
 
-def create_point_at_position(geometry: hou.Geometry, position: hou.Vector3) -> hou.Point:
+def create_point_at_position(
+    geometry: hou.Geometry, position: hou.Vector3
+) -> hou.Point:
     """Create a new point located at a position.
 
     :param geometry: The geometry to create a new point for.
@@ -558,7 +562,11 @@ def merge_prims(geometry: hou.Geometry, prims: List[hou.Prim]):
     _cpp_methods.mergePrims(geometry, prims[0].geometry(), c_values, len(c_values))
 
 
-def copy_attribute_values(source_element: GeometryEntity, source_attribs: List[hou.Attrib], target_element: GeometryEntity):
+def copy_attribute_values(
+    source_element: GeometryEntity,
+    source_attribs: List[hou.Attrib],
+    target_element: GeometryEntity,
+):
     """Copy a list of attributes from the source element to the target element.
 
     :param source_element: The element to copy from.
@@ -567,13 +575,17 @@ def copy_attribute_values(source_element: GeometryEntity, source_attribs: List[h
     :return:
 
     """
-    target_type, target_geometry, target_entity_num = utils.get_entity_data(target_element)
+    target_type, target_geometry, target_entity_num = utils.get_entity_data(
+        target_element
+    )
 
     # Make sure the target geometry is not read only.
     if target_geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    source_type, source_geometry, source_entity_num = utils.get_entity_data(source_element)
+    source_type, source_geometry, source_entity_num = utils.get_entity_data(
+        source_element
+    )
 
     # Get the attribute owners from the elements.
     target_owner = utils.get_attrib_owner_from_geometry_entity_type(target_type)
@@ -664,7 +676,11 @@ def batch_copy_attributes_by_indices(
     )
 
 
-def batch_copy_attrib_values(source_elements: GeometryEntityList, source_attribs: Union[List[hou.Attrib], Tuple[hou.Attrib]], target_elements: GeometryEntityList):
+def batch_copy_attrib_values(
+    source_elements: GeometryEntityList,
+    source_attribs: Union[List[hou.Attrib], Tuple[hou.Attrib]],
+    target_elements: GeometryEntityList,
+):
     """Copy a list of attributes from the source element to the target element.
 
     :param source_elements: The elements to copy from.
@@ -720,7 +736,11 @@ def batch_copy_attrib_values(source_elements: GeometryEntityList, source_attribs
     )
 
 
-def copy_group_membership(source_element: GeometryEntity, source_groups: ElementGroupList, target_element: GeometryEntity):
+def copy_group_membership(
+    source_element: GeometryEntity,
+    source_groups: ElementGroupList,
+    target_element: GeometryEntity,
+):
     """Copy group membership from the source element to the target element.
 
     :param source_element: The element to copy from.
@@ -729,13 +749,17 @@ def copy_group_membership(source_element: GeometryEntity, source_groups: Element
     :return:
 
     """
-    target_type, target_geometry, target_entity_num = utils.get_entity_data(target_element)
+    target_type, target_geometry, target_entity_num = utils.get_entity_data(
+        target_element
+    )
 
     # Make sure the target geometry is not read only.
     if target_geometry.isReadOnly():
         raise hou.GeometryPermissionError()
 
-    source_type, source_geometry, source_entity_num = utils.get_entity_data(source_element)
+    source_type, source_geometry, source_entity_num = utils.get_entity_data(
+        source_element
+    )
 
     # Get the attribute owners from the elements.
     target_owner = utils.get_attrib_owner_from_geometry_entity_type(target_type)
@@ -826,7 +850,11 @@ def batch_copy_group_membership_by_indices(
     )
 
 
-def batch_copy_group_membership(source_elements: GeometryEntityList, source_groups: ElementGroupList, target_elements: GeometryEntityList):
+def batch_copy_group_membership(
+    source_elements: GeometryEntityList,
+    source_groups: ElementGroupList,
+    target_elements: GeometryEntityList,
+):
     """Copy group membership from the source element to the target element.
 
     :param source_elements: The elements to copy from.
@@ -883,7 +911,14 @@ def batch_copy_group_membership(source_elements: GeometryEntityList, source_grou
 
 
 def copy_packed_prims_to_points(  # pylint: disable=too-many-arguments
-    geometry: hou.Geometry, source_geometry: hou.Geometry, prim_list: List[int], point_list: List[int], copy_attribs: bool = True, attribs: Optional[List[hou.Attrib]] = None, copy_groups: bool = True, groups: Optional[Union[hou.PointGroup, hou.PrimGroup]] = None,
+    geometry: hou.Geometry,
+    source_geometry: hou.Geometry,
+    prim_list: List[int],
+    point_list: List[int],
+    copy_attribs: bool = True,
+    attribs: Optional[List[hou.Attrib]] = None,
+    copy_groups: bool = True,
+    groups: Optional[Union[hou.PointGroup, hou.PrimGroup]] = None,
 ):
     """Copy packed primitives to points by index, optionally copying attributes.
 
@@ -1075,7 +1110,9 @@ def vertex_string_attrib_values(geometry: hou.Geometry, name: str) -> StringTupl
     return utils.clean_string_values(results)
 
 
-def set_vertex_string_attrib_values(geometry: hou.Geometry, name: str, values: StringTuple):
+def set_vertex_string_attrib_values(
+    geometry: hou.Geometry, name: str, values: StringTuple
+):
     """Set the string attribute values for all vertices.
 
     :param geometry: The geometry.
@@ -1107,7 +1144,12 @@ def set_vertex_string_attrib_values(geometry: hou.Geometry, name: str, values: S
     )
 
 
-def set_shared_point_string_attrib(geometry: hou.Geometry, name: str, value: str, group: Optional[hou.PointGroup] = None):
+def set_shared_point_string_attrib(
+    geometry: hou.Geometry,
+    name: str,
+    value: str,
+    group: Optional[hou.PointGroup] = None,
+):
     """Set a string attribute value for points.
 
     If group is None, all points will have receive the value.  If a group is
@@ -1149,7 +1191,9 @@ def set_shared_point_string_attrib(geometry: hou.Geometry, name: str, value: str
     )
 
 
-def set_shared_prim_string_attrib(geometry: hou.Geometry, name: str, value: str, group: Optional[hou.PrimGroup] = None):
+def set_shared_prim_string_attrib(
+    geometry: hou.Geometry, name: str, value: str, group: Optional[hou.PrimGroup] = None
+):
     """Set a string attribute value for primitives.
 
     If group is None, all primitives will have receive the value.  If a group
@@ -1210,7 +1254,9 @@ def attribute_has_uninitialized_string_values(attribute: hou.Attrib) -> bool:
     # Get the corresponding attribute type id.
     type_id = utils.get_attrib_owner(attribute.type())
 
-    return _cpp_methods.hasUninitializedStringValues(geometry, type_id, attribute.name())
+    return _cpp_methods.hasUninitializedStringValues(
+        geometry, type_id, attribute.name()
+    )
 
 
 def face_has_edge(face: hou.Face, point1: hou.Point, point2: hou.Point) -> bool:
@@ -1389,7 +1435,9 @@ def reverse_prim(prim: hou.Prim):
     _cpp_methods.reversePrimitive(geometry, prim.number())
 
 
-def check_minimum_polygon_vertex_count(geometry: hou.Geometry, minimum_vertices: int, ignore_open: bool = True) -> bool:
+def check_minimum_polygon_vertex_count(
+    geometry: hou.Geometry, minimum_vertices: int, ignore_open: bool = True
+) -> bool:
     """Check that all polygons have a minimum number of vertices.
 
     This will ignore non-polygon types such as packed and volume primitives.
@@ -1473,7 +1521,9 @@ def destroy_empty_groups(geometry: hou.Geometry, attrib_type: hou.attribType):
     _cpp_methods.destroyEmptyGroups(geometry, attrib_owner)
 
 
-def rename_group(group: Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup], new_name: str) -> Optional[Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup]]:
+def rename_group(
+    group: Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup], new_name: str
+) -> Optional[Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup]]:
     """Rename a group.
 
     :param group: The group to rename.
@@ -1507,7 +1557,9 @@ def rename_group(group: Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup], new
     return None
 
 
-def group_bounding_box(group: Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup]) -> hou.BoundingBox:
+def group_bounding_box(
+    group: Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup]
+) -> hou.BoundingBox:
     """Get the bounding box of the group.
 
     :param group: The group to get the bounding box for.
@@ -1561,7 +1613,9 @@ def toggle_group_entries(group: Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGro
     )
 
 
-def copy_group(group: Union[hou.PointGroup, hou.PrimGroup], new_group_name: str) -> Union[hou.PointGroup, hou.PrimGroup]:
+def copy_group(
+    group: Union[hou.PointGroup, hou.PrimGroup], new_group_name: str
+) -> Union[hou.PointGroup, hou.PrimGroup]:
     """Create a new group under the new name with the same membership.
 
     :param group: The group to copy.
@@ -1600,7 +1654,10 @@ def copy_group(group: Union[hou.PointGroup, hou.PrimGroup], new_group_name: str)
     return utils.find_group(geometry, group_type, new_group_name)
 
 
-def groups_share_elements(group1: Union[hou.PointGroup, hou.PrimGroup], group2: Union[hou.PointGroup, hou.PrimGroup]) -> bool:
+def groups_share_elements(
+    group1: Union[hou.PointGroup, hou.PrimGroup],
+    group2: Union[hou.PointGroup, hou.PrimGroup],
+) -> bool:
     """Check whether or not the groups contain any of the same elements.
 
     The groups must be of the same type and in the same detail.
@@ -1630,7 +1687,9 @@ def groups_share_elements(group1: Union[hou.PointGroup, hou.PrimGroup], group2: 
     )
 
 
-def set_group_string_attribute(group: Union[hou.PointGroup, hou.PrimGroup], attribute: hou.Attrib, value: str):
+def set_group_string_attribute(
+    group: Union[hou.PointGroup, hou.PrimGroup], attribute: hou.Attrib, value: str
+):
     """Set a string attribute value to all members of a group.
 
     :param group: The group to set the attribute for.
@@ -1655,7 +1714,11 @@ def set_group_string_attribute(group: Union[hou.PointGroup, hou.PrimGroup], attr
     )
 
 
-def convert_prim_to_point_group(prim_group: hou.PrimGroup, new_group_name: Optional[str] = None, destroy: bool = True) -> hou.PointGroup:
+def convert_prim_to_point_group(
+    prim_group: hou.PrimGroup,
+    new_group_name: Optional[str] = None,
+    destroy: bool = True,
+) -> hou.PointGroup:
     """Create a new hou.Point group from the primitive group.
 
     The group will contain all the points referenced by all the vertices of the
@@ -1693,7 +1756,11 @@ def convert_prim_to_point_group(prim_group: hou.PrimGroup, new_group_name: Optio
     return geometry.findPointGroup(new_group_name)
 
 
-def convert_point_to_prim_group(point_group: hou.PointGroup, new_group_name: Optional[str] = None, destroy: bool = True) -> hou.PrimGroup:
+def convert_point_to_prim_group(
+    point_group: hou.PointGroup,
+    new_group_name: Optional[str] = None,
+    destroy: bool = True,
+) -> hou.PrimGroup:
     """Create a new hou.Prim group from the point group.
 
     The group will contain all the primitives which have vertices referencing
@@ -1797,7 +1864,9 @@ def group_ungrouped_prims(geometry: hou.Geometry, group_name: str) -> hou.PrimGr
     return geometry.findPrimGroup(group_name)
 
 
-def bounding_box_is_inside(source_bbox: hou.BoundingBox, target_bbox: hou.BoundingBox) -> bool:
+def bounding_box_is_inside(
+    source_bbox: hou.BoundingBox, target_bbox: hou.BoundingBox
+) -> bool:
     """Determine if this bounding box is totally enclosed by another box.
 
     :param source_bbox: The bounding box to check for being enclosed.
@@ -1819,7 +1888,9 @@ def bounding_boxes_intersect(bbox1: hou.BoundingBox, bbox2: hou.BoundingBox) -> 
     return _cpp_methods.boundingBoxesIntersect(bbox1, bbox2)
 
 
-def compute_bounding_box_intersection(bbox1: hou.BoundingBox, bbox2: hou.BoundingBox) -> bool:
+def compute_bounding_box_intersection(
+    bbox1: hou.BoundingBox, bbox2: hou.BoundingBox
+) -> bool:
     """Compute the intersection of two bounding boxes.
 
     This function changes the bounds of the first box to be those of the
@@ -1833,7 +1904,9 @@ def compute_bounding_box_intersection(bbox1: hou.BoundingBox, bbox2: hou.Boundin
     return _cpp_methods.computeBoundingBoxIntersection(bbox1, bbox2)
 
 
-def expand_bounding_box(bbox: hou.BoundingBox, delta_x: float, delta_y: float, delta_z: float):
+def expand_bounding_box(
+    bbox: hou.BoundingBox, delta_x: float, delta_y: float, delta_z: float
+):
     """Expand the min and max bounds in each direction by the axis delta.
 
     :param bbox: The bounding box to expand.
@@ -1900,7 +1973,9 @@ def is_parm_tuple_vector(parm_tuple: hou.ParmTuple) -> bool:
     return parm_template.namingScheme() == hou.parmNamingScheme.XYZW
 
 
-def eval_parm_tuple_as_vector(parm_tuple: hou.ParmTuple) -> Union[hou.Vector2, hou.Vector3, hou.Vector4]:
+def eval_parm_tuple_as_vector(
+    parm_tuple: hou.ParmTuple,
+) -> Union[hou.Vector2, hou.Vector3, hou.Vector4]:
     """Return the parameter value as a hou.Vector of the appropriate size.
 
     :param parm_tuple: The parm tuple to eval.
@@ -2025,7 +2100,9 @@ def is_parm_multiparm(parm: Union[hou.Parm, hou.ParmTuple]) -> bool:
     return utils.is_parm_template_multiparm_folder(parm_template)
 
 
-def get_multiparm_instance_indices(parm: Union[hou.Parm, hou.ParmTuple], instance_index: bool = False) -> Tuple[int]:
+def get_multiparm_instance_indices(
+    parm: Union[hou.Parm, hou.ParmTuple], instance_index: bool = False
+) -> Tuple[int]:
     """Get the multiparm instance indices for this parameter tuple.
 
     If this parameter tuple is part of a multiparm, then its index in the
@@ -2050,7 +2127,9 @@ def get_multiparm_instance_indices(parm: Union[hou.Parm, hou.ParmTuple], instanc
     )
 
     if instance_index:
-        offsets = utils.get_multiparm_container_offsets(get_multiparm_template_name(parm), parm.node().parmTemplateGroup())
+        offsets = utils.get_multiparm_container_offsets(
+            get_multiparm_template_name(parm), parm.node().parmTemplateGroup()
+        )
 
         results = [result - offset for result, offset in zip(results, offsets)]
 
@@ -2106,7 +2185,9 @@ def get_multiparm_siblings(parm: Union[hou.Parm, hou.ParmTuple]) -> dict:
     return parms
 
 
-def resolve_multiparm_tokens(name: str, indices: Union[int, List[int], Tuple[int]]) -> str:
+def resolve_multiparm_tokens(
+    name: str, indices: Union[int, List[int], Tuple[int]]
+) -> str:
     """Resolve a multiparm token string with the supplied indices.
 
     :param name: The parameter name.
@@ -2122,7 +2203,11 @@ def resolve_multiparm_tokens(name: str, indices: Union[int, List[int], Tuple[int
 
     indices = utils.build_c_int_array(indices)
 
-    return  utils.string_decode(_cpp_methods.resolve_multiparm_tokens(utils.string_encode(name), indices, len(indices)))
+    return utils.string_decode(
+        _cpp_methods.resolve_multiparm_tokens(
+            utils.string_encode(name), indices, len(indices)
+        )
+    )
 
 
 def get_multiparm_template_name(parm: Union[hou.Parm, hou.ParmTuple]) -> Optional[str]:
@@ -2139,10 +2224,12 @@ def get_multiparm_template_name(parm: Union[hou.Parm, hou.ParmTuple]) -> Optiona
     if isinstance(parm, hou.Parm):
         parm = parm.tuple()
 
-    return  utils.string_decode(_cpp_methods.get_multiparm_template_name(parm))
+    return utils.string_decode(_cpp_methods.get_multiparm_template_name(parm))
 
 
-def eval_multiparm_instance(node: hou.Node, name: str, indices: Union[List[int], int], raw_indices: bool = False) -> Union[Tuple, float, int, str, hou.Ramp]:
+def eval_multiparm_instance(
+    node: hou.Node, name: str, indices: Union[List[int], int], raw_indices: bool = False
+) -> Union[Tuple, float, int, str, hou.Ramp]:
     """Evaluate a multiparm parameter by indices.
 
     The name should include the # value(s) which will be replaced by the indices.
@@ -2211,7 +2298,9 @@ def eval_multiparm_instance(node: hou.Node, name: str, indices: Union[List[int],
     return tuple(values)
 
 
-def unexpanded_string_multiparm_instance(node: hou.Node, name: str, indices: Union[List[int], int], raw_indices: bool = False) -> Union[Tuple[str], str]:
+def unexpanded_string_multiparm_instance(
+    node: hou.Node, name: str, indices: Union[List[int], int], raw_indices: bool = False
+) -> Union[Tuple[str], str]:
     """Get the unexpanded string of a multiparm parameter by index.
 
     The name should include the # value which will be replaced by the index.
@@ -2246,7 +2335,9 @@ def unexpanded_string_multiparm_instance(node: hou.Node, name: str, indices: Uni
     parm_template = ptg.find(name)
 
     if parm_template is None:
-        raise ValueError("Name {} does not map to a parameter on {}".format(name, node.path()))
+        raise ValueError(
+            "Name {} does not map to a parameter on {}".format(name, node.path())
+        )
 
     if parm_template.dataType() != hou.parmData.String:
         raise TypeError("Parameter must be a string parameter")
@@ -2466,7 +2557,9 @@ def vector_component_along(vector: hou.Vector3, target_vector: hou.Vector3) -> f
     return vector.dot(target_vector.normalized())
 
 
-def vector_project_along(vector: hou.Vector3, target_vector: hou.Vector3) -> hou.Vector3:
+def vector_project_along(
+    vector: hou.Vector3, target_vector: hou.Vector3
+) -> hou.Vector3:
     """Calculate the vector projection of this vector onto another vector.
 
     This is an orthogonal projection of this vector onto a straight line
@@ -2557,7 +2650,9 @@ def matrix_set_translates(matrix: hou.Matrix4, translates: Tuple[float, float, f
         matrix.setAt(3, i, translates[i])
 
 
-def build_lookat_matrix(from_vec: hou.Vector3, to_vec: hou.Vector3, up_vector: hou.Vector3) -> hou.Matrix3:
+def build_lookat_matrix(
+    from_vec: hou.Vector3, to_vec: hou.Vector3, up_vector: hou.Vector3
+) -> hou.Matrix3:
     """Compute a lookat matrix.
 
     This function will compute a rotation matrix which will provide the rotates

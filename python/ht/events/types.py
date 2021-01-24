@@ -27,9 +27,7 @@ class HipFileEvents(Enum):
 
 
 class NodeEvents(Enum):
-    """Events related to node changes.  These correspond to node based event handler scripts.
-
-    """
+    """Events related to node changes.  These correspond to node based event handler scripts."""
 
     OnCreated = "OnCreated"
     OnDeleted = "OnDeleted"

@@ -106,7 +106,11 @@ def _add_using_section(string_buf: io.StringIO, node_type: hou.NodeType):
     string_buf.write("\n\n")
 
 
-def _add_folder_help(parm_template: hou.FolderParmTemplate, items: Union[List, OrderedDict], in_multiparm: bool = False):
+def _add_folder_help(
+    parm_template: hou.FolderParmTemplate,
+    items: Union[List, OrderedDict],
+    in_multiparm: bool = False,
+):
     """Build a help item for a folder parameter.
 
     :param parm_template: The source parameter template.
@@ -137,7 +141,11 @@ def _add_folder_help(parm_template: hou.FolderParmTemplate, items: Union[List, O
         items.append(dict_items)
 
 
-def _add_help_for_parameter(parm_template: hou.ParmTemplate, items:  Union[List, OrderedDict], in_multiparm: bool = False):
+def _add_help_for_parameter(
+    parm_template: hou.ParmTemplate,
+    items: Union[List, OrderedDict],
+    in_multiparm: bool = False,
+):
     """Build a help item for a parameter.
 
     :param parm_template: The source parameter template.
@@ -241,7 +249,9 @@ def _get_template(key: str, in_multiparm: bool = False) -> jinja2.Template:
     return template
 
 
-def _get_help_text(string_buf: io.StringIO, items: Union[List, OrderedDict, str], indent: int):
+def _get_help_text(
+    string_buf: io.StringIO, items: Union[List, OrderedDict, str], indent: int
+):
     """Add items to the output.
 
     :param string_buf: The output buffer.
@@ -270,7 +280,11 @@ def _get_help_text(string_buf: io.StringIO, items: Union[List, OrderedDict, str]
         string_buf.write("\n")
 
 
-def _process_parm_templates(items: Union[List, OrderedDict], templates: Tuple[hou.ParmTemplate], in_multiparm: bool = False):
+def _process_parm_templates(
+    items: Union[List, OrderedDict],
+    templates: Tuple[hou.ParmTemplate],
+    in_multiparm: bool = False,
+):
     """Process parameter templates.
 
     :param items: A list of help items.
@@ -324,7 +338,9 @@ def _resolve_icon(icon: str, node_type: hou.NodeType) -> str:
 # =============================================================================
 
 
-def generate_help_card(node: hou.Node, inputs: bool = False, related: bool = False, using: bool = False) -> str:
+def generate_help_card(
+    node: hou.Node, inputs: bool = False, related: bool = False, using: bool = False
+) -> str:
     """Generate help card text for a node.
 
     :param node: The source node.

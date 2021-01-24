@@ -23,9 +23,7 @@ import hou
 
 
 class TreeNode:
-    """The base tree node class for use in AOV and group display.
-
-    """
+    """The base tree node class for use in AOV and group display."""
 
     def __init__(self, parent=None):
         self._children = []
@@ -168,9 +166,7 @@ class FolderNode(TreeNode):
 
 
 class AOVBaseNode(TreeNode):
-    """Base node for AOV related items.
-
-    """
+    """Base node for AOV related items."""
 
     def __init__(self, item, parent=None):
         super().__init__(parent)
@@ -403,9 +399,7 @@ class LeafFilterProxyModel(QtCore.QSortFilterProxyModel):
 
     def filter_accepts_row_itself(self, row_num, source_parent):
         """Check if this filter accepts this row."""
-        return super().filterAcceptsRow(
-            row_num, source_parent
-        )
+        return super().filterAcceptsRow(row_num, source_parent)
 
     def has_accepted_children(self, row_num, parent):
         """Starting from the current node as root, traverse all the

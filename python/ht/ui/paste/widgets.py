@@ -36,10 +36,10 @@ class _CustomButtonBox(QtWidgets.QDialogButtonBox):
 
     """
 
-    def __init__(self, icon: QtGui.QIcon, label: str, parent: Optional[QtWidgets.QWidget] = None):
-        super().__init__(
-            QtWidgets.QDialogButtonBox.Cancel, parent=parent
-        )
+    def __init__(
+        self, icon: QtGui.QIcon, label: str, parent: Optional[QtWidgets.QWidget] = None
+    ):
+        super().__init__(QtWidgets.QDialogButtonBox.Cancel, parent=parent)
 
         self.accept_button = QtWidgets.QPushButton(icon, label)
         self.accept_button.setEnabled(False)
@@ -67,7 +67,9 @@ class BasicSourceItemTable(QtWidgets.QTableView):
         self,
         source: CopyPasteSource,
         context: str,
-        selection_mode: Optional[QtWidgets.QAbstractItemView.SelectionMode] = QtWidgets.QAbstractItemView.SingleSelection,
+        selection_mode: Optional[
+            QtWidgets.QAbstractItemView.SelectionMode
+        ] = QtWidgets.QAbstractItemView.SingleSelection,
         allow_double_click: bool = False,
         allow_delete: bool = False,
         parent: Optional[QtWidgets.QWidget] = None,
@@ -245,9 +247,7 @@ class CopyButtonBox(_CustomButtonBox):
     """
 
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
-        super().__init__(
-            hou.qt.createIcon("BUTTONS_copy"), "Copy", parent
-        )
+        super().__init__(hou.qt.createIcon("BUTTONS_copy"), "Copy", parent)
 
 
 class CopyItemNameWidget(QtWidgets.QWidget):
@@ -261,7 +261,11 @@ class CopyItemNameWidget(QtWidgets.QWidget):
     # Signal to emit if anything is changed.
     valid_source_signal = QtCore.Signal(bool)
 
-    def __init__(self, invalid_names: List[str] = None, parent: Optional[QtWidgets.QWidget] = None):
+    def __init__(
+        self,
+        invalid_names: List[str] = None,
+        parent: Optional[QtWidgets.QWidget] = None,
+    ):
         super().__init__(parent)
 
         if invalid_names is None:
@@ -363,9 +367,7 @@ class PasteButtonBox(_CustomButtonBox):
     """
 
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
-        super().__init__(
-            hou.qt.createIcon("BUTTONS_paste"), "Paste", parent
-        )
+        super().__init__(hou.qt.createIcon("BUTTONS_paste"), "Paste", parent)
 
 
 class RepositoryWidget(QtWidgets.QWidget):
