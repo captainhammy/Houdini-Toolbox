@@ -1352,7 +1352,7 @@ class Test__build_shape:
 class Test__find_files:
     """Test ht.nodes.styles.manager._find_files."""
 
-    def test_no_dirs(self, mocker, fix_hou_exceptions):
+    def test_no_dirs(self, mocker):
         """Test finding files where there are no config/styles folders in the HOUDINI_PATH."""
         mocker.patch("hou.findDirectories", side_effect=hou.OperationFailed)
         mock_glob = mocker.patch("glob.glob")
