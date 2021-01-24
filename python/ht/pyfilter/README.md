@@ -51,17 +51,6 @@ For example, to build the arg string to include to set the primary image path yo
 ```python
 >>> from ht.pyfilter.operations.primaryimage import SetPrimaryImage
 >>> arg_string = SetPrimaryImage.build_arg_string(primary_image_path="/path/to/image.exr")
->>> print arg_string
+>>> print(arg_string)
 '--primary-image-path=/path/to/image.exr'
-```
-
-### SetProperties operation
-
-The **SetProperties** operation allows you to pass data to set arbitrary Mantra properties via json encoded string or file.
-
-You can run the following command to perform the filtering defined in props.json to the
-example .ifd file, both located in python/ht/pyfilter
-
-```
-mantra -f test.ifd -P "/path/to/ht-pyfilter.py --properties-file props.json"
 ```

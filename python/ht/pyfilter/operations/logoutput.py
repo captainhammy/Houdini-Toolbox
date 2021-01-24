@@ -26,18 +26,13 @@ class LogOutput(PyFilterOperation):
     # METHODS
     # -------------------------------------------------------------------------
 
-    def filter_error(self, level, message, prefix):  # pylint: disable=no-self-use
+    def filter_error(self, level: int, message: str, prefix: str) -> bool:  # pylint: disable=no-self-use
         """Handle message outputting.
 
         :param level: The output level.
-        :type level: int
         :param message: The output message.
-        :type message: str
         :param prefix: Message prefix.
-        :type prefix: str
-        :return: Return True to indicate that we handled the output so Mantra
-                 will not.
-        :rtype: bool
+        :return: Return True to indicate that we handled the output so Mantra will not.
 
         """
         # Split message by newlines so we can log each line.

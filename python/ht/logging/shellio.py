@@ -32,11 +32,10 @@ class PythonShellHandler(logging.StreamHandler):
     # METHODS
     # -------------------------------------------------------------------------
 
-    def emit(self, record):
+    def emit(self, record: logging.LogRecord):
         """Emit a log message.
 
         :param record: The log record to emit.
-        :type record: logging.Record
         :return:
 
         """

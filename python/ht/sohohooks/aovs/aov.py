@@ -5,10 +5,15 @@
 # =============================================================================
 
 # Standard Library Imports
+from __future__ import  annotations
 import copy
+from typing import TYPE_CHECKING, Any, List
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import constants as consts
+
+if TYPE_CHECKING:
+    import soho
 
 
 # =============================================================================
@@ -56,12 +61,10 @@ class AOV:
     """This class represents an AOV to be exported.
 
     :param data: AOV data.
-    :type data: dict
-    :return:
 
     """
 
-    def __init__(self, data):
+    def __init__(self, data: dict):
         self._data = copy.copy(_DEFAULT_AOV_DATA)
 
         self.update_data(data)
@@ -116,17 +119,13 @@ class AOV:
     # NON-PUBLIC METHODS
     # -------------------------------------------------------------------------
 
-    def _light_export_planes(self, data, wrangler, cam, now):
+    def _light_export_planes(self, data: dict, wrangler: Any, cam: soho.SohoObject, now: float):
         """Handle exporting the image planes based on their export settings.
 
         :param data: The data to write.
-        :type data: dict
         :param wrangler: A SOHO wrangler.
-        :type wrangler: object
         :param cam: A SOHO camera.
-        :type cam: soho.SohoObject
         :param now: The evaluation time.
-        :type now: float
         :return:
 
         """
@@ -175,8 +174,8 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def channel(self):
-        """str: The name of the output channel."""
+    def channel(self) -> str:
+        """The name of the output channel."""
         return self._data[consts.CHANNEL_KEY]
 
     @channel.setter
@@ -186,8 +185,8 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def comment(self):
-        """str: Optional comment about this AOV."""
+    def comment(self) -> str:
+        """Optional comment about this AOV."""
         return self._data[consts.COMMENT_KEY]
 
     @comment.setter
@@ -197,8 +196,8 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def componentexport(self):
-        """bool: Whether or not components are being exported."""
+    def componentexport(self) -> bool:
+        """Whether or not components are being exported."""
         return self._data[consts.COMPONENTEXPORT_KEY]
 
     @componentexport.setter
@@ -208,7 +207,7 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def components(self):
+    def components(self) -> List[str]:
         """list(str): List of components to export."""
         return self._data[consts.COMPONENTS_KEY]
 
@@ -219,8 +218,8 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def exclude_from_dcm(self):
-        """bool: Exclude this aov from dcm renders."""
+    def exclude_from_dcm(self) -> bool:
+        """Exclude this aov from dcm renders."""
         return self._data[consts.EXCLUDE_DCM_KEY]
 
     @exclude_from_dcm.setter
@@ -230,7 +229,7 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def intrinsics(self):
+    def intrinsics(self) -> List[str]:
         """list(str): Any associated intrinsic names."""
         return self._data[consts.INTRINSICS_KEY]
 
@@ -241,8 +240,8 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def lightexport(self):
-        """str: The light output mode."""
+    def lightexport(self) -> str:
+        """The light output mode."""
         return self._data[consts.LIGHTEXPORT_KEY]
 
     @lightexport.setter
@@ -252,8 +251,8 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def lightexport_scope(self):
-        """str: The light mask."""
+    def lightexport_scope(self) -> str:
+        """The light mask."""
         return self._data[consts.LIGHTEXPORT_SCOPE_KEY]
 
     @lightexport_scope.setter
@@ -263,8 +262,8 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def lightexport_select(self):
-        """str: The light selection (categories)."""
+    def lightexport_select(self) -> str:
+        """The light selection (categories)."""
         return self._data[consts.LIGHTEXPORT_SELECT_KEY]
 
     @lightexport_select.setter
@@ -274,8 +273,8 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def path(self):
-        """str: The path containing the AOV definition."""
+    def path(self) -> str:
+        """The path containing the AOV definition."""
         return self._data[consts.PATH_KEY]
 
     @path.setter
@@ -285,8 +284,8 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def pfilter(self):
-        """str: The name of the pixel filter."""
+    def pfilter(self) -> str:
+        """The name of the pixel filter."""
         return self._data[consts.PFILTER_KEY]
 
     @pfilter.setter
@@ -296,8 +295,8 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def planefile(self):
-        """str: The path to the specific file, if any."""
+    def planefile(self) -> str:
+        """The path to the specific file, if any."""
         return self._data[consts.PLANEFILE_KEY]
 
     @planefile.setter
@@ -307,8 +306,8 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def priority(self):
-        """int: Group priority."""
+    def priority(self) -> int:
+        """The AOV priority."""
         return self._data[consts.PRIORITY_KEY]
 
     @priority.setter
@@ -318,8 +317,8 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def quantize(self):
-        """str: The type of quantization for the output AOV."""
+    def quantize(self) -> str:
+        """The type of quantization for the output AOV."""
         return self._data[consts.QUANTIZE_KEY]
 
     @quantize.setter
@@ -329,8 +328,8 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def sfilter(self):
-        """str: The name of the sample filter."""
+    def sfilter(self) -> str:
+        """The name of the sample filter."""
         return self._data[consts.SFILTER_KEY]
 
     @sfilter.setter
@@ -340,8 +339,8 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def variable(self):
-        """str: The name of the vex variable."""
+    def variable(self) -> str:
+        """The name of the vex variable."""
         return self._data[consts.VARIABLE_KEY]
 
     @variable.setter
@@ -351,8 +350,8 @@ class AOV:
     # -------------------------------------------------------------------------
 
     @property
-    def vextype(self):
-        """str: The data type of the output AOV."""
+    def vextype(self) -> str:
+        """The data type of the output AOV."""
         return self._data[consts.VEXTYPE_KEY]
 
     @vextype.setter
@@ -363,11 +362,10 @@ class AOV:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def as_data(self):
+    def as_data(self) -> dict:
         """Get a dictionary representing the AOV.
 
         :return: Data representing this object.
-        :rtype: dict
 
         """
         data = {consts.VARIABLE_KEY: self.variable, consts.VEXTYPE_KEY: self.vextype}
@@ -411,11 +409,10 @@ class AOV:
 
         return data
 
-    def update_data(self, data):
+    def update_data(self, data: dict):
         """Update internal data with new data.
 
         :param data: AOV data.
-        :type data: dict
         :return:
 
         """
@@ -437,15 +434,12 @@ class AOV:
         # Verify the new data is valid.
         self._verify_internal_data()
 
-    def write_to_ifd(self, wrangler, cam, now):
+    def write_to_ifd(self, wrangler: Any, cam: soho.SohoObject, now: float):
         """Output the AOV.
 
         :param wrangler: A SOHO wrangler.
-        :type wrangler: object
         :param cam: A SOHO camera.
-        :type cam: soho.SohoObject
         :param now: The evaluation time.
-        :type now: float
         :return:
 
         """
@@ -501,12 +495,10 @@ class AOVGroup:
     """This class represents a group of AOV definitions.
 
     :param name: The group name.
-    :type name: str
-    :return:
 
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         self._aovs = []
         self._comment = ""
         self._icon = None
@@ -565,15 +557,15 @@ class AOVGroup:
     # -------------------------------------------------------------------------
 
     @property
-    def aovs(self):
-        """list(ht.sohohooks.aovs.aov.AOV)A list of AOVs in the group."""
+    def aovs(self) -> List[AOV]:
+        """A list of AOVs in the group."""
         return self._aovs
 
     # -------------------------------------------------------------------------
 
     @property
-    def comment(self):
-        """str: Optional comment about this AOV."""
+    def comment(self) -> str:
+        """Optional comment about this AOV."""
         return self._comment
 
     @comment.setter
@@ -583,8 +575,8 @@ class AOVGroup:
     # -------------------------------------------------------------------------
 
     @property
-    def icon(self):
-        """str: Optional path to an icon for this group."""
+    def icon(self) -> str:
+        """Optional path to an icon for this group."""
         return self._icon
 
     @icon.setter
@@ -594,22 +586,22 @@ class AOVGroup:
     # -------------------------------------------------------------------------
 
     @property
-    def includes(self):
-        """list(str): List of AOV names belonging to the group."""
+    def includes(self) -> List[str]:
+        """List of AOV names belonging to the group."""
         return self._includes
 
     # -------------------------------------------------------------------------
 
     @property
-    def name(self):
-        """str: The name of the group."""
+    def name(self) -> str:
+        """The name of the group."""
         return self._name
 
     # -------------------------------------------------------------------------
 
     @property
-    def path(self):
-        """str: The path containing the group definition."""
+    def path(self) -> str:
+        """The path containing the group definition."""
         return self._path
 
     @path.setter
@@ -619,8 +611,8 @@ class AOVGroup:
     # -------------------------------------------------------------------------
 
     @property
-    def priority(self):
-        """int_ Group priority."""
+    def priority(self) -> int:
+        """Group priority."""
         return self._priority
 
     @priority.setter
@@ -639,11 +631,10 @@ class AOVGroup:
         """
         self._aovs = []
 
-    def as_data(self):
+    def as_data(self) -> dict:
         """Get a dictionary representing the group.
 
         :return: Data representing this object.
-        :rtype: dict
 
         """
         includes = []
@@ -662,15 +653,12 @@ class AOVGroup:
 
         return {self.name: data}
 
-    def write_to_ifd(self, wrangler, cam, now):
+    def write_to_ifd(self, wrangler: Any, cam: soho.SohoObject, now: float):
         """Write all AOVs in the group to the ifd.
 
         :param wrangler: A SOHO wrangler.
-        :type wrangler: object
         :param cam: A SOHO camera.
-        :type cam: soho.SohoObject
         :param now: The evaluation time.
-        :type now: float
         :return:
 
         """
@@ -682,12 +670,10 @@ class IntrinsicAOVGroup(AOVGroup):
     """An intrinsic grouping of AOVs.
 
     :param name: The group name.
-    :type name: str
-    :return:
 
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         super().__init__(name)
 
         self._comment = "Automatically generated"
@@ -706,14 +692,11 @@ class InvalidAOVValueError(AOVError):  # pragma: no cover
     """Exception for invalid AOV setting values.
 
     :param name: The invalid setting name.
-    :type name: str
     :param value: The invalid setting value.
-    :type value: str
-    :return:
 
     """
 
-    def __init__(self, name, value):
+    def __init__(self, name: str, value: str):
         super().__init__()
         self.name = name
         self.value = value
@@ -735,12 +718,10 @@ class MissingVexTypeError(AOVError):  # pragma: no cover
     """Exception for missing 'vextype' information.
 
     :param variable: The variable naming missing vextype information.
-    :type variable: str
-    :return:
 
     """
 
-    def __init__(self, variable):
+    def __init__(self, variable: str):
         super().__init__()
         self.variable = variable
 
@@ -753,15 +734,12 @@ class MissingVexTypeError(AOVError):  # pragma: no cover
 # =============================================================================
 
 
-def _build_category_map(lights, now):
+def _build_category_map(lights: List[soho.SohoObject], now: float) -> dict:
     """Build a mapping of category names to lights.
 
     :param lights: A list of lights.
-    :type lights: list(soho.SohoObject)
     :param now: The evaluation time.
-    :type now: float
     :return: The category map.
-    :rtype: dict
 
     """
     category_map = {}
@@ -800,19 +778,14 @@ def _build_category_map(lights, now):
     return category_map
 
 
-def _call_post_defplane(data, wrangler, cam, now):
+def _call_post_defplane(data: dict, wrangler: Any, cam: soho.SohoObject, now: float) -> bool:
     """Call the post_defplane hook.
 
     :param data: AOV data.
-    :type data: dict
     :param wrangler: A SOHO wrangler.
-    :type wrangler: object
     :param cam: A SOHO camera.
-    :type cam: soho.SohoObject
     :param now: The evaluation time.
-    :type now: float
     :return: Whether or not the hook was successful.
-    :rtype bool
 
     """
     import IFDhooks
@@ -830,19 +803,14 @@ def _call_post_defplane(data, wrangler, cam, now):
     )
 
 
-def _call_pre_defplane(data, wrangler, cam, now):
+def _call_pre_defplane(data: dict, wrangler: Any, cam: soho.SohoObject, now: float) -> bool:
     """Call the pre_defplane hook.
 
     :param data: AOV data.
-    :type data: dict
     :param wrangler: A SOHO wrangler.
-    :type wrangler: object
     :param cam: A SOHO camera.
-    :type cam: soho.SohoObject
     :param now: The evaluation time.
-    :type now: float
     :return: Whether or not the hook was successful.
-    :rtype bool
 
     """
     import IFDhooks
@@ -860,19 +828,14 @@ def _call_pre_defplane(data, wrangler, cam, now):
     )
 
 
-def _write_data_to_ifd(data, wrangler, cam, now):
+def _write_data_to_ifd(data: dict, wrangler: Any, cam: soho.SohoObject, now: float):
     """Write AOV data to the ifd.
 
     :param data: AOV data.
-    :type data: dict
     :param wrangler: A SOHO wrangler.
-    :type wrangler: object
     :param cam: A SOHO camera.
-    :type cam: soho.SohoObject
     :param now: The evaluation time.
-    :type now: float
-    :return: Whether or not the hook was successful.
-    :rtype bool
+    :return:
 
     """
     import IFDapi
@@ -923,21 +886,15 @@ def _write_data_to_ifd(data, wrangler, cam, now):
     IFDapi.ray_end()
 
 
-def _write_light(light, base_channel, data, wrangler, cam, now):
+def _write_light(light: soho.SohoObject, base_channel: str, data: dict, wrangler: Any, cam: soho.SohoObject, now: float):
     """Write a light to the ifd.
 
     :param light: The light to write.
-    :type light: soho.SohoObject
     :param base_channel: The channel name.
-    :type base_channel: str
     :param data: AOV data.
-    :type data: dict
     :param wrangler: A SOHO wrangler.
-    :type wrangler: object
     :param cam: A SOHO camera.
-    :type cam: soho.SohoObject
     :param now: The evaluation time.
-    :type now: float
     :return:
 
     """
@@ -978,21 +935,15 @@ def _write_light(light, base_channel, data, wrangler, cam, now):
     _write_data_to_ifd(data, wrangler, cam, now)
 
 
-def _write_per_category(lights, base_channel, data, wrangler, cam, now):
+def _write_per_category(lights: List[soho.SohoObject], base_channel: str, data: dict, wrangler: Any, cam: soho.SohoObject, now: float):
     """Write lights to the ifd based on their category.
 
     :param lights: The light to write.
-    :type lights: list(soho.SohoObject)
     :param base_channel: The channel name.
-    :type base_channel: str
     :param data: AOV data.
-    :type data: dict
     :param wrangler: A SOHO wrangler.
-    :type wrangler: object
     :param cam: A SOHO camera.
-    :type cam: soho.SohoObject
     :param now: The evaluation time.
-    :type now: float
     :return:
 
     """
@@ -1019,19 +970,14 @@ def _write_per_category(lights, base_channel, data, wrangler, cam, now):
         _write_data_to_ifd(data, wrangler, cam, now)
 
 
-def _write_single_channel(lights, data, wrangler, cam, now):
+def _write_single_channel(lights: List[soho.SohoObject], data: dict, wrangler: Any, cam: soho.SohoObject, now: float):
     """Write lights to the ifd as a single channel.
 
     :param lights: The lights to write.
-    :type lights: list(soho.SohoObject)
     :param data: AOV data.
-    :type data: dict
     :param wrangler: A SOHO wrangler.
-    :type wrangler: object
     :param cam: A SOHO camera.
-    :type cam: soho.SohoObject
     :param now: The evaluation time.
-    :type now: float
     :return:
 
     """

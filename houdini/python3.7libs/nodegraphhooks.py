@@ -4,6 +4,9 @@
 # IMPORTS
 # ==============================================================================
 
+# Standard Library Imports
+from typing import List, Tuple
+
 # Houdini Toolbox Imports
 from ht.ui import paste
 
@@ -25,16 +28,13 @@ KEY_HIT_TYPES = ("keyhit", "menukeyhit", "parentkeyhit")
 
 
 def createEventHandler(
-    uievent, pending_actions
-):  # pylint: disable=invalid-name,unused-argument
+    uievent: KeyboardEvent, pending_actions: List
+) -> Tuple[None, bool]:  # pylint: disable=invalid-name,unused-argument
     """Create an event handler for Houdini's network editor.
 
     :param uievent: The occurring event.
-    :type uievent: canvaseventtypes.KeyboardEvent
     :param pending_actions: Pending actions.
-    :type pending_actions: list
     :return: Handler event information.
-    :rtype: tuple
 
     """
 

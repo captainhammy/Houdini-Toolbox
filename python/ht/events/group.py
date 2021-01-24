@@ -29,12 +29,12 @@ class HoudiniEventGroup:
     # -------------------------------------------------------------------------
 
     @property
-    def data(self):
-        """dict: Internal data for storing data that can be shared across event
+    def data(self) -> dict:
+        """Internal data for storing data that can be shared across event
         functions."""
         return self._data
 
     @property
-    def event_map(self):
-        """dict: Internal event map used to register the functions of this event."""
+    def event_map(self) -> dict:
+        """Internal event map used to register the functions of this event."""
         return self._event_map

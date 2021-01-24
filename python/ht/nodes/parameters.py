@@ -6,6 +6,7 @@
 
 # Standard Library Imports
 import re
+from typing import Callable, Tuple
 
 # Houdini Imports
 import hou
@@ -16,13 +17,11 @@ import hou
 # =============================================================================
 
 
-def _find_parameters_with_value(target_value, check_func):
+def _find_parameters_with_value(target_value: str, check_func: Callable) -> Tuple[hou.Parm]:
     """Find parameters which contain the target value.
 
     :param target_value: The string value to search for.
-    :type target_value: str
     :return: A tuple of parameters which contain the value.
-    :rtype: tuple(hou.Parm)
 
     """
     # Use 'opfind' hscript command to find all the nodes which have parameters
@@ -63,7 +62,7 @@ def _find_parameters_with_value(target_value, check_func):
 # =============================================================================
 
 
-def find_parameters_using_variable(variable):
+def find_parameters_using_variable(variable: str) -> Tuple[hou.Parm]:
     """Find parameters which contain a variable.
 
     This only works for string parameters
@@ -75,9 +74,7 @@ def find_parameters_using_variable(variable):
     using $HIPNAME or $HIPFILE.
 
     :param variable: The variable name to search for.
-    :type variable: str
     :return: A tuple of parameters which contain the variable.
-    :rtype: tuple(hou.Parm)
 
     """
     search_variable = variable
@@ -98,15 +95,13 @@ def find_parameters_using_variable(variable):
     return _find_parameters_with_value(search_variable, _checker)
 
 
-def find_parameters_with_value(target_value):
+def find_parameters_with_value(target_value: str) -> Tuple[hou.Parm]:
     """Find parameters which contain the target value.
 
     This only works for string parameters.
 
     :param target_value: The value to search for.
-    :type target_value: str
     :return: A tuple of parameters which contain the value.
-    :rtype: tuple(hou.Parm)
 
     """
 

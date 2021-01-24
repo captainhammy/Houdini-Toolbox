@@ -13,16 +13,14 @@ import hou
 # =============================================================================
 
 
-def _valid_to_convert_to_absolute_reference(parm):
+def _valid_to_convert_to_absolute_reference(parm: hou.Parm) -> bool:
     """Check if a parameter is valid to convert to an absolute reference.
 
     A parameter is valid if it is a node reference string parameter with a raw
     value appears to be a relative path and points to a valid node.
 
     :param parm: There parameter to check.
-    :type parm: hou.Parm
     :return: Whether or not the parm can be converted.
-    :rtype: bool
 
     """
     parm_template = parm.parmTemplate()
@@ -57,16 +55,14 @@ def _valid_to_convert_to_absolute_reference(parm):
     return False
 
 
-def _valid_to_convert_to_relative_reference(parm):
+def _valid_to_convert_to_relative_reference(parm: hou.Parm) -> bool:
     """Check if a parameter is valid to convert to a relative reference.
 
     A parameter is valid if it is a node reference string parameter with a raw
     value appears to be an absolute path and points to a valid node.
 
     :param parm: There parameter to check.
-    :type parm: hou.Parm
     :return: Whether or not the parm can be converted.
-    :rtype: bool
 
     """
     parm_template = parm.parmTemplate()
@@ -106,16 +102,14 @@ def _valid_to_convert_to_relative_reference(parm):
 # =============================================================================
 
 
-def convert_absolute_to_relative_path_context(scriptargs):
+def convert_absolute_to_relative_path_context(scriptargs: dict) -> bool:
     """Context script for converting any absolute node paths to relative paths.
 
     The menu entry will be shown if there are node reference string parameters
     whose values are absolute paths.
 
     :param scriptargs: kwargs dict from PARMmenu entry.
-    :type scriptargs: dict
     :return: Whether or not to show the menu entry.
-    :rtype: bool
 
     """
     parms = scriptargs["parms"]
@@ -123,11 +117,10 @@ def convert_absolute_to_relative_path_context(scriptargs):
     return any([_valid_to_convert_to_relative_reference(parm) for parm in parms])
 
 
-def convert_absolute_to_relative_path(scriptargs):
+def convert_absolute_to_relative_path(scriptargs: dict):
     """Convert any absolute node paths to relative paths.
 
     :param scriptargs: kwargs dict from PARMmenu entry.
-    :type scriptargs: dict
     :return:
 
     """
@@ -140,16 +133,14 @@ def convert_absolute_to_relative_path(scriptargs):
             parm.set(parm.node().relativePathTo(target_node))
 
 
-def convert_relative_to_absolute_path_context(scriptargs):
+def convert_relative_to_absolute_path_context(scriptargs: dict) -> bool:
     """Context script for converting any relative node paths to absolute paths.
 
     The menu entry will be shown if there are node reference string parameters
     whose values are relative paths.
 
     :param scriptargs: kwargs dict from PARMmenu entry.
-    :type scriptargs: dict
     :return: Whether or not to show the menu entry.
-    :rtype: bool
 
     """
     parms = scriptargs["parms"]
@@ -157,11 +148,10 @@ def convert_relative_to_absolute_path_context(scriptargs):
     return any([_valid_to_convert_to_absolute_reference(parm) for parm in parms])
 
 
-def convert_relative_to_absolute_path(scriptargs):
+def convert_relative_to_absolute_path(scriptargs: dict):
     """Convert any absolute node paths to absolute paths.
 
       :param scriptargs: kwargs dict from PARMmenu entry.
-      :type scriptargs: dict
       :return:
 
       """
@@ -174,11 +164,10 @@ def convert_relative_to_absolute_path(scriptargs):
             parm.set(target_node.path())
 
 
-def promote_parameter_to_node(scriptargs):  # pylint: disable=too-many-locals
+def promote_parameter_to_node(scriptargs: dict):  # pylint: disable=too-many-locals
     """Promote a parameter to a target node.
 
     :param scriptargs: kwargs dict from PARMmenu entry.
-    :type scriptargs: dict
     :return:
 
     """

@@ -4,6 +4,9 @@
 # IMPORTS
 # =============================================================================
 
+# Standard Library Imports
+import enum
+
 # Third Party Imports
 import pytest
 
@@ -65,7 +68,7 @@ class Test_HoudiniEventFactory:
         mock_event = mocker.patch("ht.events.event.HoudiniEvent", autospec=True)
 
         mock_name = mocker.MagicMock(spec=str)
-        mock_event_name = mocker.MagicMock(spec=str)
+        mock_event_name = mocker.MagicMock()
 
         mock_cls = mocker.MagicMock()
 
@@ -75,30 +78,9 @@ class Test_HoudiniEventFactory:
 
         assert result == mock_event.return_value
 
-        mock_event.assert_called_with(mock_event_name)
+        mock_event.assert_called_with(mock_event_name.value)
 
         mock_cls.assert_not_called()
-
-    def test_register_event_class(self, mocker):
-        """Test registering an event class by name."""
-        mock_mappings = mocker.patch.object(
-            ht.events.event.HoudiniEventFactory,
-            "_mappings",
-            new_callable=mocker.PropertyMock,
-        )
-
-        mock_event_name = mocker.MagicMock(spec=str)
-
-        mappings = {}
-        mock_mappings.return_value = mappings
-
-        mock_event = mocker.MagicMock(spec=ht.events.event.HoudiniEvent)
-
-        ht.events.event.HoudiniEventFactory.register_event_class(
-            mock_event_name, mock_event
-        )
-
-        assert mappings == {mock_event_name: mock_event}
 
 
 class Test_HoudiniEvent:

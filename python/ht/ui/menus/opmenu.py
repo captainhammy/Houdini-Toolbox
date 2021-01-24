@@ -13,11 +13,10 @@ from ht.ui.paste import copy_item
 # =============================================================================
 
 
-def create_absolute_reference_copy(scriptargs):
+def create_absolute_reference_copy(scriptargs: dict):
     """Create an absolute reference copy of a node.
 
     :param scriptargs: kwargs dict from OPmenu entry.
-    :type scriptargs: dict
     :return:
 
     """
@@ -28,11 +27,10 @@ def create_absolute_reference_copy(scriptargs):
     )
 
 
-def save_item_to_file(scriptargs):
+def save_item_to_file(scriptargs: dict):
     """Save the item to a file.
 
     :param scriptargs: kwargs dict from OPmenu entry.
-    :type scriptargs: dict
     :return:
 
     """

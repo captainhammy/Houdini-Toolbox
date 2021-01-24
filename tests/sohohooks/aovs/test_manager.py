@@ -685,19 +685,6 @@ class Test_AOVManager:
 
         assert result == (mock_group1, mock_group2)
 
-    def test_init_interface(self, init_manager, mocker):
-        """Test initializing an interface."""
-        mock_utils = mocker.MagicMock()
-
-        modules = {"ht.ui.aovs.utils": mock_utils}
-
-        mgr = init_manager()
-
-        mocker.patch.dict("sys.modules", modules)
-        mgr.init_interface()
-
-        assert mgr._interface == mock_utils.AOVViewerInterface.return_value
-
     def test_load(self, init_manager, mocker):
         """Test loading a file path."""
         mock_file = mocker.patch("ht.sohohooks.aovs.manager.AOVFile", autospec=True)
@@ -1221,7 +1208,7 @@ class Test__find_aov_files:
 
         result = manager._find_aov_files()
 
-        assert result == (mock_path1, mock_path2)
+        assert result == (str(mock_path1), str(mock_path2))
 
         mock_get_folders.assert_called()
 
@@ -1245,7 +1232,7 @@ class Test__find_aov_files:
         mocker.patch.dict(os.environ, {}, clear=True)
         result = manager._find_aov_files()
 
-        assert result == (mock_path1, mock_path2)
+        assert result == (str(mock_path1), str(mock_path2))
 
         mock_find.assert_called()
 

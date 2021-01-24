@@ -6,11 +6,13 @@
 # =============================================================================
 
 # Standard Library Imports
+from __future__ import annotations
 import argparse
 import os
 import signal
 import subprocess
 import sys
+from typing import TYPE_CHECKING, List, Tuple
 
 # Third Party Imports
 from termcolor import colored, cprint
@@ -18,6 +20,9 @@ from termcolor import colored, cprint
 # Houdini Toolbox Imports
 import ht.machinery.package
 import ht.machinery.sidefx_web_api
+
+if TYPE_CHECKING:
+    import types
 
 
 # =============================================================================
@@ -40,11 +45,10 @@ _BUILD_MANAGER = ht.machinery.package.HoudiniBuildManager()
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-def _build_parsers():
+def _build_parsers() -> Tuple[argparse.ArgumentParser, argparse.ArgumentParser]:
     """Build ArgumentParsers for the wrapper.
 
     :return: The wrapper argument parsers.
-    :rtype: tuple(argparse.ArgumentParser)
 
     """
     # Don't allow abbreviations since we don't want them to interfere with any
@@ -157,11 +161,10 @@ def _display_versions():
     print()
 
 
-def _download_handler(args):
+def _download_handler(args: argparse.Namespace):
     """Handle operations for the download subcommand.
 
     :param args: The download args.
-    :type args: argparse.Namespace
     :return:
 
     """
@@ -191,11 +194,10 @@ def _download_handler(args):
             package.install(not args.no_symlink)
 
 
-def _find_build(args):
+def _find_build(args: argparse.Namespace):
     """Search for the selected build.  If no valid build was selected print a message.
 
     :param args: The wrapper args.
-    :type args: argparse.Namespace
     :return:
 
     """
@@ -232,11 +234,10 @@ def _find_build(args):
     return build
 
 
-def _install_handler(args):
+def _install_handler(args: argparse.Namespace):
     """Handle operations for the install subcommand.
 
     :param args: The download args.
-    :type args: argparse.Namespace
     :return:
 
     """
@@ -253,19 +254,17 @@ def _install_handler(args):
 
     result = ht.machinery.package.find_matching_builds(args.version, _BUILD_MANAGER.installable)
 
-    if not result:
+    if result is None:
         print("Could not find installable build {}".format(args.version))
 
     result.install(not args.no_symlink)
 
 
-def _print_local_build_list(build_list, message):
+def _print_local_build_list(build_list: List[ht.machinery.package.HoudiniBase], message: str):
     """Print a list of local builds.
 
     :param build_list: A list of builds on disk.
-    :type build_list: list(ht.machinery.package.HoudiniBase)
     :param message: The title message.
-    :type message: str
     :return:
 
     """
@@ -276,15 +275,13 @@ def _print_local_build_list(build_list, message):
     print()
 
 
-def _signal_handler(signal_num, current_frame):  # pylint: disable=unused-argument
+def _signal_handler(signal_num: int, current_frame: types.FrameType):  # pylint: disable=unused-argument
     """Signal handler to catch incoming signals and kill the process group.
 
     This allows things like the Render Scheduler to kill Mantra renders.
 
     :param signal_num: The number of the received signal.
-    :type signal_num: int
     :param current_frame: The current stack frame.
-    :type current_frame: frame
     :return:
 
     """
@@ -305,15 +302,12 @@ def _signal_handler(signal_num, current_frame):  # pylint: disable=unused-argume
     sys.exit(1)
 
 
-def _set_no_jemalloc(build_path, program_name):
+def _set_no_jemalloc(build_path: str, program_name: str) -> List[str]:
     """Set the environment in order to run without jemalloc.
 
-    :param build_path: THe path to the install location.
-    :type build_path: str
+    :param build_path: The path to the install location.
     :param program_name: The name of the running program.
-    :type program_name: str
     :return: A list of command args to run without jemalloc.
-    :rtype: list(str)
 
     """
     ld_path = os.path.join(os.environ["HDSO"], "empty_jemalloc")
@@ -343,11 +337,10 @@ def _set_no_jemalloc(build_path, program_name):
     return run_args
 
 
-def _uninstall_handler(args):
+def _uninstall_handler(args: argparse.Namespace):
     """Handle operations for the uninstall subcommand.
 
     :param args: The download args.
-    :type args: argparse.Namespace
     :return:
 
     """

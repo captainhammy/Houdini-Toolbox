@@ -8,11 +8,11 @@ with AOVs.
 # =============================================================================
 
 # Standard Library Imports
-# TODO: REMOVE THIS
-import builtins
+from __future__ import annotations
 import glob
 import json
 import os
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
@@ -20,6 +20,10 @@ from ht.sohohooks.aovs import constants as consts
 
 # Houdini Imports
 import hou
+
+if TYPE_CHECKING:
+    from ht.ui.aovs.utils import AOVViewerInterface  # pylint: disable=ungrouped-imports
+    import soho
 
 
 # =============================================================================
@@ -86,11 +90,10 @@ class AOVManager:
 
         self._build_intrinsic_groups()
 
-    def _init_group_members(self, group):
+    def _init_group_members(self, group: AOVGroup):
         """Populate the AOV lists of each group based on available AOVs.
 
         :param group: A group to populate.
-        :type group: ht.sohohooks.aovs.aov.AOVGroup
         :return:
 
         """
@@ -100,11 +103,10 @@ class AOVManager:
             if include in self.aovs:
                 group.aovs.append(self.aovs[include])
 
-    def _init_reader_aovs(self, reader):
+    def _init_reader_aovs(self, reader: AOVFile):
         """Initialize aovs from a reader.
 
         :param reader: A source reader.
-        :type reader: AOVFile
         :return:
 
         """
@@ -122,11 +124,10 @@ class AOVManager:
             else:
                 self.add_aov(aov)
 
-    def _init_reader_groups(self, reader):
+    def _init_reader_groups(self, reader: AOVFile):
         """Initialize groups from a reader.
 
         :param reader: A source reader.
-        :type reader: AOVFile
         :return:
 
         """
@@ -146,11 +147,10 @@ class AOVManager:
             else:
                 self.add_group(group)
 
-    def _merge_readers(self, readers):
+    def _merge_readers(self, readers: List[AOVFile]):
         """Merge the data of multiple AOVFile objects.
 
         :param readers: A list of file readers.
-        :type readers: list(AOVFile)
         :return:
 
         """
@@ -168,29 +168,28 @@ class AOVManager:
     # -------------------------------------------------------------------------
 
     @property
-    def aovs(self):
-        """dict: Dictionary containing all available AOVs."""
+    def aovs(self) -> Dict[str, AOV]:
+        """Dictionary containing all available AOVs."""
         return self._aovs
 
     @property
-    def groups(self):
-        """dict: Dictionary containing all available AOVGroups."""
+    def groups(self) -> Dict[str, AOVGroup]:
+        """Dictionary containing all available AOVGroups."""
         return self._groups
 
     @property
-    def interface(self):
-        """AOVViewerInterface: A viewer interface assigned to the manager."""
+    def interface(self) -> AOVViewerInterface:
+        """A viewer interface assigned to the manager."""
         return self._interface
 
     # -------------------------------------------------------------------------
     # METHODS
     # -------------------------------------------------------------------------
 
-    def add_aov(self, aov):
+    def add_aov(self, aov: AOV):
         """Add an AOV to the manager.
 
         :param aov: An aov to add.
-        :type aov: ht.sohohooks.aovs.aov.AOV
         :return:
 
         """
@@ -199,15 +198,12 @@ class AOVManager:
         if self.interface is not None:
             self.interface.aov_added_signal.emit(aov)
 
-    def add_aovs_to_ifd(self, wrangler, cam, now):
+    def add_aovs_to_ifd(self, wrangler: Any, cam: soho.SohoObject, now: float):
         """Add auto_aovs to the ifd.
 
         :param wrangler: A SOHO wrangler.
-        :type wrangler: object
         :param cam: A SOHO camera.
-        :type cam: soho.SohoObject
         :param now: The evaluation time.
-        :type now: float
         :return:
 
         """
@@ -249,11 +245,10 @@ class AOVManager:
 
                     break
 
-    def add_group(self, group):
+    def add_group(self, group: AOVGroup):
         """Add an AOVGroup to the manager.
 
         :param group: A group to add.
-        :type group: ht.sohohooks.aovs.aov.AOVGroup
         :return:
 
         """
@@ -271,13 +266,12 @@ class AOVManager:
         self._aovs.clear()
         self._groups.clear()
 
-    def get_aovs_from_string(self, aov_str):
+    def get_aovs_from_string(self, aov_str: str) -> Tuple[Union[AOV, AOVGroup]]:
         """Get a list of AOVs and AOVGroups from a string.
 
         :param aov_str: A string containing aov/group names.
-        :type aov_str: str
         :return: A tuple of aovs and groups.
-        :rtype: tuple
+
 
         """
         result = []
@@ -297,21 +291,18 @@ class AOVManager:
 
         return tuple(result)
 
-    def init_interface(self):
+    def attach_interface(self, interface: AOVViewerInterface):
         """Initialize an AOVViewerInterface for this manager.
 
         :return:
 
         """
-        from ht.ui.aovs.utils import AOVViewerInterface
+        self._interface = interface
 
-        self._interface = AOVViewerInterface()
-
-    def load(self, path):
+    def load(self, path: str):
         """Load a file.
 
         :param path: The file to load.
-        :type path: str
         :return:
 
         """
@@ -328,11 +319,10 @@ class AOVManager:
         self.clear()
         self._init_from_files()
 
-    def remove_aov(self, aov):
+    def remove_aov(self, aov: AOV):
         """Remove the specified AOV from the manager.
 
         :param aov: The aov to remove
-        :type aov: ht.sohohooks.aovs.aov.AOV
         :return:
 
         """
@@ -342,11 +332,10 @@ class AOVManager:
             if self.interface is not None:
                 self.interface.aov_removed_signal.emit(aov)
 
-    def remove_group(self, group):
+    def remove_group(self, group: AOVGroup):
         """Remove the specified group from the manager.
 
         :param group: The group to remove
-        :type group: ht.sohohooks.aovs.aov.AOVGroup
         :return:
 
         """
@@ -361,12 +350,10 @@ class AOVFile:
     """Class to handle reading and writing AOV .json files.
 
     :param path: The path to the file.
-    :type path: str
-    :return:
 
     """
 
-    def __init__(self, path):
+    def __init__(self, path: str):
         self._path = path
 
         self._aovs = []
@@ -380,11 +367,10 @@ class AOVFile:
     # NON-PUBLIC METHODS
     # -------------------------------------------------------------------------
 
-    def _create_aovs(self, definitions):
+    def _create_aovs(self, definitions: List[dict]):
         """Create AOVs based on definitions.
 
         :param definitions: AOV definition data.
-        :type definitions: list(dict)
         :return:
 
         """
@@ -396,11 +382,10 @@ class AOVFile:
             aov = AOV(definition)
             self.aovs.append(aov)
 
-    def _create_groups(self, definitions):
+    def _create_groups(self, definitions: dict):
         """Create AOVGroups based on definitions.
 
         :param definitions: AOVGroup definition data.
-        :type definitions: dict
         :return:
 
         """
@@ -435,7 +420,7 @@ class AOVFile:
         :return:
 
         """
-        with builtins.open(self.path) as handle:
+        with open(self.path) as handle:
             data = json.load(handle)
 
         if consts.FILE_DEFINITIONS_KEY in data:
@@ -449,76 +434,69 @@ class AOVFile:
     # -------------------------------------------------------------------------
 
     @property
-    def aovs(self):
-        """list(ht.sohohooks.aovs.aov.AOV): List containing AOVs defined in this file."""
+    def aovs(self) -> List[AOV]:
+        """List containing AOVs defined in this file."""
         return self._aovs
 
     @property
-    def groups(self):
-        """list(ht.sohohooks.aovs.aov.AOVGroup): List containing AOVGroups defined in this file."""
+    def groups(self) -> List[AOVGroup]:
+        """List containing AOVGroups defined in this file."""
         return self._groups
 
     @property
-    def path(self):
-        """str: File path on disk."""
+    def path(self) -> str:
+        """File path on disk."""
         return self._path
 
     @property
-    def exists(self):
-        """bool: Check if the file actually exists."""
+    def exists(self) -> bool:
+        """Check if the file actually exists."""
         return os.path.isfile(self.path)
 
     # -------------------------------------------------------------------------
     # METHODS
     # -------------------------------------------------------------------------
 
-    def add_aov(self, aov):
+    def add_aov(self, aov: AOV):
         """Add an AOV for writing.
 
         :param aov: The aov to add.
-        :type aov: ht.sohohooks.aovs.aov.AOV
         :return:
 
         """
         self.aovs.append(aov)
 
-    def add_group(self, group):
+    def add_group(self, group: AOVGroup):
         """Add An AOVGroup for writing.
 
         :param group: The group to add.
-        :type group: ht.sohohooks.aovs.aov.AOVGroup
         :return:
 
         """
         self.groups.append(group)
 
-    def contains_aov(self, aov):
+    def contains_aov(self, aov: AOV) -> bool:
         """Check if this file contains an AOV with the same variable name.
 
         :param aov: The aov to check.
-        :type aov: ht.sohohooks.aovs.aov.AOV
         :return: Whether or not the aov is in this file.
-        :rtype: bool
 
         """
         return aov in self.aovs
 
-    def contains_group(self, group):
+    def contains_group(self, group:AOVGroup) -> bool:
         """Check if this file contains a group with the same name.
 
         :param group: The group to check.
-        :type group: ht.sohohooks.aovs.aov.AOVGroup
         :return: Whether or not the group is in this file.
-        :rtype: bool
 
         """
         return group in self.groups
 
-    def remove_aov(self, aov):
+    def remove_aov(self, aov: AOV):
         """Remove an AOV from the file.
 
         :param aov: The aov to remove.
-        :type aov: ht.sohohooks.aovs.aov.AOV
         :return:
 
         """
@@ -526,11 +504,10 @@ class AOVFile:
 
         del self.aovs[idx]
 
-    def remove_group(self, group):
+    def remove_group(self, group: AOVGroup):
         """Remove a group from the file.
 
         :param group: The group to remove
-        :type group: ht.sohohooks.aovs.aov.AOVGroup
         :return:
 
         """
@@ -538,11 +515,10 @@ class AOVFile:
 
         del self.groups[idx]
 
-    def replace_aov(self, aov):
+    def replace_aov(self, aov: AOV):
         """Replace an AOV in the file.
 
         :param aov: An aov to replace.
-        :type aov: ht.sohohooks.aovs.aov.AOV
         :return:
 
         """
@@ -550,11 +526,10 @@ class AOVFile:
 
         self.aovs[idx] = aov
 
-    def replace_group(self, group):
+    def replace_group(self, group: AOVGroup):
         """Replace a group in the file.
 
         :param group: A group to replace.
-        :type group: ht.sohohooks.aovs.aov.AOVGroup
         :return:
 
         """
@@ -562,13 +537,12 @@ class AOVFile:
 
         self.groups[idx] = group
 
-    def write_to_file(self, path=None):
+    def write_to_file(self, path: Optional[str] = None):
         """Write data to file.
 
         If `path` is not set, use the AOVFile's path.
 
         :param path: Optional target path
-        :type path: str
         :return:
 
         """
@@ -587,7 +561,7 @@ class AOVFile:
         if path is None:
             path = self.path
 
-        with builtins.open(path, "w") as handle:
+        with open(path, "w") as handle:
             json.dump(data, handle, indent=4)
 
 
@@ -596,11 +570,10 @@ class AOVFile:
 # =============================================================================
 
 
-def _find_aov_files():
+def _find_aov_files() -> Tuple[str]:
     """Find any .json files that should be read.
 
     :return: json files to be read.
-    :rtype: tuple(str)
 
     """
     # Look for the specific AOV search path.
@@ -615,14 +588,13 @@ def _find_aov_files():
     for directory in directories:
         all_files.extend(glob.glob(os.path.join(directory, "*.json")))
 
-    return tuple(all_files)
+    return tuple(str(f) for f in all_files)
 
 
-def _find_houdinipath_aov_folders():
+def _find_houdinipath_aov_folders() -> Tuple[str]:
     """Look for any config/aovs folders in the HOUDINI_PATH.
 
     :return: Folder paths to search.
-    :rtype: tuples(str)
 
     """
     # Try to find HOUDINI_PATH directories.
@@ -635,11 +607,10 @@ def _find_houdinipath_aov_folders():
     return directories
 
 
-def _get_aov_path_folders():
+def _get_aov_path_folders() -> Tuple[str]:
     """Get a list of paths to search from HT_AOV_PATH.
 
     :return: Folder paths to search.
-    :rtype: tuple(str)
 
     """
     # Get the search path.
@@ -663,11 +634,10 @@ def _get_aov_path_folders():
 # =============================================================================
 
 
-def build_menu_script():
+def build_menu_script() -> Tuple[str]:
     """Build a menu script for choosing AOVs and groups.
 
     :return: The menu script.
-    :rtype: tuple(str)
 
     """
     menu = []
@@ -684,13 +654,11 @@ def build_menu_script():
     return tuple(menu)
 
 
-def flatten_aov_items(items):
+def flatten_aov_items(items: Tuple[Union[AOV, AOVGroup]]) -> Tuple[AOV]:
     """Flatten a list that contains AOVs and groups into a list of all AOVs.
 
     :param items: A list of items to flatten,
-    :type items: tuple
     :return: All the items flattened into a tuple of aovs.
-    :rtype: tuple(ht.sohohooks.aovs.aov.AOV)
 
     """
     aovs = []

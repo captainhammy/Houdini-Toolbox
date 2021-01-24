@@ -8,10 +8,11 @@
 import base64
 import datetime
 import hashlib
+import html.parser
 import json
 import os
 import time
-import html.parser
+from typing import List, Optional, Tuple
 
 # Third Party Imports
 import humanfriendly
@@ -55,20 +56,15 @@ class _Service:
         return _APIFunction(attr_name, self)
 
     def get_available_builds(
-        self, product, version=None, platform=None, only_production=None
-    ):
+        self, product: str, version: Optional[str] = None, platform: Optional[str] = None, only_production: bool = False
+    ) -> List[dict]:
         """Get a list of available builds matching the criteria.
 
         :param product: The name of the product to download.
-        :type product: str
         :param version: The major.minor version to download.
-        :type version: str
         :param platform: The platform to download for.
-        :type platform: str
         :param only_production: Only consider production builds.
-        :type only_production: bool
         :return: A list of found builds.
-        :rtype: list(dict)
 
         """
         releases_list = self.download.get_daily_builds_list(
@@ -84,19 +80,14 @@ class _Service:
 
         return releases_list
 
-    def get_daily_build_download(self, product, version, build, platform):
+    def get_daily_build_download(self, product: str, version: str, build: str, platform: str) -> dict:
         """Get the release information for a specific build.
 
         :param product: The name of the product to download.
-        :type product: str
         :param version: The major.minor version to download.
-        :type version: str
         :param build: The build number.
-        :type build: str
         :param platform: The platform to download for.
-        :type platform: str
         :return: The release information.
-        :rtype: dict
 
         """
         release_info = self.download.get_daily_build_download(
@@ -110,13 +101,11 @@ class _APIFunction:
     """Class representing a Web API function.
 
     :param function_name: The name of the function.
-    :type function_name: str
     :param service: The API connection service.
-    :type service: _Service
 
     """
 
-    def __init__(self, function_name, service):
+    def __init__(self, function_name: str, service: _Service):
         self.function_name = function_name
         self.service = service
 
@@ -146,7 +135,7 @@ class APIError(Exception):
 
     """
 
-    def __init__(self, http_code, message):
+    def __init__(self, http_code: int, message: str):
         super().__init__(message)
         self.http_code = http_code
 
@@ -157,7 +146,7 @@ class AuthorizationError(Exception):
 
     """
 
-    def __init__(self, http_code, message):
+    def __init__(self, http_code: int, message: str):
         super().__init__(message)
         self.http_code = http_code
 
@@ -167,18 +156,14 @@ class AuthorizationError(Exception):
 # =============================================================================
 
 
-def _get_access_token_and_expiry_time(access_token_url, client_id, client_secret_key):
+def _get_access_token_and_expiry_time(access_token_url: str, client_id: str, client_secret_key: str) -> Tuple[str, float]:
     """Given an API client (id and secret key) that is allowed to make API
     calls, return an access token that can be used to make calls.
 
     :param access_token_url: The access token url.
-    :type access_token_url: str
     :param client_id: The client ID.
-    :type client_id: str
     :param client_secret_key: The client secret key.
-    :type client_secret_key: str
     :return: An access token and token expiration time.
-    :rtype: tuple(str, float)
 
     """
     response = requests.post(
@@ -207,22 +192,16 @@ def _get_access_token_and_expiry_time(access_token_url, client_id, client_secret
 
 
 def _call_api_with_access_token(
-    endpoint_url, access_token, function_name, args, kwargs
-):
+    endpoint_url: str, access_token: str, function_name: str, args, kwargs
+) -> dict:
     """Call into the API using an access token.
 
     :param endpoint_url: The service endpoint url.
-    :type endpoint_url: str
     :param access_token: The access token.
-    :type access_token: str
     :param function_name: The name of the function being called.
-    :type function_name: str
     :param args: The function args.
-    :type args: list(str)
     :param kwargs: The keyword function args.
-    :type kwargs: dict
     :return: The response data.
-    :rtype: dict
 
     """
 
@@ -238,14 +217,12 @@ def _call_api_with_access_token(
     raise APIError(response.status_code, _extract_traceback_from_response(response))
 
 
-def _extract_traceback_from_response(response):
+def _extract_traceback_from_response(response: requests.Response) -> str:
     """Helper function to extract a traceback from the web server response if
     an API call generated a server-side exception.
 
     :param response: A web server response.
-    :type response: requests.Response
     :return: Traceback information from the response.
-    :rtype: str
 
     """
     error_message = response.text
@@ -269,29 +246,22 @@ def _extract_traceback_from_response(response):
 
 
 def _get_build_to_download(
-    version,
-    build=None,
-    product="houdini",
-    platform="linux",
-    only_production=False,
-    allow_bad=False,
-):
+    version: str,
+    build: Optional[str] = None,
+    product: str = "houdini",
+    platform: str = "linux",
+    only_production: bool = False,
+    allow_bad: bool = False,
+) -> Optional[dict]:
     """Determine the build to actually download.
 
     :param version: The major.minor version to download.
-    :type version: str
     :param build: Optional build number.
-    :type build: str
     :param product: The name of the product to download.
-    :type product: str
     :param platform: The platform to download for.
-    :type platform: str
     :param only_production: Only consider production builds.
-    :type only_production: bool
     :param allow_bad: Allow downloading builds marked as 'bad'.
-    :type allow_bad: bool
     :return: The target build information.
-    :rtype: dict or None
 
     """
     # Initialize the API service.
@@ -335,11 +305,10 @@ def _get_build_to_download(
     return release_info
 
 
-def _get_sidefx_app_credentials():
+def _get_sidefx_app_credentials() -> dict:
     """Load the SideFX API credentials.
 
     :return: The loaded api credentials.
-    :rtype: dict
 
     """
     with open(os.path.expandvars("$HOME/sesi_app_info.json")) as handle:
@@ -348,13 +317,11 @@ def _get_sidefx_app_credentials():
     return data
 
 
-def _verify_file_checksum(file_path, hash_value):
+def _verify_file_checksum(file_path: str, hash_value: str):
     """Verify the md5 hash of the downloaded file.
 
     :param file_path: The path to the downloaded file.
-    :type file_path: str
     :param hash_value: The server provided hash value.
-    :type hash_value: str
     :return:
 
     """
@@ -375,32 +342,24 @@ def _verify_file_checksum(file_path, hash_value):
 
 
 def download_build(  # pylint: disable=too-many-locals
-    download_path,
-    version,
-    build=None,
-    product="houdini",
-    platform="linux",
-    only_production=False,
-    allow_bad=False,
-):
+    download_path: str,
+    version: str,
+    build: Optional[str]=None,
+    product: str = "houdini",
+    platform: str = "linux",
+    only_production: bool = False,
+    allow_bad: bool = False,
+) -> Optional[str]:
     """Download a build to target path.
 
     :param download_path: The path to download the build to.
-    :type download_path: str
     :param version: The major.minor version to download.
-    :type version: str
     :param build: Optional build number.
-    :type build: str
     :param product: The name of the product to download.
-    :type product: str
     :param platform: The platform to download for.
-    :type platform: str
     :param only_production: Only consider production builds.
-    :type only_production: bool
     :param allow_bad: Allow downloading builds marked as 'bad'.
-    :type allow_bad: bool
     :return: The path to the downloaded file.
-    :rtype: str
 
     """
     release_info = _get_build_to_download(
@@ -459,20 +418,16 @@ def download_build(  # pylint: disable=too-many-locals
 
 
 def list_builds(
-    version=None, product="houdini", platform="linux", only_production=False
+    version: Optional[str] = None, product: str = "houdini", platform: str = "linux", only_production: bool = False
 ):
     """Display a table of builds available to download.
 
     Dates which care colored green indicate they are today's build.
 
     :param version: The major.minor version to download.
-    :type version: str
     :param product: The name of the product to download.
-    :type product: str
     :param platform: The platform to download for.
-    :type platform: str
     :param only_production: Only consider production builds.
-    :type only_production: bool
     :return:
 
     """

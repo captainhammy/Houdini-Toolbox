@@ -5,7 +5,9 @@
 # ==============================================================================
 
 # Standard Library Imports
+from __future__ import annotations
 from operator import attrgetter
+from typing import TYPE_CHECKING, Any, Optional
 
 # Third Party Imports
 from PySide2 import QtCore
@@ -13,6 +15,10 @@ from PySide2 import QtCore
 # Houdini Toolbox Imports
 from ht.ui.paste import utils
 
+if TYPE_CHECKING:
+    # pylint: disable=ungrouped-imports
+    from PySide2 import QtWidgets
+    from ht.ui.paste.sources import CopyPasteSource
 
 # ==============================================================================
 # CLASSES
@@ -23,17 +29,14 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
     """Table model to display items available to paste.
 
     :param source: The source item.
-    :type source: ht.ui.paste.sources.CopyPasteSource
     :param context: The operator context.
-    :type context: str
     :param parent: Optional parent.
-    :type parent: QtCore.QWidget
 
     """
 
     header_labels = ("Name", "Description", "Author", "Date")
 
-    def __init__(self, source, context, parent=None):
+    def __init__(self, source: CopyPasteSource, context: str, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
 
         self.context = context
@@ -43,28 +46,23 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
 
         self.refresh()
 
-    def columnCount(
-        self, parent=QtCore.QModelIndex()
-    ):  # pylint: disable=invalid-name,unused-argument
+    def columnCount(  # pylint: disable=unused-argument
+        self, parent: QtCore.QModelIndex=QtCore.QModelIndex()
+    ) -> int:
         """The number of columns.
 
         :param parent: The parent item.
-        :type parent: QtCore.QModelIndex
         :return: The number of columns.
-        :rtype: int
 
         """
         return len(self.header_labels)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole) -> Any:
         """Get item data.
 
         :param index: THe index to get the data for.
-        :type index: QtCore.QModelIndex
         :param role: The role to get the data for.
-        :type role: int
         :return: The item data.
-        :rtype: object
 
         """
         if not index.isValid():
@@ -91,32 +89,26 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def flags(self, index):  # pylint: disable=no-self-use,unused-argument
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:  # pylint: disable=no-self-use,unused-argument
         """Item flags.
 
         We want items to be enabled and selectable.
 
         :param index: The index for get the flags for.
-        :type index: QtCore.QModelIndex
         :return: The desired flags.
-        :rtype: QtCore.Qt.ItemFlags
 
         """
         return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
     def headerData(
-        self, section, orientation, role=QtCore.Qt.DisplayRole
-    ):  # pylint: disable=invalid-name,
+        self, section: int, orientation: QtCore.Qt.Orientation, role: int = QtCore.Qt.DisplayRole
+    ) -> Any:
         """Populate column headers with our labels.
 
         :param section: The header index.
-        :type section: int
         :param orientation: The header orientation.
-        :type orientation: QtCore.Qt.Orientation
         :param role: The desired role.
-        :type role: int
         :return: The header data
-        :rtype: object
 
         """
         if role == QtCore.Qt.DisplayRole and orientation == QtCore.Qt.Horizontal:
@@ -124,17 +116,13 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
 
         return QtCore.QAbstractTableModel.headerData(self, section, orientation, role)
 
-    def index(self, row, column, parent=QtCore.QModelIndex()):
+    def index(self, row: int, column: int, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> QtCore.QModelIndex:
         """Create model indexes for items.
 
         :param row: The item row.
-        :type row: int
         :param column: The item column.
-        :type row: int
         :param parent: The parent index.
-        :type parent: QtCore.QModelIndex
         :return: A model index for the item.
-        :rtype: QtCore.QModelIndex
 
         """
         return self.createIndex(row, column, parent)
@@ -149,17 +137,15 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
         self.items.sort(key=attrgetter("name"))
         self.modelReset.emit()
 
-    def rowCount(
-        self, parent=QtCore.QModelIndex()
-    ):  # pylint: disable=invalid-name,unused-argument
+    def rowCount(  # pylint: disable=unused-argument
+        self, parent: QtCore.QModelIndex = QtCore.QModelIndex()
+    ) -> int:
         """The number of rows.
 
         Equal to the number of files we can paste.
 
         :param parent: The parent item.
-        :type parent: QtCore.QModelIndex
         :return: The number of rows.
-        :rtype: int
 
         """
         return len(self.items)

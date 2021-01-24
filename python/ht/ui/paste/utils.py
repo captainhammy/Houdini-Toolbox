@@ -5,10 +5,15 @@
 # ==============================================================================
 
 # Standard Library Imports
+from __future__ import annotations
 import datetime
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 # Houdini Imports
 import hou
+
+if TYPE_CHECKING:
+    from ht.ui.paste.sources import CopyPasteItemSource
 
 
 # ==============================================================================
@@ -16,41 +21,35 @@ import hou
 # ==============================================================================
 
 
-def date_from_string(value):
+def date_from_string(value: str) -> datetime.datetime:
     """Convert a string value into a datetime object.
 
     The value must be formatted as: %m/%d/%Y %H:%M
 
     :param value: The date string.
-    :type value: str
     :return: A datetime object representing the string.
-    :rtype: datetime.datetime
 
     """
     return datetime.datetime.strptime(value, "%m/%d/%Y %H:%M")
 
 
-def date_to_string(date):
+def date_to_string(date: datetime.datetime) -> str:
     """Convert a datetime object to a string.
 
     The date string will be formatted as: %m/%d/%Y %H:%M
 
     :param date: The datetime object to convert.
-    :type date: datetime.datetime
     :return: The date as a string.
-    :rtype: str
 
     """
     return date.strftime("%m/%d/%Y %H:%M")
 
 
-def find_current_pane_tab(scriptargs):
+def find_current_pane_tab(scriptargs: dict) -> Optional[hou.NetworkEditor]:
     """Attempt to find the current network editor pane tab.
 
     :param scriptargs: Houdini kwargs dict.
-    :type scriptargs: dict
     :return: The found current network editor pane tab, if any.
-    :rtype: hou.NetworkEditor or None
 
     """
     # Try to get the current pane.
@@ -80,17 +79,13 @@ def find_current_pane_tab(scriptargs):
     return pane
 
 
-def paste_items_from_sources(sources, editor, pos=None, mousepos=None):
+def paste_items_from_sources(sources: List[CopyPasteItemSource], editor: hou.NetworkEditor, pos: Optional[List[float, float]] = None, mousepos: Optional[List[float, float]] = None):
     """Paste sources to the current location.
 
     :param sources: A list of sources to paste.
-    :type sources: list(ht.ui.paste.sources.CopyPasteItemSource)
     :param editor: The editor to paste the items in.
-    :type editor: hou.NetworkEditor
     :param pos: The position to paste the items to.
-    :type pos: list(float)
     :param mousepos: The position of the mouse.
-    :type mousepos: list(float)
     :return:
 
     """
@@ -119,15 +114,12 @@ def paste_items_from_sources(sources, editor, pos=None, mousepos=None):
             nodegraphutils.updateCurrentItem(editor)
 
 
-def save_items_to_source(source, parent, items):
+def save_items_to_source(source: CopyPasteItemSource, parent: hou.Node, items: Tuple[hou.NetworkItem]):
     """Save a list of items to a source.
 
     :param source: The target source.
-    :type source: ht.ui.paste.sources.CopyPasteItemSource
     :param parent: The parent node of the items.
-    :type parent: hou.Node
     :param items: The items to save to the source.
-    :type items: tuple(hou.NetworkItem)
 
     """
     source.save_items(parent, items)

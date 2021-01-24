@@ -5,10 +5,12 @@
 # =============================================================================
 
 # Standard Library Imports
+from __future__ import annotations
 from collections import OrderedDict
 from contextlib import contextmanager
 import logging
 import time
+from typing import Callable, List, Optional, Tuple
 
 _logger = logging.getLogger(__name__)
 
@@ -84,16 +86,13 @@ class HoudiniEventStats(metaclass=_StatsMeta):
     """The base statistics class.
 
     :param name: Name for the stats.
-    :type name: str
     :param tags: Optional stats tags.
-    :type tags: list(str)
     :param post_report: Print a report after running.
-    :type post_report: bool
     :return:
 
     """
 
-    def __init__(self, name, tags=None, post_report=False):
+    def __init__(self, name: str, tags: Optional[List[str]] = None, post_report: bool = False):
         self._last_run_time = 0
         self._last_started = 0
         self._name = name
@@ -136,33 +135,33 @@ class HoudiniEventStats(metaclass=_StatsMeta):
     # -------------------------------------------------------------------------
 
     @property
-    def last_run_time(self):
-        """float: The run time of the most recent run."""
+    def last_run_time(self) -> float:
+        """The run time of the most recent run."""
         return self._last_run_time
 
     @property
-    def name(self):
-        """str: The stats name."""
+    def name(self) -> str:
+        """The stats name."""
         return self._name
 
     @property
-    def post_report(self):
-        """bool: Whether or not to print the report at exit."""
+    def post_report(self) -> bool:
+        """Whether or not to print the report at exit."""
         return self._post_report
 
     @property
-    def run_count(self):
-        """int: The number of times the stats have been run."""
+    def run_count(self) -> int:
+        """The number of times the stats have been run."""
         return self._run_count
 
     @property
-    def tags(self):
-        """list(str): Tags associated with the stats."""
+    def tags(self) -> List[str]:
+        """Tags associated with the stats."""
         return self._tags
 
     @property
-    def total_time(self):
-        """float: The total time for all stats runs."""
+    def total_time(self) -> float:
+        """The total time for all stats runs."""
         return self._total_time
 
     # -------------------------------------------------------------------------
@@ -194,16 +193,13 @@ class HoudiniEventItemStats(HoudiniEventStats):
     """Stats for Items.
 
     :param name: Name for the stats.
-    :type name: str
     :param tags: Optional stats tags.
-    :type tags: list(str)
     :param post_report: Print a report after running.
-    :type post_report: bool
     :return:
 
     """
 
-    def __init__(self, name, tags=None, post_report=False):
+    def __init__(self, name: str, tags: Optional[List[str]] = None, post_report: bool = False):
         super().__init__(
             name, tags=tags, post_report=post_report
         )
@@ -215,8 +211,8 @@ class HoudiniEventItemStats(HoudiniEventStats):
     # -------------------------------------------------------------------------
 
     @property
-    def item_stats(self):
-        """OrderedDict: Item statistics."""
+    def item_stats(self) -> OrderedDict:
+        """Item statistics."""
         return self._item_stats
 
     # -------------------------------------------------------------------------
@@ -249,11 +245,10 @@ class HoudiniEventItemStats(HoudiniEventStats):
         self.item_stats.clear()
 
     @contextmanager
-    def time_function(self, func):
+    def time_function(self, func: Callable):
         """Time a function.
 
         :param func: Function.
-        :type func: callable
         :return:
 
         """
@@ -275,15 +270,12 @@ class HoudiniEventItemStats(HoudiniEventStats):
 # =============================================================================
 
 
-def _get_matching_stats(stats, tags):
+def _get_matching_stats(stats: List[HoudiniEventStats], tags: List[str]) -> Tuple[HoudiniEventStats]:
     """Filter a list of stats for ones which match the tags.
 
     :param stats: An list of stats objects to search.
-    :type stats: [HoudiniEventStats]
     :param tags: The list of tag values to filter by.
-    :type tags: [str]
     :return: A tuple of stat objects.
-    :rtype: tuple(HoudiniEventStats)
 
     """
     matching_stats = []
@@ -304,13 +296,11 @@ def _get_matching_stats(stats, tags):
 # =============================================================================
 
 
-def get_event_stats(matching_tags=None):
+def get_event_stats(matching_tags: Optional[str] = None) -> Tuple[HoudiniEventStats]:
     """Get a list of event item related stats, optionally filtered by tag.
 
     :param matching_tags: An optional list of tag values to filter by.
-    :type matching_tags: [str]
     :return: A tuple of stat objects.
-    :rtype: tuple(HoudiniEventStats)
 
     """
     all_stats = list(
@@ -325,13 +315,11 @@ def get_event_stats(matching_tags=None):
     return _get_matching_stats(all_stats, matching_tags)
 
 
-def get_item_stats(matching_tags=None):
+def get_item_stats(matching_tags: Optional[str] = None) -> Tuple[HoudiniEventItemStats]:
     """Get a list of event related stats, optionally filtered by tag.
 
     :param matching_tags: An optional list of tag values to filter by.
-    :type matching_tags: [str]
     :return: A tuple of stat objects.
-    :rtype: tuple(HoudiniEventItemStats)
 
     """
     all_stats = list(

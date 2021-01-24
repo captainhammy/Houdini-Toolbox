@@ -5,7 +5,9 @@
 # =============================================================================
 
 # Standard Library Imports
+from __future__ import annotations
 import ctypes
+from typing import List, Optional, Tuple, Union
 
 # Houdini Imports
 import hou
@@ -67,13 +69,11 @@ _GROUP_TYPE_MAP = {hou.PointGroup: 0, hou.PrimGroup: 1, hou.EdgeGroup: 2, hou.Ve
 # =============================================================================
 
 
-def build_c_double_array(values):
-    """Convert a list of numbers to a ctypes double array.
+def build_c_double_array(values: List[float]) -> ctypes.Array:
+    """Convert a list of numbers to a ctypes c_double array.
 
     :param values: A list of floats.
-    :type values: list(float)
     :return: The values as ctypes compatible values.
-    :rtype: list(ctypes.c_double)
 
     """
     arr = (ctypes.c_double * len(values))(*values)
@@ -81,13 +81,11 @@ def build_c_double_array(values):
     return arr
 
 
-def build_c_int_array(values):
-    """Convert a list of numbers to a ctypes int array.
+def build_c_int_array(values: List[int]) -> ctypes.Array:
+    """Convert a list of numbers to a ctypes c_int array.
 
     :param values: A list of ints.
-    :type values: list(int)
     :return: The values as ctypes compatible values.
-    :rtype: list(ctypes.c_int)
 
     """
     arr = (ctypes.c_int * len(values))(*values)
@@ -95,13 +93,11 @@ def build_c_int_array(values):
     return arr
 
 
-def build_c_string_array(values):
-    """Convert a list of strings to a ctypes char * array.
+def build_c_string_array(values: Union[List[str], Tuple[str]]) -> ctypes.Array:
+    """Convert a list of strings to a ctypes c_char_p array.
 
     :param values: A list of strings.
-    :type values: list(str)
     :return: The values as ctypes compatible values.
-    :rtype: list(ctypes.c_char_p)
 
     """
     converted = [string_encode(value) for value in values]
@@ -110,29 +106,23 @@ def build_c_string_array(values):
     return arr
 
 
-def clean_string_values(values):
+def clean_string_values(values: List[str]) -> Tuple[str]:
     """Process a string list, remove empty strings, and convert to utf-8.
 
     :param values: A list of strings to clean.
-    :type values: list(str)
     :return: A clean tuple.
-    :rtype: tuple(str)
 
     """
     return tuple([string_decode(val) for val in values if val])
 
 
-def find_attrib(geometry, attrib_type, name):
+def find_attrib(geometry: hou.Geometry, attrib_type: hou.attribType, name: str) -> Optional[hou.Attrib]:
     """Find an attribute with a given name and type on the geometry.
 
     :param geometry: The geometry to find an attribute on.
-    :type geometry: hou.Geometry
     :param attrib_type: The attribute type.
-    :type attrib_type: hou.attribType.
     :param name: The attribute name.
-    :type name: str
     :return: A found attribute, otherwise None.
-    :rtype: hou.Attrib or None
 
     """
     if attrib_type == hou.attribType.Vertex:
@@ -150,19 +140,15 @@ def find_attrib(geometry, attrib_type, name):
     raise ValueError("Expected hou.attribType, got {}".format(type(attrib_type)))
 
 
-def find_group(geometry, group_type, name):
+def find_group(geometry: hou.Geometry, group_type: int, name: str) -> Optional[Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup, hou.VertexGroup]]:
     """Find a group with a given name and type.
 
     group_type corresponds to the integer returned by _get_group_type()
 
     :param geometry: The geometry to find the group in.
-    :type geometry: hou.Geometry
     :param group_type: The group type.
-    :type group_type: int
     :param name: The attribute name.
-    :type name: str
     :return: A found group.
-    :rtype: hou.EdgeGroup or hou.PointGroup or hou.PrimGroup
 
     """
     if group_type == 0:
@@ -180,15 +166,12 @@ def find_group(geometry, group_type, name):
     raise ValueError("Invalid group type {}".format(group_type))
 
 
-def geo_details_match(geometry1, geometry2):
+def geo_details_match(geometry1: hou.Geometry, geometry2: hou.Geometry) -> bool:
     """Test if two hou.Geometry objects point to the same detail.
 
     :param geometry1: A geometry detail.
-    :type geometry1: hou.Geometry
     :param geometry2: A geometry detail.
-    :type geometry2: hou.Geometry
     :return: Whether or not the objects represent the same detail.
-    :rtype: bool
 
     """
     # pylint: disable=protected-access
@@ -203,13 +186,11 @@ def geo_details_match(geometry1, geometry2):
     return details_match
 
 
-def get_attrib_owner(attribute_type):
+def get_attrib_owner(attribute_type: hou.attribType) -> int:
     """Get an HDK compatible attribute owner value.
 
     :param attribute_type: The type of attribute.
-    :type attribute_type: hou.attribType
     :return: An HDK attribute owner value.
-    :rtype: int
 
     """
     try:
@@ -219,15 +200,13 @@ def get_attrib_owner(attribute_type):
         raise ValueError("Invalid attribute type: {}".format(attribute_type)) from exc
 
 
-def get_attrib_owner_from_geometry_entity_type(entity_type):
+def get_attrib_owner_from_geometry_entity_type(entity_type: Union[hou.Point, hou.Prim, hou.Vertex]) -> int:
     """Get an HDK compatible attribute owner value from a geometry class.
 
     The type can be of hou.Geometry, hou.Point, hou.Prim (or subclasses) or hou.Vertex.
 
     :param entity_type: The entity to get a attribute owner for.
-    :type entity_type: hou.Vertex or hou.Point or hou.Prim or hou.Geometry
     :return: An HDK attribute owner value.
-    :rtype: int
 
     """
     # If the class is a base class in the map then just return it.
@@ -249,13 +228,11 @@ def get_attrib_owner_from_geometry_entity_type(entity_type):
     raise ValueError("Invalid entity type: {}".format(entity_type))
 
 
-def get_attrib_owner_from_geometry_type(geometry_type):
+def get_attrib_owner_from_geometry_type(geometry_type: hou.geometryType) -> int:
     """Get an HDK compatible attribute owner value from a hou.geometryType.
 
     :param geometry_type: The entity to get a attribute owner for.
-    :type geometry_type: hou.geometryType
     :return: An HDK attribute owner value.
-    :rtype: int
 
     """
     # If the class is a base class in the map then just return it.
@@ -267,13 +244,11 @@ def get_attrib_owner_from_geometry_type(geometry_type):
         raise ValueError("Invalid geometry type: {}".format(geometry_type)) from exc
 
 
-def get_attrib_storage(data_type):
+def get_attrib_storage(data_type: hou.attribType) -> int:
     """Get an HDK compatible attribute storage class value.
 
     :param data_type: The type of data to store.
-    :type data_type: hou.attribData
     :return: An HDK attribute storage type.
-    :rtype: int
 
     """
     try:
@@ -283,13 +258,11 @@ def get_attrib_storage(data_type):
         raise ValueError("Invalid data type: {}".format(data_type)) from exc
 
 
-def get_entity_data(entity):
+def get_entity_data(entity: Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex]) -> Tuple[Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex], hou.Geometry, int]:
     """Get entity data from a list of entities.
 
     :param entity: A geometry entity.
-    :type entity: hou.Geometry or hou.Point or hou.Prim or hou.Vertex
     :return: The entity type, geometry for the entities and the entity indices.
-    :rtype: tuple(hou.Geometry or hou.Point or hou.Prim or hou.Vertex, hou.Geometry, int)
 
     """
     # Copying to a geometry entity.
@@ -308,18 +281,16 @@ def get_entity_data(entity):
         geometry = entity
         entity_num = 0
 
-    # Using __class__ is ghetto, but easier for testing since a spec'ed MagicMock will
+    # Using __class__ is ghetto, but easier for testing since a MagicMock will
     # return the desired value whereas type() will not :(
     return entity.__class__, geometry, entity_num
 
 
-def get_entity_data_from_list(entities):
+def get_entity_data_from_list(entities: List[Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex]]) -> Tuple[Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex], hou.Geometry, List[int]]:
     """Get entity data from a list of entities.
 
-    :param entities: A list of geometry entities.
-    :type entities: list(hou.Geometry) or list(hou.Point) or list(hou.Prim) or list(hou.Vertex)
+    :param entities: List of geometry entities.
     :return: The entity type, geometry for the entities and the entity indices.
-    :rtype: tuple(hou.Geometry or hou.Point or hou.Prim or hou.Vertex, hou.Geometry, list(int))
 
     """
     entity = entities[0]
@@ -340,18 +311,16 @@ def get_entity_data_from_list(entities):
         geometry = entity
         entity_nums = [0]
 
-    # Using __class__ is ghetto, but easier for testing since a spec'ed MagicMock will
+    # Using __class__ is ghetto, but easier for testing since a MagicMock will
     # return the desired value whereas type() will not :(
     return entity.__class__, geometry, entity_nums
 
 
-def get_group_attrib_owner(group):
+def get_group_attrib_owner(group: Union[hou.PointGroup, hou.PrimGroup]) -> int:
     """Get an HDK compatible group attribute type value.
 
     :param group: The group to get the attribute owner for.
-    :type group: hou.PointGroup or hou.PrimGroup
     :return: An HDK attribute owner value.
-    :rtype: int
 
     """
     try:
@@ -361,13 +330,11 @@ def get_group_attrib_owner(group):
         raise ValueError("Invalid group type") from exc
 
 
-def get_group_type(group):
+def get_group_type(group: Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup]) -> int:
     """Get an HDK compatible group type value.
 
     :param group: The group to get the group type for.
-    :type group: hou.EdgeGroup or hou.PointGroup or hou.PrimGroup
     :return: An HDK group type value.
-    :rtype: int
 
     """
     try:
@@ -377,7 +344,7 @@ def get_group_type(group):
         raise ValueError("Invalid group type") from exc
 
 
-def get_multiparm_containing_folders(name, parm_template_group):
+def get_multiparm_containing_folders(name: str, parm_template_group: hou.ParmTemplateGroup) -> Tuple[hou.FolderParmTemplate]:
     """Given a parameter template name, return a list of containing multiparms.
 
     If the name is contained in one or more multiparm folders, the returned templates
@@ -391,11 +358,8 @@ def get_multiparm_containing_folders(name, parm_template_group):
     result in a tuple ordered as follows: (<hou.FolderParmTemplate inner#>,  <hou.FolderParmTemplate outer>)
 
     :param name: The name of the parameter to get the containing names for.
-    :type name: str
     :param parm_template_group: A parameter template group for a nde.
-    :type parm_template_group: hou.ParmTemplateGroup
     :return: A tuple of containing multiparm templates, if any.
-    :rtype: tuple(hou.FolderParmTemplate)
 
     """
     # A list of containing folders.
@@ -421,7 +385,7 @@ def get_multiparm_containing_folders(name, parm_template_group):
     return tuple(containing_folders)
 
 
-def get_multiparm_container_offsets(name, parm_template_group):
+def get_multiparm_container_offsets(name: str, parm_template_group: hou.ParmTemplateGroup) -> Tuple[int]:
     """Given a parameter template name, return a list of containing multiparm folder
     offsets.
 
@@ -437,11 +401,8 @@ def get_multiparm_container_offsets(name, parm_template_group):
     result in a tuple ordered as follows: (0, 1)
 
     :param name: The name of the parameter to get the containing offsets for.
-    :type name: str
     :param parm_template_group: A parameter template group for a nde.
-    :type parm_template_group: hou.ParmTemplateGroup
     :return: A tuple of containing multiparm offsets, if any.
-    :rtype: tuple(int)
 
     """
     # A list of contain folders.
@@ -461,13 +422,11 @@ def get_multiparm_container_offsets(name, parm_template_group):
     return tuple(offsets)
 
 
-def get_multiparm_start_offset(parm_template):
+def get_multiparm_start_offset(parm_template: hou.ParmTemplate) -> int:
     """Get the start offset of items in the multiparm.
 
     :param parm_template: A multiparm folder parm template
-    :type parm_template: hou.ParmTemp
     :return: The start offset of the multiparm.
-    :rtype: int
 
     """
     if not is_parm_template_multiparm_folder(parm_template):
@@ -476,32 +435,27 @@ def get_multiparm_start_offset(parm_template):
     return int(parm_template.tags().get("multistartoffset", 1))
 
 
-def get_nodes_from_paths(paths):
+def get_nodes_from_paths(paths: List[str]) -> Tuple[hou.Node]:
     """Convert a list of string paths to hou.Node objects.
 
     :param paths: A list of paths.
-    :type paths: list(str)
     :return: A tuple of hou.Node objects.
-    :rtype: tuple(hou.Node)
 
     """
-    return tuple([hou.node(path) for path in paths if path])
+    return tuple(hou.node(path) for path in paths if path)
 
 
-def get_points_from_list(geometry, point_list):
+def get_points_from_list(geometry: hou.Geometry, point_list: List[int]) -> Tuple[hou.Point]:
     """Convert a list of point numbers to hou.Point objects.
 
     :param geometry: The geometry to get points for.
-    :type geometry: hou.Geometry
     :param point_list: A list of point numbers.
-    :type point_list: list(int)
     :return: Matching points on the geometry.
-    :rtype: tuple(hou.Point)
 
     """
     # Return a empty tuple if the point list is empty.
     if not point_list:
-        return ()
+        return tuple()
 
     # Convert the list of integers to a space separated string.
     point_str = " ".join([str(i) for i in point_list])
@@ -510,20 +464,17 @@ def get_points_from_list(geometry, point_list):
     return geometry.globPoints(point_str)
 
 
-def get_prims_from_list(geometry, prim_list):
+def get_prims_from_list(geometry: hou.Geometry, prim_list: List[int]) -> Tuple[hou.Prim]:
     """Convert a list of primitive numbers to hou.Prim objects.
 
     :param geometry: The geometry to get prims for.
-    :type geometry: hou.Geometry
     :param prim_list: A list of prim numbers.
-    :type prim_list: list(int)
     :return: Matching prims on the geometry.
-    :rtype: tuple(hou.Prim)
 
     """
     # Return a empty tuple if the prim list is empty.
     if not prim_list:
-        return ()
+        return tuple()
 
     # Convert the list of integers to a space separated string.
     prim_str = " ".join([str(i) for i in prim_list])
@@ -532,13 +483,11 @@ def get_prims_from_list(geometry, prim_list):
     return geometry.globPrims(prim_str)
 
 
-def is_parm_template_multiparm_folder(parm_template):
+def is_parm_template_multiparm_folder(parm_template: hou.ParmTemplate) -> bool:
     """Returns True if the parm template represents a multiparm folder type.
 
     :param parm_template: The parameter template to check.
-    :type parm_template: hou.ParmTemplate
     :return: Whether or not the template represents a multiparm folder.
-    :rtype: bool
 
     """
     if not isinstance(parm_template, hou.FolderParmTemplate):
@@ -547,13 +496,11 @@ def is_parm_template_multiparm_folder(parm_template):
     return parm_template.folderType() in (hou.folderType.MultiparmBlock, hou.folderType.ScrollingMultiparmBlock, hou.folderType.TabbedMultiparmBlock)
 
 
-def string_decode(value):
+def string_decode(value: Union[bytes, str]) -> str:
     """Decode a value.
 
     :param value: The value to decode.
-    :type value: bytes
     :return: The decoded value
-    :rtype: str
 
     """
     if isinstance(value, bytes):
@@ -562,27 +509,24 @@ def string_decode(value):
     return value
 
 
-def string_encode(value):
+def string_encode(value: Union[float, int, str]) -> bytes:
     """Encode a value.
 
     :param value: The value to encode.
-    :type value: float or int or str
     :return: The encoded value
-    :rtype: bytes
 
     """
     return str(value).encode("utf-8")
 
 
-def validate_multiparm_resolve_values(name, indices):
+def validate_multiparm_resolve_values(name: str, indices: Union[List[int], Tuple[int]]):
     """Validate a multiparm token string and the indices to be resolved.
 
     This function will raise a ValueError if there are not enough indices
     supplied for the number of tokens.
+
     :param name: The parameter name to validate.
-    :type name: str
     :param indices: The indices to format into the token string.
-    :type indices: list(int) or tuple(int)
     :return:
 
     """

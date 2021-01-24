@@ -5,7 +5,9 @@
 # ==============================================================================
 
 # Standard Library Imports
+from __future__ import annotations
 import re
+from typing import TYPE_CHECKING, List, Optional
 
 # Third Party Imports
 from PySide2 import QtCore, QtGui, QtWidgets
@@ -17,6 +19,8 @@ import ht.ui.paste.models
 # Houdini Imports
 import hou
 
+if TYPE_CHECKING:
+    from ht.ui.paste.sources import CopyPasteItemSource, CopyPasteSource
 
 # ==============================================================================
 # CLASSES
@@ -27,15 +31,12 @@ class _CustomButtonBox(QtWidgets.QDialogButtonBox):
     """A custom QDialogButtonBox for copy/paste buttons.
 
     :param icon: The button icon.
-    :type icon: QtGui.QIcon
     :param label: The button label.
-    :type label: str
-    :param parent: Optional parent.
-    :type parent: QtCore.QWidget
+    :param parent: Optional parent widget.
 
     """
 
-    def __init__(self, icon, label, parent=None):
+    def __init__(self, icon: QtGui.QIcon, label: str, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(
             QtWidgets.QDialogButtonBox.Cancel, parent=parent
         )
@@ -51,17 +52,11 @@ class BasicSourceItemTable(QtWidgets.QTableView):
     """Table to display and act on items.
 
     :param source: The table source.
-    :type source: ht.ui.paste.sources.CopyPasteSource
     :param context: The Houdini context for the source.
-    :type context: str
     :param selection_mode: The selection mode.
-    :type selection_mode: Optional[SelectionMode]
     :param allow_double_click: Whether or not to allow double clicking items.
-    :type allow_double_click: bool
     :param allow_delete: Whether or not to allow deleting items.
-    :type allow_delete: bool
-    :param parent: Optional parent.
-    :type parent: QtCore.QWidget
+    :param parent: Optional parent widget.
 
     """
 
@@ -70,12 +65,12 @@ class BasicSourceItemTable(QtWidgets.QTableView):
 
     def __init__(
         self,
-        source,
-        context,
-        selection_mode=QtWidgets.QAbstractItemView.SingleSelection,
-        allow_double_click=False,
-        allow_delete=False,
-        parent=None,
+        source: CopyPasteSource,
+        context: str,
+        selection_mode: Optional[QtWidgets.QAbstractItemView.SelectionMode] = QtWidgets.QAbstractItemView.SingleSelection,
+        allow_double_click: bool = False,
+        allow_delete: bool = False,
+        parent: Optional[QtWidgets.QWidget] = None,
     ):
         super().__init__(parent)
         self.source = source
@@ -142,16 +137,14 @@ class BasicSourceItemTable(QtWidgets.QTableView):
 
     @QtCore.Slot(QtCore.QItemSelection, QtCore.QItemSelection)
     def _on_table_selection_changed(
-        self, new_selection, old_selection
+        self, new_selection: QtCore.QItemSelection, old_selection: QtCore.QItemSelection
     ):  # pylint: disable=unused-argument
         """Verify the selection to enable the Paste button.
 
         The selection is valid if one or more rows is selected.
 
         :param new_selection: The newly selected index.
-        :type new_selection: QtCore.QItemSelection
         :param new_selection: The previously selected index.
-        :type new_selection: QtCore.QItemSelection
         :return:
 
         """
@@ -172,11 +165,10 @@ class BasicSourceItemTable(QtWidgets.QTableView):
     # --------------------------------------------------------------------------
 
     @QtCore.Slot(QtCore.QModelIndex)
-    def accept_double_click(self, index):
+    def accept_double_click(self, index: QtCore.QModelIndex):
         """Accept a double click and paste the selected item.
 
         :param index: The index of the clicked item.
-        :type index: QtCore.QModelIndex
         :return:
 
         """
@@ -187,11 +179,10 @@ class BasicSourceItemTable(QtWidgets.QTableView):
         # action on the item item so emit a signal to let the parent know this is the case.
         self.perform_operation_signal.emit()
 
-    def get_selected_sources(self):
+    def get_selected_sources(self) -> List[CopyPasteItemSource]:
         """Get a list of selected item sources
 
         :return: A list of selected sources.
-        :rtype: list(ht.ui.paste.sources.CopyPasteItemSource)
 
         """
         indexes = self.selection_model.selectedRows()
@@ -199,20 +190,18 @@ class BasicSourceItemTable(QtWidgets.QTableView):
         # Get the selected sources from the model based on the indexes.
         return [self.table_model.items[index.row()] for index in indexes]
 
-    def has_rows_selected(self):
+    def has_rows_selected(self) -> bool:
         """Quick check if the table has anything selected.
 
         :return: Whether or not anything is selected.
-        :rtype: bool
 
         """
         return bool(self.selection_model.selectedRows())
 
-    def keyPressEvent(self, event):  # pylint: disable=invalid-name
+    def keyPressEvent(self, event: QtGui.QKeyEvent):  # pylint: disable=invalid-name
         """Handle keystrokes.
 
         :param event: The event which occurred.
-        :type event: QtGui.QKeyEvent
         :return:
 
         """
@@ -225,11 +214,10 @@ class BasicSourceItemTable(QtWidgets.QTableView):
 
         super().keyPressEvent(event)
 
-    def open_menu(self, position):
+    def open_menu(self, position: QtCore.QPoint):
         """Open the RMB context menu.
 
         :param position: The position to open the menu.
-        :type position: QtCore.QPoint
         :return:
 
         """
@@ -252,12 +240,11 @@ class BasicSourceItemTable(QtWidgets.QTableView):
 class CopyButtonBox(_CustomButtonBox):
     """Copy button box.
 
-    :param parent: Optional parent.
-    :type parent: QtCore.QWidget
+    :param parent: Optional parent widget.
 
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(
             hou.qt.createIcon("BUTTONS_copy"), "Copy", parent
         )
@@ -267,16 +254,14 @@ class CopyItemNameWidget(QtWidgets.QWidget):
     """Widget to enter an item name.
 
     :param invalid_names: Optional list of invalid names.
-    :type invalid_names: list(str)
-    :param parent: Optional parent.
-    :type parent: QtCore.QWidget
+    :param parent: Optional parent widget.
 
     """
 
     # Signal to emit if anything is changed.
     valid_source_signal = QtCore.Signal(bool)
 
-    def __init__(self, invalid_names=None, parent=None):
+    def __init__(self, invalid_names: List[str] = None, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
 
         if invalid_names is None:
@@ -351,22 +336,20 @@ class CopyItemNameWidget(QtWidgets.QWidget):
 class NewOrExistingWidget(QtWidgets.QComboBox):
     """Widget to choose a new or existing source.
 
-    :param parent: Optional parent.
-    :type parent: QtCore.QWidget
+    :param parent: Optional parent widget.
 
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
 
         self.addItem("New File")
         self.addItem("Existing File")
 
-    def get_current_source(self):
+    def get_current_source(self) -> str:
         """Get the currently selected source.
 
         :return: The currently selected source name.
-        :rtype: str
 
         """
         return self.itemText(self.currentIndex())
@@ -375,12 +358,11 @@ class NewOrExistingWidget(QtWidgets.QComboBox):
 class PasteButtonBox(_CustomButtonBox):
     """Paste button box.
 
-    :param parent: Optional parent.
-    :type parent: QtCore.QWidget
+    :param parent: Optional parent widget.
 
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(
             hou.qt.createIcon("BUTTONS_paste"), "Paste", parent
         )
@@ -389,12 +371,11 @@ class PasteButtonBox(_CustomButtonBox):
 class RepositoryWidget(QtWidgets.QWidget):
     """Widget displaying a label and a source chooser.
 
-    :param parent: Optional parent.
-    :type parent: QtCore.QWidget
+    :param parent: Optional parent widget.
 
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
 
         layout = QtWidgets.QHBoxLayout()
@@ -413,20 +394,18 @@ class RepositoryWidget(QtWidgets.QWidget):
 
             self.menu.addItem(source.icon, source.display_name, source)
 
-    def get_current_source(self):
+    def get_current_source(self) -> CopyPasteSource:
         """Get the selected source.
 
         :return: The currently selected source.
-        :rtype: ht.ui.paste.sources.CopyPasteSource
 
         """
         return self.menu.itemData(self.menu.currentIndex())
 
-    def get_sources(self):
+    def get_sources(self) -> List[CopyPasteSource]:
         """Get all the sources in the menu.
 
         :return: A list of sources in the menu.
-        :rtype: list(ht.ui.paste.sources.CopyPasteSource)
 
         """
         return [self.menu.itemData(i) for i in range(self.menu.count())]
@@ -435,12 +414,11 @@ class RepositoryWidget(QtWidgets.QWidget):
 class WarningWidget(QtWidgets.QWidget):
     """Widget to display warning messages.
 
-    :param parent: Optional parent.
-    :type parent: QtCore.QWidget
+    :param parent: Optional parent widget.
 
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
 
         layout = QtWidgets.QHBoxLayout()
@@ -467,11 +445,10 @@ class WarningWidget(QtWidgets.QWidget):
         self.label.setText("")
         self.icon.setHidden(True)
 
-    def set_warning(self, message):
+    def set_warning(self, message: str):
         """Set the warning text and icon.
 
         :param message: The warning message.
-        :type message: str
         :return:
 
         """

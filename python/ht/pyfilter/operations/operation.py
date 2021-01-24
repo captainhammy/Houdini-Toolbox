@@ -5,8 +5,14 @@
 # =============================================================================
 
 # Standard Library Imports
+from __future__ import annotations
 from functools import wraps
 import logging
+from typing import TYPE_CHECKING, Callable, Union
+
+if TYPE_CHECKING:
+    import argparse
+    from ht.pyfilter.manager import PyFilterManager
 
 _logger = logging.getLogger(__name__)
 
@@ -20,11 +26,10 @@ class PyFilterOperation:
     """Base class of operations for PyFilter.
 
     :param manager: The manager this operation is registered with.
-    :type manager: ht.pyfilter.manager.PyFilterManager
 
     """
 
-    def __init__(self, manager):
+    def __init__(self, manager: PyFilterManager):
         self._data = {}
         self._manager = manager
 
@@ -40,13 +45,13 @@ class PyFilterOperation:
     # -------------------------------------------------------------------------
 
     @property
-    def data(self):
-        """dict: Data dictionary for sharing between stages and filter calls."""
+    def data(self) -> dict:
+        """Data dictionary for sharing between stages and filter calls."""
         return self._data
 
     @property
-    def manager(self):
-        """ht.pyfilter.manager.PyFilterManager: Reference to the PyFilterManager
+    def manager(self) -> PyFilterManager:
+        """Reference to the PyFilterManager
         this operation is registered with.
 
         """
@@ -57,20 +62,18 @@ class PyFilterOperation:
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def build_arg_string(*args, **kwargs):
+    def build_arg_string(*args, **kwargs) -> str:
         """Build an argument string for this operation.
 
         :return: The constructed argument string.
-        :rtype: str
 
         """
 
     @staticmethod
-    def register_parser_args(parser):
+    def register_parser_args(parser: argparse.ArgumentParser):
         """Register interested parser args for this operation.
 
         :param parser: The argument parser to attach arguments to.
-        :type parser: argparse.ArgumentParser.
         :return:
 
         """
@@ -79,20 +82,18 @@ class PyFilterOperation:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def process_parsed_args(self, filter_args):
+    def process_parsed_args(self, filter_args: argparse.Namespace):
         """Process any parsed args that the operation may be interested in.
 
         :param filter_args: The argparse namespace containing processed args.
-        :type filter_args: argparse.Namespace
         :return:
 
         """
 
-    def should_run(self):  # pylint: disable=no-self-use
+    def should_run(self) -> bool:  # pylint: disable=no-self-use
         """Determine whether or not this filter should be run.
 
         :return: Whether or not this operation should run.
-        :rtype: bool
 
         """
         return True
@@ -103,7 +104,7 @@ class PyFilterOperation:
 # =============================================================================
 
 
-def log_filter_call(method_or_name):
+def log_filter_call(method_or_name: Union[Callable, str]) -> Callable:
     """Custom filter logging decorator.
 
     You can decorate each filter* method of a PyFilterOperation class to
@@ -113,13 +114,12 @@ def log_filter_call(method_or_name):
     the output.
 
     :param method_or_name: A method or  property name.
-    :type method_or_name: function or str
     :return: A wrapped function.
-    :rtype: function
 
     """
 
     def decorator(func):  # pylint: disable=missing-docstring
+
         @wraps(func)
         def wrapper(*args, **kwargs):  # pylint: disable=missing-docstring
             func_name = func.__name__

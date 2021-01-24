@@ -4,10 +4,15 @@
 # IMPORTS
 # =============================================================================
 
+# Standard Library Imports
+from typing import List, Optional, Tuple
+
 # Third Party Imports
 import numpy
 from scipy.spatial import KDTree
 
+# Houdini Imports
+import hou
 
 # =============================================================================
 # CLASSES
@@ -18,16 +23,13 @@ class PointCloud:
     """A wrapper around scipy.spatial.KDTree to represent point positions.
 
     :param geometry: The source geometry.
-    :type geometry: hou.Geometry
     :param pattern: Optional point selecting pattern.
-    :type pattern: str
     :param leaf_size: The tree leaf size.
-    :type leaf_size: int
     :return:
 
     """
 
-    def __init__(self, geometry, pattern=None, leaf_size=10):
+    def __init__(self, geometry: hou.Geometry, pattern: Optional[str] = None, leaf_size: int = 10):
         # The source geometry. We need this to be able to glob points.
         self._geometry = geometry
 
@@ -84,15 +86,13 @@ class PointCloud:
     # NON-PUBLIC METHODS
     # -------------------------------------------------------------------------
 
-    def _get_result_points(self, indexes):
+    def _get_result_points(self, indexes: List[int]) -> Tuple[hou.Point]:
         """This method converts a list of integers into corresponding hou.Point
         objects belonging to the geometry depending on whether a point map is
         being used.
 
         :param indexes: A list of point numbers.
-        :type indexes: list(int)
         :return: A tuple of points matching the indexes.
-        :rtype: tuple(hou.Point)
 
         """
         # If we have a point map set up we need to index into that and then
@@ -111,15 +111,12 @@ class PointCloud:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def find_all_close_points(self, position, maxdist):
+    def find_all_close_points(self, position: hou.Vector3, maxdist: float) -> Tuple[hou.Point]:
         """Find all points within the maxdist from the position.
 
         :param position: A search position.
-        :type position: hou.Vector3
         :param maxdist: The maximum distance to search.
-        :type maxdist: float
         :return: A tuple of found points.
-        :rtype: tuple(hou.Point)
 
         """
         # Convert the position to a compatible ndarray.
@@ -131,22 +128,18 @@ class PointCloud:
         # Bail out if we got no results since an empty list would be converted to ""
         # and hou.Geometry.globPoints would return all points.
         if not result:
-            return ()
+            return tuple()
 
         # Return any points that are found.
         return self._get_result_points(result[0])
 
-    def find_nearest_points(self, position, num_points=1, maxdist=None):
+    def find_nearest_points(self, position: hou.Vector3, num_points: int = 1, maxdist: Optional[float] = None) -> Tuple[hou.Point]:
         """Find the closest N points to the position.
 
         :param position: A search position.
-        :type position: hou.Vector3
         :param num_points: The maximum number of points to search for.
-        :type num_points: int
         :param maxdist: The maximum distance to search.
-        :type maxdist: float
         :return: A tuple of found points.
-        :rtype: tuple(hou.Point)
 
         """
         # Return no points if we ask for an invalid number of points.
@@ -191,7 +184,7 @@ class PointCloud:
             else:
                 # If the point is within the distances, glob and return it.
                 if distances < maxdist:
-                    near_points = self._get_result_points((indexes,))
+                    near_points = self._get_result_points([indexes])
 
                 else:
                     near_points = ()
@@ -204,7 +197,7 @@ class PointCloud:
 
             else:
                 # We found a single point, so pass it along in a tuple..
-                near_points = self._get_result_points((indexes,))
+                near_points = self._get_result_points([indexes])
 
         # Return the tuple of points.
         return near_points

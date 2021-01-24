@@ -5,11 +5,14 @@
 # ==============================================================================
 
 # Standard Library Imports
+from __future__ import annotations
 from contextlib import contextmanager
 import logging
+from typing import Optional, Tuple
 
 # Third Party Imports
-# TODO: REMOVE THIS?
+# NOTE: Must use logquacious until in Python 3.8 as that is the version that adds
+# the stacklevel arg.
 from logquacious.backport_configurable_stacklevel import patch_logger
 
 # Houdini Imports
@@ -27,17 +30,13 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
     automated notification.
 
     :param base_logger: The base package logger.
-    :type base_logger: logging.Logger
     :param dialog: Whether to always utilize the dialog option.
-    :type dialog: bool
     :param node: Optional node for prefixing messages with the path.
-    :type node: hou.Node
     :param status_bar: Whether to always utilize the dialog option.
-    :type status_bar: bool
 
     """
 
-    def __init__(self, base_logger, dialog=False, node=None, status_bar=False):
+    def __init__(self, base_logger: logging.Logger, dialog: bool = False, node: Optional[hou.Node] = None, status_bar: bool = False):
         super().__init__(base_logger, {})
 
         self._dialog = dialog
@@ -49,24 +48,19 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
     # --------------------------------------------------------------------------
 
     @classmethod
-    def from_name(cls, name, dialog=False, node=None, status_bar=False):
+    def from_name(cls, name: str, dialog: bool = False, node: Optional[hou.Node] = None, status_bar: bool = False) -> HoudiniLoggerAdapter:
         """Create a new HoudiniLoggerAdapter from a name.
 
         This is a convenience function around the following code:
 
-        >>> base_logger = logging.getLogger(name)
-        >>> logger = HoudiniLoggerAdapter(base_logger)
+        >>> base_log = logging.getLogger(name)
+        >>> logger = HoudiniLoggerAdapter(base_log)
 
         :param name: The name of the logger to use.
-        :type name: str
         :param dialog: Whether to always utilize the dialog option.
-        :type dialog: bool
         :param node: Optional node for prefixing messages with the path.
-        :type node: hou.Node
         :param status_bar: Whether to always utilize the dialog option.
-        :type status_bar: bool
         :return: An adapter wrapping a logger of the passed name.
-        :rtype: HoudiniLoggerAdapter
 
         """
         # Create a base logger
@@ -79,8 +73,8 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
     # --------------------------------------------------------------------------
 
     @property
-    def dialog(self):
-        """bool: Whether or not the dialog will be displayed."""
+    def dialog(self) -> bool:
+        """Whether or not the dialog will be displayed."""
         return self._dialog
 
     @dialog.setter
@@ -90,8 +84,8 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
     # --------------------------------------------------------------------------
 
     @property
-    def node(self):
-        """hou.Node or None: A node the logger is associated with."""
+    def node(self) -> Optional[hou.Node]:
+        """A node the logger is associated with."""
         return self._node
 
     @node.setter
@@ -101,8 +95,8 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
     # --------------------------------------------------------------------------
 
     @property
-    def status_bar(self):
-        """bool: Whether or not the message will be logged to the status bar."""
+    def status_bar(self) -> bool:
+        """Whether or not the message will be logged to the status bar."""
         return self._status_bar
 
     @status_bar.setter
@@ -113,17 +107,14 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
     # METHODS
     # --------------------------------------------------------------------------
 
-    def process(self, msg, kwargs):
+    def process(self, msg: str, kwargs: dict) -> Tuple[str, dict]:
         """Override process() function to possibly insert a node path or to
         display a dialog with the log message before being passed to regular
         logging output.
 
         :param msg: The log message.
-        :type msg: str
         :param kwargs: kwargs dict.
-        :type kwargs: dict
         :return: The message and updated kwargs.
-        :rtype: (str, dict)
 
         """
         if "extra" in kwargs:
@@ -164,7 +155,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 
         return msg, kwargs
 
-    def critical(self, msg, *args, **kwargs):
+    def critical(self, msg: str, *args, **kwargs):
         """Delegate an info call to the underlying logger, after adding
         contextual information from this adapter instance.
 
@@ -175,7 +166,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         with _patch_logger(self.logger):
             self.logger.critical(msg, *args, **kwargs)
 
-    def debug(self, msg, *args, **kwargs):
+    def debug(self, msg: str, *args, **kwargs):
         """Delegate an info call to the underlying logger, after adding
         contextual information from this adapter instance.
 
@@ -186,7 +177,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         with _patch_logger(self.logger):
             self.logger.debug(msg, *args, **kwargs)
 
-    def error(self, msg, *args, **kwargs):
+    def error(self, msg: str, *args, **kwargs):
         """Delegate an info call to the underlying logger, after adding
         contextual information from this adapter instance.
 
@@ -197,7 +188,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         with _patch_logger(self.logger):
             self.logger.error(msg, *args, **kwargs)
 
-    def exception(self, msg, *args, **kwargs):
+    def exception(self, msg: str, *args, **kwargs):
         """Delegate an info call to the underlying logger, after adding
         contextual information from this adapter instance.
 
@@ -210,7 +201,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         with _patch_logger(self.logger):
             self.logger.exception(msg, *args, **kwargs)
 
-    def info(self, msg, *args, **kwargs):
+    def info(self, msg: str, *args, **kwargs):
         """Delegate an info call to the underlying logger, after adding
         contextual information from this adapter instance.
 
@@ -221,7 +212,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         with _patch_logger(self.logger):
             self.logger.info(msg, *args, **kwargs)
 
-    def warning(self, msg, *args, **kwargs):
+    def warning(self, msg: str, *args, **kwargs):
         """Delegate an info call to the underlying logger, after adding
         contextual information from this adapter instance.
 
@@ -237,14 +228,12 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 # NON-PUBLIC FUNCTIONS
 # ==============================================================================
 
-# This is necessary until using Python 3.8.
 @contextmanager
-def _patch_logger(logger):
+def _patch_logger(logger: logging.Logger):
     """Patch the __class__ of the logger for the duration so we can utilize the
     'stacklevel' arg.
 
     :param logger: The logger to patch.
-    :type logger: logging.Logger
     :return:
 
     """
@@ -259,15 +248,12 @@ def _patch_logger(logger):
         logger.__class__ = original_logger_class
 
 
-def _pre_process_args(severity, args, kwargs):
+def _pre_process_args(severity: hou.severityType, args, kwargs):
     """Pre-process args.
 
     :param severity: The message severity.
-    :type severity: hou.severityType
     :param args: The list of message args.
-    :type args: tuple(str)
     :param kwargs: The kwargs dict.
-    :type kwargs: dict
     :return:
 
     """
