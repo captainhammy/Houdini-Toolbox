@@ -4,14 +4,15 @@
 # IMPORTS
 # =============================================================================
 
-# Non-DD Imports
+# Standard Library Imports
 import ctypes
 import os
 
-# DD Imports
-from ht.inline import utils
-
+# Third Party Imports
 import pytest
+
+# Package Imports
+from ht.inline import utils
 
 # Houdini Imports
 import hou
@@ -332,7 +333,6 @@ class Test_get_entity_data_from_list(object):
         assert utils.geo_details_match(result[1], geometry)
         assert result[2] == [2, 12]
 
-
     def test_geometry(self):
         geometry = OBJ.node("test_get_entity_data_from_list").displayNode().geometry()
 
@@ -419,11 +419,14 @@ class Test_get_group_type(object):
             utils.get_group_type(None)
 
 
-@pytest.mark.parametrize("name, expected", [
-    ("vecparm#", ("base", )),
-    ("leaf#_#", ("inner#", "base")),
-    ("bottom#_#_#", ("deepest#_#", "inner#", "base")),
-])
+@pytest.mark.parametrize(
+    "name, expected",
+    [
+        ("vecparm#", ("base",)),
+        ("leaf#_#", ("inner#", "base")),
+        ("bottom#_#_#", ("deepest#_#", "inner#", "base")),
+    ],
+)
 def test_get_multiparm_containing_folders(name, expected):
     """Test ht.inline.utils.get_multiparm_containing_folders."""
     node = OBJ.node("test_get_multiparm_containing_folders/null")
@@ -435,11 +438,14 @@ def test_get_multiparm_containing_folders(name, expected):
     assert utils.get_multiparm_containing_folders(name, ptg) == expected_folders
 
 
-@pytest.mark.parametrize("name, expected", [
-    ("vecparm#", (0, )),
-    ("leaf#_#", (0, 1)),
-    ("bottom#_#_#", (0, 1, 2)),
-])
+@pytest.mark.parametrize(
+    "name, expected",
+    [
+        ("vecparm#", (0,)),
+        ("leaf#_#", (0, 1)),
+        ("bottom#_#_#", (0, 1, 2)),
+    ],
+)
 def test_get_multiparm_container_offsets(name, expected):
     """Test ht.inline.utils.get_multiparm_container_offsets."""
     node = OBJ.node("test_get_multiparm_container_offsets/null")
@@ -449,13 +455,15 @@ def test_get_multiparm_container_offsets(name, expected):
     assert utils.get_multiparm_container_offsets(name, ptg) == expected
 
 
-@pytest.mark.parametrize("name, expected", [
-    ("normal", None),
-    ("multi0", 0),  # Parameter with default of 0, stored in tag.
-    ("multi1", 1),  # Parameter with default of 1, template contains no tags.
-    ("multi2", 2),  # Parameter with default of 2, stored in tag.
-
-])
+@pytest.mark.parametrize(
+    "name, expected",
+    [
+        ("normal", None),
+        ("multi0", 0),  # Parameter with default of 0, stored in tag.
+        ("multi1", 1),  # Parameter with default of 1, template contains no tags.
+        ("multi2", 2),  # Parameter with default of 2, stored in tag.
+    ],
+)
 def test_get_multiparm_start_offset(name, expected):
     """Test ht.inline.utils.get_multiparm_start_offset."""
     node = OBJ.node("test_get_multiparm_start_offset/null")
@@ -472,7 +480,11 @@ def test_get_multiparm_start_offset(name, expected):
 
 def test_get_nodes_from_paths():
     """Test ht.inline.utils.get_nodes_from_paths."""
-    paths = ("/obj/test_get_nodes_from_paths/null1", "", "/obj/test_get_nodes_from_paths/null3")
+    paths = (
+        "/obj/test_get_nodes_from_paths/null1",
+        "",
+        "/obj/test_get_nodes_from_paths/null3",
+    )
 
     expected = (
         hou.node("/obj/test_get_nodes_from_paths/null1"),
@@ -530,13 +542,16 @@ class Test_get_prims_from_list(object):
         assert result == expected
 
 
-@pytest.mark.parametrize("name, expected", [
-    ("tabs", False),
-    ("simple", False),
-    ("multilist", True),
-    ("multiscroll", True),
-    ("multitab", True),
-])
+@pytest.mark.parametrize(
+    "name, expected",
+    [
+        ("tabs", False),
+        ("simple", False),
+        ("multilist", True),
+        ("multiscroll", True),
+        ("multitab", True),
+    ],
+)
 def test_is_parm_template_multiparm_folder(name, expected):
     """Test ht.inline.utils.is_parm_template_multiparm_folder."""
     node = OBJ.node("test_is_parm_template_multiparm_folder/null")
@@ -546,7 +561,7 @@ def test_is_parm_template_multiparm_folder(name, expected):
     assert utils.is_parm_template_multiparm_folder(parm_template) == expected
 
 
-@pytest.mark.parametrize("value, expected", [(b"foo", u"foo"), (u"bar", u"bar")])
+@pytest.mark.parametrize("value, expected", [(b"foo", "foo"), ("bar", "bar")])
 def test_string_decode(value, expected):
     """Test ht.inline.utils.string_decode."""
     result = utils.string_decode(value)
@@ -555,7 +570,7 @@ def test_string_decode(value, expected):
 
 
 @pytest.mark.parametrize(
-    "value, expected", [(4, b"4"), ("4", b"4"), (u"bar", b"bar"), ("bar", b"bar")]
+    "value, expected", [(4, b"4"), ("4", b"4"), ("bar", b"bar"), ("bar", b"bar")]
 )
 def test_string_encode(value, expected):
     """Test ht.inline.utils.string_decode."""
@@ -564,11 +579,14 @@ def test_string_encode(value, expected):
     assert result == expected
 
 
-@pytest.mark.parametrize("name, indices, success", [
-    ("foo#_#", (1, ), False),  # Test with not enough indices.
-    ("foo#_#", (1, 2), True),
-    ("foo#_#", (1, 2, 3), True),  # Test with more than enough indices.
-])
+@pytest.mark.parametrize(
+    "name, indices, success",
+    [
+        ("foo#_#", (1,), False),  # Test with not enough indices.
+        ("foo#_#", (1, 2), True),
+        ("foo#_#", (1, 2, 3), True),  # Test with more than enough indices.
+    ],
+)
 def test_validate_multiparm_resolve_values(name, indices, success):
     """Test ht.inline.utils.validate_multiparm_resolve_values."""
 

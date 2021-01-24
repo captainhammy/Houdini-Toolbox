@@ -7,12 +7,12 @@
 # Third Party Imports
 import pytest
 
+# Houdini Imports
+import hou
+
 # Houdini Toolbox Imports
 badges = pytest.importorskip("ht.nodes.badges")
 
-
-# Houdini Imports
-import hou
 
 
 # =============================================================================
@@ -24,6 +24,7 @@ class Test_clear_generic_image_badge:
     """Test ht.nodes.badges.clear_generic_image_badge."""
 
     def test_no_data(self, mocker, fix_hou_exceptions):
+        """Test when there is no user data to destroy."""
         mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
             "ht.nodes.badges._ht_generic_image_badge.get_generic_image_key"
@@ -40,6 +41,7 @@ class Test_clear_generic_image_badge:
         mock_node.destroyUserData.assert_called_with(mock_data_name.return_value)
 
     def test(self, mocker):
+        """Test when there is user data to remove."""
         mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
             "ht.nodes.badges._ht_generic_image_badge.get_generic_image_key"

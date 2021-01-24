@@ -20,10 +20,14 @@ class Test_SceneLoadEvent:
 
     def test___init__(self, mocker):
         """Test object initialization."""
-        mock_super_init = mocker.patch.object(ht.events.scene_load.HoudiniEventGroup, "__init__")
+        mock_super_init = mocker.patch.object(
+            ht.events.scene_load.HoudiniEventGroup, "__init__"
+        )
 
         event_map = {}
-        mocker.patch.object(ht.events.events.scene_load.SceneLoadEvent, "event_map", event_map)
+        mocker.patch.object(
+            ht.events.events.scene_load.SceneLoadEvent, "event_map", event_map
+        )
 
         event = ht.events.events.scene_load.SceneLoadEvent()
 

@@ -105,7 +105,7 @@ def exec_tool_script():
         with open(temp_path, "w") as handle:
             handle.writelines(contents)
 
-        #execfile(temp_path,  {"kwargs": kwargs})
+        # execfile(temp_path,  {"kwargs": kwargs})
 
         exec(contents, {"kwargs": kwargs})
 
@@ -324,6 +324,7 @@ def patch_soho(mocker):
 
     class MockSoho:
         """Mock object for accessing patched mantra/SOHO modules."""
+
         IFDapi = mock_api
         IFDhooks = mock_hooks
         IFDsettings = mock_settings

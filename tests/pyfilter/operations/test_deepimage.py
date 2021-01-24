@@ -378,7 +378,7 @@ class Test_DeepImage:
     # filter_camera
 
     def test_filter_camera__not_beauty(
-        self, patch_logger, init_operation, properties, mocker
+        self, patch_logger, init_operation, properties
     ):
         """Test for non-beauty renders."""
         properties.mock_get.return_value = "shadow"
@@ -393,7 +393,7 @@ class Test_DeepImage:
         )
 
     def test_filter_camera__disable_deep_image(
-        self, patch_logger, init_operation, properties, mocker
+        self, patch_logger, init_operation, properties
     ):
         """Try to disable deep image export."""
         properties.mock_get.return_value = "beauty"
@@ -408,7 +408,7 @@ class Test_DeepImage:
         patch_logger.info.assert_called_with("Disabling deep resolver")
 
     def test_filter_camera__no_deep_args_no_resolver(
-        self, patch_logger, init_operation, properties, mocker
+        self, patch_logger, init_operation, properties
     ):
         """Try to set the resolver when there is no resolver already set and
         we don't provide enough data.
@@ -432,7 +432,7 @@ class Test_DeepImage:
         )
 
     def test_filter_camera__no_deep_args_no_file(
-        self, patch_logger, init_operation, properties, mocker
+        self, patch_logger, init_operation, properties
     ):
         """Try to set the resolver when there is no resolver already set and
         we don't provide enough data.

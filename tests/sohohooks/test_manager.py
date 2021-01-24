@@ -64,7 +64,9 @@ class Test_SohoHookManager:
         mocker.patch.object(
             manager.SohoHookManager,
             "hooks",
-            new_callable=mocker.PropertyMock(return_value={mock_hook_name: [mock_hook]})
+            new_callable=mocker.PropertyMock(
+                return_value={mock_hook_name: [mock_hook]}
+            ),
         )
 
         mock_arg = mocker.MagicMock()
@@ -87,7 +89,9 @@ class Test_SohoHookManager:
         mocker.patch.object(
             manager.SohoHookManager,
             "hooks",
-            new_callable=mocker.PropertyMock(return_value={mock_hook_name: [mock_hook]})
+            new_callable=mocker.PropertyMock(
+                return_value={mock_hook_name: [mock_hook]}
+            ),
         )
 
         mock_arg = mocker.MagicMock()
@@ -110,7 +114,9 @@ class Test_SohoHookManager:
         mocker.patch.object(
             manager.SohoHookManager,
             "hooks",
-            new_callable=mocker.PropertyMock(return_value={mock_hook_name: [mock_hook]})
+            new_callable=mocker.PropertyMock(
+                return_value={mock_hook_name: [mock_hook]}
+            ),
         )
 
         mock_arg = mocker.MagicMock()
@@ -133,7 +139,9 @@ class Test_SohoHookManager:
         hooks = {}
 
         mocker.patch.object(
-            manager.SohoHookManager, "hooks", new_callable=mocker.PropertyMock(return_value=hooks)
+            manager.SohoHookManager,
+            "hooks",
+            new_callable=mocker.PropertyMock(return_value=hooks),
         )
 
         mock_hook_name1 = mocker.MagicMock(spec=str)

@@ -51,6 +51,7 @@ def init_tester():
 
     class _Tester(metaclass=ht.events.stats._StatsMeta):
         def __init__(self, name, tags=None, post_report=False):
+            self._name = name
             self._post_report = post_report
 
             if tags is None:
@@ -445,9 +446,7 @@ def test__get_matching_stats(mocker):
     mock_tag2 = mocker.MagicMock(spec=str)
 
     mock_stats1 = mocker.MagicMock(spec=ht.events.stats.HoudiniEventStats)
-    type(mock_stats1).tags = mocker.PropertyMock(
-        return_value=[mock_tag1, mock_tag2]
-    )
+    type(mock_stats1).tags = mocker.PropertyMock(return_value=[mock_tag1, mock_tag2])
 
     mock_stats2 = mocker.MagicMock(spec=ht.events.stats.HoudiniEventStats)
     type(mock_stats2).tags = mocker.PropertyMock(return_value=[mock_tag1])
@@ -465,7 +464,9 @@ class Test_get_event_stats:
     def test_none(self, mocker):
         """Test when there are no stat instances."""
         mocker.patch.object(
-            ht.events.stats._StatsMeta, "_instances", new_callable=mocker.PropertyMock(return_value={})
+            ht.events.stats._StatsMeta,
+            "_instances",
+            new_callable=mocker.PropertyMock(return_value={}),
         )
 
         mock_matching = mocker.patch("ht.events.stats._get_matching_stats")
@@ -525,7 +526,9 @@ class Test_get_item_stats:
     def test_none(self, mocker):
         """Test when there are no stat instances."""
         mocker.patch.object(
-            ht.events.stats._StatsMeta, "_instances", new_callable=mocker.PropertyMock(return_value={})
+            ht.events.stats._StatsMeta,
+            "_instances",
+            new_callable=mocker.PropertyMock(return_value={}),
         )
         mock_matching = mocker.patch("ht.events.stats._get_matching_stats")
 
