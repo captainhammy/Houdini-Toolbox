@@ -23,7 +23,7 @@ badges = pytest.importorskip("ht.nodes.badges")
 class Test_clear_generic_image_badge:
     """Test ht.nodes.badges.clear_generic_image_badge."""
 
-    def test_no_data(self, mocker, fix_hou_exceptions):
+    def test_no_data(self, mocker):
         """Test when there is no user data to destroy."""
         mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
@@ -59,7 +59,7 @@ class Test_clear_generic_image_badge:
 class Test_clear_generic_text_badge:
     """Test ht.nodes.badges.clear_generic_text_badge."""
 
-    def test_no_data(self, mocker, fix_hou_exceptions):
+    def test_no_data(self, mocker):
         mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
             "ht.nodes.badges._ht_generic_text_badge.get_generic_text_key"
@@ -103,7 +103,7 @@ class Test_clear_generic_text_badge:
 class Test_clear_generic_text_badge_color:
     """Test ht.nodes.badges.clear_generic_text_badge_color."""
 
-    def test_no_data(self, mocker, fix_hou_exceptions):
+    def test_no_data(self, mocker):
         mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
             "ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key"

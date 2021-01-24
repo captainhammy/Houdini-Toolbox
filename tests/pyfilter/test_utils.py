@@ -21,7 +21,7 @@ import hou
 class Test_build_pyfilter_command:
     """Test ht.pyfilter.utils.build_pyfilter_command"""
 
-    def test_no_found_script(self, mocker, fix_hou_exceptions):
+    def test_no_found_script(self, mocker):
         """Test when no file can be found."""
         mock_find = mocker.patch("hou.findFile", side_effect=hou.OperationFailed)
         mock_logger = mocker.patch("ht.pyfilter.utils._logger")

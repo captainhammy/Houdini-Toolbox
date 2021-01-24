@@ -302,7 +302,7 @@ def test_build_parser():
 class Test__find_operation_files:
     """Test ht.pyfilter.manager._find_operation_files."""
 
-    def test_no_files(self, mocker, fix_hou_exceptions):
+    def test_no_files(self, mocker):
         mocker.patch("hou.findFiles", side_effect=hou.OperationFailed)
 
         result = manager._find_operation_files()

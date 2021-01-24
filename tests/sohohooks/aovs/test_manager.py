@@ -1250,7 +1250,7 @@ class Test__find_aov_files:
 class Test__find_houdinipath_aov_folders:
     """Test ht.sohohooks.aovs.manager._find_houdinipath_aov_folders."""
 
-    def test_no_dirs(self, mocker, fix_hou_exceptions):
+    def test_no_dirs(self, mocker):
         """Test when no config/aov folders exist in HOUDINI_PATH."""
         mock_find = mocker.patch("ht.sohohooks.aovs.manager.hou.findDirectories")
         mock_find.side_effect = hou.OperationFailed
