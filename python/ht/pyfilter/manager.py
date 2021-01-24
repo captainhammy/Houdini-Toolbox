@@ -7,12 +7,15 @@ actions.
 # =============================================================================
 
 # Standard Library Imports
-# TODO: REMOVE THIS
-import builtins
+from __future__ import annotations
 import argparse
 import importlib
 import json
 import logging
+from typing import TYPE_CHECKING, List, Tuple, Type
+
+if TYPE_CHECKING:
+    from ht.pyfilter.operations.operation import PyFilterOperation
 
 _logger = logging.getLogger(__name__)
 
@@ -42,24 +45,23 @@ class PyFilterManager:
     # -------------------------------------------------------------------------
 
     @property
-    def data(self):
-        """dict: Data dictionary that can be used to pass information."""
+    def data(self) -> dict:
+        """Data dictionary that can be used to pass information."""
         return self._data
 
     @property
-    def operations(self):
-        """list: A list of registered operations."""
+    def operations(self) -> List[PyFilterOperation]:
+        """A list of registered operations."""
         return self._operations
 
     # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
     # -------------------------------------------------------------------------
 
-    def _get_parsed_args(self):
+    def _get_parsed_args(self) -> argparse.Namespace:
         """Parse any args passed to PyFilter.
 
         :return: Parsed filter args.
-        :rtype: argparse.Namespace
 
         """
         parser = _build_parser()
@@ -70,11 +72,10 @@ class PyFilterManager:
 
         return filter_args
 
-    def _process_parsed_args(self, filter_args):
+    def _process_parsed_args(self, filter_args: argparse.Namespace):
         """Allow operations to process any args that were parsed.
 
         :param filter_args: The args passed to the filter command.
-        :type filter_args: argparse.Namespace
         :return:
 
         """
@@ -113,14 +114,13 @@ class PyFilterManager:
                 # Add an instance of it to our operations list.
                 self.operations.append(cls(self))
 
-    def _register_parser_args(self, parser):
+    def _register_parser_args(self, parser: argparse.ArgumentParser):
         """Register any necessary args with our parser.
 
         This allows filter operations to have their necessary args parsed and
         available.
 
         :param parser: The argument parser to register args to.
-        :type parser: argparse.ArgumentParser
         :return:
 
         """
@@ -131,17 +131,13 @@ class PyFilterManager:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def run_operations_for_stage(self, stage_name, *args, **kwargs):
+    def run_operations_for_stage(self, stage_name: str, *args, **kwargs) -> bool:
         """Run all filter operations for the specified stage.
 
         :param stage_name: The name of the stage to run.
-        :type stage_name: str
         :param args: Positional arguments passed to the stage function.
-        :type args: list
         :param kwargs: Keyword args passed to the stage function.
-        :type kwargs: dict
         :return: Whether or any of the stage functions returned True.
-        :rtype: bool
 
         """
         results = []
@@ -170,11 +166,10 @@ class PyFilterManager:
 # =============================================================================
 
 
-def _build_parser():
+def _build_parser() -> argparse.ArgumentParser:
     """Build a default parser to be used.
 
     :return: The argument parser to use.
-    :rtype: argparse.ArgumentParser
 
     """
     parser = argparse.ArgumentParser()
@@ -182,11 +177,10 @@ def _build_parser():
     return parser
 
 
-def _find_operation_files():
+def _find_operation_files() -> Tuple[str]:
     """Find any operation loading files.
 
     :return: Any found operations files.
-    :rtype: tuple(str)
 
     """
     import hou
@@ -203,15 +197,12 @@ def _find_operation_files():
     return files
 
 
-def _get_class(module_name, class_name):
+def _get_class(module_name: str, class_name: str) -> Type:
     """Try to import class_name from module_name.
 
     :param module_name: The name of the module containing the class.
-    :type module_name: str
     :param class_name: The name of the class to get.
-    :type class_name: str
     :return: A found class, otherwise None.
-    :rtype: type
 
     """
 
@@ -227,17 +218,15 @@ def _get_class(module_name, class_name):
     return cls
 
 
-def _get_operation_data(file_path):
+def _get_operation_data(file_path: str) -> dict:
     """Get operation data from a file path.
 
     :param file_path: The path to an operation file.
-    :type file_path: str
     :return: Operation data.
-    :rtype: dict
 
     """
     try:
-        with builtins.open(file_path) as handle:
+        with open(file_path) as handle:
             data = json.load(handle)
 
     except (IOError, ValueError) as inst:

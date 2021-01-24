@@ -7,6 +7,7 @@
 # Standard Library Imports
 import logging
 import os
+from typing import List, Optional
 
 _logger = logging.getLogger(__name__)
 
@@ -16,15 +17,12 @@ _logger = logging.getLogger(__name__)
 # =============================================================================
 
 
-def build_pyfilter_command(pyfilter_args=None, pyfilter_path=None):
+def build_pyfilter_command(pyfilter_args: Optional[List[str]] = None, pyfilter_path: Optional[str] = None) -> str:
     """Build a PyFilter -P command.
 
     :param pyfilter_args: Optional list of args to pass to the command.
-    :type pyfilter_args: list(str)
     :param pyfilter_path: Optional path to the filter script.
-    :type pyfilter_path: str
     :return: The constructed PyFilter command.
-    :rtype: str
 
     """
     import hou

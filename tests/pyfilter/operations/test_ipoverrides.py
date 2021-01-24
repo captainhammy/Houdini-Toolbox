@@ -43,15 +43,12 @@ def init_operation(mocker):
     """Fixture to initialize an operation."""
     mocker.patch.object(ipoverrides.IpOverrides, "__init__", lambda x, y: None)
 
-    def _create(prop_map=None, as_properties=False):
+    def _create(prop_map: dict = None, as_properties: bool = False) -> ipoverrides.IpOverrides:
         """Function which instantiates the operation.
 
         :param prop_map: Map of property name:values to set.
-        :type prop_map: dict
         :param as_properties: Whether or not to set the values as properties
-        :type as_properties: bool
         :return: An basic instantiated IpOverrides object.
-        :rtype: ipoverrides.IpOverrides
 
         """
         op = ipoverrides.IpOverrides(None)

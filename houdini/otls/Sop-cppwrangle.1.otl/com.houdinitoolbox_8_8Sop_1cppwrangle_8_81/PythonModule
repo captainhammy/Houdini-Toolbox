@@ -5,9 +5,11 @@
 # =============================================================================
 
 # Standard Library Imports
+from __future__ import annotations
 import ast
 import os
 import subprocess
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 # Houdini Toolbox Imports
 from ht.inline.api import eval_multiparm_instance
@@ -16,6 +18,8 @@ from ht.inline.api import eval_multiparm_instance
 import hou
 import inlinecpp
 
+if TYPE_CHECKING:
+    import hutil.cppinline
 
 # =============================================================================
 # GLOBALS
@@ -48,20 +52,18 @@ class CPPWrangleCompilerHook(inlinecpp.HcustomCompilerHook):
     directory.
 
     :param target_directory: The target directory for the compiled files.
-    :type target_directory: str
 
     """
 
-    def __init__(self, target_directory):
+    def __init__(self, target_directory: str):
         super().__init__()
 
         self.target_directory = target_directory
 
-    def default_shared_library_directory(self):
+    def default_shared_library_directory(self) -> str:
         """Get the default directory for the shared library file.
 
         :return: The default shared library file.
-        :rtype: str
 
         """
         return os.path.join(
@@ -69,13 +71,11 @@ class CPPWrangleCompilerHook(inlinecpp.HcustomCompilerHook):
             self._houdini_path_subdir_name()
         )
 
-    def find_shared_library(self, shared_library_file_name):
+    def find_shared_library(self, shared_library_file_name: str) -> str:
         """Find a shared library with a given name.
 
         :param shared_library_file_name: The library name to find.
-        :type shared_library_file_name: str
         :return: The shared library path if found.
-        :rtype: str
 
         """
         path = os.path.join(
@@ -101,13 +101,11 @@ class NoFunctionSourcesError(Exception):
 # NON-PUBLIC FUNCTIONS
 # =============================================================================
 
-def _get_compile_target_folder(node):
+def _get_compile_target_folder(node: hou.SopNode) -> Optional[str]:
     """Determine which folder to compile to.
 
     :param node: A C++ Wrangle node.
-    :type node: hou.SopNode
     :return: The path files will be compiled into.
-    :rtype: str
 
     """
     target = node.evalParm("compile_target")
@@ -130,13 +128,11 @@ def _get_compile_target_folder(node):
     return compile_target
 
 
-def _get_function_sources(node):
+def _get_function_sources(node: hou.SopNode) -> List[str]:
     """Get a tuple of function source code.
 
     :param node: A C++ Wrangle node.
-    :type node: hou.SopNode
     :return: A tuple of function sources.
-    :rtype: list(str)
 
     """
     sources = []
@@ -157,13 +153,11 @@ def _get_function_sources(node):
     return sources
 
 
-def _get_includes(node):
+def _get_includes(node: hou.SopNode) -> str:
     """Get a list of header include statements and code.
 
     :param node: A C++ Wrangle node.
-    :type node: hou.SopNode
-    :return: A tuple of include statements.
-    :rtype: list(str)
+    :return: A string of include statements.
 
     """
     headers = []
@@ -201,15 +195,13 @@ def _get_includes(node):
     return includes
 
 
-def _get_structs(node):
+def _get_structs(node: hou.SopNode) -> List[Tuple[str, str]]:
     """Get a list of struct definitions.
 
     Each element of the result is a two item tuple ({struct_name}, {struct_definition}).
 
     :param node: A C++ Wrangle node.
-    :type node: hou.SopNode
     :return: A tuple of struct definitions.
-    :rtype: list
 
     """
     use_common = node.evalParm("common_structs")
@@ -240,13 +232,12 @@ def _get_structs(node):
 # FUNCTIONS
 # =============================================================================
 
-def build_library(node):
+
+def build_library(node: hou.SopNode) -> hutil.cppinline._Library:  # pylint: disable=protected-access
     """Build the library based on specified data.
 
     :param node: A C++ Wrangle node.
-    :type node: hou.SopNode
     :return: The compiled library.
-    :rtype: hutil.cppinline._Library
 
     """
     includes = _get_includes(node)
@@ -277,22 +268,20 @@ def build_library(node):
     return lib
 
 
-def recompile(node):
+def recompile(node: hou.SopNode):
     """Callback to recompile if necessary.
 
     :param node: A C++ Wrangle node.
-    :type node: hou.SopNode
     :return:
 
     """
     build_library(node)
 
 
-def view_c_file(node):
+def view_c_file(node: hou.SopNode):
     """View the created .C file in a text editor.
 
     :param node: A C++ Wrangle node.
-    :type node: hou.SopNode
     :return:
 
     """

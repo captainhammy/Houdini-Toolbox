@@ -8,13 +8,11 @@ colors in Houdini.
 # =============================================================================
 
 # Standard Library Imports
+from __future__ import annotations
 import glob
 import json
 import os
-
-# Third Party Imports
-# TODO: Remove this
-import builtins
+from typing import List, Optional, Tuple, Union
 
 # Houdini Toolbox Imports
 from ht.nodes.styles.styles import ConstantRule, StyleConstant, StyleRule
@@ -65,7 +63,7 @@ class StyleManager:
         # Read all the target files in reverse.
         for path in reversed(files):
             # Open the target file and load the data.
-            with builtins.open(path) as handle:
+            with open(path) as handle:
                 data = json.load(handle)
 
             data[constants.PATH_KEY] = path
@@ -75,11 +73,10 @@ class StyleManager:
 
         self._build_rules_from_data(all_data)
 
-    def _build_constants_from_data(self, all_data):
+    def _build_constants_from_data(self, all_data: List):
         """Build style constants from data..
 
         :param all_data: Base data definitions
-        :type all_data: list
         :return:
 
         """
@@ -101,11 +98,10 @@ class StyleManager:
                         name, color, color_type, shape, path
                     )
 
-    def _build_rules_from_data(self, all_data):
+    def _build_rules_from_data(self, all_data: List):
         """Build style rules from data.
 
         :param all_data: Base data definitions
-        :type all_data: list
         :return:
 
         """
@@ -126,14 +122,12 @@ class StyleManager:
 
                         _build_category_rules(rules, category_map, path, self.constants)
 
-    def _get_manager_generator_style(self, node_type):
+    def _get_manager_generator_style(self, node_type: hou.NodeType) -> Optional[Union[StyleConstant, StyleRule]]:
         """Look for a style match based on the node type being a manager or
         generator type.
 
         :param node_type: A manager/generator node type
-        :type node_type: hou.NodeType
         :return: An applicable styling object.
-        :rtype: StyleConstant or StyleRule
 
         """
         categories = (node_type.category().name(), constants.ALL_CATEGORY_KEY)
@@ -168,13 +162,11 @@ class StyleManager:
 
         return None
 
-    def _get_name_style(self, node):
+    def _get_name_style(self, node: hou.Node) -> Optional[Union[StyleConstant, StyleRule]]:
         """Look for a style match based on the node name.
 
         :param node: Node to style by name.
-        :type node: hou.Node
         :return: An applicable styling object.
-        :rtype: StyleConstant or StyleRule
 
         """
         # The node name.
@@ -192,13 +184,11 @@ class StyleManager:
 
         return None
 
-    def _get_node_type_style(self, node_type):
+    def _get_node_type_style(self, node_type: hou.NodeType) -> Optional[Union[StyleConstant, StyleRule]]:
         """Look for a style match based on the node type's name.
 
         :param node_type: Node type to style by name
-        :type node_type: hou.NodeType
         :return: An applicable styling object.
-        :rtype: StyleConstant or StyleRule
 
         """
         type_name = node_type.nameComponents()[2]
@@ -218,14 +208,12 @@ class StyleManager:
 
         return None
 
-    def _get_tool_style(self, node_type):
+    def _get_tool_style(self, node_type: hou.NodeType) -> Optional[Union[StyleConstant, StyleRule]]:
         """Look for a color match based on the node type's Tab menu
         locations.
 
         :param node_type: Node type to style by tab menu location
-        :type node_type: hou.NodeType
         :return: An applicable styling object.
-        :rtype: StyleConstant or StyleRule
 
         """
         categories = (node_type.category().name(), constants.ALL_CATEGORY_KEY)
@@ -244,16 +232,14 @@ class StyleManager:
 
         return None
 
-    def _resolve_rule(self, rule):
+    def _resolve_rule(self, rule: Union[ConstantRule, StyleRule]) -> Union[StyleConstant, StyleRule]:
         """Resolve the entry to a color.
 
         The entry might a style or a constant so this will return the actual
         style.
 
         :param rule: A rule object to resolve.
-        :type rule: ConstantRule or StyleRule
         :return: A resolved rule.
-        :rtype: StyleConstant or StyleRule
 
         """
         # If the entry object is a ColorEntry then we can just return the
@@ -271,30 +257,30 @@ class StyleManager:
     # -------------------------------------------------------------------------
 
     @property
-    def constants(self):
-        """dict: A dictionary of constant styles."""
+    def constants(self) -> dict:
+        """A dictionary of constant styles."""
         return self._constants
 
     @property
-    def name_rules(self):
-        """dict: A dictionary of node name styles."""
+    def name_rules(self) -> dict:
+        """A dictionary of node name styles."""
         return self._name_rules
 
     @property
-    def node_type_rules(self):
-        """dict: A dictionary of node type name styles."""
+    def node_type_rules(self) -> dict:
+        """A dictionary of node type name styles."""
         return self._node_type_rules
 
     @property
-    def tool_rules(self):
-        """dict: A dictionary of tool menu location styles."""
+    def tool_rules(self) -> dict:
+        """A dictionary of tool menu location styles."""
         return self._tool_rules
 
     # -------------------------------------------------------------------------
     # METHODS
     # -------------------------------------------------------------------------
 
-    def style_node(self, node):
+    def style_node(self, node: hou.Node):
         """Style the node given its properties.
 
         This function will attempt to style the node by first matching its
@@ -302,7 +288,6 @@ class StyleManager:
         is a manager or generator type.
 
         :param node: A node to style
-        :type node: hou.Node
         :return:
 
         """
@@ -325,11 +310,10 @@ class StyleManager:
         if style is not None:
             style.apply_to_node(node)
 
-    def style_node_by_name(self, node):
+    def style_node_by_name(self, node: hou.Node):
         """Style the node given its name.
 
         :param node: A node to style
-        :type node: hou.Node
         :return:
 
         """
@@ -378,17 +362,13 @@ class InvalidColorTypeError(Exception):
 # =============================================================================
 
 
-def _build_category_rules(rules, category_map, path, constant_map):
+def _build_category_rules(rules: List[dict], category_map: dict, path: str, constant_map: dict):
     """Build constant and style rules.
 
     :param rules: Rule data
-    :type rules: list(dict)
     :param category_map: Mapping of rules for a category.
-    :type category_map: dict
     :param path: The source file path.
-    :type path: str
     :param constant_map: Dictionary of known constants.
-    :type constant_map: dict
     :return:
 
     """
@@ -422,13 +402,11 @@ def _build_category_rules(rules, category_map, path, constant_map):
         category_map[rule_name] = rule
 
 
-def _build_color(rule):
+def _build_color(rule: dict) -> Union[Tuple[hou.Color, str], Tuple[None, None]]:
     """Build a hou.Color object from data.
 
     :param rule: Style information
-    :type rule: dict
     :return: Color information
-    :rtype: (hou.Color, str)
 
     """
     data = rule.get(constants.RULE_COLOR_KEY)
@@ -475,13 +453,11 @@ def _build_color(rule):
     return color, data[constants.RULE_COLOR_TYPE_KEY]
 
 
-def _build_shape(rule):
+def _build_shape(rule: dict) -> str:
     """Build shape information.
 
     :param rule: Style information
-    :type rule: dict
     :return: Shape name
-    :rtype: str
 
     """
     shape = rule.get(constants.RULE_SHAPE_KEY)
@@ -489,11 +465,10 @@ def _build_shape(rule):
     return shape
 
 
-def _find_files():
+def _find_files() -> Tuple[str]:
     """Find any .json files that should be read.
 
     :return: Any found style files.
-    :rtype: (str)
 
     """
     try:
@@ -507,16 +482,14 @@ def _find_files():
     for directory in directories:
         all_files.extend(glob.glob(os.path.join(directory, "*.json")))
 
-    return tuple(all_files)
+    return tuple(str(f) for f in all_files)
 
 
-def _get_tool_menu_locations(node_type):
+def _get_tool_menu_locations(node_type: hou.NodeType) -> Tuple[str]:
     """Get any Tab menu locations the tool for the node type lives in.
 
     :param node_type: A node type to get Tab menu locations for
-    :type node_type: hou.NodeType
     :return: Any Tab menu locations the node type's tool appears under
-    :rtype: (str)
 
     """
     # Need to get all of Houdini's tools.
@@ -535,7 +508,7 @@ def _get_tool_menu_locations(node_type):
         # Return the menu locations.
         return tool.toolMenuLocations()
 
-    return ()
+    return tuple()
 
 
 # =============================================================================

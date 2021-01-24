@@ -40,11 +40,15 @@ _DEFAULT_WRAPPERS = [
 
 
 # =============================================================================
-# NON-PUBLIC FUNCTIONS
+# FUNCTIONS
 # =============================================================================
 
-def _build_parser():
-    """Build an argument parser to handle input."""
+def build_parser() -> argparse.ArgumentParser:
+    """Build an argument parser to handle input.
+
+    :return: The constructed argument parser.
+
+    """
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -87,14 +91,10 @@ def _build_parser():
     return parser
 
 
-# =============================================================================
-# FUNCTIONS
-# =============================================================================
-
 def main():
     """Main function."""
     # Build the parser and parse the args.
-    parser = _build_parser()
+    parser = build_parser()
     arguments = parser.parse_args()
 
     wrapper = arguments.wrapper

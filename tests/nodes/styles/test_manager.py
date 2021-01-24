@@ -1379,7 +1379,7 @@ class Test__find_files:
 
         mock_glob.side_effect = ((mock_file1, mock_file2), (mock_file3,))
 
-        expected = (mock_file1, mock_file2, mock_file3)
+        expected = (str(mock_file1), str(mock_file2), str(mock_file3))
         result = manager._find_files()
 
         assert result == expected

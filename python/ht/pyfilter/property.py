@@ -7,6 +7,7 @@
 # Standard Library Imports
 from collections.abc import Iterable
 import json
+from typing import Any, List, Union
 
 
 # =============================================================================
@@ -14,7 +15,7 @@ import json
 # =============================================================================
 
 
-def _parse_string_for_bool(value):
+def _parse_string_for_bool(value: str) -> Union[bool, str]:
     """Process a string value, converting string booleans to real booleans.
 
     - Returns True if the value is 'True' or 'true'.
@@ -22,7 +23,6 @@ def _parse_string_for_bool(value):
     - Otherwise return the unaltered value.
 
     :param value: The value to parse.
-    :type value: str
     :return: A possible converted value.
 
     """
@@ -35,13 +35,11 @@ def _parse_string_for_bool(value):
     return value
 
 
-def _prep_value_to_set(value):
+def _prep_value_to_set(value: Any) -> List:
     """Prepare a value into a form suitable for Mantra.
 
     :param value: The value to prepare.
-    :type value: object
     :return: The transformed values.
-    :rtype: list
 
     """
     # Convert to empty list.
@@ -75,13 +73,11 @@ def _prep_value_to_set(value):
     return value
 
 
-def _transform_values(values):
+def _transform_values(values: List) -> Any:
     """Transform values from Mantra into more useful forms.
 
     :param values: Values to transform.
-    :type values: list
     :return: The transformed values.
-    :rtype: object
 
     """
     if values is None:
@@ -104,7 +100,7 @@ def _transform_values(values):
                 # If there are multiple values we want to build a
                 # dictionary out of pairs.
                 if len(value_components) > 2:
-                    value = dict(list(zip(*[iter(value_components)] * 2)))
+                    value = dict(tuple(zip(*[iter(value_components)] * 2)))
 
                 # Not multiple values so perform additional processing.
                 else:
@@ -128,13 +124,11 @@ def _transform_values(values):
 # =============================================================================
 
 
-def get_property(name):
+def get_property(name: str) -> Any:
     """Get a property value.
 
     :param name: The property name.
-    :type name: str
     :return: The value.
-    :rtype: object
 
     """
     import mantra
@@ -144,13 +138,11 @@ def get_property(name):
     return _transform_values(values)
 
 
-def set_property(name, value):
+def set_property(name: str, value: Any):
     """Set a property value.
 
     :param name: The property name.
-    :type name: str
     :param value: The value to set.
-    :type value: object
     :return:
 
     """

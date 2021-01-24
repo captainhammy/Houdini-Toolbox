@@ -5,10 +5,11 @@
 # =============================================================================
 
 # Standard Library Imports
-from collections import OrderedDict
+import collections.abc
 import io
 import os
 import re
+from typing import List, OrderedDict, Tuple, Union
 import yaml
 
 # Third Party Imports
@@ -45,13 +46,11 @@ _TEMPLATES_TO_IGNORE = (hou.SeparatorParmTemplate, hou.LabelParmTemplate)
 # =============================================================================
 
 
-def _add_inputs(string_buf, node):
+def _add_inputs(string_buf: io.StringIO, node: hou.Node):
     """Create the INPUTS section.
 
     :param string_buf: The output buffer.
-    :type string_buf: io.StringIO
     :param node: The source node.
-    :type node: hou.Node
     :return:
 
     """
@@ -70,13 +69,11 @@ def _add_inputs(string_buf, node):
             string_buf.write("\n\n")
 
 
-def _add_using_section(string_buf, node_type):
+def _add_using_section(string_buf: io.StringIO, node_type: hou.NodeType):
     """Create the 'Using' section.
 
     :param string_buf: The output buffer.
-    :type string_buf: io.StringIO
     :param node_type: The source node type.
-    :type node_type: hou.NodeType
     :return:
 
     """
@@ -109,15 +106,12 @@ def _add_using_section(string_buf, node_type):
     string_buf.write("\n\n")
 
 
-def _add_folder_help(parm_template, items, in_multiparm=False):
+def _add_folder_help(parm_template: hou.FolderParmTemplate, items: Union[List, OrderedDict], in_multiparm: bool = False):
     """Build a help item for a folder parameter.
 
     :param parm_template: The source parameter template.
-    :type parm_template: hou.FolderParmTemplate
     :param items: A list of help items.
-    :type items: OrderedDict or list
     :param in_multiparm: Whether or not the template is inside a multiparm
-    :type in_multiparm: bool
     :return:
 
     """
@@ -134,24 +128,21 @@ def _add_folder_help(parm_template, items, in_multiparm=False):
         folder_items, parm_template.parmTemplates(), in_multiparm=in_multiparm
     )
 
-    if isinstance(items, OrderedDict):
+    if isinstance(items, collections.OrderedDict):
         items[result] = folder_items
 
     else:
-        dict_items = OrderedDict({result: folder_items})
+        dict_items = collections.OrderedDict({result: folder_items})
 
         items.append(dict_items)
 
 
-def _add_help_for_parameter(parm_template, items, in_multiparm=False):
+def _add_help_for_parameter(parm_template: hou.ParmTemplate, items:  Union[List, OrderedDict], in_multiparm: bool = False):
     """Build a help item for a parameter.
 
     :param parm_template: The source parameter template.
-    :type parm_template: hou.ParmTemplate
     :param items: A list of help items.
-    :type items: list
     :param in_multiparm: Whether or not the template is inside a multiparm
-    :type in_multiparm: bool
     :return:
 
     """
@@ -172,7 +163,7 @@ def _add_help_for_parameter(parm_template, items, in_multiparm=False):
         for label in parm_template.menuLabels():
             menu_help.append(menu_item_template.render(item=label))
 
-        menu_dict = OrderedDict({parm_help: menu_help})
+        menu_dict = collections.OrderedDict({parm_help: menu_help})
 
         items.append(menu_dict)
 
@@ -180,13 +171,11 @@ def _add_help_for_parameter(parm_template, items, in_multiparm=False):
         items.append(parm_help)
 
 
-def _add_parameters_section(string_buf, node_type):
+def _add_parameters_section(string_buf: io.StringIO, node_type: hou.NodeType):
     """Add a parameters section to the buffer.
 
     :param string_buf: The output buffer.
-    :type string_buf: io.StringIO
     :param node_type: The source node type.
-    :type node_type: hou.NodeType
     :return:
 
     """
@@ -202,13 +191,11 @@ def _add_parameters_section(string_buf, node_type):
     _get_help_text(string_buf, parameter_items, 0)
 
 
-def _create_header(string_buf, node_type):
+def _create_header(string_buf: io.StringIO, node_type: hou.NodeType):
     """Create the header sections.
 
     :param string_buf: The output buffer.
-    :type string_buf: io.StringIO
     :param node_type: The source node type.
-    :type node_type: hou.NodeType
     :return:
 
     """
@@ -233,18 +220,15 @@ def _create_header(string_buf, node_type):
     string_buf.write("\n\n")
 
 
-def _get_template(key, in_multiparm=False):
+def _get_template(key: str, in_multiparm: bool = False) -> jinja2.Template:
     """Get the template for a particular key.
 
     If a template will be for a parameter inside a multiparm, any '#id:' entries will
     be removed since they will cause problems.
 
     :param key: The output key.
-    :type key: str
     :param in_multiparm: Whether or not the template is inside a multiparm
-    :type in_multiparm: bool
     :return: The help template.
-    :rtype: jinja2.Template
 
     """
     raw_data = _TEMPLATES[key]
@@ -257,19 +241,16 @@ def _get_template(key, in_multiparm=False):
     return template
 
 
-def _get_help_text(string_buf, items, indent):
+def _get_help_text(string_buf: io.StringIO, items: Union[List, OrderedDict, str], indent: int):
     """Add items to the output.
 
     :param string_buf: The output buffer.
-    :type string_buf: io.StringIO
     :param items: Help items or strings.
-    :type items: list or OrderedDict or str
     :param indent: The indentation level.
-    :type indent: int
     :return:
 
     """
-    if isinstance(items, OrderedDict):
+    if isinstance(items, collections.OrderedDict):
         for key, value in list(items.items()):
             for line in key.split("\n"):
                 string_buf.write("{}{}\n".format("    " * indent, line))
@@ -289,15 +270,12 @@ def _get_help_text(string_buf, items, indent):
         string_buf.write("\n")
 
 
-def _process_parm_templates(items, templates, in_multiparm=False):
+def _process_parm_templates(items: Union[List, OrderedDict], templates: Tuple[hou.ParmTemplate], in_multiparm: bool = False):
     """Process parameter templates.
 
     :param items: A list of help items.
-    :type items: list
     :param templates: The parameter templates to process.
-    :type templates: tuple(hou.ParmTemplate)
     :param in_multiparm: Whether or not the templates are inside a multiparm.
-    :type in_multiparm: bool
     :return:
 
     """
@@ -317,7 +295,7 @@ def _process_parm_templates(items, templates, in_multiparm=False):
             _add_folder_help(parm_template, items, in_multiparm)
 
 
-def _resolve_icon(icon, node_type):
+def _resolve_icon(icon: str, node_type: hou.NodeType) -> str:
     """Try to resolve a node type's icon to a help server friendly format.
 
     This function will attempt to handle the following cases:
@@ -326,11 +304,8 @@ def _resolve_icon(icon, node_type):
     - If the icon() value is a Houdini style icon ({CONTEXT}_{name}), convert to {CONTEXT}/{name}
 
     :param icon: The icon name.
-    :type icon: str
     :param node_type: A node type to help resolve the icon.
-    :type node_type: hou.NodeType
     :return: An icon value.
-    :rtype: str
 
     """
     if icon.startswith("opdef:/{}".format(node_type.nameWithCategory())):
@@ -349,19 +324,14 @@ def _resolve_icon(icon, node_type):
 # =============================================================================
 
 
-def generate_help_card(node, inputs=False, related=False, using=False):
+def generate_help_card(node: hou.Node, inputs: bool = False, related: bool = False, using: bool = False) -> str:
     """Generate help card text for a node.
 
     :param node: The source node.
-    :type node: hou.Node
     :param inputs: Whether or not to include an 'Inputs' section.
-    :type inputs: bool
     :param related: Whether or not to include a 'See also' section.
-    :type related: bool
     :param using: Whether or not to create a 'Using ...' section.
-    :type using: bool
     :return: The generated help card text.
-    :rtype: str
 
     """
     node_type = node.type()

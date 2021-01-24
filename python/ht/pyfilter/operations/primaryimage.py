@@ -5,11 +5,17 @@
 # =============================================================================
 
 # Standard Library Imports
+from __future__ import annotations
 import logging
+from typing import TYPE_CHECKING, Optional
 
 # Houdini Toolbox Imports
 from ht.pyfilter.operations.operation import PyFilterOperation, log_filter_call
 from ht.pyfilter.property import set_property
+
+if TYPE_CHECKING:
+    import argparse
+    from ht.pyfilter.manager import PyFilterManager
 
 _logger = logging.getLogger(__name__)
 
@@ -23,11 +29,10 @@ class SetPrimaryImage(PyFilterOperation):
     """Operation to modify the primary image path.
 
     :param manager: The manager this operation is registered with.
-    :type manager: ht.pyfilter.manager.PyFilterManager
 
     """
 
-    def __init__(self, manager):
+    def __init__(self, manager: PyFilterManager):
         super().__init__(manager)
 
         self._disable_primary_image = False
@@ -38,13 +43,13 @@ class SetPrimaryImage(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @property
-    def disable_primary_image(self):
-        """bool: Disable primary image generation."""
+    def disable_primary_image(self) -> bool:
+        """Disable primary image generation."""
         return self._disable_primary_image
 
     @property
-    def primary_image_path(self):
-        """str: The primary image path to set."""
+    def primary_image_path(self) -> str:
+        """The primary image path to set."""
         return self._primary_image_path
 
     # -------------------------------------------------------------------------
@@ -52,17 +57,14 @@ class SetPrimaryImage(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def build_arg_string(
-        primary_image_path=None, disable_primary_image=False
-    ):  # pylint: disable=arguments-differ
+    def build_arg_string(  # pylint: disable=arguments-differ
+        primary_image_path: Optional[str] = None, disable_primary_image: bool = False
+    ) -> str:
         """Build an argument string for this operation.
 
         :param primary_image_path: The primary image path to set.
-        :type primary_image_path: str
         :param disable_primary_image: Whether or not to disable the primary image.
-        :type disable_primary_image: bool
         :return: The constructed argument string.
-        :rtype: str
 
         """
         args = []
@@ -76,11 +78,10 @@ class SetPrimaryImage(PyFilterOperation):
         return " ".join(args)
 
     @staticmethod
-    def register_parser_args(parser):
+    def register_parser_args(parser: argparse.ArgumentParser):
         """Register interested parser args for this operation.
 
         :param parser: The argument parser to attach arguments to.
-        :type parser: argparse.ArgumentParser.
         :return:
 
         """
@@ -108,11 +109,10 @@ class SetPrimaryImage(PyFilterOperation):
         elif self.primary_image_path is not None:
             set_property("image:filename", self.primary_image_path)
 
-    def process_parsed_args(self, filter_args):
+    def process_parsed_args(self, filter_args: argparse.Namespace):
         """Process any parsed args that the operation may be interested in.
 
         :param filter_args: The argparse namespace containing processed args.
-        :type filter_args: argparse.Namespace
         :return:
 
         """
@@ -122,14 +122,13 @@ class SetPrimaryImage(PyFilterOperation):
         if filter_args.primary_image_path is not None:
             self._primary_image_path = filter_args.primary_image_path
 
-    def should_run(self):
+    def should_run(self) -> bool:
         """Determine whether or not this filter should be run.
 
         This operation will run if it is disabling the primary image or needs
         to set the image path.
 
         :return: Whether or not this operation should run.
-        :rtype: bool
 
         """
         return self.disable_primary_image or self.primary_image_path is not None

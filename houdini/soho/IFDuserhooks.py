@@ -13,13 +13,11 @@ from ht.sohohooks.manager import MANAGER
 # =============================================================================
 
 
-def call(hook_name="", *args, **kwargs):  # pylint: disable=keyword-arg-before-vararg
+def call(hook_name: str = "", *args, **kwargs) -> bool:  # pylint: disable=keyword-arg-before-vararg
     """Hook callback function.
 
     :param hook_name: The name of the hook to call.
-    :type hook_name: str
     :return: Whether or not code should continue after the hook.
-    :rtype: bool
 
     """
     return MANAGER.call_hook(hook_name, *args, **kwargs)

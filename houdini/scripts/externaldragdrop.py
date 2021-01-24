@@ -6,6 +6,7 @@
 
 # Standard Library Imports
 import os
+from typing import List
 
 # Houdini Toolbox Imports
 from ht.events import SceneEvents, run_event
@@ -16,15 +17,13 @@ from ht.events import SceneEvents, run_event
 # =============================================================================
 
 
-def dropAccept(file_paths):  # pylint: disable=invalid-name
+def dropAccept(file_paths: List[str]) -> bool:  # pylint: disable=invalid-name
     """Accept a list of files.
 
     This function is called by Houdini when files are dropped onto the UI.
 
     :param file_paths: A list of dropped files.
-    :type file_paths: list(str)
     :return: Whether or not the drop was handled.
-    :rtype: bool
 
     """
     # Let Houdini handle dropping .hip files.

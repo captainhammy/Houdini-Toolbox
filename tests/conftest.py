@@ -66,15 +66,12 @@ def _find_matching_node(parent, request):
 def exec_tool_script():
     """Fixture to execute a tool inside an xml .shelf file."""
 
-    def _exec(file_name, tool_name, kwargs):
+    def _exec(file_name: str, tool_name: str, kwargs: dict):
         """Execute tool code inside a file.
 
         :param file_name: The name of the .shelf file to execute.
-        :type file_name: str
         :param tool_name: The name of the tool to execute.
-        :type tool_name: str
         :param kwargs: The global 'kwargs' dict for the tool execution.
-        :type kwargs: dict
         :return:
 
         """

@@ -5,12 +5,19 @@
 # =============================================================================
 
 # Standard Library Imports
+from __future__ import annotations
 import math
+from typing import TYPE_CHECKING, List, Optional
 
 # Houdini Toolbox Imports
 from ht.pyfilter.operations.operation import PyFilterOperation, log_filter_call
 from ht.pyfilter.property import get_property, set_property
 from ht.pyfilter.utils import build_pyfilter_command
+
+if TYPE_CHECKING:
+    import argparse
+    from ht.pyfilter.manager import PyFilterManager
+    import hou
 
 
 # =============================================================================
@@ -22,11 +29,10 @@ class IpOverrides(PyFilterOperation):
     """Operation to set overrides when rendering to ip.
 
     :param manager: The manager this operation is registered with.
-    :type manager: ht.pyfilter.manager.PyFilterManager
 
     """
 
-    def __init__(self, manager):
+    def __init__(self, manager: PyFilterManager):
         super().__init__(manager)
 
         self._bucket_size = None
@@ -46,58 +52,58 @@ class IpOverrides(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @property
-    def bucket_size(self):
-        """int: Set the bucket rendering size."""
+    def bucket_size(self) -> int:
+        """Set the bucket rendering size."""
         return self._bucket_size
 
     @property
-    def disable_aovs(self):
-        """bool: Disable all extra image planes."""
+    def disable_aovs(self) -> bool:
+        """Disable all extra image planes."""
         return self._disable_aovs
 
     @property
-    def disable_blur(self):
-        """bool: Disable motion blur."""
+    def disable_blur(self) -> bool:
+        """Disable motion blur."""
         return self._disable_blur
 
     @property
-    def disable_deep(self):
-        """bool: Disable deep image generation."""
+    def disable_deep(self) -> bool:
+        """Disable deep image generation."""
         return self._disable_deep
 
     @property
-    def disable_displacement(self):
-        """bool: Disable shader displacement."""
+    def disable_displacement(self) -> bool:
+        """Disable shader displacement."""
         return self._disable_displacement
 
     @property
-    def disable_matte(self):
-        """bool: Disable matte and phantom objects."""
+    def disable_matte(self) -> bool:
+        """Disable matte and phantom objects."""
         return self._disable_matte
 
     @property
-    def disable_subd(self):
-        """bool: Disable subdivision."""
+    def disable_subd(self) -> bool:
+        """Disable subdivision."""
         return self._disable_subd
 
     @property
-    def disable_tilecallback(self):
-        """bool: Disable any tile callback."""
+    def disable_tilecallback(self) -> bool:
+        """Disable any tile callback."""
         return self._disable_tilecallback
 
     @property
-    def res_scale(self):
-        """float: Amount to scale the image resolution by."""
+    def res_scale(self) -> float:
+        """Amount to scale the image resolution by."""
         return self._res_scale
 
     @property
-    def sample_scale(self):
-        """float: Amount to scale the pixel sample count by."""
+    def sample_scale(self) -> float:
+        """Amount to scale the pixel sample count by."""
         return self._sample_scale
 
     @property
-    def transparent_samples(self):
-        """int: Number of transparent samples."""
+    def transparent_samples(self) -> int:
+        """Number of transparent samples."""
         return self._transparent_samples
 
     # -------------------------------------------------------------------------
@@ -106,44 +112,32 @@ class IpOverrides(PyFilterOperation):
 
     @staticmethod
     def build_arg_string(  # pylint: disable=arguments-differ,too-many-arguments
-        res_scale=None,
-        sample_scale=None,
-        disable_blur=False,
-        disable_aovs=False,
-        disable_deep=False,
-        disable_displacement=False,
-        disable_subd=False,
-        disable_tilecallback=False,
-        bucket_size=None,
-        transparent_samples=None,
-        disable_matte=False,
-    ):
+        res_scale: Optional[float] = None,
+        sample_scale: Optional[float] = None,
+        disable_blur: bool = False,
+        disable_aovs: bool = False,
+        disable_deep: bool = False,
+        disable_displacement: bool = False,
+        disable_subd: bool = False,
+        disable_tilecallback: bool = False,
+        bucket_size: Optional[int] = None,
+        transparent_samples: Optional[int] = None,
+        disable_matte: bool = False,
+    ) -> str:
         """Build an argument string for this operation.
 
         :param res_scale: The resolution scale.
-        :type res_scale: float
         :param sample_scale: The pixel sample scale.
-        :type sample_scale: float
         :param disable_blur: Whether or not to disable blur.
-        :type disable_blur: bool
         :param disable_aovs: Whether or not to disable any AOVs.
-        :type disable_aovs: bool
         :param disable_deep: Whether or not to disable deep images.
-        :type disable_deep: bool
         :param disable_displacement: Whether or not to disable displacement.
-        :type disable_displacement: bool
         :param disable_subd: Whether or not to disable subdivision surfaces.
-        :type disable_subd: bool
         :param disable_tilecallback: Whether or not to disable any tile callback.
-        :type disable_tilecallback: bool
         :param bucket_size: Override the render bucket size.
-        :type bucket_size: int
-        :parameter transparent_samples: Override the number of transparent samples.
-        :type transparent_samples: int
+        :param transparent_samples: Override the number of transparent samples.
         :param disable_matte: Whether or not to disable matte and phantom objects.
-        :type disable_matte: bool
         :return: The constructed argument string.
-        :rtype: str
 
         """
         args = []
@@ -184,11 +178,10 @@ class IpOverrides(PyFilterOperation):
         return " ".join(args)
 
     @staticmethod
-    def register_parser_args(parser):
+    def register_parser_args(parser: argparse.ArgumentParser):
         """Register interested parser args for this operation.
 
         :param parser: The argument parser to attach arguments to.
-        :type parser: argparse.ArgumentParser.
         :return:
 
         """
@@ -334,11 +327,10 @@ class IpOverrides(PyFilterOperation):
         if self.disable_aovs and get_property("plane:variable") != "Cf+Af":
             set_property("plane:disable", 1)
 
-    def process_parsed_args(self, filter_args):
+    def process_parsed_args(self, filter_args: argparse.Namespace):
         """Process any parsed args that the operation may be interested in.
 
         :param filter_args: The argparse namespace containing processed args.
-        :type filter_args: argparse.Namespace
         :return:
 
         """
@@ -362,13 +354,12 @@ class IpOverrides(PyFilterOperation):
         if filter_args.ip_transparent_samples is not None:
             self._transparent_samples = filter_args.ip_transparent_samples
 
-    def should_run(self):
+    def should_run(self) -> bool:
         """Determine whether or not this filter should be run.
 
         This operation will run if we are rendering to ip and have something to set.
 
         :return: Whether or not this operation should run.
-        :rtype: bool
 
         """
         if get_property("image:filename") != "ip":
@@ -397,28 +388,24 @@ class IpOverrides(PyFilterOperation):
 # =============================================================================
 
 
-def _scale_resolution(resolution, scale):
+def _scale_resolution(resolution: List[int], scale: float) -> List[int]:
     """Scale a resolution value.
 
     :param resolution: The resolution values to scale.
-    :type resolution: list(int)
     :return: The scaled resolution.
-    :rtype: list(int)
 
     """
     return [
         int(round(value * scale))
-        for value in resolution  # pylint: disable=round-builtin
+        for value in resolution
     ]
 
 
-def _scale_samples(samples, scale):
+def _scale_samples(samples: List[int], scale: float) -> List[int]:
     """Scale a sample value, ensuring it remains >= 1.
 
     :param samples: The sample values to scale.
-    :type samples: list(int)
     :return: The scale samples.
-    :rtype: list(int)
 
     """
     return [max(1, int(math.ceil(value * scale))) for value in samples]
@@ -429,13 +416,11 @@ def _scale_samples(samples, scale):
 # =============================================================================
 
 
-def build_arg_string_from_node(node):
+def build_arg_string_from_node(node: hou.RopNode) -> str:
     """Build an argument string from a Mantra node.
 
     :param node: The node to build an arg string from.
-    :type node: hou.RopNode
     :return: An argument string.
-    :rtype: str
 
     """
     if not node.evalParm("enable_ip_override"):
@@ -465,13 +450,11 @@ def build_arg_string_from_node(node):
     )
 
 
-def build_pixel_sample_scale_display(node):
+def build_pixel_sample_scale_display(node: hou.RopNode) -> str:
     """Build a label to display the adjusted pixel samples.
 
     :param node: The node to build the display for.
-    :type node: hou.RopNode
     :return: The display scale.
-    :rtype: str
 
     """
     samples = node.evalParmTuple("vm_samples")
@@ -483,13 +466,11 @@ def build_pixel_sample_scale_display(node):
     return "{}x{}".format(scale_x, scale_y)
 
 
-def build_resolution_scale_display(node):
+def build_resolution_scale_display(node: hou.RopNode) -> str:
     """Build a label to display the adjusted image resolution.
 
     :param node: The node to build the display for.
-    :type node: hou.RopNode
     :return: The display scale.
-    :rtype: str
 
     """
     # Need to find a valid camera to get the resolution from it.
@@ -522,13 +503,11 @@ def build_resolution_scale_display(node):
     return "{}x{}".format(width, height)
 
 
-def build_pyfilter_command_from_node(node):
+def build_pyfilter_command_from_node(node: hou.RopNode) -> str:
     """Construct the mantra command with PyFilter.
 
     :param node: The node to build a command from.
-    :type node: hou.RopNode
     :return: The filter command.
-    :rtype: str
 
     """
     args = build_arg_string_from_node(node)
@@ -536,12 +515,11 @@ def build_pyfilter_command_from_node(node):
     return build_pyfilter_command(args.split())
 
 
-def set_mantra_command(node):
+def set_mantra_command(node: hou.RopNode):
     """Set the soho_pipecmd parameter to something that will render with our
     custom script and settings.
 
     :param node: The node to set the command on.
-    :type node: hou.RopNode
     :return:
 
     """

@@ -79,7 +79,7 @@ class AOVManagerWidget(QtWidgets.QWidget):
         )
 
         # Really need a signal?  Maybe just refresh everything?
-        manager.MANAGER.init_interface()
+        manager.MANAGER.attach_interface(utils.AOVViewerInterface())
         manager.MANAGER.interface.aov_added_signal.connect(
             self.select_widget.aov_tree.insert_aov
         )

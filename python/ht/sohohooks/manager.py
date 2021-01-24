@@ -6,6 +6,7 @@
 
 # Standard Library Imports
 import traceback
+from typing import Callable
 
 
 # =============================================================================
@@ -31,7 +32,7 @@ class SohoHookManager:
     # -------------------------------------------------------------------------
 
     @property
-    def hooks(self):
+    def hooks(self) -> dict:
         """Dictionary of hook functions grouped by hook name."""
         return self._hooks
 
@@ -39,13 +40,11 @@ class SohoHookManager:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def call_hook(self, name, *args, **kwargs):
+    def call_hook(self, name: str, *args, **kwargs) -> bool:
         """Call all hook functions for a given soho hook name.
 
         :param name: The name of the hook to call.
-        :type name: str
         :return: Whether or not the hooks succeeded.
-        :rtypeL bool
 
         """
         from IFDapi import ray_comment
@@ -75,13 +74,11 @@ class SohoHookManager:
 
         return return_value
 
-    def register_hook(self, name, hook):
+    def register_hook(self, name: str, hook: Callable):
         """Register a hook function for a given soho hook name.
 
         :param name: The hook name.
-        :type name: str
         :param hook: The function to call.
-        :type hook: function
         :return:
 
         """

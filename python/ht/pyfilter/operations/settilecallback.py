@@ -4,10 +4,17 @@
 # IMPORTS
 # =============================================================================
 
+# Standard Library Imports
+from __future__ import annotations
+from typing import TYPE_CHECKING, Optional
+
 # Houdini Toolbox Imports
 from ht.pyfilter.operations.operation import PyFilterOperation, log_filter_call
 from ht.pyfilter.property import set_property
 
+if TYPE_CHECKING:
+    import argparse
+    from ht.pyfilter.manager import PyFilterManager
 
 # =============================================================================
 # CLASSES
@@ -18,11 +25,10 @@ class SetTileCallback(PyFilterOperation):
     """Operation to set a mantra tile callback.
 
     :param manager: The manager this operation is registered with.
-    :type manager: ht.pyfilter.manager.PyFilterManager
 
     """
 
-    def __init__(self, manager):
+    def __init__(self, manager: PyFilterManager):
         super().__init__(manager)
 
         # This could also be hardcoded and we could not bother with
@@ -34,8 +40,8 @@ class SetTileCallback(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @property
-    def tilecallback(self):
-        """str: The path to the tile callback."""
+    def tilecallback(self) -> str:
+        """The path to the tile callback."""
         return self._tilecallback
 
     # -------------------------------------------------------------------------
@@ -43,13 +49,11 @@ class SetTileCallback(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def build_arg_string(path=None):  # pylint: disable=arguments-differ
+    def build_arg_string(path: Optional[str] = None) -> str:  # pylint: disable=arguments-differ
         """Build an argument string for this operation.
 
         :param path: The path to the tile callback.
-        :type path: str
         :return: The constructed argument string.
-        :rtype: str
 
         """
         args = []
@@ -60,11 +64,10 @@ class SetTileCallback(PyFilterOperation):
         return " ".join(args)
 
     @staticmethod
-    def register_parser_args(parser):
+    def register_parser_args(parser: argparse.ArgumentParser):
         """Register interested parser args for this operation.
 
         :param parser: The argument parser to attach arguments to.
-        :type parser: argparse.ArgumentParser.
         :return:
 
         """
@@ -83,24 +86,22 @@ class SetTileCallback(PyFilterOperation):
         """
         set_property("render:tilecallback", self.tilecallback)
 
-    def process_parsed_args(self, filter_args):
+    def process_parsed_args(self, filter_args: argparse.Namespace):
         """Process any parsed args that the operation may be interested in.
 
         :param filter_args: The argparse namespace containing processed args.
-        :type filter_args: argparse.Namespace
         :return:
 
         """
         if filter_args.tilecallback is not None:
             self._tilecallback = filter_args.tilecallback
 
-    def should_run(self):
+    def should_run(self) -> bool:
         """Determine whether or not this filter should be run.
 
         This operation runs if the callback file path is set.
 
         :return: Whether or not this operation should run.
-        :rtype: bool
 
         """
         return self.tilecallback is not None

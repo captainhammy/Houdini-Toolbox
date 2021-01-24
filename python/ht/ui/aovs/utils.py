@@ -7,6 +7,7 @@
 # Standard Library Imports
 import os
 import pickle
+from typing import List
 
 # Third Party Imports
 from PySide2 import QtCore, QtGui
@@ -181,25 +182,21 @@ def build_aovs_from_multiparm(node):
     return aovs
 
 
-def decode_aov_mime_data(mime_data):
+def decode_aov_mime_data(mime_data: QtCore.QMimeData) -> List:
     """Decode AOV data from the mime data.
 
     :param mime_data: The mime data to decode from.
-    :type mime_data: QtCore.QMimeData
     :return: A list of AOV related items.
-    :rtype: list
 
     """
     return pickle.loads(mime_data.data(_AOV_MIME_TYPE).data())
 
 
-def encode_aov_mime_data(mime_data, aov_data):
+def encode_aov_mime_data(mime_data: QtCore.QMimeData, aov_data: List):
     """Encode AOV data into the mime data.
 
     :param mime_data: The mime data to decode from.
-    :type mime_data: QtCore.QMimeData
     :param aov_data: A list of AOV related items.
-    :type aov_data: list
     :return:
 
     """
@@ -289,13 +286,11 @@ def get_vextype_menu_index(vextype):
     return _get_item_menu_index(uidata.VEXTYPE_MENU_ITEMS, vextype)
 
 
-def has_aov_mime_data(mime_data):
+def has_aov_mime_data(mime_data: QtCore.QMimeData) -> bool:
     """Check if the mime data contains AOV data.
 
     :param mime_data: The mime data to check.
-    :type mime_data: QtCore.QMimeData
     :return: Whether or not the mime data contains AOV data.
-    :rtype: bool
 
     """
     return mime_data.hasFormat(_AOV_MIME_TYPE)

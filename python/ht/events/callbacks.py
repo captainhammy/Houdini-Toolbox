@@ -38,11 +38,10 @@ def _emit_ui_available(*args, **kwargs):  # pylint: disable=unused-argument
     run_event(SceneEvents.WhenUIAvailable)
 
 
-def _hip_event_callback(event_type):
+def _hip_event_callback(event_type: hou.hipFileEventType):
     """Run HipFileEvents events
 
     :param event_type: The hip file event type which is running.
-    :type event_type: hou.hipFileEventType
     :return:
 
     """

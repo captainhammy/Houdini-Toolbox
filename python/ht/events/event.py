@@ -4,6 +4,10 @@
 # IMPORTS
 # =============================================================================
 
+# Standard Library Imports
+from __future__ import annotations
+import enum
+
 # Houdini Toolbox Imports
 from ht.events.item import HoudiniEventItem
 from ht.events.stats import HoudiniEventStats
@@ -24,55 +28,50 @@ class HoudiniEventFactory:
     # -------------------------------------------------------------------------
 
     def __repr__(self):
-        return "<HoudiniEventFactory>"
+        return "<{}>".format(self.__class__.__name__)
 
     # -------------------------------------------------------------------------
     # STATIC METHODS
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def get_event_type(name):
+    def get_event_type(event: enum.Enum) -> HoudiniEvent:
         """Get an event for a given name.
 
         If there is no explicit mapping a base HoudiniEvent will be returned.
 
-        :param name: An event name.
-        :type name: str
+        :param event: An event enum.
         :return: A found event class instance.
-        :rtype: HoudiniEvent
 
         """
-        cls = HoudiniEventFactory._mappings.get(name)
+        cls = HoudiniEventFactory._mappings.get(event)
 
         if cls is not None:
             return cls()
 
-        return HoudiniEvent(name)
-
-    @staticmethod
-    def register_event_class(name, event_class):
-        """Register an event type class to a name.
-
-        :param name: The event name
-        :type name: str
-        :param event_class: A customize subclass of HoudiniEvent.
-        :type event_class: HoudiniEvent
-        :return:
-
-        """
-        HoudiniEventFactory._mappings[name] = event_class
+        return HoudiniEvent(event.value)
+    #
+    # @staticmethod
+    # def register_event_class(name: enum.Enum, event_class: HoudiniEvent):
+    #     """Register an event type class to a name.
+    #
+    #     :param name: The event name
+    #     :param event_class: A customize subclass of HoudiniEvent.
+    #     :return:
+    #
+    #     """
+    #     HoudiniEventFactory._mappings[name] = event_class
 
 
 class HoudiniEvent:
     """The base Houdini event class.
 
     :param name: THe event name.
-    :type name: str
     :return:
 
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         self._data = {}
         self._enabled = True
         self._name = name
@@ -92,15 +91,15 @@ class HoudiniEvent:
     # -------------------------------------------------------------------------
 
     @property
-    def data(self):
-        """dict: Internal data for storing data that can be shared across event functions."""
+    def data(self) -> dict:
+        """Internal data for storing data that can be shared across event functions."""
         return self._data
 
     # -------------------------------------------------------------------------
 
     @property
-    def enabled(self):
-        """bool: Returns whether or not the action is enabled."""
+    def enabled(self) -> bool:
+        """Whether or not the action is enabled."""
         return self._enabled
 
     @enabled.setter
@@ -110,29 +109,28 @@ class HoudiniEvent:
     # -------------------------------------------------------------------------
 
     @property
-    def item_map(self):
+    def item_map(self) -> dict:
         """dict: Internal event map used to register the functions of this event."""
         return self._item_map
 
     @property
-    def name(self):
+    def name(self) -> str:
         """str: The event name."""
         return self._name
 
     @property
-    def stats(self):
-        """EventStats: Statistics related to this event."""
+    def stats(self) -> HoudiniEventStats:
+        """Statistics related to this event."""
         return self._stats
 
     # -------------------------------------------------------------------------
     # METHODS
     # -------------------------------------------------------------------------
 
-    def register_item(self, item):
+    def register_item(self, item: HoudiniEventItem):
         """Register an item to run.
 
-        :param: item: An item to run.
-        :type item: HoudiniEventItem
+        :param item: An item to run.
         :return:
 
         """
@@ -142,13 +140,12 @@ class HoudiniEvent:
         priority_items = self.item_map.setdefault(item.priority, [])
         priority_items.append(item)
 
-    def run(self, scriptargs):
+    def run(self, scriptargs: dict):
         """Run the items with the given args.
 
         Items are run in decreasing order of priority.
 
-        :param: scriptargs: Arguments passed to the event from the caller
-        :type scriptargs: dict
+        :param scriptargs: Arguments passed to the event from the caller
         :return:
 
         """

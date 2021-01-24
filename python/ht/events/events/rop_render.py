@@ -10,6 +10,7 @@ scripts.
 # Standard Library Imports
 import logging
 import time
+from typing import Optional
 
 # Houdini Toolbox Imports
 from ht.events.group import HoudiniEventGroup
@@ -50,11 +51,10 @@ class RopRenderEvent(HoudiniEventGroup):
     # METHODS
     # -------------------------------------------------------------------------
 
-    def pre_frame(self, scriptargs):
+    def pre_frame(self, scriptargs: dict):
         """Action run before the frame starts rendering.
 
         :param scriptargs: Event data.
-        :type scriptargs: dict
         :return:
 
         """
@@ -64,11 +64,10 @@ class RopRenderEvent(HoudiniEventGroup):
 
         _logger.info("Starting Frame: %s", scriptargs["frame"])
 
-    def pre_render(self, scriptargs):
+    def pre_render(self, scriptargs: dict):
         """Action run before the render starts.
 
         :param scriptargs: Event data.
-        :type scriptargs: dict
         :return:
 
         """
@@ -84,11 +83,10 @@ class RopRenderEvent(HoudiniEventGroup):
         else:
             _logger.info("Starting render")
 
-    def post_frame(self, scriptargs):
+    def post_frame(self, scriptargs: dict):
         """Action run after the frame has rendered.
 
         :param scriptargs: Event data.
-        :type scriptargs: dict
         :return:
 
         """
@@ -106,11 +104,10 @@ class RopRenderEvent(HoudiniEventGroup):
         else:
             _logger.info("Completed Frame: %s", scriptargs["frame"])
 
-    def post_render(self, scriptargs):
+    def post_render(self, scriptargs: dict):
         """Action run after the render is complete.
 
         :param scriptargs: Event data.
-        :type scriptargs: dict
         :return:
 
         """
@@ -122,11 +119,10 @@ class RopRenderEvent(HoudiniEventGroup):
         else:
             _logger.info("Completed Render")
 
-    def post_write(self, scriptargs):  # pylint: disable=no-self-use
+    def post_write(self, scriptargs: dict):  # pylint: disable=no-self-use
         """Action run after the frame is written to disk.
 
         :param scriptargs: Event data.
-        :type scriptargs: dict
         :return:
 
         """
@@ -144,13 +140,11 @@ class RopRenderEvent(HoudiniEventGroup):
 # =============================================================================
 
 
-def _get_target_file(node):
+def _get_target_file(node: hou.RopNode) -> Optional[str]:
     """Attempt to determine the target output file:
 
     :param node: The running node.
-    :type node: hou.RopNode
     :return: The output file path, if any.
-    :rtype: str
 
     """
     node_type = node.type()
@@ -171,11 +165,10 @@ def _get_target_file(node):
     return None
 
 
-def _print_frame_write(scriptargs):
+def _print_frame_write(scriptargs: dict):
     """Print that a file was written.
 
     :param scriptargs: Event data.
-    :type scriptargs: dict
     :return:
 
     """
@@ -200,13 +193,11 @@ def _print_frame_write(scriptargs):
 # =============================================================================
 
 
-def build_scriptargs(node=None):
+def build_scriptargs(node: Optional[hou.Node] = None) -> dict:
     """Build relevant scriptargs for this action.
 
     :param node: Optionally rendering node.
-    :type node: hou.RopNode
     :return: Data related to the running script parm.
-    :rtype: dict
 
     """
     frame_range = None

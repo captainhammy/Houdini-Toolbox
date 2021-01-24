@@ -33,11 +33,10 @@ class StyleNodeEvent(HoudiniEventGroup):
     # METHODS
     # -------------------------------------------------------------------------
 
-    def style_node_by_name(self, scriptargs):  # pylint: disable=no-self-use
+    def style_node_by_name(self, scriptargs: dict):  # pylint: disable=no-self-use
         """Style a node based on a name.
 
         :param scriptargs: Data passed by event runner.
-        :type scriptargs: dict
         :return:
 
         """
@@ -45,11 +44,10 @@ class StyleNodeEvent(HoudiniEventGroup):
 
         MANAGER.style_node_by_name(node)
 
-    def style_node_on_creation(self, scriptargs):  # pylint: disable=no-self-use
+    def style_node_on_creation(self, scriptargs: dict):  # pylint: disable=no-self-use
         """Style a node on creation."
 
         :param scriptargs: Data passed by event runner.
-        :type scriptargs: dict
         :return:
 
         """

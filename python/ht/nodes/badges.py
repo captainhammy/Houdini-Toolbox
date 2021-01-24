@@ -4,6 +4,9 @@
 # IMPORTS
 # =============================================================================
 
+# Standard Library Imports
+from typing import Optional
+
 # Houdini Toolbox Imports
 import _ht_generic_image_badge
 import _ht_generic_text_badge
@@ -17,11 +20,10 @@ import hou
 # ==============================================================================
 
 
-def clear_generic_image_badge(node):
+def clear_generic_image_badge(node: hou.Node):
     """Clear the generic image badge from the node.
 
     :param node: The node to clear the badge from.
-    :type node: hou.Node
     :return:
 
     """
@@ -35,11 +37,10 @@ def clear_generic_image_badge(node):
             pass
 
 
-def clear_generic_text_badge(node):
+def clear_generic_text_badge(node: hou.Node):
     """Clear the generic text badge from the node.
 
     :param node: The node to clear the badge from.
-    :type node: hou.Node
     :return:
 
     """
@@ -56,11 +57,10 @@ def clear_generic_text_badge(node):
         clear_generic_text_badge_color(node)
 
 
-def clear_generic_text_badge_color(node):
+def clear_generic_text_badge_color(node: hou.Node):
     """Clear the generic text badge coloring from the node.
 
     :param node: The node to clear badge coloring from.
-    :type node: hou.Node
     :return:
 
     """
@@ -74,13 +74,11 @@ def clear_generic_text_badge_color(node):
             pass
 
 
-def set_generic_image_badge(node, image):
+def set_generic_image_badge(node: hou.Node, image: str):
     """Set the node's generic image badge.
 
     :param node: The node to set the badge for.
-    :type node: hou.Node
     :param image: The image to set.
-    :type image: str
     :return:
 
     """
@@ -89,15 +87,12 @@ def set_generic_image_badge(node, image):
         node.setUserData(_ht_generic_image_badge.get_generic_image_key(), image)
 
 
-def set_generic_text_badge(node, value, color=None):
+def set_generic_text_badge(node: hou.Node, value: str, color: Optional[hou.Color] = None):
     """Set the node's generic text badge.
 
     :param node: The node to set the badge for.
-    :type node: hou.Node
     :param value: The badge value.
-    :type value: str
     :param color: An optional text color.
-    :type color: hou.Color
     :return:
 
     """
@@ -109,13 +104,11 @@ def set_generic_text_badge(node, value, color=None):
             set_generic_text_badge_color(node, color)
 
 
-def set_generic_text_badge_color(node, color):
+def set_generic_text_badge_color(node: hou.Node, color: hou.Color):
     """Set the node's generic text badge color.
 
     :param node: The node to set the badge for.
-    :type node: hou.Node
     :param color: The text color.
-    :type color: hou.Color
     :return:
 
     """

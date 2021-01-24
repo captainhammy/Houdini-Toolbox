@@ -4,6 +4,10 @@
 # IMPORTS
 # ==============================================================================
 
+# Standard Library Imports
+from __future__ import annotations
+from typing import List, Optional
+
 # Third Party Imports
 from PySide2 import QtCore, QtWidgets
 
@@ -23,15 +27,12 @@ class CopyItemsDialog(QtWidgets.QDialog):
     """Dialog to copy items.
 
     :param items: The items to copy.
-    :type items: list(hou.NetworkItem)
     :param parent_node: The parent node.
-    :type parent_node: hou.Node
     :param parent: Optional parent.
-    :type parent: QtCore.QWidget
 
     """
 
-    def __init__(self, items, parent_node, parent=None):
+    def __init__(self, items: List[hou.NetworkItem], parent_node: hou.Node, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
 
         self.parent_node = parent_node
@@ -97,17 +98,13 @@ class PasteItemsDialog(QtWidgets.QDialog):
     """Dialog to paste items.
 
     :param editor: The editor to paste the items into.
-    :type editor: hou.NetworkEditor
     :param pos: The position to paste the items.
-    :type pos: hou.Vector2
     :param mousepos: The position of the mouse.
-    :type mousepos: hou.Vector2
     :param parent: Optional parent.
-    :type parent: QtCore.QWidget
 
     """
 
-    def __init__(self, editor, pos, mousepos, parent=None):
+    def __init__(self, editor: hou.NetworkEditor, pos: hou.Vector2, mousepos: hou.Vector2, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
 
         self.editor = editor
@@ -156,11 +153,10 @@ class PasteItemsDialog(QtWidgets.QDialog):
             self.source_chooser.addWidget(widget)
 
     @QtCore.Slot(int)
-    def _source_changed(self, index):
+    def _source_changed(self, index: int):
         """Update the displayed widget to match the selected source.
 
         :param index: The current index.
-        :type index: int
         :return:
 
         """

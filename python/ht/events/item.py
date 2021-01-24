@@ -4,6 +4,10 @@
 # IMPORTS
 # =============================================================================
 
+# Standard Library Imports
+from __future__ import annotations
+from typing import Callable, List, Tuple, Union
+
 # Houdini Toolbox Imports
 from ht.events.stats import HoudiniEventItemStats
 
@@ -17,18 +21,14 @@ class HoudiniEventItem:
     """Class responsible for calling callable methods.
 
     :param callables: A list of callables to run.
-    :type callables: tuple
     :param name: Optional item name.
-    :type name: str
     :param priority: The item priority.
-    :type priority: int
     :param stat_tags: Optional stat tags.
-    :type stat_tags: list(str)
     :return:
 
     """
 
-    def __init__(self, callables, name=None, priority=1, stat_tags=None):
+    def __init__(self, callables: Union[List[Callable], Tuple[Callable]], name: str = None, priority: int = 1, stat_tags: List[str] = None):
         self._callables = list(callables)
         self._name = name
         self._priority = priority
@@ -41,13 +41,11 @@ class HoudiniEventItem:
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __eq__(self, other):
+    def __eq__(self, other: HoudiniEventItem) -> bool:
         """Equality implementation that ignores the stats object.
 
         :param other: The item to compare to.
-        :type other: HoudiniEventItem
         :return: Whether the objects are equal.
-        :rtype: bool
 
         """
         if not isinstance(other, self.__class__):
@@ -64,13 +62,11 @@ class HoudiniEventItem:
 
         return True
 
-    def __ne__(self, other):
+    def __ne__(self, other: HoudiniEventItem) -> bool:
         """Inequality implementation that ignores the stats object.
 
         :param other: The other item to compare to.
-        :type other: HoudiniEventItem
         :return: Whether the objects are not equal.
-        :rtype: bool
 
         """
         return not self.__eq__(other)
@@ -88,40 +84,39 @@ class HoudiniEventItem:
     # -------------------------------------------------------------------------
 
     @property
-    def callables(self):
+    def callables(self) -> List[Callable]:
         """list: A list of callable objects to call."""
         return self._callables
 
     @property
-    def data(self):
-        """dict: Internal data for storing data that can be shared across item
+    def data(self) -> dict:
+        """Internal data for storing data that can be shared across item
         functions."""
         return self._data
 
     @property
-    def name(self):
-        """str: The item name."""
+    def name(self) -> str:
+        """The item name."""
         return self._name
 
     @property
-    def priority(self):
-        """int: The item priority."""
+    def priority(self) -> int:
+        """The item priority."""
         return self._priority
 
     @property
-    def stats(self):
-        """HoudiniEventItemStats: Stats for the item."""
+    def stats(self) -> HoudiniEventItemStats:
+        """Stats for the item."""
         return self._stats
 
     # -------------------------------------------------------------------------
     # METHODS
     # -------------------------------------------------------------------------
 
-    def run(self, scriptargs):
+    def run(self, scriptargs: dict):
         """Run the callables with the given args.
 
-        :param: scriptargs: Arguments passed to the event from the caller
-        :type scriptargs: dict
+        :param scriptargs: Arguments passed to the event from the caller
         :return:
 
         """
@@ -139,12 +134,18 @@ class ExclusiveHoudiniEventItem(HoudiniEventItem):
     """HoudiniEventItem subclass which uses the name and priority to determine
     which item of the same name should be run.
 
+    :param callables: A list of callables to run.
+    :param name: Optional item name.
+    :param priority: The item priority.
+    :param stat_tags: Optional stat tags.
+    :return:
+
     """
 
     # Name to item mapping.
     _exclusive_map = {}
 
-    def __init__(self, callables, name, priority=1, stat_tags=None):
+    def __init__(self, callables: Union[List[Callable], Tuple[Callable]], name: str = None, priority: int = 1, stat_tags: List[str] = None):
         super().__init__(
             callables, name, priority, stat_tags
         )
@@ -160,13 +161,12 @@ class ExclusiveHoudiniEventItem(HoudiniEventItem):
     # METHODS
     # -------------------------------------------------------------------------
 
-    def run(self, scriptargs):
+    def run(self, scriptargs: dict):
         """Run the callables with the given args.
 
         The item is only run if it is the exclusive item.
 
-        :param: scriptargs: Arguments passed to the event from the caller
-        :type scriptargs: dict
+        :param scriptargs: Arguments passed to the event from the caller
         :return:
 
         """

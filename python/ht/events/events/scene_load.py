@@ -33,8 +33,13 @@ class SceneLoadEvent(HoudiniEventGroup):
     # -------------------------------------------------------------------------
 
     def clear_session_settings(
-        self, scriptargs
+        self, scriptargs: dict
     ):  # pylint: disable=no-self-use,unused-argument
-        """Clear out potentially annoying/bad settings."""
+        """Clear out potentially annoying/bad settings.
+
+        :param scriptargs: Event data.
+        :return:
+
+        """
         # Remove an icon cache directory variable if it exists.
         hou.hscript("set -u HOUDINI_ICON_CACHE_DIR")
