@@ -29,13 +29,13 @@ if TYPE_CHECKING:
 # GLOBALS
 # =============================================================================
 
-# Signals we want to handle and their names.
-_SIGNALS = {
-    signal.SIGHUP: "HUP",
-    signal.SIGINT: "INT",
-    signal.SIGQUIT: "QUIT",
-    signal.SIGTERM: "TERM"
-}
+# Signals we want to handle.
+_SIGNALS = (
+    signal.SIGHUP,
+    signal.SIGINT,
+    signal.SIGQUIT,
+    signal.SIGTERM,
+)
 
 # Construct a HoudiniBuildManager to handle all our available Houdini options.
 _BUILD_MANAGER = ht.machinery.package.HoudiniBuildManager()
@@ -275,18 +275,17 @@ def _print_local_build_list(build_list: List[ht.machinery.package.HoudiniBase], 
     print()
 
 
-def _signal_handler(signal_num: int, current_frame: types.FrameType):  # pylint: disable=unused-argument
+def _signal_handler(caught_signal: signal.Signals, current_frame: types.FrameType):  # pylint: disable=unused-argument
     """Signal handler to catch incoming signals and kill the process group.
 
     This allows things like the Render Scheduler to kill Mantra renders.
 
-    :param signal_num: The number of the received signal.
+    :param caught_signal: The number of the received signal.
     :param current_frame: The current stack frame.
     :return:
 
     """
-    signal_name = _SIGNALS[signal_num]
-    print("Houdini wrapper caught sig SIG{}".format(signal_name))
+    print("Houdini wrapper caught sig {}".format(caught_signal.name))
 
     # Ignore further signals.
     for sig in _SIGNALS:
