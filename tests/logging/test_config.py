@@ -19,6 +19,7 @@ class Test_init_config:
     """Test ht.logging.config.init_config."""
 
     def test_config_exists(self, mocker):
+        """Test when a config file exists."""
         fake_path = "/path/to/file.py"
 
         mocker.patch("ht.logging.config.__file__", fake_path)
@@ -40,6 +41,7 @@ class Test_init_config:
         mock_config.assert_called_with(mock_load.return_value)
 
     def test_no_config(self, mocker):
+        """Test when a config file does not exist."""
         fake_path = "/path/to/file.py"
 
         mocker.patch("ht.logging.config.__file__", fake_path)

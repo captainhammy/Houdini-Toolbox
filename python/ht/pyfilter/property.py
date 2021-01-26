@@ -7,7 +7,7 @@
 # Standard Library Imports
 from collections.abc import Iterable
 import json
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
 
 # =============================================================================
@@ -73,7 +73,7 @@ def _prep_value_to_set(value: Any) -> List:
     return value
 
 
-def _transform_values(values: List) -> Any:
+def _transform_values(values: Optional[List[Any]]) -> Any:
     """Transform values from Mantra into more useful forms.
 
     :param values: Values to transform.

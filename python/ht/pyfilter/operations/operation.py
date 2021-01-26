@@ -10,7 +10,7 @@ from functools import wraps
 import logging
 from typing import TYPE_CHECKING, Callable, Union
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     import argparse
     from ht.pyfilter.manager import PyFilterManager
 

@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Optional
 from ht.pyfilter.operations.operation import PyFilterOperation, log_filter_call
 from ht.pyfilter.property import set_property
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     import argparse
     from ht.pyfilter.manager import PyFilterManager
 

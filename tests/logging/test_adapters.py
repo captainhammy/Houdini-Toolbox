@@ -481,10 +481,8 @@ class Test__pre_process_args:
 
         assert kwargs["stacklevel"] == mock_stacklevel
 
-    def test_no_kwargs(self, mocker):
+    def test_no_kwargs(self):
         """Test with passing none of the optional kwarg args."""
-        mock_arg = mocker.MagicMock()
-
         kwargs = {}
 
         ht.logging.adapters._pre_process_args(hou.severityType.Error, (), kwargs)

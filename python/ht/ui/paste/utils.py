@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 # Houdini Imports
 import hou
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from ht.ui.paste.sources import CopyPasteItemSource
 
 

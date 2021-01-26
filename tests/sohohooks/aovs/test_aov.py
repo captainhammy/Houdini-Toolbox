@@ -269,8 +269,6 @@ class Test_AOV:
 
     # Non-Public Methods
 
-    # _light_export_planes
-
     @pytest.mark.parametrize(
         "export_value",
         [
@@ -282,6 +280,7 @@ class Test_AOV:
         ],
     )
     def test__light_export_planes(self, init_aov, mocker, export_value):
+        """Test AOV._light_export_planes."""
         mocker.patch(
             "ht.sohohooks.aovs.aov.AOV.lightexport",
             new_callable=mocker.PropertyMock(return_value=export_value),
@@ -782,6 +781,7 @@ class Test_AOV:
     # update_data
 
     def test_update_data__unknown(self, init_aov, mocker):
+        """Test updating data with an unknown key that won't be added to the data."""
         mocker.patch("ht.sohohooks.aovs.aov.ALLOWABLE_VALUES", return_value={})
         mock_verify = mocker.patch("ht.sohohooks.aovs.aov.AOV._verify_internal_data")
 
@@ -797,6 +797,7 @@ class Test_AOV:
         mock_verify.assert_called()
 
     def test_update_data__settable(self, init_aov, mocker):
+        """Test updating data with a known value that will be updated"""
         mocker.patch("ht.sohohooks.aovs.aov.ALLOWABLE_VALUES", return_value={})
         mock_verify = mocker.patch("ht.sohohooks.aovs.aov.AOV._verify_internal_data")
 
@@ -812,6 +813,7 @@ class Test_AOV:
         mock_verify.assert_called()
 
     def test_update_data__allowable_valid(self, init_aov, mocker):
+        """Test updating data with a valid checked value."""
         mock_verify = mocker.patch("ht.sohohooks.aovs.aov.AOV._verify_internal_data")
 
         inst = init_aov()
@@ -830,6 +832,7 @@ class Test_AOV:
         mock_verify.assert_called()
 
     def test_update_data__allowable_invalid(self, init_aov, mocker):
+        """Test updating data with an invalid checked value."""
         mocker.patch("ht.sohohooks.aovs.aov.AOV._verify_internal_data")
 
         inst = init_aov()
@@ -847,6 +850,7 @@ class Test_AOV:
     # write_to_ifd
 
     def test_write_to_ifd__no_channel_no_comp(self, init_aov, mocker, patch_soho):
+        """Test writing to an ifd with no specific channel name or component export."""
         mock_as_data = mocker.patch.object(aov.AOV, "as_data")
         mocker.patch.object(
             aov.AOV, "channel", new_callable=mocker.PropertyMock(return_value=None)
@@ -879,6 +883,7 @@ class Test_AOV:
         )
 
     def test_write_to_ifd__channel_no_comp(self, init_aov, mocker, patch_soho):
+        """Test writing to an ifd with a specific channel name and no component export."""
         mock_as_data = mocker.patch.object(aov.AOV, "as_data")
         mock_channel = mocker.patch.object(
             aov.AOV, "channel", new_callable=mocker.PropertyMock
@@ -908,6 +913,7 @@ class Test_AOV:
         )
 
     def test_write_to_ifd__export_no_comp(self, init_aov, mocker, patch_soho):
+        """Test writing to an ifd with component export but no specific components and none on the node."""
         mock_as_data = mocker.patch.object(aov.AOV, "as_data")
         mocker.patch.object(aov.AOV, "channel", new_callable=mocker.PropertyMock)
         mocker.patch.object(
@@ -944,6 +950,7 @@ class Test_AOV:
     def test_write_to_ifd__export_components_from_node(
         self, init_aov, mocker, patch_soho
     ):
+        """Test writing to an ifd with component export and getting the components from the node.."""
         mock_as_data = mocker.patch.object(aov.AOV, "as_data")
         mocker.patch.object(
             aov.AOV, "channel", new_callable=mocker.PropertyMock(return_value="Pworld")
@@ -1006,6 +1013,7 @@ class Test_AOV:
         mock_export.assert_has_calls(calls)
 
     def test_write_to_ifd__export_components(self, init_aov, mocker, patch_soho):
+        """Test writing to an ifd with component export and specific components."""
         mock_as_data = mocker.patch.object(aov.AOV, "as_data")
         mocker.patch.object(
             aov.AOV, "channel", new_callable=mocker.PropertyMock(return_value="Pworld")
@@ -1061,9 +1069,8 @@ class Test_AOV:
 class Test_AOVGroup:
     """Test ht.sohohooks.aovs.AOVGroup object."""
 
-    # __init__
-
     def test___init__(self, mocker):
+        """Test object initialization."""
         mock_name = mocker.MagicMock(spec=str)
 
         group = aov.AOVGroup(mock_name)
@@ -1079,6 +1086,7 @@ class Test_AOVGroup:
     # __eq__
 
     def test___eq___equal(self, init_group, mocker):
+        """Test equality check when two objects are equal."""
         mock_name = mocker.MagicMock(spec=str)
 
         mocker.patch(
@@ -1096,6 +1104,7 @@ class Test_AOVGroup:
         mock_name.__eq__.assert_called_with(group2.name)
 
     def test___eq___not_equal(self, init_group, mocker):
+        """Test equality check when two objects are not equal."""
         mock_name = mocker.MagicMock(spec=str)
 
         mocker.patch(
@@ -1113,6 +1122,7 @@ class Test_AOVGroup:
         mock_name.__eq__.assert_called_with(group2.name)
 
     def test___eq___non_group(self, init_group, mocker):
+        """Test equality check when the other object is a different type."""
         mocker.patch("ht.sohohooks.aovs.aov.AOVGroup.name")
 
         group1 = init_group()
@@ -1124,6 +1134,7 @@ class Test_AOVGroup:
     # ge
 
     def test___ge___less_than(self, init_group, mocker):
+        """Test >= when the object is < the other object."""
         mock_name = mocker.MagicMock(spec=str)
         mock_name.__ge__.return_value = False
 
@@ -1141,6 +1152,7 @@ class Test_AOVGroup:
         mock_name.__ge__.assert_called_with(group2.name)
 
     def test___ge___(self, init_group, mocker):
+        """Test >= when the object is >= the other object."""
         mock_name = mocker.MagicMock(spec=str)
         mock_name.__ge__.return_value = True
 
@@ -1158,6 +1170,7 @@ class Test_AOVGroup:
         mock_name.__ge__.assert_called_with(group2.name)
 
     def test___ge___non_group(self, init_group, mocker):
+        """Test >= when the object is a different type."""
         group1 = init_group()
         group2 = mocker.MagicMock()
 
@@ -1166,6 +1179,7 @@ class Test_AOVGroup:
     # gt
 
     def test___gt___less_than(self, init_group, mocker):
+        """Test > when the object is < the other object."""
         mock_name = mocker.MagicMock(spec=str)
         mock_name.__gt__.return_value = False
 
@@ -1183,6 +1197,7 @@ class Test_AOVGroup:
         mock_name.__gt__.assert_called_with(group2.name)
 
     def test___gt__(self, init_group, mocker):
+        """Test > when the object is > the other object."""
         mock_name = mocker.MagicMock(spec=str)
         mock_name.__gt__.return_value = True
 
@@ -1200,6 +1215,7 @@ class Test_AOVGroup:
         mock_name.__gt__.assert_called_with(group2.name)
 
     def test___gt___non_group(self, init_group, mocker):
+        """Test > when the object is a different type."""
         group1 = init_group()
         group2 = mocker.MagicMock()
 
@@ -1208,6 +1224,7 @@ class Test_AOVGroup:
     # __hash__
 
     def test___hash__(self, init_group, mocker):
+        """Test hashing the object."""
         mock_name = mocker.MagicMock(spec=str)
         mocker.patch(
             "ht.sohohooks.aovs.aov.AOVGroup.name",
@@ -1225,6 +1242,7 @@ class Test_AOVGroup:
     # le
 
     def test___le__(self, init_group, mocker):
+        """Test <= when the object is < the other object."""
         mock_name = mocker.MagicMock(spec=str)
         mock_name.__le__.return_value = True
 
@@ -1242,6 +1260,7 @@ class Test_AOVGroup:
         mock_name.__le__.assert_called_with(group2.name)
 
     def test___le___greater_than(self, init_group, mocker):
+        """Test <= when the object is > the other object."""
         mock_name = mocker.MagicMock(spec=str)
         mock_name.__le__.return_value = False
 
@@ -1259,6 +1278,7 @@ class Test_AOVGroup:
         mock_name.__le__.assert_called_with(group2.name)
 
     def test___le___non_group(self, init_group, mocker):
+        """Test <= when the object is a different type."""
         group1 = init_group()
         group2 = mocker.MagicMock()
 
@@ -1267,6 +1287,7 @@ class Test_AOVGroup:
     # lt
 
     def test___lt__(self, init_group, mocker):
+        """Test < when the object is < the other object."""
         mock_name = mocker.MagicMock(spec=str)
         mock_name.__lt__.return_value = True
 
@@ -1284,6 +1305,7 @@ class Test_AOVGroup:
         mock_name.__lt__.assert_called_with(group2.name)
 
     def test___lt___greater_than(self, init_group, mocker):
+        """Test <= when the object is >= the other object."""
         mock_name = mocker.MagicMock(spec=str)
         mock_name.__lt__.return_value = False
 
@@ -1301,6 +1323,7 @@ class Test_AOVGroup:
         mock_name.__lt__.assert_called_with(group2.name)
 
     def test___lt___non_group(self, init_group, mocker):
+        """Test < when the object is a different type."""
         group1 = init_group()
         group2 = mocker.MagicMock()
 
@@ -1309,6 +1332,7 @@ class Test_AOVGroup:
     # __ne__
 
     def test___ne__(self, init_group, mocker):
+        """Test if the object is !=."""
         mock_eq = mocker.patch.object(aov.AOVGroup, "__eq__")
 
         group1 = init_group()
@@ -1322,6 +1346,7 @@ class Test_AOVGroup:
     # Properties
 
     def test_aovs(self, init_group, mocker):
+        """Test the 'aovs' property."""
         mock_aov = mocker.MagicMock(spec=aov.AOV)
 
         group = init_group()
@@ -1330,6 +1355,7 @@ class Test_AOVGroup:
         assert group.aovs == [mock_aov]
 
     def test_comment(self, init_group, mocker):
+        """Test the 'comment' property."""
         mock_value1 = mocker.MagicMock(spec=str)
 
         group = init_group()
@@ -1342,6 +1368,7 @@ class Test_AOVGroup:
         assert group._comment == mock_value2
 
     def test_icon(self, init_group, mocker):
+        """Test the 'icon' property."""
         mock_value1 = mocker.MagicMock(spec=str)
 
         group = init_group()
@@ -1354,6 +1381,7 @@ class Test_AOVGroup:
         assert group._icon == mock_value2
 
     def test_includes(self, init_group, mocker):
+        """Test the 'includes' property."""
         mock_value1 = mocker.MagicMock(spec=list)
 
         group = init_group()
@@ -1362,6 +1390,7 @@ class Test_AOVGroup:
         assert group.includes == mock_value1
 
     def test_name(self, init_group, mocker):
+        """Test the 'name' property."""
         mock_value = mocker.MagicMock(spec=str)
 
         group = init_group()
@@ -1370,6 +1399,7 @@ class Test_AOVGroup:
         assert group.name == mock_value
 
     def test_path(self, init_group, mocker):
+        """Test the 'path' property."""
         mock_value1 = mocker.MagicMock(spec=str)
 
         group = init_group()
@@ -1382,6 +1412,7 @@ class Test_AOVGroup:
         assert group._path == mock_value2
 
     def test_priority(self, init_group, mocker):
+        """Test the 'priority' property."""
         mock_value1 = mocker.MagicMock(spec=int)
 
         group = init_group()
@@ -1393,9 +1424,8 @@ class Test_AOVGroup:
         group.priority = mock_value2
         assert group._priority == mock_value2
 
-    # clear
-
     def test_clear(self, init_group, mocker):
+        """Test clearing the aov list."""
         mock_aov = mocker.MagicMock(spec=aov.AOV)
 
         group = init_group()
@@ -1408,6 +1438,7 @@ class Test_AOVGroup:
     # as_data
 
     def test_as_data__no_comment_or_priority(self, init_group, mocker):
+        """Test 'as_data' with no comment or priority."""
         mock_includes = mocker.patch.object(
             aov.AOVGroup, "includes", new_callable=mocker.PropertyMock
         )
@@ -1452,6 +1483,7 @@ class Test_AOVGroup:
         assert result == expected
 
     def test_as_data(self, init_group, mocker):
+        """Test 'as_data' with a comment and priority."""
         mock_includes = mocker.patch.object(
             aov.AOVGroup, "includes", new_callable=mocker.PropertyMock
         )
@@ -1497,6 +1529,7 @@ class Test_AOVGroup:
         assert result == expected
 
     def test_write_to_ifd(self, init_group, mocker):
+        """Test "write_to_ifd"."""
         mock_aovs = mocker.patch.object(
             aov.AOVGroup, "aovs", new_callable=mocker.PropertyMock
         )
@@ -1522,6 +1555,7 @@ class Test_IntrinsicAOVGroup:
     """Test the ht.sohohooks.aovs.IntrinsicAOVGroup object."""
 
     def test___init__(self, mocker):
+        """Test object initialization."""
         mock_super_init = mocker.patch("ht.sohohooks.aovs.aov.AOVGroup.__init__")
 
         mock_name = mocker.MagicMock(spec=str)
@@ -1536,6 +1570,7 @@ class Test__build_category_map:
     """Test ht.sohohooks.aovs._build_category_map."""
 
     def test_no_parm(self, mocker):
+        """Test when the light doesn't have a "categories" parameter."""
         mock_light1 = mocker.MagicMock()
 
         lights = (mock_light1,)
@@ -1549,6 +1584,7 @@ class Test__build_category_map:
         mock_light1.evalString.assert_called_with("categories", mock_now, [])
 
     def test_no_categories(self, mocker):
+        """Test when the "categories" parameter is empty."""
         mock_light1 = mocker.MagicMock()
 
         mock_light1.evalString.side_effect = lambda name, t, value: value.append("")
@@ -1562,6 +1598,7 @@ class Test__build_category_map:
         assert result == {None: [mock_light1]}
 
     def test_categories(self, mocker):
+        """Test when the "categories" parameter is set."""
         mock_light1 = mocker.MagicMock()
         mock_light1.evalString.side_effect = lambda name, t, value: value.append(
             "cat1 cat2"
@@ -1655,6 +1692,7 @@ class Test__write_data_to_ifd:
     """Test ht.sohohooks.aovs._write_data_to_ifd."""
 
     def test_pre_defplane(self, mocker, patch_soho):
+        """Test when the "pre_defplane" hook return True."""
         mock_pre = mocker.patch(
             "ht.sohohooks.aovs.aov._call_pre_defplane", return_value=True
         )
@@ -1671,6 +1709,7 @@ class Test__write_data_to_ifd:
         patch_soho.IFDapi.ray_start.assert_not_called()
 
     def test_base_data(self, mocker, patch_soho):
+        """Test with only the minimum keys to write."""
         mock_pre = mocker.patch(
             "ht.sohohooks.aovs.aov._call_pre_defplane", return_value=False
         )
@@ -1709,6 +1748,7 @@ class Test__write_data_to_ifd:
         mock_post.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
 
     def test_full_data(self, mocker, patch_soho):
+        """Test with all the keys to write."""
         mock_pre = mocker.patch(
             "ht.sohohooks.aovs.aov._call_pre_defplane", return_value=False
         )
@@ -1764,6 +1804,7 @@ class Test__write_data_to_ifd:
         mock_post.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
 
     def test_none_planefile(self, mocker, patch_soho):
+        """Test when the plane_file is None."""
         mock_pre = mocker.patch(
             "ht.sohohooks.aovs.aov._call_pre_defplane", return_value=False
         )
@@ -1800,6 +1841,7 @@ class Test__write_data_to_ifd:
         mock_post.assert_called_with(data, mock_wrangler, mock_cam, mock_now)
 
     def test_post_defplane(self, mocker, patch_soho):
+        """Test when the "post_defplane" hook returns True."""
         mock_pre = mocker.patch(
             "ht.sohohooks.aovs.aov._call_pre_defplane", return_value=False
         )
@@ -1839,7 +1881,9 @@ class Test__write_data_to_ifd:
 
 class Test__write_light:
     """Test ht.sohohooks.aovs._write_light."""
+
     def test_suffix_prefix(self, mocker, patch_soho):
+        """Test when adding a suffix and prefix."""
         mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
 
         mock_light = mocker.MagicMock()
@@ -1877,6 +1921,7 @@ class Test__write_light:
         )
 
     def test_no_suffix_path_prefix(self, mocker, patch_soho):
+        """Test with no suffix and a path type prefix."""
         mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
 
         mock_name = mocker.MagicMock(spec=str)
@@ -1911,6 +1956,7 @@ class Test__write_light:
         mock_name.__getitem__.return_value.replace.assert_called_with("/", "_")
 
     def test_suffix_no_prefix(self, mocker, patch_soho):
+        """Test with no prefix and a suffix."""
         mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
 
         mock_name = mocker.MagicMock(spec=str)
@@ -1947,6 +1993,7 @@ class Test__write_light:
         mock_default_suffix.__getitem__.assert_called_with(0)
 
     def test_empty_suffix(self, mocker, patch_soho):
+        """Test with no prefix and an empty suffix."""
         mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
 
         mock_name = mocker.MagicMock(spec=str)
@@ -1978,7 +2025,9 @@ class Test__write_light:
 
 class Test__write_per_category:
     """Test ht.sohohooks.aovs._write_per_category."""
+
     def test_no_category(self, mocker):
+        """Test when the category is 'None'."""
         mock_build = mocker.patch("ht.sohohooks.aovs.aov._build_category_map")
         mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
 
@@ -2012,6 +2061,7 @@ class Test__write_per_category:
         )
 
     def test_category(self, mocker):
+        """Test with a non-None category."""
         mock_build = mocker.patch("ht.sohohooks.aovs.aov._build_category_map")
         mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
 
@@ -2052,7 +2102,9 @@ class Test__write_per_category:
 
 class Test__write_single_channel:
     """Test ht.sohohooks.aovs._write_single_channel."""
+
     def test_lights(self, mocker):
+        """Test writing multiple lights."""
         mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
 
         mock_light1 = mocker.MagicMock()
@@ -2075,6 +2127,7 @@ class Test__write_single_channel:
         )
 
     def test_no_lights(self, mocker):
+        """Test writing no lights."""
         mock_write = mocker.patch("ht.sohohooks.aovs.aov._write_data_to_ifd")
 
         lights = ()

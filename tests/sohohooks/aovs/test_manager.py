@@ -557,7 +557,14 @@ class Test_AOVManager:
         if has_interface:
             interface.group_added_signal.emit.assert_called_with(mock_group)
 
-    # clear
+    def test_attach_interface(self, init_manager, mocker):
+        """Test attaching a viewer interface."""
+        mock_interface = mocker.MagicMock()
+
+        mgr = init_manager()
+        mgr.attach_interface(mock_interface)
+
+        assert mgr._interface == mock_interface
 
     def test_clear(self, init_manager, mocker):
         """Test clearing data."""

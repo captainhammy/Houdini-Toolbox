@@ -752,6 +752,7 @@ class Test_build_arg_string_from_node:
     """Test the ht.pyfilter.operations.ipoverrides.build_arg_string_from_node."""
 
     def test(self, mocker):
+        """Test with scaling."""
         mock_build = mocker.patch(
             "ht.pyfilter.operations.ipoverrides.IpOverrides.build_arg_string"
         )
@@ -799,6 +800,7 @@ class Test_build_arg_string_from_node:
         )
 
     def test_no_scales(self, mocker):
+        """Test with no scaling."""
         mock_build = mocker.patch(
             "ht.pyfilter.operations.ipoverrides.IpOverrides.build_arg_string"
         )
@@ -870,6 +872,7 @@ class Test_build_resolution_scale_display:
     """Test the ht.pyfilter.operations.ipoverrides.build_resolution_scale_display."""
 
     def test_no_camera(self, mocker):
+        """Test when there is no target camera."""
         mock_node = mocker.MagicMock(spec=hou.RopNode)
         mock_node.parm.return_value.evalAsNode.return_value = None
 
@@ -880,6 +883,7 @@ class Test_build_resolution_scale_display:
         mock_node.parm.assert_called_with("camera")
 
     def test_no_override(self, mocker):
+        """Test when there is no override being applied on the Mantra ROP."""
         mock_scale = mocker.patch(
             "ht.pyfilter.operations.ipoverrides._scale_resolution"
         )
@@ -905,6 +909,7 @@ class Test_build_resolution_scale_display:
         mock_scale.assert_called_with((1920, 1080), 0.5)
 
     def test_override_specific(self, mocker):
+        """Test when there is a specific resolution override being applied on the Mantra ROP."""
         mock_scale = mocker.patch(
             "ht.pyfilter.operations.ipoverrides._scale_resolution"
         )
@@ -933,6 +938,7 @@ class Test_build_resolution_scale_display:
         mock_scale.assert_called_with((1000, 1000), 0.25)
 
     def test_override_scaled(self, mocker):
+        """Test when there is a resolution scale override being applied on the Mantra ROP."""
         mock_scale = mocker.patch(
             "ht.pyfilter.operations.ipoverrides._scale_resolution"
         )

@@ -24,7 +24,7 @@ class Test_clear_generic_image_badge:
     """Test ht.nodes.badges.clear_generic_image_badge."""
 
     def test_no_data(self, mocker):
-        """Test when there is no user data to destroy."""
+        """Test when there is no user data to remove."""
         mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
             "ht.nodes.badges._ht_generic_image_badge.get_generic_image_key"
@@ -60,6 +60,7 @@ class Test_clear_generic_text_badge:
     """Test ht.nodes.badges.clear_generic_text_badge."""
 
     def test_no_data(self, mocker):
+        """Test when there is no user data to remove."""
         mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
             "ht.nodes.badges._ht_generic_text_badge.get_generic_text_key"
@@ -81,6 +82,7 @@ class Test_clear_generic_text_badge:
         mock_clear_color.assert_called()
 
     def test(self, mocker):
+        """Test when there is user data to remove."""
         mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
             "ht.nodes.badges._ht_generic_text_badge.get_generic_text_key"
@@ -104,6 +106,7 @@ class Test_clear_generic_text_badge_color:
     """Test ht.nodes.badges.clear_generic_text_badge_color."""
 
     def test_no_data(self, mocker):
+        """Test when there is no user data to remove."""
         mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
             "ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key"
@@ -120,6 +123,7 @@ class Test_clear_generic_text_badge_color:
         mock_node.destroyUserData.assert_called_with(mock_data_name.return_value)
 
     def test(self, mocker):
+        """Test when there is user data to remove."""
         mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
             "ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key"
@@ -154,6 +158,7 @@ class Test_set_generic_text_badge:
     """Test ht.nodes.badges.set_generic_text_badge."""
 
     def test_no_color(self, mocker):
+        """Test not passing a color."""
         mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
             "ht.nodes.badges._ht_generic_text_badge.get_generic_text_key"
@@ -174,6 +179,7 @@ class Test_set_generic_text_badge:
         mock_set_color.assert_not_called()
 
     def test_color(self, mocker):
+        """Test passing a color."""
         mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
             "ht.nodes.badges._ht_generic_text_badge.get_generic_text_key"

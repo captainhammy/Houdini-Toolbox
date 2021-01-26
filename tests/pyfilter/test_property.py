@@ -4,12 +4,6 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-import sys
-
-# Third Party Imports
-import pytest
-
 # Houdini Toolbox Imports
 from ht.pyfilter import property as prop
 
@@ -23,14 +17,17 @@ class Test__parse_string_for_bool:
     """Test ht.pyfilter.property._parse_string_for_bool."""
 
     def test_false(self):
+        """Test when the value will be remapped to False."""
         assert not prop._parse_string_for_bool("False")
         assert not prop._parse_string_for_bool("false")
 
     def test_true(self):
+        """Test when the value will be remapped to True."""
         assert prop._parse_string_for_bool("True")
         assert prop._parse_string_for_bool("true")
 
-    def test_passthrough(self):
+    def test_pass_through(self):
+        """Test when the value will pass through."""
         assert prop._parse_string_for_bool("test") == "test"
 
 
@@ -38,19 +35,13 @@ class Test__prep_value_to_set:
     """Test ht.pyfilter.property._prep_value_to_set."""
 
     def test_none(self):
+        """Test a None value."""
         result = prop._prep_value_to_set(None)
 
         assert result == []
 
     def test_str(self, mocker):
-        mock_value = mocker.MagicMock(spec=str)
-
-        result = prop._prep_value_to_set(mock_value)
-
-        assert result == [mock_value]
-
-    @pytest.mark.skipif(sys.version_info.major == 3, reason="Skipping for Python 3")
-    def test_unicode(self, mocker):
+        """Test a string value."""
         mock_value = mocker.MagicMock(spec=str)
 
         result = prop._prep_value_to_set(mock_value)
@@ -58,6 +49,7 @@ class Test__prep_value_to_set:
         assert result == [mock_value]
 
     def test_dict(self, mocker):
+        """Test a dictionary value."""
         mock_dumps = mocker.patch("ht.pyfilter.property.json.dumps")
 
         mock_value = mocker.MagicMock(spec=dict)
@@ -69,6 +61,7 @@ class Test__prep_value_to_set:
         mock_dumps.assert_called_with(mock_value)
 
     def test_non_iterable(self, mocker):
+        """Test a non-iterable value."""
         mock_value = mocker.MagicMock(spec=int)
 
         result = prop._prep_value_to_set(mock_value)
@@ -76,6 +69,7 @@ class Test__prep_value_to_set:
         assert result == [mock_value]
 
     def test_list_of_dicts(self, mocker):
+        """Test a list of dictionaries."""
         mock_dumps = mocker.patch("ht.pyfilter.property.json.dumps")
 
         mock_value = mocker.MagicMock(spec=dict)
@@ -85,6 +79,7 @@ class Test__prep_value_to_set:
         assert result == [mock_dumps.return_value]
 
     def test_list_of_dicts__typeerror(self, mocker):
+        """Test a list of dictionaries that raise a TypeError on dumping."""
         mocker.patch("ht.pyfilter.property.json.dumps", side_effect=TypeError)
 
         mock_value = mocker.MagicMock(spec=dict)
@@ -96,6 +91,7 @@ class Test__prep_value_to_set:
         assert result == value
 
     def test_list_of_dicts__valueerror(self, mocker):
+        """Test a list of dictionaries that raise a ValueError on dumping."""
         mocker.patch("ht.pyfilter.property.json.dumps", side_effect=ValueError)
 
         mock_value = mocker.MagicMock(spec=dict)
@@ -107,6 +103,7 @@ class Test__prep_value_to_set:
         assert result == value
 
     def test_list_of_non_dicts(self, mocker):
+        """Test a list of non-dictionary items."""
         mock_dict = mocker.MagicMock(spec=dict)
         mock_int = mocker.MagicMock(spec=int)
 
@@ -121,11 +118,13 @@ class Test__transform_values:
     """Test ht.pyfilter.property._transform_values."""
 
     def test_none(self):
+        """Test transforming a None value."""
         result = prop._transform_values(None)
 
         assert result is None
 
     def test_single_string(self, mocker):
+        """Test transforming a single string list."""
         mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
         mock_value = mocker.MagicMock(spec=str)
 
@@ -134,6 +133,7 @@ class Test__transform_values:
         assert result == mock_loads.return_value
 
     def test_single_string_dict_value(self, mocker):
+        """Test transforming a single string list which is a json blob."""
         mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
         mock_loads.side_effect = ValueError
 
@@ -152,6 +152,7 @@ class Test__transform_values:
         mock_loads.assert_called_with(mock_value)
 
     def test_single_string_value(self, mocker):
+        """Test transforming a single space separated string value."""
         mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
         mock_loads.side_effect = ValueError
 
@@ -169,6 +170,7 @@ class Test__transform_values:
         mock_parse.assert_called_with(mock_value)
 
     def test_single_int(self, mocker):
+        """Test a single integer value."""
         mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
         mock_value = mocker.MagicMock(spec=int)
 
@@ -179,6 +181,7 @@ class Test__transform_values:
         mock_loads.assert_not_called()
 
     def test_multiple_values(self, mocker):
+        """Test multiple string values which can be converted to json."""
         mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
 
         mock_values = [mocker.MagicMock(spec=str), mocker.MagicMock(spec=str)]
@@ -188,6 +191,7 @@ class Test__transform_values:
         assert result == [mock_loads.return_value, mock_loads.return_value]
 
     def test_multiple_values__type_error(self, mocker):
+        """Test multiple string values which raise a TypeError converting to json."""
         mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
         mock_loads.side_effect = TypeError
 
@@ -198,6 +202,7 @@ class Test__transform_values:
         assert result == mock_values
 
     def test_multiple_values__value_error(self, mocker):
+        """Test multiple string values which raise a ValueError converting to json."""
         mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
         mock_loads.side_effect = ValueError
 

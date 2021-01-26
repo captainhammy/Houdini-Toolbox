@@ -11,7 +11,7 @@ import os
 # Third Party Imports
 import pytest
 
-# Package Imports
+# Houdini Toolbox Imports
 from ht.inline import utils
 
 # Houdini Imports
@@ -278,6 +278,7 @@ class Test_get_entity_data(object):
     """Test ht.inline.utils.get_entity_data."""
 
     def test_vertex(self):
+        """Get getting data for a hou.Vertex object."""
         geometry = OBJ.node("test_get_entity_data").displayNode().geometry()
         prim = geometry.iterPrims()[3]
         vertex = prim.vertices()[3]
@@ -289,6 +290,7 @@ class Test_get_entity_data(object):
         assert result[2] == 15
 
     def test_point(self):
+        """Get getting data for a hou.Point object."""
         geometry = OBJ.node("test_get_entity_data").displayNode().geometry()
         point = geometry.points()[2]
 
@@ -299,6 +301,7 @@ class Test_get_entity_data(object):
         assert result[2] == 2
 
     def test_geometry(self):
+        """Get getting data for a hou.Geometry object."""
         geometry = OBJ.node("test_get_entity_data").displayNode().geometry()
 
         result = utils.get_entity_data(geometry)
@@ -310,6 +313,7 @@ class Test_get_entity_data_from_list(object):
     """Test ht.inline.utils.get_entity_data_from_list."""
 
     def test_vertex(self):
+        """Get getting data for a list of hou.Vertex objects."""
         geometry = OBJ.node("test_get_entity_data_from_list").displayNode().geometry()
         prim = geometry.iterPrims()[2]
         vertex1 = prim.vertices()[1]
@@ -322,6 +326,7 @@ class Test_get_entity_data_from_list(object):
         assert result[2] == [9, 10]
 
     def test_point(self):
+        """Get getting data for a list of hou.Point objects."""
         geometry = OBJ.node("test_get_entity_data_from_list").displayNode().geometry()
 
         point1 = geometry.points()[2]
@@ -334,6 +339,8 @@ class Test_get_entity_data_from_list(object):
         assert result[2] == [2, 12]
 
     def test_geometry(self):
+        """Get getting data for a single item list of hou.Geometry objects."""
+
         geometry = OBJ.node("test_get_entity_data_from_list").displayNode().geometry()
 
         result = utils.get_entity_data_from_list([geometry])
