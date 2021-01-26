@@ -231,77 +231,88 @@ def test_is_rendering(obj_test_node):
         pytest.fail("Render failed but should have succeeded.")
 
 
-def test_get_global_variable_names():
-    hou.hscript("set -g GLOBAL=123")
-    result = ht.inline.api.get_global_variable_names()
+class Test_get_global_variable_names:
+    """Test ht.inline.api.get_global_variable_names."""
 
-    for name in ("ACTIVETAKE", "DRIVER", "E", "HIP", "GLOBAL"):
+    def test(self):
+        """Getting all variable names."""
+        hou.hscript("set -g GLOBAL=123")
+        result = ht.inline.api.get_global_variable_names()
+
+        for name in ("ACTIVETAKE", "DRIVER", "E", "HIP", "GLOBAL"):
+            assert name in result
+
+    def test_dirty(self):
+        """Test getting only dirty variable names."""
+        name = "TEST_DIRTY_GLOBAL_VAR"
+
+        result = ht.inline.api.get_global_variable_names()
+
+        assert name not in result
+
+        hou.hscript("set -g {}=6666".format(name))
+
+        result = ht.inline.api.get_global_variable_names(dirty=True)
+
         assert name in result
 
+        hou.hscript("varchange")
 
-def test_get_global_variable_names_dirty():
-    name = "TEST_DIRTY_GLOBAL_VAR"
+        result = ht.inline.api.get_global_variable_names(dirty=True)
 
-    result = ht.inline.api.get_global_variable_names()
-
-    assert name not in result
-
-    hou.hscript("set -g {}=6666".format(name))
-
-    result = ht.inline.api.get_global_variable_names(dirty=True)
-
-    assert name in result
-
-    hou.hscript("varchange")
-
-    result = ht.inline.api.get_global_variable_names(dirty=True)
-
-    assert name not in result
+        assert name not in result
 
 
-def test_get_variable_names():
-    hou.hscript("set -g LOCAL=123")
+class Test_get_variable_names:
+    """Test ht.inline.api.get_variable_names."""
 
-    result = ht.inline.api.get_variable_names()
+    def test_get_variable_names(self):
+        """Getting all variable names."""
+        hou.hscript("set -g LOCAL=123")
 
-    for name in ("ACTIVETAKE", "DRIVER", "E", "HIP", "LOCAL"):
+        result = ht.inline.api.get_variable_names()
+
+        for name in ("ACTIVETAKE", "DRIVER", "E", "HIP", "LOCAL"):
+            assert name in result
+
+
+    def test_get_variable_names_dirty(self):
+        """Test getting only dirty variable names."""
+        name = "TEST_DIRTY_LOCAL_VAR"
+
+        result = ht.inline.api.get_global_variable_names()
+
+        assert name not in result
+
+        hou.hscript("set {}=6666".format(name))
+
+        result = ht.inline.api.get_variable_names(dirty=True)
+
         assert name in result
 
+        hou.hscript("varchange")
 
-def test_get_variable_names_dirty():
-    name = "TEST_DIRTY_LOCAL_VAR"
+        result = ht.inline.api.get_variable_names(dirty=True)
 
-    result = ht.inline.api.get_global_variable_names()
+        assert name not in result
 
-    assert name not in result
-
-    hou.hscript("set {}=6666".format(name))
-
-    result = ht.inline.api.get_variable_names(dirty=True)
-
-    assert name in result
-
-    hou.hscript("varchange")
-
-    result = ht.inline.api.get_variable_names(dirty=True)
-
-    assert name not in result
-
-
-def test_get_variable_value():
+class Test_get_variable_value:
     """Test ht.inline.api.get_variable_value."""
-    hip_name = ht.inline.api.get_variable_value("HIPNAME")
 
-    assert hip_name == os.path.splitext(os.path.basename(hou.hipFile.path()))[0]
+    def test(self):
+        """Test getting a variable value."""
+        hip_name = ht.inline.api.get_variable_value("HIPNAME")
+
+        assert hip_name == os.path.splitext(os.path.basename(hou.hipFile.path()))[0]
 
 
-def test_get_variable_value__syntax_error():
-    """Test ht.inline.api.get_variable_value."""
-    hou.hscript("set ERROR_THING=1.1.1")
+    def test__syntax_error(self):
+        """Test when there is a syntax error."""
+        hou.hscript("set ERROR_THING=1.1.1")
 
-    result = ht.inline.api.get_variable_value("ERROR_THING")
+        result = ht.inline.api.get_variable_value("ERROR_THING")
 
-    assert result == "1.1.1"
+        assert result == "1.1.1"
 
 
 def test_set_variable():
@@ -357,9 +368,11 @@ class Test_geometry_has_prims_with_shared_vertex_points(object):
     """Test ht.inline.api.geometry_has_prims_with_shared_vertex_points."""
 
     def test_true(self, obj_test_geo):
+        """Test when the geometry does have prims with shared vertex points."""
         assert ht.inline.api.geometry_has_prims_with_shared_vertex_points(obj_test_geo)
 
     def test_false(self, obj_test_geo):
+        """Test when the geometry does not have prims with shared vertex points."""
         assert not ht.inline.api.geometry_has_prims_with_shared_vertex_points(
             obj_test_geo
         )
@@ -369,10 +382,12 @@ class Test_get_primitives_with_shared_vertex_points(object):
     """Test ht.inline.api.get_primitives_with_shared_vertex_points."""
 
     def test_shared(self, obj_test_geo):
+        """Test when the geometry does have prims with shared vertex points."""
         result = ht.inline.api.get_primitives_with_shared_vertex_points(obj_test_geo)
         assert result == (obj_test_geo.prims()[-1],)
 
     def test_none(self, obj_test_geo):
+        """Test when the geometry does not have prims with shared vertex points."""
         result = ht.inline.api.get_primitives_with_shared_vertex_points(obj_test_geo)
         assert not result
 
@@ -391,26 +406,31 @@ class Test_sort_geometry_by_values(object):
     """Test ht.inline.api.sort_geometry_by_values."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.sort_geometry_by_values(obj_test_geo, None, None)
+            ht.inline.api.sort_geometry_by_values(obj_test_geo, None, [])
 
     def test_not_enough_points(self, obj_test_geo_copy):
+        """Test when not enough points are passed."""
         with pytest.raises(hou.OperationFailed):
             ht.inline.api.sort_geometry_by_values(
                 obj_test_geo_copy, hou.geometryType.Points, [1]
             )
 
     def test_not_enough_prims(self, obj_test_geo_copy):
+        """Test when not enough prims are passed."""
         with pytest.raises(hou.OperationFailed):
             ht.inline.api.sort_geometry_by_values(
                 obj_test_geo_copy, hou.geometryType.Primitives, [1, 2]
             )
 
     def test_invalid_geometry_type(self, obj_test_geo_copy):
+        """Test when an unsupported type of geometry is passed."""
         with pytest.raises(ValueError):
             ht.inline.api.sort_geometry_by_values(obj_test_geo_copy, None, [1])
 
     def test_points(self, obj_test_geo_copy):
+        """Test sorting points."""
         values = obj_test_geo_copy.pointFloatAttribValues("id")
 
         ht.inline.api.sort_geometry_by_values(
@@ -420,6 +440,7 @@ class Test_sort_geometry_by_values(object):
         assert list(obj_test_geo_copy.pointFloatAttribValues("id")) == sorted(values)
 
     def test_prims(self, obj_test_geo_copy):
+        """Test sorting prims."""
         values = obj_test_geo_copy.primFloatAttribValues("id")
 
         ht.inline.api.sort_geometry_by_values(
@@ -554,7 +575,13 @@ def test_merge_prims(obj_test_geo):
 class Test_copy_packed_prims_to_points(object):
     """Test ht.inline.api.copy_packed_prims_to_points."""
 
-    def _build_source_prims(self):
+    @staticmethod
+    def _build_source_prims() -> hou.Geometry:
+        """Build test data.
+
+        :return: The test geometry.
+
+        """
         geo = hou.Geometry()
 
         sop_category = hou.sopNodeTypeCategory()
@@ -590,6 +617,7 @@ class Test_copy_packed_prims_to_points(object):
         return geo
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         source_geo = self._build_source_prims()
 
         prim_order = [2, 0, 1]
@@ -603,6 +631,7 @@ class Test_copy_packed_prims_to_points(object):
             )
 
     def test_size_mismatch(self, obj_test_geo_copy):
+        """Test when there is a size mismatch the the number of elements passed."""
         source_geo = self._build_source_prims()
 
         prim_order = [2, 0, 1]
@@ -616,6 +645,7 @@ class Test_copy_packed_prims_to_points(object):
             )
 
     def test_copy_all(self, obj_test_geo_copy):
+        """Test copying with all attributes and groups."""
         source_geo = self._build_source_prims()
 
         prim_order = [2, 0, 1]
@@ -648,6 +678,7 @@ class Test_copy_packed_prims_to_points(object):
             assert prim in group.prims()
 
     def test_copy_none(self, obj_test_geo_copy):
+        """Test copying with no attributes or groups."""
         source_geo = self._build_source_prims()
 
         prim_order = [2, 0, 1]
@@ -678,6 +709,7 @@ class Test_copy_packed_prims_to_points(object):
             assert xform.extractRotationMatrix3() == orient.extractRotationMatrix3()
 
     def test_copy_some(self, obj_test_geo_copy):
+        """Test copying with specific attributes and groups."""
         source_geo = self._build_source_prims()
 
         group_to_copy = source_geo.findPrimGroup("group1")
@@ -725,6 +757,7 @@ class Test_copy_attribute_values(object):
     """Test ht.inline.api.copy_attribute_values."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         geo = hou.Geometry().freeze(True)
         attribs = obj_test_geo.globalAttribs()
 
@@ -732,6 +765,7 @@ class Test_copy_attribute_values(object):
             ht.inline.api.copy_attribute_values(obj_test_geo, attribs, geo)
 
     def test_points(self, obj_test_geo):
+        """Test copying attribute values between two points."""
         attribs = obj_test_geo.pointAttribs()
 
         geo = hou.Geometry()
@@ -750,6 +784,7 @@ class Test_copy_attribute_values(object):
         assert pt2.position().isAlmostEqual(hou.Vector3(1.66667, 0, -1.66667))
 
     def test_prims(self, obj_test_geo):
+        """Test copying attribute values between two prims."""
         attribs = obj_test_geo.primAttribs()
 
         geo = hou.Geometry()
@@ -768,6 +803,7 @@ class Test_copy_attribute_values(object):
         assert pr2.attribValue("prnum") == 4
 
     def test_vertex_to_point(self, obj_test_geo):
+        """Test copying attributes values from a vertex to a point."""
         attribs = obj_test_geo.vertexAttribs()
 
         geo = hou.Geometry()
@@ -780,6 +816,7 @@ class Test_copy_attribute_values(object):
         assert pt1.attribValue("random_vtx") == 0.031702518463134766
 
     def test_points_to_global(self, obj_test_geo):
+        """Test copying attributes values from a point to a detail."""
         attribs = obj_test_geo.pointAttribs()
         geo = hou.Geometry()
 
@@ -793,6 +830,7 @@ class Test_copy_attribute_values(object):
         assert geo.attribValue("random") == 0.5108950138092041
 
     def test_global_to_point(self, obj_test_geo):
+        """Test copying attributes values from a detail to a point."""
         geo = hou.Geometry()
         attribs = obj_test_geo.globalAttribs()
         pt1 = geo.createPoint()
@@ -803,6 +841,7 @@ class Test_copy_attribute_values(object):
         assert pt1.attribValue("foobles") == (1.0, 2.0)
 
     def test_global_to_global(self, obj_test_geo):
+        """Test copying attribute values between two details."""
         geo = hou.Geometry()
         attribs = obj_test_geo.globalAttribs()
 
@@ -811,6 +850,7 @@ class Test_copy_attribute_values(object):
         assert geo.attribValue("foobles") == (1.0, 2.0)
 
     def test_global_to_vertex(self, obj_test_geo):
+        """Test copying attributes values from a detail to a vertex."""
         attribs = obj_test_geo.globalAttribs()
 
         geo = hou.Geometry()
@@ -829,6 +869,7 @@ class Test_batch_copy_attributes_by_indices(object):
     """Test ht.inline.api.batch_copy_attributes_by_indices"""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         attribs = obj_test_geo.pointAttribs()
 
         geo = hou.Geometry()
@@ -844,6 +885,7 @@ class Test_batch_copy_attributes_by_indices(object):
             )
 
     def test_size_mismatch(self, obj_test_geo):
+        """Test when there is a size mismatch the the number of elements passed."""
         attribs = obj_test_geo.pointAttribs()
 
         geo = hou.Geometry()
@@ -857,6 +899,7 @@ class Test_batch_copy_attributes_by_indices(object):
             )
 
     def test_copy_points(self, obj_test_geo):
+        """Test copying attribute values between sets of points."""
         attribs = obj_test_geo.pointAttribs()
 
         geo = hou.Geometry()
@@ -876,6 +919,7 @@ class Test_batch_copy_attributes_by_indices(object):
         assert pt2.position().isAlmostEqual(hou.Vector3(1.66667, 0, -1.66667))
 
     def test_copy_prims(self, obj_test_geo):
+        """Test copying attribute values between sets of prims."""
         attribs = obj_test_geo.primAttribs()
 
         geo = hou.Geometry()
@@ -895,6 +939,7 @@ class Test_batch_copy_attributes_by_indices(object):
         assert pr2.attribValue("prnum") == 4
 
     def test_vertex_to_point(self, obj_test_geo):
+        """Test copying attributes values from vertices to points."""
         attribs = obj_test_geo.vertexAttribs()
 
         geo = hou.Geometry()
@@ -917,6 +962,7 @@ class Test_batch_copy_attributes_by_indices(object):
         assert pt1.attribValue("random_vtx") == 0.031702518463134766
 
     def test_points_to_global(self, obj_test_geo):
+        """Test copying attributes values from a single point to a detail."""
         attribs = obj_test_geo.pointAttribs()
         geo = hou.Geometry()
 
@@ -932,6 +978,7 @@ class Test_batch_copy_attributes_by_indices(object):
         assert geo.attribValue("random") == 0.5108950138092041
 
     def test_global_to_points(self, obj_test_geo):
+        """Test copying attributes values from a detail to a single point."""
         geo = hou.Geometry()
         attribs = obj_test_geo.globalAttribs()
         pt1 = geo.createPoint()
@@ -944,6 +991,7 @@ class Test_batch_copy_attributes_by_indices(object):
         assert pt1.attribValue("foobles") == (1.0, 2.0)
 
     def test_global_to_global(self, obj_test_geo):
+        """Test copying attributes values between two details."""
         geo = hou.Geometry()
         attribs = obj_test_geo.globalAttribs()
 
@@ -954,6 +1002,7 @@ class Test_batch_copy_attributes_by_indices(object):
         assert geo.attribValue("foobles") == (1.0, 2.0)
 
     def test_global_to_vertex(self, obj_test_geo):
+        """Test copying attributes values from a detail to a single vertex."""
         attribs = obj_test_geo.globalAttribs()
 
         geo = hou.Geometry()
@@ -980,6 +1029,7 @@ class Test_batch_copy_attrib_values(object):
     """Test ht.inline.api.batch_copy_attrib_values"""
 
     def test_size_mismatch(self, obj_test_geo):
+        """Test when there is a size mismatch the the number of elements passed."""
         attribs = obj_test_geo.pointAttribs()
 
         geo = hou.Geometry()
@@ -987,7 +1037,7 @@ class Test_batch_copy_attrib_values(object):
         pt1 = geo.createPoint()
         pt2 = geo.createPoint()
 
-        geo = geo.freeze(True)
+        geo.freeze(True)
 
         with pytest.raises(ValueError):
             ht.inline.api.batch_copy_attrib_values(
@@ -995,12 +1045,13 @@ class Test_batch_copy_attrib_values(object):
             )
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         attribs = obj_test_geo.pointAttribs()
 
         geo = hou.Geometry()
 
-        pt1 = geo.createPoint()
-        pt2 = geo.createPoint()
+        geo.createPoint()
+        geo.createPoint()
 
         geo = geo.freeze(True)
         pt1 = geo.iterPoints()[0]
@@ -1014,6 +1065,7 @@ class Test_batch_copy_attrib_values(object):
             )
 
     def test_copy_points(self, obj_test_geo):
+        """Test copying attribute values between sets of points."""
         attribs = obj_test_geo.pointAttribs()
 
         geo = hou.Geometry()
@@ -1035,6 +1087,7 @@ class Test_batch_copy_attrib_values(object):
         assert pt2.position().isAlmostEqual(hou.Vector3(1.66667, 0, -1.66667))
 
     def test_copy_prims(self, obj_test_geo):
+        """Test copying attribute values between sets of points."""
         attribs = obj_test_geo.primAttribs()
 
         geo = hou.Geometry()
@@ -1056,6 +1109,7 @@ class Test_batch_copy_attrib_values(object):
         assert pr2.attribValue("prnum") == 4
 
     def test_vertex_to_point(self, obj_test_geo):
+        """Test copying attribute values between a vertex and a point."""
         attribs = obj_test_geo.vertexAttribs()
 
         geo = hou.Geometry()
@@ -1069,6 +1123,7 @@ class Test_batch_copy_attrib_values(object):
         assert pt1.attribValue("random_vtx") == 0.031702518463134766
 
     def test_points_to_global(self, obj_test_geo):
+        """Test copying attribute values between a point and a detail."""
         attribs = obj_test_geo.pointAttribs()
         geo = hou.Geometry()
 
@@ -1084,6 +1139,7 @@ class Test_batch_copy_attrib_values(object):
         assert geo.attribValue("random") == 0.5108950138092041
 
     def test_global_to_points(self, obj_test_geo):
+        """Test copying attribute values between a detail and a point."""
         geo = hou.Geometry()
         attribs = obj_test_geo.globalAttribs()
         pt1 = geo.createPoint()
@@ -1094,6 +1150,7 @@ class Test_batch_copy_attrib_values(object):
         assert pt1.attribValue("foobles") == (1.0, 2.0)
 
     def test_global_to_global(self, obj_test_geo):
+        """Test copying attribute values between two details."""
         geo = hou.Geometry()
         attribs = obj_test_geo.globalAttribs()
 
@@ -1102,6 +1159,7 @@ class Test_batch_copy_attrib_values(object):
         assert geo.attribValue("foobles") == (1.0, 2.0)
 
     def test_global_to_vertex(self, obj_test_geo):
+        """Test copying attribute values between a detail and a vertex."""
         attribs = obj_test_geo.globalAttribs()
 
         geo = hou.Geometry()
@@ -1120,6 +1178,7 @@ class Test_copy_group_membership(object):
     """Test ht.inline.api.copy_group_membership."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         geo = hou.Geometry().freeze(True)
         groups = obj_test_geo.pointGroups()
 
@@ -1127,6 +1186,7 @@ class Test_copy_group_membership(object):
             ht.inline.api.copy_group_membership(obj_test_geo, groups, geo)
 
     def test_points(self, obj_test_geo):
+        """Test copying group membership between points."""
         groups = obj_test_geo.pointGroups()
 
         geo = hou.Geometry()
@@ -1155,6 +1215,7 @@ class Test_copy_group_membership(object):
         assert pt3 not in group1.points()
 
     def test_prims(self, obj_test_geo):
+        """Test copying group membership between prims."""
         groups = obj_test_geo.primGroups()
 
         geo = hou.Geometry()
@@ -1187,6 +1248,7 @@ class Test_batch_copy_group_membership_by_indices(object):
     """Test ht.inline.api.batch_copy_group_membership_by_indices."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         geo = hou.Geometry().freeze(True)
         groups = obj_test_geo.pointGroups()
 
@@ -1196,6 +1258,7 @@ class Test_batch_copy_group_membership_by_indices(object):
             )
 
     def test_size_mismatch(self, obj_test_geo):
+        """Test when there is a size mismatch the the number of elements passed."""
         groups = obj_test_geo.pointGroups()
 
         geo = hou.Geometry()
@@ -1210,6 +1273,7 @@ class Test_batch_copy_group_membership_by_indices(object):
             )
 
     def test_points(self, obj_test_geo):
+        """Test copying group membership between points."""
         groups = obj_test_geo.pointGroups()
 
         geo = hou.Geometry()
@@ -1238,6 +1302,7 @@ class Test_batch_copy_group_membership_by_indices(object):
         assert pt2 not in group1.points()
 
     def test_prims(self, obj_test_geo):
+        """Test copying group membership between prims."""
         groups = obj_test_geo.primGroups()
 
         geo = hou.Geometry()
@@ -1270,6 +1335,7 @@ class Test_batch_copy_group_membership(object):
     """Test ht.inline.api.batch_copy_group_membership."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         geo = hou.Geometry()
         geo.createPoint()
 
@@ -1283,6 +1349,7 @@ class Test_batch_copy_group_membership(object):
             )
 
     def test_size_mismatch(self, obj_test_geo):
+        """Test when there is a size mismatch the the number of elements passed."""
         groups = obj_test_geo.pointGroups()
 
         geo = hou.Geometry()
@@ -1299,6 +1366,7 @@ class Test_batch_copy_group_membership(object):
             )
 
     def test_points(self, obj_test_geo):
+        """Test copying group membership between points."""
         groups = obj_test_geo.pointGroups()
 
         geo = hou.Geometry()
@@ -1327,6 +1395,7 @@ class Test_batch_copy_group_membership(object):
         assert pt3 not in group1.points()
 
     def test_prims(self, obj_test_geo):
+        """Test copying group membership between prims."""
         groups = obj_test_geo.primGroups()
 
         geo = hou.Geometry()
@@ -1403,21 +1472,23 @@ def test_referencing_vertices(obj_test_geo):
 class Test_string_table_indices(object):
     """Test ht.inline.api.string_table_indices."""
 
-    def test_error(self, obj_test_geo):
-        # Not a string
+    def test_not_string_attrib(self, obj_test_geo):
+        """Test when the attribute is not a string attribute."""
         attr = obj_test_geo.findPointAttrib("not_string")
 
         with pytest.raises(ValueError):
             ht.inline.api.string_table_indices(attr)
 
-    def test_points(self, obj_test_geo):
+    def test_point_attrib(self, obj_test_geo):
+        """Test getting the indices of a point attribute."""
         target = (0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1)
 
         attr = obj_test_geo.findPointAttrib("test")
 
         assert ht.inline.api.string_table_indices(attr) == target
 
-    def test_prims(self, obj_test_geo):
+    def test_prim_attrib(self, obj_test_geo):
+        """Test getting the indices of a prim attribute."""
         target = (0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4)
 
         attr = obj_test_geo.findPrimAttrib("test")
@@ -1451,10 +1522,12 @@ class Test_set_vertex_string_attrib_values(object):
     """Test ht.inline.api.set_vertex_string_attrib_values."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.set_vertex_string_attrib_values(obj_test_geo, "test", [])
+            ht.inline.api.set_vertex_string_attrib_values(obj_test_geo, "test", tuple())
 
-    def test_success(self, obj_test_geo_copy):
+    def test(self, obj_test_geo_copy):
+        """Test setting the values from a list."""
         target = ("vertex0", "vertex1", "vertex2", "vertex3", "vertex4")
 
         attr = obj_test_geo_copy.findVertexAttrib("test")
@@ -1468,19 +1541,22 @@ class Test_set_vertex_string_attrib_values(object):
 
         assert tuple(values) == target
 
-    def test_invalid_attribute(self, obj_test_geo_copy):
+    def test_no_attribute(self, obj_test_geo_copy):
+        """Test when the attribute does not exist."""
         with pytest.raises(hou.OperationFailed):
             ht.inline.api.set_vertex_string_attrib_values(
-                obj_test_geo_copy, "thing", []
+                obj_test_geo_copy, "thing", tuple()
             )
 
-    def test_invalid_attribute_type(self, obj_test_geo_copy):
+    def test_not_string_attribute(self, obj_test_geo_copy):
+        """Test when the attribute is not a string attribute."""
         with pytest.raises(ValueError):
             ht.inline.api.set_vertex_string_attrib_values(
-                obj_test_geo_copy, "notstring", []
+                obj_test_geo_copy, "notstring", tuple()
             )
 
     def test_invalid_attribute_size(self, obj_test_geo_copy):
+        """Test when the number of values does not match the number of  vertices."""
         target = ("vertex0", "vertex1", "vertex2", "vertex3")
 
         with pytest.raises(ValueError):
@@ -1493,16 +1569,19 @@ class Test_set_shared_point_string_attrib(object):
     """Test ht.inline.api.set_shared_point_string_attrib."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         with pytest.raises(hou.GeometryPermissionError):
             ht.inline.api.set_shared_point_string_attrib(obj_test_geo, "foo", "point0")
 
     def test_no_attribute(self, obj_test_geo_copy):
+        """Test when the attribute does not exist."""
         with pytest.raises(ValueError):
             ht.inline.api.set_shared_point_string_attrib(
                 obj_test_geo_copy, "foo", "point0"
             )
 
     def test_not_string_attribute(self, obj_test_geo_copy):
+        """Test when the attribute is not a string attribute."""
         obj_test_geo_copy.addAttrib(hou.attribType.Point, "not_string", 0)
 
         with pytest.raises(ValueError):
@@ -1510,7 +1589,8 @@ class Test_set_shared_point_string_attrib(object):
                 obj_test_geo_copy, "not_string", "point0"
             )
 
-    def test_success(self, obj_test_geo_copy):
+    def test(self, obj_test_geo_copy):
+        """Test setting the values."""
         target = ["point0"] * 10
 
         ht.inline.api.set_shared_point_string_attrib(
@@ -1519,7 +1599,8 @@ class Test_set_shared_point_string_attrib(object):
 
         assert list(obj_test_geo_copy.pointStringAttribValues("test")) == target
 
-    def test_success_group(self, obj_test_geo_copy):
+    def test_group(self, obj_test_geo_copy):
+        """Test setting only the values of the group."""
         target = ["point0"] * 5 + [""] * 5
 
         group = obj_test_geo_copy.pointGroups()[0]
@@ -1535,16 +1616,19 @@ class Test_set_shared_prim_string_attrib(object):
     """Test ht.inline.api.set_shared_prim_string_attrib."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         with pytest.raises(hou.GeometryPermissionError):
             ht.inline.api.set_shared_prim_string_attrib(obj_test_geo, "test", "prim0")
 
     def test_no_attribute(self, obj_test_geo_copy):
+        """Test when the attribute does not exist."""
         with pytest.raises(ValueError):
             ht.inline.api.set_shared_prim_string_attrib(
                 obj_test_geo_copy, "foo", "prim0"
             )
 
     def test_not_string_attribute(self, obj_test_geo_copy):
+        """Test when the attribute is not a string attribute."""
         obj_test_geo_copy.addAttrib(hou.attribType.Prim, "not_string", 0)
 
         with pytest.raises(ValueError):
@@ -1552,7 +1636,8 @@ class Test_set_shared_prim_string_attrib(object):
                 obj_test_geo_copy, "not_string", "value"
             )
 
-    def test_success(self, obj_test_geo_copy):
+    def test(self, obj_test_geo_copy):
+        """Test setting the values."""
         target = ["value"] * 5
 
         attr = obj_test_geo_copy.findPrimAttrib("test")
@@ -1563,7 +1648,8 @@ class Test_set_shared_prim_string_attrib(object):
 
         assert list(obj_test_geo_copy.primStringAttribValues("test")) == target
 
-    def test_success_group(self, obj_test_geo_copy):
+    def test_group(self, obj_test_geo_copy):
+        """Test setting only the values of the group."""
         target = ["value"] * 3 + ["", ""]
 
         attr = obj_test_geo_copy.findPrimAttrib("test")
@@ -1581,6 +1667,7 @@ class Test_attribute_has_uninitialized_string_values(object):
     """Test ht.inline.api.attribute_has_uninitialized_string_values."""
 
     def test_not_string_attribute(self, obj_test_geo):
+        """Test when the attribute is not a string attribute."""
         attrib = obj_test_geo.findPointAttrib("not_string_attrib")
 
         with pytest.raises(ValueError):
@@ -1595,6 +1682,7 @@ class Test_attribute_has_uninitialized_string_values(object):
         ],
     )
     def test_point_attribs(self, obj_test_geo, name, expected):
+        """Test point attributes."""
         attrib = obj_test_geo.findPointAttrib(name)
 
         result = ht.inline.api.attribute_has_uninitialized_string_values(attrib)
@@ -1610,6 +1698,7 @@ class Test_attribute_has_uninitialized_string_values(object):
         ],
     )
     def test_prim_attribs(self, obj_test_geo, name, expected):
+        """Test prim attributes."""
         attrib = obj_test_geo.findPrimAttrib(name)
 
         result = ht.inline.api.attribute_has_uninitialized_string_values(attrib)
@@ -1625,6 +1714,7 @@ class Test_attribute_has_uninitialized_string_values(object):
         ],
     )
     def test_vertex_attribs(self, obj_test_geo, name, expected):
+        """Test vertex attributes."""
         attrib = obj_test_geo.findVertexAttrib(name)
 
         result = ht.inline.api.attribute_has_uninitialized_string_values(attrib)
@@ -1639,6 +1729,7 @@ class Test_attribute_has_uninitialized_string_values(object):
         ],
     )
     def test_detail_attribs(self, obj_test_geo, name, expected):
+        """Test detail attributes."""
         attrib = obj_test_geo.findGlobalAttrib(name)
 
         result = ht.inline.api.attribute_has_uninitialized_string_values(attrib)
@@ -1682,6 +1773,7 @@ class Test_insert_vertex(object):
     """Test ht.inline.api.insert_vertex."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         face = obj_test_geo.iterPrims()[0]
 
         pt0 = obj_test_geo.points()[0]
@@ -1690,28 +1782,29 @@ class Test_insert_vertex(object):
             ht.inline.api.insert_vertex(face, pt0, 2)
 
     def test_negative_index(self, obj_test_geo_copy):
+        """Test when the index to insert at is negative."""
         face = obj_test_geo_copy.iterPrims()[0]
 
         new_point = ht.inline.api.create_point_at_position(
             obj_test_geo_copy, hou.Vector3(0.5, 0, 0.5)
         )
 
-        # Negative index.
         with pytest.raises(IndexError):
             ht.inline.api.insert_vertex(face, new_point, -1)
 
     def test_invalid_index(self, obj_test_geo_copy):
+        """Test when the index is greater than or equal to the number of vertices"""
         face = obj_test_geo_copy.iterPrims()[0]
 
         new_point = ht.inline.api.create_point_at_position(
             obj_test_geo_copy, hou.Vector3(0.5, 0, 0.5)
         )
 
-        # Invalid index.
         with pytest.raises(IndexError):
             ht.inline.api.insert_vertex(face, new_point, 10)
 
-    def test_success(self, obj_test_geo_copy):
+    def test(self, obj_test_geo_copy):
+        """Test inserting a vertex."""
         face = obj_test_geo_copy.iterPrims()[0]
 
         new_point = ht.inline.api.create_point_at_position(
@@ -1727,24 +1820,28 @@ class Test_delete_vertex(object):
     """Test ht.inline.api.delete_vertex_from_face."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         face = obj_test_geo.iterPrims()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
             ht.inline.api.delete_vertex_from_face(face, 3)
 
     def test_negative_index(self, obj_test_geo_copy):
+        """Test when the index to delete is negative."""
         face = obj_test_geo_copy.iterPrims()[0]
 
         with pytest.raises(IndexError):
             ht.inline.api.delete_vertex_from_face(face, -1)
 
     def test_invalid_index(self, obj_test_geo_copy):
+        """Test when the index is greater than or equal to the number of vertices"""
         face = obj_test_geo_copy.iterPrims()[0]
 
         with pytest.raises(IndexError):
             ht.inline.api.delete_vertex_from_face(face, 10)
 
-    def test_success(self, obj_test_geo_copy):
+    def test(self, obj_test_geo_copy):
+        """Test deleting a vertex."""
         face = obj_test_geo_copy.iterPrims()[0]
 
         ht.inline.api.delete_vertex_from_face(face, 3)
@@ -1815,12 +1912,14 @@ class Test_reverse_prim:
     """Test ht.inline.api.reverse_prim."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         prim = obj_test_geo.iterPrims()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
             ht.inline.api.reverse_prim(prim)
 
-    def test_success(self, obj_test_geo_copy):
+    def test(self, obj_test_geo_copy):
+        """Test reversing the vertex order."""
         target = hou.Vector3(0, -1, 0)
 
         prim = obj_test_geo_copy.iterPrims()[0]
@@ -1882,13 +1981,14 @@ class Test_rename_group(object):
     """Test ht.inline.api.rename_group."""
 
     def test_read_only(self, obj_test_geo):
-        # Read only
+        """Test when the geometry is read only."""
         group = obj_test_geo.pointGroups()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
             ht.inline.api.rename_group(group, "test_group")
 
     def test_existing_group(self):
+        """Test when the target group already exists."""
         # Existing group
         geo = hou.Geometry()
         geo.createPointGroup("foo")
@@ -1898,6 +1998,7 @@ class Test_rename_group(object):
         assert result is None
 
     def test_point_group(self, obj_test_geo_copy):
+        """Test renaming a point group."""
         group = obj_test_geo_copy.pointGroups()[0]
 
         result = ht.inline.api.rename_group(group, "test_group")
@@ -1913,6 +2014,7 @@ class Test_rename_group(object):
             ht.inline.api.rename_group(group, name)
 
     def test_prim_group(self, obj_test_geo_copy):
+        """Test renaming a prim group."""
         group = obj_test_geo_copy.primGroups()[0]
 
         result = ht.inline.api.rename_group(group, "test_group")
@@ -1928,7 +2030,7 @@ class Test_rename_group(object):
             ht.inline.api.rename_group(group, name)
 
     def test_edge_group(self, obj_test_geo_copy):
-        # Edge Group
+        """Test renaming an edge group."""
         group = obj_test_geo_copy.edgeGroups()[0]
 
         result = ht.inline.api.rename_group(group, "test_group")
@@ -1947,7 +2049,8 @@ class Test_rename_group(object):
 class Test_group_bounding_box(object):
     """Test ht.inline.api.group_bounding_box."""
 
-    def test_point(self, obj_test_geo):
+    def test_point_group(self, obj_test_geo):
+        """Test getting the bounding box from a point group."""
         target = hou.BoundingBox(-4, 0, -1, -2, 0, 2)
 
         group = obj_test_geo.pointGroups()[0]
@@ -1955,7 +2058,8 @@ class Test_group_bounding_box(object):
 
         assert bbox == target
 
-    def test_prim(self, obj_test_geo):
+    def test_prim_group(self, obj_test_geo):
+        """Test getting the bounding box from a prim group."""
         target = hou.BoundingBox(-5, 0, -4, 4, 0, 5)
 
         group = obj_test_geo.primGroups()[0]
@@ -1963,7 +2067,8 @@ class Test_group_bounding_box(object):
 
         assert bbox == target
 
-    def test_edge(self, obj_test_geo):
+    def test_edge_group(self, obj_test_geo):
+        """Test getting the bounding box from an edge group."""
         target = hou.BoundingBox(-5, 0, -5, 4, 0, 5)
 
         group = obj_test_geo.edgeGroups()[0]
@@ -1975,17 +2080,20 @@ class Test_group_bounding_box(object):
 class Test_group_size(object):
     """Test ht.inline.api.group_size."""
 
-    def test_point(self, obj_test_geo):
+    def test_point_group(self, obj_test_geo):
+        """Test getting the size of a point group."""
         group = obj_test_geo.pointGroups()[0]
 
         assert ht.inline.api.group_size(group) == 12
 
-    def test_prim(self, obj_test_geo):
+    def test_prim_group(self, obj_test_geo):
+        """Test getting the size of a prim group."""
         group = obj_test_geo.primGroups()[0]
 
         assert ht.inline.api.group_size(group) == 39
 
-    def test_edge(self, obj_test_geo):
+    def test_edge_group(self, obj_test_geo):
+        """Test getting the size of an edge group."""
         group = obj_test_geo.edgeGroups()[0]
 
         assert ht.inline.api.group_size(group) == 52
@@ -1995,12 +2103,14 @@ class Test_toggle_group_entries(object):
     """Test ht.inline.api.toggle_group_entries."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         group = obj_test_geo.pointGroups()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
             ht.inline.api.toggle_group_entries(group)
 
-    def test_point(self, obj_test_geo_copy):
+    def test_point_group(self, obj_test_geo_copy):
+        """Test toggling point group entries."""
         values = obj_test_geo_copy.globPoints(
             " ".join([str(val) for val in range(1, 100, 2)])
         )
@@ -2010,7 +2120,8 @@ class Test_toggle_group_entries(object):
 
         assert group.points() == values
 
-    def test_prim(self, obj_test_geo_copy):
+    def test_prim_group(self, obj_test_geo_copy):
+        """Test toggling prim group entries."""
         values = obj_test_geo_copy.globPrims(
             " ".join([str(val) for val in range(0, 100, 2)])
         )
@@ -2020,36 +2131,41 @@ class Test_toggle_group_entries(object):
 
         assert group.prims() == values
 
-    def test_edge(self, obj_test_geo_copy):
+    def test_edge_group(self, obj_test_geo_copy):
+        """Test toggling edge group entries."""
         group = obj_test_geo_copy.edgeGroups()[0]
         ht.inline.api.toggle_group_entries(group)
 
-    #     assert len(group.edges()) == 20
+        assert len(group.edges()) == 20
 
 
 class Test_copy_group(object):
     """Test ht.inline.api.copy_group."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         group = obj_test_geo.pointGroups()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
             ht.inline.api.copy_group(group, "new_group")
 
-    def test_point(self, obj_test_geo_copy):
+    def test_point_group(self, obj_test_geo_copy):
+        """Test copying a point group."""
         group = obj_test_geo_copy.pointGroups()[0]
 
         new_group = ht.inline.api.copy_group(group, "new_group")
 
         assert group.points() == new_group.points()
 
-    def test_point_same_name(self, obj_test_geo_copy):
+    def test_point_group__same_name(self, obj_test_geo_copy):
+        """Test copying a point group to the same name."""
         group = obj_test_geo_copy.pointGroups()[0]
 
         with pytest.raises(hou.OperationFailed):
             ht.inline.api.copy_group(group, group.name())
 
-    def test_point_exists(self, obj_test_geo_copy):
+    def test_point_group__exists(self, obj_test_geo_copy):
+        """Test copying a point group to a group name which already exists."""
         group = obj_test_geo_copy.pointGroups()[-1]
 
         other_group = obj_test_geo_copy.pointGroups()[0]
@@ -2057,20 +2173,23 @@ class Test_copy_group(object):
         with pytest.raises(hou.OperationFailed):
             ht.inline.api.copy_group(group, other_group.name())
 
-    def test_prim(self, obj_test_geo_copy):
+    def test_prim_group(self, obj_test_geo_copy):
+        """Test copying a prim group."""
         group = obj_test_geo_copy.primGroups()[0]
 
         new_group = ht.inline.api.copy_group(group, "new_group")
 
         assert group.prims() == new_group.prims()
 
-    def test_prim_same_name(self, obj_test_geo_copy):
+    def test_prim_group__same_name(self, obj_test_geo_copy):
+        """Test copying a prim group to the same name."""
         group = obj_test_geo_copy.primGroups()[0]
 
         with pytest.raises(hou.OperationFailed):
             ht.inline.api.copy_group(group, group.name())
 
-    def test_prim_exists(self, obj_test_geo_copy):
+    def test_prim_group__exists(self, obj_test_geo_copy):
+        """Test copying a prim group to a group name which already exists."""
         group = obj_test_geo_copy.primGroups()[-1]
 
         other_group = obj_test_geo_copy.primGroups()[0]
@@ -2083,13 +2202,15 @@ class Test_set_group_string_attribute(object):
     """Test ht.inline.api.set_group_string_attribute."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         group = obj_test_geo.pointGroups()[0]
         attribute = obj_test_geo.findPointAttrib("point_not_string")
 
         with pytest.raises(hou.GeometryPermissionError):
             ht.inline.api.set_group_string_attribute(group, attribute, "value")
 
-    def test_not_string(self, obj_test_geo_copy):
+    def test_not_string_attribute(self, obj_test_geo_copy):
+        """Test trying to set a non-string attribute."""
         group = obj_test_geo_copy.pointGroups()[0]
         attribute = obj_test_geo_copy.findPointAttrib("point_not_string")
 
@@ -2097,6 +2218,7 @@ class Test_set_group_string_attribute(object):
             ht.inline.api.set_group_string_attribute(group, attribute, "value")
 
     def test_point_group(self, obj_test_geo_copy):
+        """Test setting a point group string attribute."""
         group = obj_test_geo_copy.pointGroups()[0]
         attribute = obj_test_geo_copy.findPointAttrib("point_attrib")
 
@@ -2107,6 +2229,7 @@ class Test_set_group_string_attribute(object):
         assert obj_test_geo_copy.pointStringAttribValues("point_attrib") == expected
 
     def test_prim_group(self, obj_test_geo_copy):
+        """Test setting a prim group string attribute."""
         group = obj_test_geo_copy.primGroups()[0]
         attribute = obj_test_geo_copy.findPrimAttrib("prim_attrib")
 
@@ -2121,6 +2244,7 @@ class Test_groups_share_elements(object):
     """Test ht.inline.api.groups_share_elements."""
 
     def test_different_details(self, obj_test_geo):
+        """Test when two groups are in different details."""
         group1 = obj_test_geo.pointGroups()[0]
 
         temp_geo = hou.Geometry()
@@ -2130,6 +2254,7 @@ class Test_groups_share_elements(object):
             ht.inline.api.groups_share_elements(group1, group2)
 
     def test_different_types(self, obj_test_geo):
+        """Test when two groups are different element types."""
         group1 = obj_test_geo.pointGroups()[0]
         group2 = obj_test_geo.primGroups()[0]
 
@@ -2137,24 +2262,28 @@ class Test_groups_share_elements(object):
             ht.inline.api.groups_share_elements(group1, group2)
 
     def test_point_groups_share_elements(self, obj_test_geo):
+        """Test when two point groups share elements."""
         group1 = obj_test_geo.findPointGroup("point_group_every_other")
         group2 = obj_test_geo.findPointGroup("point_group_all")
 
         assert ht.inline.api.groups_share_elements(group1, group2)
 
     def test_point_groups_no_shared_elements(self, obj_test_geo):
+        """Test when two point groups do not share elements."""
         group1 = obj_test_geo.findPointGroup("point_group_every_other")
         group2 = obj_test_geo.findPointGroup("point_group_empty")
 
         assert not ht.inline.api.groups_share_elements(group1, group2)
 
     def test_prim_groups_share_elements(self, obj_test_geo):
+        """Test when two prim groups share elements."""
         group1 = obj_test_geo.findPrimGroup("prim_group_every_other")
         group2 = obj_test_geo.findPrimGroup("prim_group_all")
 
         assert ht.inline.api.groups_share_elements(group1, group2)
 
     def test_prim_groups_no_shared_elements(self, obj_test_geo):
+        """Test when two prim groups do not share elements."""
         group1 = obj_test_geo.findPrimGroup("prim_group_every_other")
         group2 = obj_test_geo.findPrimGroup("prim_group_empty")
 
@@ -2165,12 +2294,17 @@ class Test_convert_prim_to_point_group(object):
     """Test ht.inline.api.convert_prim_to_point_group."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         group = obj_test_geo.primGroups()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
             ht.inline.api.convert_prim_to_point_group(group)
 
     def test_same_name(self, obj_test_geo_copy):
+        """Test converting to a group with the same name as the source and
+        deleting the source group.
+
+        """
         group = obj_test_geo_copy.primGroups()[0]
 
         new_group = ht.inline.api.convert_prim_to_point_group(group)
@@ -2181,13 +2315,24 @@ class Test_convert_prim_to_point_group(object):
         assert not obj_test_geo_copy.primGroups()
 
     def test_new_name(self, obj_test_geo_copy):
+        """Test converting to a group with a different name as the source and
+        deleting the source group.
+
+        """
         group = obj_test_geo_copy.primGroups()[0]
 
         new_group = ht.inline.api.convert_prim_to_point_group(group, "new_group")
 
         assert new_group.name() == "new_group"
 
+        # Check source group was deleted.
+        assert not obj_test_geo_copy.primGroups()
+
     def test_same_name_no_destroy(self, obj_test_geo_copy):
+        """Test converting to a group with the same name as the source and
+        not deleting the source group.
+
+        """
         group = obj_test_geo_copy.primGroups()[0]
 
         ht.inline.api.convert_prim_to_point_group(group, destroy=False)
@@ -2196,6 +2341,7 @@ class Test_convert_prim_to_point_group(object):
         assert len(obj_test_geo_copy.primGroups()) == 1
 
     def test_target_name_already_exists(self, obj_test_geo_copy):
+        """Test converting when the target name exists."""
         group = obj_test_geo_copy.primGroups()[0]
 
         obj_test_geo_copy.createPointGroup(group.name())
@@ -2208,12 +2354,17 @@ class Test_convert_point_to_prim_group(object):
     """Test ht.inline.api.convert_point_to_prim_group."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         group = obj_test_geo.pointGroups()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
             ht.inline.api.convert_point_to_prim_group(group)
 
     def test_same_name(self, obj_test_geo_copy):
+        """Test converting to a group with the same name as the source and
+         deleting the source group.
+
+         """
         group = obj_test_geo_copy.pointGroups()[0]
 
         new_group = ht.inline.api.convert_point_to_prim_group(group)
@@ -2224,6 +2375,10 @@ class Test_convert_point_to_prim_group(object):
         assert not obj_test_geo_copy.pointGroups()
 
     def test_new_name(self, obj_test_geo_copy):
+        """Test converting to a group with a different name as the source and
+        deleting the source group.
+
+        """
         group = obj_test_geo_copy.pointGroups()[0]
 
         new_group = ht.inline.api.convert_point_to_prim_group(group, "new_group")
@@ -2231,6 +2386,10 @@ class Test_convert_point_to_prim_group(object):
         assert new_group.name() == "new_group"
 
     def test_same_name_no_destroy(self, obj_test_geo_copy):
+        """Test converting to a group with the same name as the source and
+        not deleting the source group.
+
+        """
         group = obj_test_geo_copy.pointGroups()[0]
 
         ht.inline.api.convert_point_to_prim_group(group, destroy=False)
@@ -2239,6 +2398,7 @@ class Test_convert_point_to_prim_group(object):
         assert len(obj_test_geo_copy.pointGroups()) == 1
 
     def test_target_name_already_exists(self, obj_test_geo_copy):
+        """Test converting when the target name exists."""
         group = obj_test_geo_copy.pointGroups()[0]
 
         obj_test_geo_copy.createPrimGroup(group.name())
@@ -2256,12 +2416,14 @@ class Test_geometry_has_ungrouped_points(object):
     """Test ht.inline.api.geometry_has_ungrouped_points."""
 
     def test_has_ungrouped(self):
+        """Test geometry which has ungrouped points."""
         geo = hou.Geometry()
         geo.createPoint()
 
         assert ht.inline.api.geometry_has_ungrouped_points(geo)
 
     def test_no_ungrouped(self, obj_test_geo):
+        """Test geometry which does not have ungrouped points."""
         assert not ht.inline.api.geometry_has_ungrouped_points(obj_test_geo)
 
 
@@ -2269,23 +2431,28 @@ class Test_group_ungrouped_points(object):
     """Test ht.inline.api.group_ungrouped_points."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         with pytest.raises(hou.GeometryPermissionError):
             ht.inline.api.group_ungrouped_points(obj_test_geo, "ungrouped")
 
     def test_empty_name(self, obj_test_geo_copy):
+        """Test when the target group name is empty."""
         with pytest.raises(ValueError):
             ht.inline.api.group_ungrouped_points(obj_test_geo_copy, "")
 
     def test_existing_name(self, obj_test_geo_copy):
+        """Test when the target group name already exists."""
         with pytest.raises(hou.OperationFailed):
             ht.inline.api.group_ungrouped_points(obj_test_geo_copy, "group1")
 
     def test_ungrouped(self, obj_test_geo_copy):
+        """Test when there are ungrouped points to group."""
         group = ht.inline.api.group_ungrouped_points(obj_test_geo_copy, "ungrouped")
 
         assert len(group.points()) == 10
 
     def test_no_ungrouped(self, obj_test_geo_copy):
+        """Test when there are no ungrouped points to group."""
         group = ht.inline.api.group_ungrouped_points(obj_test_geo_copy, "ungrouped")
 
         assert group is None
@@ -2300,12 +2467,14 @@ class Test_has_ungrouped_prims(object):
     """Test ht.inline.api.geometry_has_ungrouped_prims."""
 
     def test_has_ungrouped(self):
+        """Test geometry which has ungrouped prims."""
         geo = hou.Geometry()
         geo.createPolygon()
 
         assert ht.inline.api.geometry_has_ungrouped_prims(geo)
 
     def test_no_ungrouped(self, obj_test_geo):
+        """Test geometry which does not have ungrouped prims."""
         assert not ht.inline.api.geometry_has_ungrouped_prims(obj_test_geo)
 
 
@@ -2313,23 +2482,28 @@ class Test_group_ungrouped_prims(object):
     """Test ht.inline.api.group_ungrouped_prims."""
 
     def test_read_only(self, obj_test_geo):
+        """Test when the geometry is read only."""
         with pytest.raises(hou.GeometryPermissionError):
             ht.inline.api.group_ungrouped_prims(obj_test_geo, "ungrouped")
 
     def test_empty_name(self, obj_test_geo_copy):
+        """Test when the target group name is empty."""
         with pytest.raises(ValueError):
             ht.inline.api.group_ungrouped_prims(obj_test_geo_copy, "")
 
     def test_existing_name(self, obj_test_geo_copy):
+        """Test when the target group name already exists."""
         with pytest.raises(hou.OperationFailed):
             ht.inline.api.group_ungrouped_prims(obj_test_geo_copy, "group1")
 
     def test_ungrouped(self, obj_test_geo_copy):
+        """Test when there are ungrouped prims to group."""
         group = ht.inline.api.group_ungrouped_prims(obj_test_geo_copy, "ungrouped")
 
         assert len(group.iterPrims()) == 3
 
     def test_no_ungrouped(self, obj_test_geo_copy):
+        """Test when there are not ungrouped prims to group."""
         group = ht.inline.api.group_ungrouped_prims(obj_test_geo_copy, "ungrouped")
 
         assert group is None
@@ -2654,7 +2828,7 @@ def test_resolve_multiparm_tokens():
         == "test5"
     )
 
-    assert ht.inline.api.resolve_multiparm_tokens("test#_#_#", (1, 2, 3)) == "test1_2_3"
+    assert ht.inline.api.resolve_multiparm_tokens("test#_#_#", [1, 2, 3]) == "test1_2_3"
 
     with pytest.raises(ValueError):
         ht.inline.api.resolve_multiparm_tokens(
@@ -2719,7 +2893,7 @@ def test_eval_multiparm_instance():
         # Test a bunch of nested int parameters.
         for j in range(ht.inline.api.eval_multiparm_instance(node, "inner#", i)):
             results.append(
-                ht.inline.api.eval_multiparm_instance(node, "leaf#_#", (i, j))
+                ht.inline.api.eval_multiparm_instance(node, "leaf#_#", [i, j])
             )
 
         # Test a string parameter which will be expanded.
@@ -2739,7 +2913,7 @@ def test_eval_multiparm_instance():
             1, ht.inline.api.eval_multiparm_instance(node, "inner#", i, True) + 1
         ):
             results.append(
-                ht.inline.api.eval_multiparm_instance(node, "leaf#_#", (i, j), True)
+                ht.inline.api.eval_multiparm_instance(node, "leaf#_#", [i, j], True)
             )
 
         # Test a string parameter which will be expanded.
@@ -2786,7 +2960,7 @@ def test_unexpanded_string_multiparm_instance():
         for j in range(ht.inline.api.eval_multiparm_instance(node, "inner#", i)):
             results.append(
                 ht.inline.api.unexpanded_string_multiparm_instance(
-                    node, "nested_string#_#", (i, j)
+                    node, "nested_string#_#", [i, j]
                 )
             )
 
@@ -2807,7 +2981,7 @@ def test_unexpanded_string_multiparm_instance():
         ):
             results.append(
                 ht.inline.api.unexpanded_string_multiparm_instance(
-                    node, "nested_string#_#", (i, j), True
+                    node, "nested_string#_#", [i, j], True
                 )
             )
 
@@ -3208,11 +3382,7 @@ def test_asset_file_meta_source():
     """Test ht.inline.api.asset_file_meta_source."""
     target = "Scanned Asset Library Directories"
 
-    if hou.applicationVersion() >= (18,):
-        path = hou.text.expandString("$HH/otls/OPlibSop.hda")
-
-    else:
-        path = hou.expandString("$HH/otls/OPlibSop.hda")
+    path = hou.text.expandString("$HH/otls/OPlibSop.hda")
 
     assert ht.inline.api.asset_file_meta_source(path) == target
 

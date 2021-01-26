@@ -6,7 +6,6 @@
 
 # Standard Library Imports
 import os
-import sys
 from xml.etree import ElementTree
 
 # Third Party Imports

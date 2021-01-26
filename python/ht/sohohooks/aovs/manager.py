@@ -21,7 +21,7 @@ from ht.sohohooks.aovs import constants as consts
 # Houdini Imports
 import hou
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from ht.ui.aovs.utils import AOVViewerInterface  # pylint: disable=ungrouped-imports
     import soho
 
@@ -257,6 +257,14 @@ class AOVManager:
         if self.interface is not None:
             self.interface.group_added_signal.emit(group)
 
+    def attach_interface(self, interface: AOVViewerInterface):
+        """Initialize an AOVViewerInterface for this manager.
+
+        :return:
+
+        """
+        self._interface = interface
+
     def clear(self):
         """Clear all definitions.
 
@@ -290,14 +298,6 @@ class AOVManager:
                     result.append(self.aovs[name])
 
         return tuple(result)
-
-    def attach_interface(self, interface: AOVViewerInterface):
-        """Initialize an AOVViewerInterface for this manager.
-
-        :return:
-
-        """
-        self._interface = interface
 
     def load(self, path: str):
         """Load a file.

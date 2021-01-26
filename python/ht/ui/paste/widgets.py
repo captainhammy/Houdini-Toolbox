@@ -19,7 +19,7 @@ import ht.ui.paste.models
 # Houdini Imports
 import hou
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from ht.ui.paste.sources import CopyPasteItemSource, CopyPasteSource
 
 # ==============================================================================

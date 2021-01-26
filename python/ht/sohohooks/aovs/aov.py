@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, List
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import constants as consts
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     import soho
 
 

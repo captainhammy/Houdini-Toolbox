@@ -111,6 +111,7 @@ class Test_ZDepthPass:
     def test_filter_instance__obj_matte(
         self, init_operation, properties, mocker, patch_soho
     ):
+        """Test filtering when the object:matte property is set."""
         properties.mock_get.side_effect = (True, False, "")
 
         op = init_operation()
@@ -127,6 +128,7 @@ class Test_ZDepthPass:
     def test_filter_instance__obj_phantom(
         self, init_operation, properties, mocker, patch_soho
     ):
+        """Test filtering when the object:phantom property is set."""
         properties.mock_get.side_effect = (False, True, "")
 
         op = init_operation()
@@ -143,6 +145,7 @@ class Test_ZDepthPass:
     def test_filter_instance__surface_matte(
         self, init_operation, properties, mocker, patch_soho
     ):
+        """Test filtering when the object:surface points to a matte shader."""
         properties.mock_get.side_effect = (False, False, "matte")
 
         op = init_operation()
@@ -159,6 +162,7 @@ class Test_ZDepthPass:
     def test_filter_instance__set_shader(
         self, init_operation, properties, mocker, patch_soho
     ):
+        """Test setting the surface and displacement shaders to be constant."""
         properties.mock_get.side_effect = (False, False, "")
 
         op = init_operation()
@@ -176,6 +180,7 @@ class Test_ZDepthPass:
     # filter_plane
 
     def test_filter_plane__pz(self, init_operation, properties, patch_soho):
+        """Test filtering the actual Pz plane."""
         properties.mock_get.return_value = "Pz"
 
         op = init_operation()
@@ -188,6 +193,7 @@ class Test_ZDepthPass:
         properties.mock_set.assert_not_called()
 
     def test_filter_plane__pz_already_set(self, init_operation, properties, patch_soho):
+        """Test filtering Pz when Pz has already been manually set. """
         properties.mock_get.return_value = "Pz"
 
         op = init_operation()
@@ -198,6 +204,7 @@ class Test_ZDepthPass:
         properties.mock_set.assert_called_with("plane:disable", True)
 
     def test_filter_plane__no_pz_c(self, init_operation, properties, patch_soho):
+        """Test filtering C when Pz has not already been set. """
         properties.mock_get.return_value = "C"
 
         op = init_operation()
@@ -210,6 +217,7 @@ class Test_ZDepthPass:
         properties.mock_set.assert_not_called()
 
     def test_filter_plane__no_pz_of(self, init_operation, properties, patch_soho):
+        """Test filtering Of when Pz has not already been set. """
         properties.mock_get.return_value = "Of"
 
         op = init_operation()
@@ -224,6 +232,7 @@ class Test_ZDepthPass:
     def test_filter_plane__not_set_misc_channel(
         self, init_operation, properties, mocker, patch_soho
     ):
+        """Test filtering a non-special plane when Pz has not already been set. """
         properties.mock_get.return_value = "channel1"
 
         op = init_operation()
@@ -244,6 +253,7 @@ class Test_ZDepthPass:
         properties.mock_set.assert_has_calls(calls)
 
     def test_filter_plane__set_pz_misc(self, init_operation, properties, patch_soho):
+        """Test filtering a non-special plane when Pz has already been set. """
         properties.mock_get.return_value = "channel1"
 
         op = init_operation()
@@ -256,6 +266,7 @@ class Test_ZDepthPass:
     # process_parsed_args
 
     def test_process_parsed_args(self, init_operation):
+        """Test "process_parsed_args" when the args have been set."""
         namespace = argparse.Namespace()
         namespace.zdepth = True
 
@@ -268,6 +279,7 @@ class Test_ZDepthPass:
         assert op.active
 
     def test_process_parsed_args__none(self, init_operation):
+        """Test "process_parsed_args" when the args have not been set."""
         namespace = argparse.Namespace()
         namespace.zdepth = None
 
@@ -282,6 +294,7 @@ class Test_ZDepthPass:
     # should_run
 
     def test_should_run(self, init_operation):
+        """Test "should_run"."""
         op = init_operation()
 
         op._active = False

@@ -42,6 +42,7 @@ class TestManager:
     """Test ht.pyfilter.manager.PyFilterManager object."""
 
     def test___init__(self, mocker):
+        """Test object initialization."""
         mock_register = mocker.patch(
             "ht.pyfilter.manager.PyFilterManager._register_operations"
         )
@@ -64,6 +65,7 @@ class TestManager:
     # Properties
 
     def test_data(self, init_manager, mocker):
+        """Test the "data" property."""
         mock_value = mocker.MagicMock(spec=dict)
 
         mgr = init_manager()
@@ -72,6 +74,7 @@ class TestManager:
         assert mgr.data == mock_value
 
     def test_operations(self, init_manager, mocker):
+        """Test the "operations" property."""
         mock_value = mocker.MagicMock(spec=list)
 
         mgr = init_manager()
@@ -82,6 +85,7 @@ class TestManager:
     # Methods
 
     def test__get_parsed_args(self, init_manager, mocker):
+        """Test getting pyfilter args."""
         mock_build_parser = mocker.patch("ht.pyfilter.manager._build_parser")
         mock_register_args = mocker.patch.object(
             manager.PyFilterManager, "_register_parser_args"
@@ -100,6 +104,7 @@ class TestManager:
         mock_register_args.assert_called_with(mock_parser)
 
     def test__process_parsed_args(self, init_manager, mocker):
+        """Test having registered operations process their known args."""
         mock_operations = mocker.patch.object(
             manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
         )
@@ -119,6 +124,7 @@ class TestManager:
     # _register_operations
 
     def test__register_operations__no_data(self, init_manager, mocker):
+        """Test registering a file with no operation definitions."""
         mock_find_files = mocker.patch("ht.pyfilter.manager._find_operation_files")
         mock_get_data = mocker.patch("ht.pyfilter.manager._get_operation_data")
         mock_get_class = mocker.patch("ht.pyfilter.manager._get_class")
@@ -137,6 +143,7 @@ class TestManager:
         mock_get_class.assert_not_called()
 
     def test__register_operations__no_class(self, init_manager, mocker):
+        """Test registering a file with no an unknown operation class."""
         mock_operations = mocker.patch.object(
             manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
         )
@@ -170,6 +177,7 @@ class TestManager:
         mock_logger.warning.assert_called()
 
     def test__register_operations(self, init_manager, mocker):
+        """Test registering operations."""
         mock_operations = mocker.patch.object(
             manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
         )
@@ -200,6 +208,7 @@ class TestManager:
         mock_get_class.return_value.assert_called_with(mgr)
 
     def test__register_parser_args(self, init_manager, mocker):
+        """Test registering known args for the operations."""
         mock_operations = mocker.patch.object(
             manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
         )
@@ -219,6 +228,7 @@ class TestManager:
     # run_operations_for_stage
 
     def test_run_operations_for_stage__no_operations(self, init_manager, mocker):
+        """Test running for a stage with no operations."""
         mocker.patch.object(
             manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
         )
@@ -232,6 +242,7 @@ class TestManager:
         assert not result
 
     def test_run_operations_for_stage__no_runnable(self, init_manager, mocker):
+        """Test running for a stage with no operations which should run."""
         mock_operations = mocker.patch.object(
             manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
         )
@@ -250,6 +261,7 @@ class TestManager:
         assert not result
 
     def test_run_operations_for_stage__no_matching_stage(self, init_manager, mocker):
+        """Test running for a stage where registered operations don't match the stage."""
         mock_operations = mocker.patch.object(
             manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
         )
@@ -268,6 +280,7 @@ class TestManager:
         assert not result
 
     def test_run_operations_for_stage(self, init_manager, mocker):
+        """Test running operations for a stage."""
         mock_operations = mocker.patch.object(
             manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
         )
@@ -303,6 +316,7 @@ class Test__find_operation_files:
     """Test ht.pyfilter.manager._find_operation_files."""
 
     def test_no_files(self, mocker):
+        """Test when no files could be found."""
         mocker.patch("hou.findFiles", side_effect=hou.OperationFailed)
 
         result = manager._find_operation_files()
@@ -310,6 +324,7 @@ class Test__find_operation_files:
         assert result == ()
 
     def test(self, mocker):
+        """Test when operation files are found."""
         mock_find = mocker.patch("hou.findFiles")
 
         result = manager._find_operation_files()
@@ -321,6 +336,7 @@ class Test__get_class:
     """Test ht.pyfilter.manager._get_class."""
 
     def test_importerror(self, mocker):
+        """Test importing a module when an ImportError occurs."""
         mock_import = mocker.patch("ht.pyfilter.manager.importlib.import_module")
 
         mock_module_name = mocker.MagicMock(spec=str)
@@ -335,6 +351,7 @@ class Test__get_class:
         mock_import.assert_called_with(mock_module_name)
 
     def test(self, mocker):
+        """Test importing a module and class."""
         mock_import = mocker.patch("ht.pyfilter.manager.importlib.import_module")
 
         mock_module_name = mocker.MagicMock(spec=str)
@@ -358,6 +375,7 @@ class Test__get_operation_data:
     """Test ht.pyfilter.manager._get_operation_data."""
 
     def test_ioerror(self, mocker):
+        """Test getting operation data when the file cannot be opened."""
         mock_handle = mocker.mock_open()
         mock_handle.side_effect = IOError
         mocker.patch("builtins.open", mock_handle)
@@ -368,6 +386,7 @@ class Test__get_operation_data:
         assert result == {}
 
     def test_valueerror(self, mocker):
+        """Test getting operation data when the file cannot be converted to json."""
         mock_load = mocker.patch("json.load")
         mock_load.side_effect = ValueError
 
@@ -383,6 +402,7 @@ class Test__get_operation_data:
         mock_load.assert_called_with(mock_handle.return_value)
 
     def test(self, mocker):
+        """Test getting operation data from a file."""
         mock_load = mocker.patch("json.load")
 
         mock_path = mocker.MagicMock(spec=str)

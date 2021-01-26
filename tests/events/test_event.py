@@ -4,9 +4,6 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-import enum
-
 # Third Party Imports
 import pytest
 

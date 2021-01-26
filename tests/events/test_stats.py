@@ -46,20 +46,9 @@ def init_stats(mocker):
 
 
 @pytest.fixture
-def init_tester():
-    """Create a tester class object for StatsMeta"""
-
-    class _Tester(metaclass=ht.events.stats._StatsMeta):
-        def __init__(self, name, tags=None, post_report=False):
-            self._name = name
-            self._post_report = post_report
-
-            if tags is None:
-                tags = []
-
-            self._tags = tags
-
-    yield _Tester
+def reset_meta_instances():
+    """Dummy fixture to clear the StatsMeta instance dict after test completion."""
+    yield
 
     # Reset the instances.
     ht.events.stats._StatsMeta._instances.clear()
@@ -73,89 +62,89 @@ def init_tester():
 class Test__StatsMeta:
     """Test ht.events.stats._StatsMeta metaclass."""
 
-    def test_new(self, init_tester, mocker):
+    def test_new(self, reset_meta_instances, mocker):
         """Test when instantiating a new instance."""
         # Clear instances since there might be some already from other tests.
         ht.events.stats._StatsMeta._instances.clear()
 
         mock_name = mocker.MagicMock(spec=str)
-        inst = init_tester(mock_name)
+        inst = ht.events.stats.HoudiniEventStats(mock_name)
 
-        assert ht.events.stats._StatsMeta._instances == {init_tester: {mock_name: inst}}
+        assert ht.events.stats._StatsMeta._instances == {ht.events.stats.HoudiniEventStats: {mock_name: inst}}
 
-    def test_existing_default_args(self, init_tester, mocker):
+    def test_existing_default_args(self, reset_meta_instances, mocker):
         """Test reusing an existing instance of default args."""
         mock_name = mocker.MagicMock(spec=str)
 
-        inst1 = init_tester(mock_name)
-        inst2 = init_tester(mock_name)
+        inst1 = ht.events.stats.HoudiniEventStats(mock_name)
+        inst2 = ht.events.stats.HoudiniEventStats(mock_name)
 
         assert inst1 is inst2
 
-    def test_existing_tags_positional(self, init_tester, mocker):
+    def test_existing_tags_positional(self, reset_meta_instances, mocker):
         """Test reusing an existing instance via positional args."""
         mock_name = mocker.MagicMock(spec=str)
 
         mock_tag1 = mocker.MagicMock(spec=str)
         mock_tag2 = mocker.MagicMock(spec=str)
 
-        inst1 = init_tester(mock_name, [mock_tag1])
-        inst2 = init_tester(mock_name, [mock_tag2])
+        inst1 = ht.events.stats.HoudiniEventStats(mock_name, [mock_tag1])
+        inst2 = ht.events.stats.HoudiniEventStats(mock_name, [mock_tag2])
 
         assert inst1._tags == [mock_tag1, mock_tag2]
         assert inst1 is inst2
 
-    def test_existing_tags_passed(self, init_tester, mocker):
+    def test_existing_tags_passed(self, reset_meta_instances, mocker):
         """Test reusing an existing instance passing tags."""
         mock_name = mocker.MagicMock(spec=str)
 
         mock_tag1 = mocker.MagicMock(spec=str)
         mock_tag2 = mocker.MagicMock(spec=str)
 
-        inst1 = init_tester(mock_name, tags=[mock_tag1])
-        inst2 = init_tester(mock_name, tags=[mock_tag2])
+        inst1 = ht.events.stats.HoudiniEventStats(mock_name, tags=[mock_tag1])
+        inst2 = ht.events.stats.HoudiniEventStats(mock_name, tags=[mock_tag2])
 
         assert inst1._tags == [mock_tag1, mock_tag2]
         assert inst1 is inst2
 
-    def test_existing_tags_avoid_duplicates(self, init_tester, mocker):
+    def test_existing_tags_avoid_duplicates(self, reset_meta_instances, mocker):
         """Test reusing an existing instance based on tags."""
         mock_name = mocker.MagicMock(spec=str)
 
         mock_tag = mocker.MagicMock(spec=str)
 
-        inst1 = init_tester(mock_name, tags=[mock_tag])
-        inst2 = init_tester(mock_name, tags=[mock_tag])
+        inst1 = ht.events.stats.HoudiniEventStats(mock_name, tags=[mock_tag])
+        inst2 = ht.events.stats.HoudiniEventStats(mock_name, tags=[mock_tag])
 
         assert inst1._tags == [mock_tag]
         assert inst1 is inst2
 
-    def test_existing_post_report_positional(self, init_tester, mocker):
+    def test_existing_post_report_positional(self, reset_meta_instances, mocker):
         """Test reusing an existing instance based on a post-report positionally passed."""
         mock_name = mocker.MagicMock(spec=str)
 
-        inst1 = init_tester(mock_name, None, False)
-        inst2 = init_tester(mock_name, None, True)
+        inst1 = ht.events.stats.HoudiniEventStats(mock_name, None, False)
+        inst2 = ht.events.stats.HoudiniEventStats(mock_name, None, True)
 
         assert inst1._post_report
         assert inst1 is inst2
 
-    def test_existing_post_report_passed(self, init_tester, mocker):
+    def test_existing_post_report_passed(self, reset_meta_instances, mocker):
         """Test reusing an existing instance based on a post-report explicitly passed."""
         mock_name = mocker.MagicMock(spec=str)
 
-        inst1 = init_tester(mock_name, post_report=False)
-        inst2 = init_tester(mock_name, post_report=True)
+        inst1 = ht.events.stats.HoudiniEventStats(mock_name, post_report=False)
+        inst2 = ht.events.stats.HoudiniEventStats(mock_name, post_report=True)
 
         assert inst1._post_report
         assert inst1 is inst2
 
-    def test_existing_post_report_passed_keep_existing(self, init_tester, mocker):
+    def test_existing_post_report_passed_keep_existing(self, reset_meta_instances, mocker):
         """Test reusing an existing instance based on a post-report explicitly passed."""
         mock_name = mocker.MagicMock(spec=str)
 
-        inst1 = init_tester(mock_name, post_report=True)
-        inst2 = init_tester(mock_name, post_report=False)
+        inst1 = ht.events.stats.HoudiniEventStats(mock_name, post_report=True)
+        inst2 = ht.events.stats.HoudiniEventStats(mock_name, post_report=False)
 
         assert inst1._post_report
         assert inst1 is inst2

@@ -24,7 +24,7 @@ from ht.inline import utils
 # Houdini Imports
 import hou
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     GeometryEntity = Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex]
     GeometryEntityList = List[GeometryEntity]
     ElementGroupList = List[Union[hou.PointGroup, hou.PrimGroup, hou.VertexGroup]]
@@ -2228,7 +2228,7 @@ def get_multiparm_template_name(parm: Union[hou.Parm, hou.ParmTuple]) -> Optiona
 
 
 def eval_multiparm_instance(
-    node: hou.Node, name: str, indices: Union[List[int], int], raw_indices: bool = False
+    node: hou.Node, name: str, indices: Union[List[int], Tuple[int], int], raw_indices: bool = False
 ) -> Union[Tuple, float, int, str, hou.Ramp]:
     """Evaluate a multiparm parameter by indices.
 

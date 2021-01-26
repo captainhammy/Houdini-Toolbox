@@ -60,6 +60,7 @@ class Test_PyFilterOperation:
         assert op.data == mock_value
 
     def test_manager(self, init_operation, mocker):
+        """Test the 'manager' property."""
         mock_manager = mocker.MagicMock(spec=PyFilterManager)
 
         op = init_operation()
