@@ -623,8 +623,8 @@ class NewAOVDialog(_BaseAOVDialog):
 
     def _additional_aov_variable_validation(self, variable_name):
         """Perform additional validation against a variable name."""
-        if variable_name in manager.MANAGER.aovs:
-            aov = manager.MANAGER.aovs[variable_name]
+        if variable_name in manager.AOV_MANAGER.aovs:
+            aov = manager.AOV_MANAGER.aovs[variable_name]
 
             priority = self.priority.value()
 
@@ -1004,8 +1004,8 @@ class NewGroupDialog(_BaseGroupDialog):
 
     def _additional_group_name_validation(self, group_name):
         """Perform additional validation against a group name."""
-        if group_name in manager.MANAGER.groups:
-            group = manager.MANAGER.groups[group_name]
+        if group_name in manager.AOV_MANAGER.groups:
+            group = manager.AOV_MANAGER.groups[group_name]
 
             priority = self.priority.value()
 
@@ -1151,7 +1151,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         start_idx = -1
 
         # Populate the AOV chooser with all the existing AOVs.
-        for idx, available_aov in enumerate(sorted(manager.MANAGER.aovs.values())):
+        for idx, available_aov in enumerate(sorted(manager.AOV_MANAGER.aovs.values())):
             # If a channel is specified, put it into the display name.
             if available_aov.channel is not None:
                 label = "{} ({})".format(available_aov.variable, available_aov.channel)
@@ -1255,7 +1255,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
             aov_file.remove_aov(self.aov)
             aov_file.write_to_file()
 
-            manager.MANAGER.remove_aov(self.aov)
+            manager.AOV_MANAGER.remove_aov(self.aov)
 
     def edit(self):
         """Launch the Edit dialog for the currently selected AOV."""
@@ -1302,7 +1302,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         start_idx = -1
 
         # Populate the group chooser with all the existing groups.
-        for idx, available_group in enumerate(sorted(manager.MANAGER.groups.values())):
+        for idx, available_group in enumerate(sorted(manager.AOV_MANAGER.groups.values())):
             label = available_group.name
 
             self.group_chooser.addItem(
@@ -1403,7 +1403,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
             aov_file.remove_group(self.group)
             aov_file.write_to_file()
 
-            manager.MANAGER.remove_group(self.group)
+            manager.AOV_MANAGER.remove_group(self.group)
 
     def edit(self):
         """Launch the Edit dialog for the currently selected group."""
@@ -1469,7 +1469,7 @@ def create_new_aov(aov=None):
     if aov is not None:
         dialog.initialize_from_aov(aov)
 
-    dialog.new_aov_signal.connect(manager.MANAGER.add_aov)
+    dialog.new_aov_signal.connect(manager.AOV_MANAGER.add_aov)
 
     dialog.show()
 
@@ -1483,6 +1483,6 @@ def create_new_group(aovs=()):
     if aovs:
         new_group_dialog.set_selected_aovs(aovs)
 
-    new_group_dialog.new_aov_group_signal.connect(manager.MANAGER.add_group)
+    new_group_dialog.new_aov_group_signal.connect(manager.AOV_MANAGER.add_group)
 
     new_group_dialog.show()

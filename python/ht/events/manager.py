@@ -209,7 +209,7 @@ def register_event_group(event_group: HoudiniEventGroup):
     :return:
 
     """
-    MANAGER.register_event_group(event_group)
+    EVENT_MANAGER.register_event_group(event_group)
 
 
 def register_function(
@@ -248,7 +248,7 @@ def register_item(item: HoudiniEventItem, event_name: enum.Enum):
     if not isinstance(item, HoudiniEventItem):
         raise TypeError("{} is not a valid item".format(item))
 
-    MANAGER.register_item(item, event_name)
+    EVENT_MANAGER.register_item(item, event_name)
 
 
 def run_event(event_name: enum.Enum, scriptargs: dict = None):
@@ -259,9 +259,9 @@ def run_event(event_name: enum.Enum, scriptargs: dict = None):
     :return:
 
     """
-    MANAGER.run_event(event_name, scriptargs)
+    EVENT_MANAGER.run_event(event_name, scriptargs)
 
 
 # =============================================================================
 
-MANAGER = HoudiniEventManager()
+EVENT_MANAGER = HoudiniEventManager()

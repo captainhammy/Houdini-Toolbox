@@ -525,4 +525,4 @@ def _get_tool_menu_locations(node_type: hou.NodeType) -> Tuple[str]:
 
 # =============================================================================
 
-MANAGER = StyleManager()
+STYLE_MANAGER = StyleManager()

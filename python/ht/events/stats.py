@@ -28,7 +28,7 @@ class _StatsMeta(type):
     """
 
     # Dict of stats classes and their instances.
-    _instances = {}
+    INSTANCES = {}
 
     # -------------------------------------------------------------------------
     # SPECIAL METHODS
@@ -40,7 +40,7 @@ class _StatsMeta(type):
         key = args[0]
 
         # Get any instances of the target class.
-        inst_dict = cls._instances.setdefault(cls, {})
+        inst_dict = cls.INSTANCES.setdefault(cls, {})
 
         # Create a new class instance because the name has not been used yet.
         if key not in inst_dict:
@@ -308,7 +308,7 @@ def get_event_stats(matching_tags: Optional[str] = None) -> Tuple[HoudiniEventSt
 
     """
     all_stats = list(
-        _StatsMeta._instances.get(  # pylint: disable=protected-access
+        _StatsMeta.INSTANCES.get(  # pylint: disable=protected-access
             HoudiniEventStats, {}
         ).values()
     )
@@ -327,7 +327,7 @@ def get_item_stats(matching_tags: Optional[str] = None) -> Tuple[HoudiniEventIte
 
     """
     all_stats = list(
-        _StatsMeta._instances.get(  # pylint: disable=protected-access
+        _StatsMeta.INSTANCES.get(  # pylint: disable=protected-access
             HoudiniEventItemStats, {}
         ).values()
     )

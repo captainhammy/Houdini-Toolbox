@@ -8,7 +8,7 @@
 from ht.events.group import HoudiniEventGroup
 from ht.events.item import HoudiniEventItem
 from ht.events import NodeEvents
-from ht.nodes.styles.manager import MANAGER
+from ht.nodes.styles.manager import STYLE_MANAGER
 
 
 # =============================================================================
@@ -42,7 +42,7 @@ class StyleNodeEvent(HoudiniEventGroup):
         """
         node = scriptargs["node"]
 
-        MANAGER.style_node_by_name(node)
+        STYLE_MANAGER.style_node_by_name(node)
 
     def style_node_on_creation(self, scriptargs: dict):  # pylint: disable=no-self-use
         """Style a node on creation."
@@ -53,4 +53,4 @@ class StyleNodeEvent(HoudiniEventGroup):
         """
         node = scriptargs["node"]
 
-        MANAGER.style_node(node)
+        STYLE_MANAGER.style_node(node)
