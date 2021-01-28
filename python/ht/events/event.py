@@ -51,18 +51,6 @@ class HoudiniEventFactory:
 
         return HoudiniEvent(event.value)
 
-    #
-    # @staticmethod
-    # def register_event_class(name: enum.Enum, event_class: HoudiniEvent):
-    #     """Register an event type class to a name.
-    #
-    #     :param name: The event name
-    #     :param event_class: A customize subclass of HoudiniEvent.
-    #     :return:
-    #
-    #     """
-    #     HoudiniEventFactory._mappings[name] = event_class
-
 
 class HoudiniEvent:
     """The base Houdini event class.
@@ -96,8 +84,6 @@ class HoudiniEvent:
         """Internal data for storing data that can be shared across event functions."""
         return self._data
 
-    # -------------------------------------------------------------------------
-
     @property
     def enabled(self) -> bool:
         """Whether or not the action is enabled."""
@@ -106,8 +92,6 @@ class HoudiniEvent:
     @enabled.setter
     def enabled(self, enabled):
         self._enabled = enabled
-
-    # -------------------------------------------------------------------------
 
     @property
     def item_map(self) -> dict:

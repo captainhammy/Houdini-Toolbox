@@ -89,4 +89,4 @@ class SohoHookManager:
 
 # =============================================================================
 
-MANAGER = SohoHookManager()
+HOOK_MANAGER = SohoHookManager()

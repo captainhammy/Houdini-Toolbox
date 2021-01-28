@@ -642,13 +642,13 @@ def build_menu_script() -> Tuple[str]:
     """
     menu = []
 
-    if MANAGER.groups:
-        for group in sorted(MANAGER.groups.keys()):
+    if AOV_MANAGER.groups:
+        for group in sorted(AOV_MANAGER.groups.keys()):
             menu.extend(["@{}".format(group), group])
 
         menu.extend(["_separator_", ""])
 
-    for aov in sorted(MANAGER.aovs.keys()):
+    for aov in sorted(AOV_MANAGER.aovs.keys()):
         menu.extend([aov, aov])
 
     return tuple(menu)
@@ -689,9 +689,9 @@ def load_json_files():
         path = os.path.expandvars(path)
 
         if os.path.exists(path):
-            MANAGER.load(path)
+            AOV_MANAGER.load(path)
 
 
 # =============================================================================
 
-MANAGER = AOVManager()
+AOV_MANAGER = AOVManager()

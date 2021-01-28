@@ -1326,7 +1326,7 @@ class Test_build_menu_script:
 
     def test_no_groups(self, mocker):
         """Test when no groups exist."""
-        mock_manager = mocker.patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
+        mock_manager = mocker.patch("ht.sohohooks.aovs.manager.AOV_MANAGER", autospec=True)
 
         mock_manager.groups = None
 
@@ -1342,7 +1342,7 @@ class Test_build_menu_script:
 
     def test_with_groups(self, mocker):
         """Test when groups exist."""
-        mock_manager = mocker.patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
+        mock_manager = mocker.patch("ht.sohohooks.aovs.manager.AOV_MANAGER", autospec=True)
 
         mock_group1 = mocker.MagicMock(spec=manager.AOVGroup)
         mock_group2 = mocker.MagicMock(spec=manager.AOVGroup)
@@ -1400,7 +1400,7 @@ def test_load_json_files(mocker, mock_hou_ui):
     """Test ht.sohohooks.aovs.manager.load_json_files."""
     mock_expand = mocker.patch("ht.sohohooks.aovs.manager.os.path.expandvars")
     mock_exists = mocker.patch("ht.sohohooks.aovs.manager.os.path.exists")
-    mock_manager = mocker.patch("ht.sohohooks.aovs.manager.MANAGER", autospec=True)
+    mock_manager = mocker.patch("ht.sohohooks.aovs.manager.AOV_MANAGER", autospec=True)
 
     mock_expand.side_effect = ("expanded1", "expanded2")
 

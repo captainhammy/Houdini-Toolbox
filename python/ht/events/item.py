@@ -68,6 +68,9 @@ class HoudiniEventItem:
 
         return True
 
+    def __hash__(self):
+        return hash((self.name, self.priority))
+
     def __ne__(self, other: HoudiniEventItem) -> bool:
         """Inequality implementation that ignores the stats object.
 
@@ -76,9 +79,6 @@ class HoudiniEventItem:
 
         """
         return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash((self.name, self.priority))
 
     def __repr__(self):
         return "<{} {} ({} callables)>".format(

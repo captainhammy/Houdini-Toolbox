@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
-from ht.sohohooks.manager import MANAGER
+from ht.sohohooks.manager import HOOK_MANAGER
 
 
 # =============================================================================
@@ -22,4 +22,4 @@ def call(
     :return: Whether or not code should continue after the hook.
 
     """
-    return MANAGER.call_hook(hook_name, *args, **kwargs)
+    return HOOK_MANAGER.call_hook(hook_name, *args, **kwargs)

@@ -79,17 +79,17 @@ class AOVManagerWidget(QtWidgets.QWidget):
         )
 
         # Really need a signal?  Maybe just refresh everything?
-        manager.MANAGER.attach_interface(utils.AOVViewerInterface())
-        manager.MANAGER.interface.aov_added_signal.connect(
+        manager.AOV_MANAGER.attach_interface(utils.AOVViewerInterface())
+        manager.AOV_MANAGER.interface.aov_added_signal.connect(
             self.select_widget.aov_tree.insert_aov
         )
-        manager.MANAGER.interface.aov_removed_signal.connect(
+        manager.AOV_MANAGER.interface.aov_removed_signal.connect(
             self.select_widget.aov_tree.remove_aov
         )
-        manager.MANAGER.interface.group_added_signal.connect(
+        manager.AOV_MANAGER.interface.group_added_signal.connect(
             self.select_widget.aov_tree.insert_group
         )
-        manager.MANAGER.interface.group_removed_signal.connect(
+        manager.AOV_MANAGER.interface.group_removed_signal.connect(
             self.select_widget.aov_tree.remove_group
         )
 
@@ -260,7 +260,7 @@ class AOVSelectTreeWidget(
                     ext = os.path.splitext(path)[-1]
 
                     if ext == ".json":
-                        manager.MANAGER.load(path)
+                        manager.AOV_MANAGER.load(path)
 
         # Process paths, looking for nodes.  Any file paths represented by
         # urls that were handled above will also be in this list because they
@@ -1078,7 +1078,7 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
                     if names:
                         value = "{} {}".format(value, " ".join(names))
 
-                    aovs = manager.MANAGER.get_aovs_from_string(value)
+                    aovs = manager.AOV_MANAGER.get_aovs_from_string(value)
 
                     if aovs:
                         new_data.extend(aovs)
@@ -1389,7 +1389,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
             if names:
                 value = "{} {}".format(value, " ".join(names))
 
-            items.extend(manager.MANAGER.get_aovs_from_string(value))
+            items.extend(manager.AOV_MANAGER.get_aovs_from_string(value))
 
         if items:
             self.install_signal.emit(items)

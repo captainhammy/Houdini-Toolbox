@@ -39,7 +39,7 @@ class Test_StyleNodeEvent:
         mocker.patch.object(
             ht.nodes.styles.event.StyleNodeEvent, "__init__", lambda x: None
         )
-        mock_manager = mocker.patch("ht.nodes.styles.event.MANAGER", autospec=True)
+        mock_manager = mocker.patch("ht.nodes.styles.event.STYLE_MANAGER", autospec=True)
 
         mock_node = mocker.MagicMock(spec=hou.Node)
 
@@ -56,7 +56,7 @@ class Test_StyleNodeEvent:
         mocker.patch.object(
             ht.nodes.styles.event.StyleNodeEvent, "__init__", lambda x: None
         )
-        mock_manager = mocker.patch("ht.nodes.styles.event.MANAGER", autospec=True)
+        mock_manager = mocker.patch("ht.nodes.styles.event.STYLE_MANAGER", autospec=True)
 
         mock_node = mocker.MagicMock(spec=hou.Node)
 

@@ -460,7 +460,7 @@ class Test_HoudiniEventManager:
 
 def test_register_event_group(mocker):
     """Test ht.events.manager.register_event_group."""
-    mock_manager = mocker.patch("ht.events.manager.MANAGER")
+    mock_manager = mocker.patch("ht.events.manager.EVENT_MANAGER")
 
     mock_group = mocker.MagicMock(spec=HoudiniEventGroup)
 
@@ -518,7 +518,7 @@ class Test_register_item:
 
     def test(self, mocker):
         """Test registering a valid item."""
-        mock_manager = mocker.patch("ht.events.manager.MANAGER")
+        mock_manager = mocker.patch("ht.events.manager.EVENT_MANAGER")
 
         mock_event_name = mocker.MagicMock(spec=str)
 
@@ -531,7 +531,7 @@ class Test_register_item:
 
 def test_run_event(mocker):
     """Test ht.events.manager.run_event."""
-    mock_manager = mocker.patch("ht.events.manager.MANAGER")
+    mock_manager = mocker.patch("ht.events.manager.EVENT_MANAGER")
 
     mock_event_name = mocker.MagicMock(spec=str)
     mock_scriptargs = mocker.MagicMock(spec=dict)
