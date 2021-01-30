@@ -1,5 +1,13 @@
 This repository is for the Houdini Toolbox.
 
+
+## Python 3
+
+This repository is now entirely Python 3 based and is no longer compatible with Python 2.7 versions of Houdini. 
+The old Python 2.7 compatible code is available in the **python2.7** branch.
+
+---
+
 ## Installation
 
 In order to use most of the features contained in this repo it is necessary to add/modify certain entries in your environment:
@@ -21,7 +29,7 @@ setenv PYTHONPATH "${HOME}/Houdini-Toolbox/python:${PYTHONPATH}"
 ```
 
 ### Using houdini.env
-You can also use the `houdini.env` file to setup these variables.  This is often easier for Windows.
+You can also use the `houdini.env` file to set up these variables.  This is often easier for Windows.
 
 NOTE: Unix and Windows will use different path split characters so ensure you are using the correct one for your platform:
 - **:** for unix: `/some/path:&`
