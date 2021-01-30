@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.7
+#!/usr/bin/env python3.8
 """Script to lint the project."""
 
 # =============================================================================
@@ -68,7 +68,7 @@ class ExtractedOperator(_BaseLintable):
     """
 
     def __init__(self, name, path):
-        super(ExtractedOperator, self).__init__(path, disabled_checks=None)
+        super().__init__(path, disabled_checks=None)
 
         self._name = name
         self._files_to_lint = []
@@ -705,7 +705,7 @@ class OtlFile(ExtractedOtl):
 
         proc.wait()
 
-        super(OtlFile, self).__init__(target_folder)
+        super().__init__(target_folder)
 
         self._post_process_operators()
 
@@ -770,14 +770,6 @@ def _build_parser():
 
     parser.add_argument(
         "--python-root", action="store", default="python", help="The root directory the package will be in"
-    )
-
-    parser.add_argument(
-        "--py3k", action="store_true", help="Run in Python 3 porting mode"
-    )
-
-    parser.add_argument(
-        "--regular-and-py3k", action="store_true", help="Run in regular mode and Python 3 porting mode", dest="run_both"
     )
 
     parser.add_argument(
@@ -1003,15 +995,6 @@ def main():  # pylint: disable=too-many-locals
     if results.rcfile is not None:
         runner.flags.append("--rcfile={}".format(results.rcfile))
 
-    run_both = False
-
-    if results.run_both:
-        run_both = True
-
-    else:
-        if results.py3k:
-            runner.flags.append("--py3k")
-
     # The list of things which will be linted.
     items_to_lint = []
 
@@ -1047,8 +1030,6 @@ def main():  # pylint: disable=too-many-locals
 
     extra_args = [None]
 
-    if run_both:
-        extra_args.append("--py3k")
 
     for extra in extra_args:
         if extra is not None:
