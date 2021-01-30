@@ -927,7 +927,8 @@ def copy_packed_prims_to_points(  # pylint: disable=too-many-arguments
     :param prim_list: The list of primitive numbers to copy.
     :param point_list: The list of point numbers to copy onto.
     :param copy_attribs: Whether or not to copy primitive attributes and their values.
-    :param attribs: Optional list of attributes to copy. If None and copy_attribs is True, copies all primitive attributes.
+    :param attribs: Optional list of attributes to copy. If None and copy_attribs is True, copies all primitive
+    attributes.
     :param copy_groups: Whether or not to copy primitive groups and their values.
     :param groups: Optional list of groups to copy. If None and copy_groups is True, copies all primitive groups.
     :return:
@@ -2112,7 +2113,8 @@ def get_multiparm_instance_indices(
     in the tuple.
 
     :param parm: The parm to get the multiparm instance index for.
-    :param instance_index: Each multi-parm can have multiple parameters in each instance. If instance_index is true, the instance number will be returned. Otherwise the raw offset into the multi-parm will be extracted.
+    :param instance_index: Each multi-parm can have multiple parameters in each instance. If instance_index is true,
+    the instance number will be returned. Otherwise the raw offset into the multi-parm will be extracted.
     :return The instance indices for the parameter.
 
     """
@@ -2228,7 +2230,10 @@ def get_multiparm_template_name(parm: Union[hou.Parm, hou.ParmTuple]) -> Optiona
 
 
 def eval_multiparm_instance(
-    node: hou.Node, name: str, indices: Union[List[int], Tuple[int], int], raw_indices: bool = False
+    node: hou.Node,
+    name: str,
+    indices: Union[List[int], Tuple[int], int],
+    raw_indices: bool = False,
 ) -> Union[Tuple, float, int, str, hou.Ramp]:
     """Evaluate a multiparm parameter by indices.
 
@@ -2362,7 +2367,7 @@ def unexpanded_string_multiparm_instance(
     if parm_tuple is None:
         raise IndexError("Invalid indices: {} does not exist".format(full_name))
 
-    values = tuple(parm.unexpandedString() for parm in parm_tuple)
+    values = tuple(str(parm.unexpandedString()) for parm in parm_tuple)
 
     # Return single value for non-tuple parms.
     if len(values) == 1:

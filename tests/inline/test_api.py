@@ -84,7 +84,6 @@ class Test_clear_caches:
 
         assert current_nodes != old_nodes
 
-
     def test_all(self):
         """Test clearing all caches."""
         OBJ.node("test_clear_caches").displayNode().cook(True)
@@ -275,7 +274,6 @@ class Test_get_variable_names:
         for name in ("ACTIVETAKE", "DRIVER", "E", "HIP", "LOCAL"):
             assert name in result
 
-
     def test_get_variable_names_dirty(self):
         """Test getting only dirty variable names."""
         name = "TEST_DIRTY_LOCAL_VAR"
@@ -296,6 +294,7 @@ class Test_get_variable_names:
 
         assert name not in result
 
+
 class Test_get_variable_value:
     """Test ht.inline.api.get_variable_value."""
 
@@ -304,7 +303,6 @@ class Test_get_variable_value:
         hip_name = ht.inline.api.get_variable_value("HIPNAME")
 
         assert hip_name == os.path.splitext(os.path.basename(hou.hipFile.path()))[0]
-
 
     def test__syntax_error(self):
         """Test when there is a syntax error."""
@@ -2362,9 +2360,9 @@ class Test_convert_point_to_prim_group(object):
 
     def test_same_name(self, obj_test_geo_copy):
         """Test converting to a group with the same name as the source and
-         deleting the source group.
+        deleting the source group.
 
-         """
+        """
         group = obj_test_geo_copy.pointGroups()[0]
 
         new_group = ht.inline.api.convert_point_to_prim_group(group)

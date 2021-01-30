@@ -604,8 +604,8 @@ class AOVSelectModel(BaseAOVTreeModel):
         groups_node = FolderNode("Groups", self.root)
         aovs_node = FolderNode("AOVs", self.root)
 
-        if manager.MANAGER.groups:
-            groups = manager.MANAGER.groups
+        if manager.AOV_MANAGER.groups:
+            groups = manager.AOV_MANAGER.groups
 
             for group in list(groups.values()):
                 if isinstance(group, IntrinsicAOVGroup):
@@ -613,8 +613,8 @@ class AOVSelectModel(BaseAOVTreeModel):
                 else:
                     AOVGroupNode(group, groups_node)
 
-        if manager.MANAGER.aovs:
-            aovs = manager.MANAGER.aovs
+        if manager.AOV_MANAGER.aovs:
+            aovs = manager.AOV_MANAGER.aovs
 
             for aov in list(aovs.values()):
                 AOVNode(aov, aovs_node)
@@ -943,7 +943,7 @@ class AOVGroupEditListModel(QtCore.QAbstractListModel):
         super().__init__(parent)
 
         # Grab all the possible AOVs at time of creation.
-        self._aovs = list(manager.MANAGER.aovs.values())
+        self._aovs = list(manager.AOV_MANAGER.aovs.values())
 
         # List containing the checked state of each AOV
         self._checked = [False] * len(self._aovs)

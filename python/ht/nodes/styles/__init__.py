@@ -8,12 +8,12 @@ Houdini.
 # =============================================================================
 
 # Houdini Toolbox Imports
-from ht.events import register_event_group
-from ht.nodes.styles.event import StyleNodeEvent
-import ht.nodes.styles.manager
+from ht.events import NodeEvents, register_function
+from ht.nodes.styles.event import style_node_by_name, style_node_on_creation
 
 
 # =============================================================================
 
-# Register our event to handle automatic color setting.
-register_event_group(StyleNodeEvent())
+# Register our events to handle automatic color setting.
+register_function(style_node_on_creation, NodeEvents.OnCreated)
+register_function(style_node_by_name, NodeEvents.OnNameChanged)

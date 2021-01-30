@@ -5,52 +5,33 @@
 # =============================================================================
 
 # Houdini Toolbox Imports
-from ht.events.group import HoudiniEventGroup
-from ht.events.item import HoudiniEventItem
-from ht.events import NodeEvents
 from ht.nodes.styles.manager import STYLE_MANAGER
 
 
 # =============================================================================
-# CLASSES
+# FUNCTIONS
 # =============================================================================
 
 
-class StyleNodeEvent(HoudiniEventGroup):
-    """Event to style Houdini nodes based on events."""
+def style_node_by_name(scriptargs: dict):
+    """Style a node based on a name.
 
-    def __init__(self):
-        super().__init__()
+    :param scriptargs: Data passed by event runner.
+    :return:
 
-        self.event_map.update(
-            {
-                NodeEvents.OnCreated: HoudiniEventItem((self.style_node_on_creation,)),
-                NodeEvents.OnNameChanged: HoudiniEventItem((self.style_node_by_name,)),
-            }
-        )
+    """
+    node = scriptargs["node"]
 
-    # -------------------------------------------------------------------------
-    # METHODS
-    # -------------------------------------------------------------------------
+    STYLE_MANAGER.style_node_by_name(node)
 
-    def style_node_by_name(self, scriptargs: dict):  # pylint: disable=no-self-use
-        """Style a node based on a name.
 
-        :param scriptargs: Data passed by event runner.
-        :return:
+def style_node_on_creation(scriptargs: dict):
+    """Style a node on creation."
 
-        """
-        node = scriptargs["node"]
+    :param scriptargs: Data passed by event runner.
+    :return:
 
-        STYLE_MANAGER.style_node_by_name(node)
+    """
+    node = scriptargs["node"]
 
-    def style_node_on_creation(self, scriptargs: dict):  # pylint: disable=no-self-use
-        """Style a node on creation."
-
-        :param scriptargs: Data passed by event runner.
-        :return:
-
-        """
-        node = scriptargs["node"]
-
-        STYLE_MANAGER.style_node(node)
+    STYLE_MANAGER.style_node(node)

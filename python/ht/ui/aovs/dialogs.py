@@ -1302,7 +1302,9 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         start_idx = -1
 
         # Populate the group chooser with all the existing groups.
-        for idx, available_group in enumerate(sorted(manager.AOV_MANAGER.groups.values())):
+        for idx, available_group in enumerate(
+            sorted(manager.AOV_MANAGER.groups.values())
+        ):
             label = available_group.name
 
             self.group_chooser.addItem(
