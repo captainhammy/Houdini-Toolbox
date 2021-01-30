@@ -14,10 +14,11 @@ from ht.events.manager import (
 )
 from ht.events.types import HipFileEvents, NodeEvents, RopEvents, SceneEvents
 
+
 # =============================================================================
+
 
 # Register the package's ROP render script events.
 register_event_group(rop_render.RopRenderEvent())
 
-# Register the package's SceneLoadEvent.
-register_event_group(scene_load.SceneLoadEvent())
+register_function(scene_load.clear_session_settings, SceneEvents.Load)

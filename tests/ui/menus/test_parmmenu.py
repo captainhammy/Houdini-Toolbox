@@ -628,9 +628,7 @@ class Test_promote_parameter_to_node:
 
         mock_target_node.parm.assert_not_called()
 
-    def test_no_existing_single_component(
-        self, mocker, mock_hou_ui
-    ):
+    def test_no_existing_single_component(self, mocker, mock_hou_ui):
         """Test when there is no existing parm and we want to promote a single parm from the tuple."""
         mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
 
@@ -681,9 +679,7 @@ class Test_promote_parameter_to_node:
 
         mock_parm1.set.assert_called_with(mock_target_parm1)
 
-    def test_no_existing_multiple_components(
-        self, mocker, mock_hou_ui
-    ):
+    def test_no_existing_multiple_components(self, mocker, mock_hou_ui):
         """Test when there is no existing parm and we want to promote a full tuple."""
         mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
 

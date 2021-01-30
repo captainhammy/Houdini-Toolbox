@@ -1326,7 +1326,9 @@ class Test_build_menu_script:
 
     def test_no_groups(self, mocker):
         """Test when no groups exist."""
-        mock_manager = mocker.patch("ht.sohohooks.aovs.manager.AOV_MANAGER", autospec=True)
+        mock_manager = mocker.patch(
+            "ht.sohohooks.aovs.manager.AOV_MANAGER", autospec=True
+        )
 
         mock_manager.groups = None
 
@@ -1342,7 +1344,9 @@ class Test_build_menu_script:
 
     def test_with_groups(self, mocker):
         """Test when groups exist."""
-        mock_manager = mocker.patch("ht.sohohooks.aovs.manager.AOV_MANAGER", autospec=True)
+        mock_manager = mocker.patch(
+            "ht.sohohooks.aovs.manager.AOV_MANAGER", autospec=True
+        )
 
         mock_group1 = mocker.MagicMock(spec=manager.AOVGroup)
         mock_group2 = mocker.MagicMock(spec=manager.AOVGroup)

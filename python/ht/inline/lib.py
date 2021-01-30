@@ -14,6 +14,7 @@ and modules they are meant to extend.
 # Houdini Imports
 import inlinecpp
 
+# flake8: noqa: E501
 # =============================================================================
 
 _FUNCTION_SOURCES = [

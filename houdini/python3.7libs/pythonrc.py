@@ -16,6 +16,7 @@ import ht.logging.config
 
 ht.logging.config.init_config()
 
+# flake8: noqa: E402
 import ht.events
 import ht.events.callbacks
 import ht.sohohooks.aovs

@@ -70,7 +70,9 @@ class Test__StatsMeta:
         mock_name = mocker.MagicMock(spec=str)
         inst = ht.events.stats.HoudiniEventStats(mock_name)
 
-        assert ht.events.stats._StatsMeta.INSTANCES == {ht.events.stats.HoudiniEventStats: {mock_name: inst}}
+        assert ht.events.stats._StatsMeta.INSTANCES == {
+            ht.events.stats.HoudiniEventStats: {mock_name: inst}
+        }
 
     def test_existing_default_args(self, reset_meta_instances, mocker):
         """Test reusing an existing instance of default args."""
@@ -139,7 +141,9 @@ class Test__StatsMeta:
         assert inst1._post_report
         assert inst1 is inst2
 
-    def test_existing_post_report_passed_keep_existing(self, reset_meta_instances, mocker):
+    def test_existing_post_report_passed_keep_existing(
+        self, reset_meta_instances, mocker
+    ):
         """Test reusing an existing instance based on a post-report explicitly passed."""
         mock_name = mocker.MagicMock(spec=str)
 

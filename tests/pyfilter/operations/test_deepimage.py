@@ -377,9 +377,7 @@ class Test_DeepImage:
 
     # filter_camera
 
-    def test_filter_camera__not_beauty(
-        self, patch_logger, init_operation, properties
-    ):
+    def test_filter_camera__not_beauty(self, patch_logger, init_operation, properties):
         """Test for non-beauty renders."""
         properties.mock_get.return_value = "shadow"
 

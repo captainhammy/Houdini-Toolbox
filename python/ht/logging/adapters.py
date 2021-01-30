@@ -12,7 +12,8 @@ from typing import Optional, Tuple
 
 # Third Party Imports
 # NOTE: Must use logquacious until in Python 3.8 as that is the version that adds
-# the stacklevel arg.
+# the stacklevel arg.  I think we can also go back to using __new__ to wrap the
+# function names when doing that too?
 from logquacious.backport_configurable_stacklevel import patch_logger
 
 # Houdini Imports
