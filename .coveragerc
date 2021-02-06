@@ -5,6 +5,7 @@
 branch = True
 source =
     ht
+    houdini/python3.7libs/nodegraphhooks.py
     houdini/toolbar
   #  /var/tmp/
 

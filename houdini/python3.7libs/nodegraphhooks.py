@@ -13,7 +13,7 @@ from ht.ui import nodegraph, paste
 
 # Houdini Imports
 from canvaseventtypes import KeyboardEvent
-from nodegraphdisplay import setKeyPrompt
+import nodegraphdisplay
 
 
 # ==============================================================================
@@ -48,10 +48,10 @@ def createEventHandler(
         eventtype = uievent.eventtype
         key = uievent.key
 
-        if setKeyPrompt(editor, key, "h.tool:copy_items", eventtype):
+        if nodegraphdisplay.setKeyPrompt(editor, key, "h.tool:copy_items", eventtype):
             return paste.copy_items_from_graph(editor)
 
-        if setKeyPrompt(editor, key, "h.tool:paste_items", eventtype):
+        if nodegraphdisplay.setKeyPrompt(editor, key, "h.tool:paste_items", eventtype):
             return paste.paste_items_to_graph(eventtype, editor, uievent)
 
     return None, False
