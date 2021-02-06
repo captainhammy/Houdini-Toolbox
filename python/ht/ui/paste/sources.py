@@ -21,7 +21,7 @@ import ht.ui.paste.helpers
 # Houdini Imports
 import hou
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from PySide2 import QtGui
 
 # Handle differences between platforms.

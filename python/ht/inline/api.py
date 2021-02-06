@@ -24,7 +24,7 @@ from ht.inline import utils
 # Houdini Imports
 import hou
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     GeometryEntity = Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex]
     GeometryEntityList = List[GeometryEntity]
     ElementGroupList = List[Union[hou.PointGroup, hou.PrimGroup, hou.VertexGroup]]

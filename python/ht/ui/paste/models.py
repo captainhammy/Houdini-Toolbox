@@ -15,7 +15,7 @@ from PySide2 import QtCore
 # Houdini Toolbox Imports
 from ht.ui.paste import utils
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     # pylint: disable=ungrouped-imports
     from PySide2 import QtWidgets
     from ht.ui.paste.sources import CopyPasteSource

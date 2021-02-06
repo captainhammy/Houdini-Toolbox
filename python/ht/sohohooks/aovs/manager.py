@@ -21,7 +21,7 @@ from ht.sohohooks.aovs import constants as consts
 # Houdini Imports
 import hou
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from ht.ui.aovs.utils import AOVViewerInterface  # pylint: disable=ungrouped-imports
     import soho
 

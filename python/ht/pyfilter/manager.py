@@ -14,7 +14,7 @@ import json
 import logging
 from typing import TYPE_CHECKING, List, Tuple, Type
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from ht.pyfilter.operations.operation import PyFilterOperation
 
 _logger = logging.getLogger(__name__)

@@ -11,7 +11,7 @@ import logging
 import time
 from typing import TYPE_CHECKING, Optional
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     import hou
 
 _logger = logging.getLogger(__name__)

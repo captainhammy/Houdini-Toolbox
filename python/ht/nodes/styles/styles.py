@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, Optional, Tuple
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     import hou
 
 # =============================================================================
