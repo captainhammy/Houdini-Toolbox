@@ -5,10 +5,11 @@
 # ==============================================================================
 
 # Standard Library Imports
+from __future__ import annotations
 from typing import List, Tuple
 
 # Houdini Toolbox Imports
-from ht.ui import paste
+from ht.ui import nodegraph, paste
 
 # Houdini Imports
 from canvaseventtypes import KeyboardEvent
@@ -39,6 +40,10 @@ def createEventHandler(
     """
 
     if isinstance(uievent, KeyboardEvent) and uievent.eventtype in KEY_HIT_TYPES:
+        # Check if this is supposed to be a normal Houdini paste event (h.paste)
+        if nodegraph.is_houdini_paste_event(uievent):
+            return nodegraph.handle_houdini_paste_event(uievent)
+
         editor = uievent.editor
         eventtype = uievent.eventtype
         key = uievent.key
