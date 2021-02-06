@@ -1030,7 +1030,6 @@ def main():  # pylint: disable=too-many-locals
 
     extra_args = [None]
 
-
     for extra in extra_args:
         if extra is not None:
             runner.flags.append(extra)
