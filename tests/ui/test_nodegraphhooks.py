@@ -12,7 +12,7 @@ nodegraphhooks = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(nodegraphhooks)
 
 # Houdini Imports
-from canvaseventtypes import KeyboardEvent
+from canvaseventtypes import KeyboardEvent  # pylint: disable=wrong-import-position
 
 
 # ==============================================================================
