@@ -4,6 +4,8 @@
 # IMPORTS
 # =============================================================================
 
+from typing import Dict, List
+
 # Houdini Imports
 import hou
 
@@ -178,7 +180,7 @@ def promote_parameter_to_node(scriptargs: dict):  # pylint: disable=too-many-loc
     start_node = None
 
     parm_tuple = None
-    parm_tuple_map = {}
+    parm_tuple_map: Dict[hou.ParmTuple, List[hou.Parm]] = {}
     parm_tuple_nodes = []
 
     # Process all the selected parms, partitioning by parm tuple.

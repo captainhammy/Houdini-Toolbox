@@ -6,7 +6,7 @@
 
 # Standard Library Imports
 from __future__ import annotations
-from typing import Callable, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 # Houdini Toolbox Imports
 from ht.events.stats import HoudiniEventItemStats
@@ -39,7 +39,7 @@ class HoudiniEventItem:
         self._name = name
         self._priority = priority
 
-        self._data = {}
+        self._data: Dict[Any, Any] = dict()
 
         self._stats = HoudiniEventItemStats(self.name, tags=stat_tags)
 
@@ -47,7 +47,7 @@ class HoudiniEventItem:
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __eq__(self, other: HoudiniEventItem) -> bool:
+    def __eq__(self, other: Any) -> bool:
         """Equality implementation that ignores the stats object.
 
         :param other: The item to compare to.
@@ -71,7 +71,7 @@ class HoudiniEventItem:
     def __hash__(self):
         return hash((self.name, self.priority))
 
-    def __ne__(self, other: HoudiniEventItem) -> bool:
+    def __ne__(self, other: Any) -> bool:
         """Inequality implementation that ignores the stats object.
 
         :param other: The other item to compare to.
@@ -101,7 +101,7 @@ class HoudiniEventItem:
         return self._data
 
     @property
-    def name(self) -> str:
+    def name(self) -> Optional[str]:
         """The item name."""
         return self._name
 
@@ -149,7 +149,7 @@ class ExclusiveHoudiniEventItem(HoudiniEventItem):
     """
 
     # Name to item mapping.
-    _exclusive_map = {}
+    _exclusive_map: Dict[Union[str, None], ExclusiveHoudiniEventItem] = {}
 
     def __init__(
         self,

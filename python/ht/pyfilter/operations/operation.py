@@ -8,7 +8,7 @@
 from __future__ import annotations
 from functools import wraps
 import logging
-from typing import TYPE_CHECKING, Callable, Union
+from typing import TYPE_CHECKING, Callable, Dict, Union
 
 if TYPE_CHECKING:
     import argparse
@@ -30,7 +30,7 @@ class PyFilterOperation:
     """
 
     def __init__(self, manager: PyFilterManager):
-        self._data = {}
+        self._data: Dict = {}
         self._manager = manager
 
     # -------------------------------------------------------------------------
@@ -62,12 +62,13 @@ class PyFilterOperation:
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def build_arg_string(*args, **kwargs) -> str:
+    def build_arg_string() -> str:
         """Build an argument string for this operation.
 
         :return: The constructed argument string.
 
         """
+        return ""
 
     @staticmethod
     def register_parser_args(parser: argparse.ArgumentParser):

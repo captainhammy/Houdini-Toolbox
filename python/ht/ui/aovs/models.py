@@ -825,8 +825,8 @@ class AOVsToAddModel(BaseAOVTreeModel):
 
     """
 
-    inserted_items_signal = QtCore.Signal([AOVBaseNode])
-    removed_items_signal = QtCore.Signal([AOVBaseNode])
+    inserted_items_signal = QtCore.Signal(AOVBaseNode)
+    removed_items_signal = QtCore.Signal(AOVBaseNode)
 
     # -------------------------------------------------------------------------
     # METHODS

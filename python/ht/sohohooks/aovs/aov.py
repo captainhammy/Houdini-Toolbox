@@ -7,7 +7,7 @@
 # Standard Library Imports
 from __future__ import annotations
 import copy
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any, Dict, List
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import constants as consts
@@ -31,7 +31,7 @@ ALLOWABLE_VALUES = {
     consts.VEXTYPE_KEY: ("float", "unitvector", "vector", "vector4"),
 }
 
-_DEFAULT_AOV_DATA = {
+_DEFAULT_AOV_DATA: Dict[str, Any] = {
     consts.VARIABLE_KEY: None,
     consts.VEXTYPE_KEY: None,
     consts.CHANNEL_KEY: None,

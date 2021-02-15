@@ -10,7 +10,7 @@ from collections import OrderedDict
 from contextlib import contextmanager
 import logging
 import time
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple, Union
 
 _logger = logging.getLogger(__name__)
 
@@ -273,8 +273,8 @@ class HoudiniEventItemStats(HoudiniEventStats):
 
 
 def _get_matching_stats(
-    stats: List[HoudiniEventStats], tags: List[str]
-) -> Tuple[HoudiniEventStats]:
+    stats: Union[List[HoudiniEventStats], List[HoudiniEventItemStats]], tags: List[str]
+) -> Union[Tuple[HoudiniEventStats, ...], Tuple[HoudiniEventItemStats, ...]]:
     """Filter a list of stats for ones which match the tags.
 
     :param stats: An list of stats objects to search.
@@ -300,7 +300,7 @@ def _get_matching_stats(
 # =============================================================================
 
 
-def get_event_stats(matching_tags: Optional[str] = None) -> Tuple[HoudiniEventStats]:
+def get_event_stats(matching_tags: Optional[List[str]] = None) -> Tuple[HoudiniEventStats, ...]:
     """Get a list of event item related stats, optionally filtered by tag.
 
     :param matching_tags: An optional list of tag values to filter by.
@@ -319,7 +319,7 @@ def get_event_stats(matching_tags: Optional[str] = None) -> Tuple[HoudiniEventSt
     return _get_matching_stats(all_stats, matching_tags)
 
 
-def get_item_stats(matching_tags: Optional[str] = None) -> Tuple[HoudiniEventItemStats]:
+def get_item_stats(matching_tags: Optional[List[str]] = None) -> Tuple[HoudiniEventItemStats, ...]:
     """Get a list of event related stats, optionally filtered by tag.
 
     :param matching_tags: An optional list of tag values to filter by.

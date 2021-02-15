@@ -305,10 +305,9 @@ def _get_build_to_download(
     # supposed to be returned from the API with the latest builds first this should be
     # the most recent build which matched.
     release = filtered[0]
-    build = release["build"]
 
     # Get the actual release information for this build.
-    release_info = service.get_daily_build_download(product, version, build, platform)
+    release_info = service.get_daily_build_download(product, version, release["build"], platform)
 
     return release_info
 
@@ -468,15 +467,17 @@ def list_builds(
 
         build_date = datetime.datetime.strptime(release["date"], "%Y/%m/%d").date()
 
+        date_string = str(build_date)
+
         if build_date == today:
-            build_date = colored(build_date, "green")
+            date_string = colored(date_string, "green")
 
         row = [
             colored(
                 "{}.{}".format(release["version"], release["build"]),
                 _STATUS_MAP[release["status"]],
             ),
-            build_date,
+            date_string,
             colored(release_type, release_color),
         ]
 

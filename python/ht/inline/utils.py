@@ -7,7 +7,7 @@
 # Standard Library Imports
 from __future__ import annotations
 import ctypes
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Sequence, Tuple, Union
 
 # Houdini Imports
 import hou
@@ -74,7 +74,7 @@ _GROUP_TYPE_MAP = {
 # =============================================================================
 
 
-def build_c_double_array(values: List[float]) -> ctypes.Array:
+def build_c_double_array(values: Sequence[float]) -> ctypes.Array:
     """Convert a list of numbers to a ctypes c_double array.
 
     :param values: A list of floats.
@@ -86,7 +86,7 @@ def build_c_double_array(values: List[float]) -> ctypes.Array:
     return arr
 
 
-def build_c_int_array(values: List[int]) -> ctypes.Array:
+def build_c_int_array(values: Sequence[int]) -> ctypes.Array:
     """Convert a list of numbers to a ctypes c_int array.
 
     :param values: A list of ints.
@@ -98,7 +98,7 @@ def build_c_int_array(values: List[int]) -> ctypes.Array:
     return arr
 
 
-def build_c_string_array(values: Union[List[str], Tuple[str]]) -> ctypes.Array:
+def build_c_string_array(values: Sequence[str]) -> ctypes.Array:
     """Convert a list of strings to a ctypes c_char_p array.
 
     :param values: A list of strings.
@@ -111,7 +111,7 @@ def build_c_string_array(values: Union[List[str], Tuple[str]]) -> ctypes.Array:
     return arr
 
 
-def clean_string_values(values: List[str]) -> Tuple[str]:
+def clean_string_values(values: List[str]) -> Tuple[str, ...]:
     """Process a string list, remove empty strings, and convert to utf-8.
 
     :param values: A list of strings to clean.
@@ -363,7 +363,7 @@ def get_group_type(group: Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup]) -
 
 def get_multiparm_containing_folders(
     name: str, parm_template_group: hou.ParmTemplateGroup
-) -> Tuple[hou.FolderParmTemplate]:
+) -> Tuple[hou.FolderParmTemplate, ...]:
     """Given a parameter template name, return a list of containing multiparms.
 
     If the name is contained in one or more multiparm folders, the returned templates
@@ -406,7 +406,7 @@ def get_multiparm_containing_folders(
 
 def get_multiparm_container_offsets(
     name: str, parm_template_group: hou.ParmTemplateGroup
-) -> Tuple[int]:
+) -> Tuple[int, ...]:
     """Given a parameter template name, return a list of containing multiparm folder
     offsets.
 
@@ -456,7 +456,7 @@ def get_multiparm_start_offset(parm_template: hou.ParmTemplate) -> int:
     return int(parm_template.tags().get("multistartoffset", 1))
 
 
-def get_nodes_from_paths(paths: List[str]) -> Tuple[hou.Node]:
+def get_nodes_from_paths(paths: List[str]) -> Tuple[hou.Node, ...]:
     """Convert a list of string paths to hou.Node objects.
 
     :param paths: A list of paths.
@@ -468,7 +468,7 @@ def get_nodes_from_paths(paths: List[str]) -> Tuple[hou.Node]:
 
 def get_points_from_list(
     geometry: hou.Geometry, point_list: List[int]
-) -> Tuple[hou.Point]:
+) -> Tuple[hou.Point, ...]:
     """Convert a list of point numbers to hou.Point objects.
 
     :param geometry: The geometry to get points for.
@@ -489,7 +489,7 @@ def get_points_from_list(
 
 def get_prims_from_list(
     geometry: hou.Geometry, prim_list: List[int]
-) -> Tuple[hou.Prim]:
+) -> Tuple[hou.Prim, ...]:
     """Convert a list of primitive numbers to hou.Prim objects.
 
     :param geometry: The geometry to get prims for.
@@ -548,7 +548,7 @@ def string_encode(value: Union[float, int, str]) -> bytes:
     return str(value).encode("utf-8")
 
 
-def validate_multiparm_resolve_values(name: str, indices: Union[List[int], Tuple[int]]):
+def validate_multiparm_resolve_values(name: str, indices: Sequence[int]):
     """Validate a multiparm token string and the indices to be resolved.
 
     This function will raise a ValueError if there are not enough indices

@@ -7,6 +7,7 @@
 # Standard Library Imports
 from __future__ import annotations
 import enum
+from typing import Any, Dict, List, Type
 
 # Houdini Toolbox Imports
 from ht.events.item import HoudiniEventItem
@@ -21,7 +22,7 @@ from ht.events.stats import HoudiniEventStats
 class HoudiniEventFactory:
     """Class responsible for determining event classes."""
 
-    _mappings = {}
+    _mappings: Dict[enum.Enum, Type[HoudiniEvent]] = {}
 
     # -------------------------------------------------------------------------
     # SPECIAL METHODS
@@ -47,7 +48,7 @@ class HoudiniEventFactory:
         cls = HoudiniEventFactory._mappings.get(event)
 
         if cls is not None:
-            return cls()
+            return cls(event.value)
 
         return HoudiniEvent(event.value)
 
@@ -61,10 +62,10 @@ class HoudiniEvent:
     """
 
     def __init__(self, name: str):
-        self._data = {}
+        self._data: Dict[Any, Any] = dict()
         self._enabled = True
         self._name = name
-        self._item_map = {}
+        self._item_map: Dict[int, List[HoudiniEventItem]] = dict()
 
         self._stats = HoudiniEventStats(name)
 
@@ -95,7 +96,7 @@ class HoudiniEvent:
 
     @property
     def item_map(self) -> dict:
-        """dict: Internal event map used to register the functions of this event."""
+        """Internal event map used to register the functions of this event."""
         return self._item_map
 
     @property

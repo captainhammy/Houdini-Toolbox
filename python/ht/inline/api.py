@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     GeometryEntity = Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex]
     GeometryEntityList = List[GeometryEntity]
     ElementGroupList = List[Union[hou.PointGroup, hou.PrimGroup, hou.VertexGroup]]
-    StringTuple = Tuple[str]
+    StringTuple = Tuple[str, ...]
 
 
 # =============================================================================
@@ -89,7 +89,7 @@ def _get_names_in_folder(parent_template: hou.FolderParmTemplate) -> StringTuple
     :return: A list of template names inside the template.
 
     """
-    names = []
+    names: List[str] = []
 
     for parm_template in parent_template.parmTemplates():
         if isinstance(parm_template, hou.FolderParmTemplate):
@@ -344,7 +344,7 @@ def emit_var_change():
     _cpp_methods.emitVarChange()
 
 
-def expand_range(pattern: str) -> Tuple[int]:
+def expand_range(pattern: str) -> Tuple[int, ...]:
     """Expand a string range into a tuple of values.
 
     This function will do string range expansion.  Examples include '0-15',
@@ -468,7 +468,7 @@ def create_point_at_position(
     return geometry.iterPoints()[-1]
 
 
-def create_n_points(geometry: hou.Geometry, npoints: int) -> Tuple[hou.Point]:
+def create_n_points(geometry: hou.Geometry, npoints: int) -> Tuple[hou.Point, ...]:
     """Create a specific number of new points.
 
     :param geometry: The geometry to create points for.
@@ -977,7 +977,7 @@ def copy_packed_prims_to_points(  # pylint: disable=too-many-arguments
         )
 
 
-def point_adjacent_polygons(prim: hou.Prim) -> Tuple[hou.Prim]:
+def point_adjacent_polygons(prim: hou.Prim) -> Tuple[hou.Prim, ...]:
     """Get all prims that are adjacent to the prim through a point.
 
     :param prim: The source primitive.
@@ -993,7 +993,7 @@ def point_adjacent_polygons(prim: hou.Prim) -> Tuple[hou.Prim]:
     return utils.get_prims_from_list(geometry, result)
 
 
-def edge_adjacent_polygons(prim: hou.Prim) -> Tuple[hou.Prim]:
+def edge_adjacent_polygons(prim: hou.Prim) -> Tuple[hou.Prim, ...]:
     """Get all prims that are adjacent to the prim through an edge.
 
     :param prim: The source primitive.
@@ -1009,7 +1009,7 @@ def edge_adjacent_polygons(prim: hou.Prim) -> Tuple[hou.Prim]:
     return utils.get_prims_from_list(geometry, result)
 
 
-def connected_points(point: hou.Point) -> Tuple[hou.Point]:
+def connected_points(point: hou.Point) -> Tuple[hou.Point, ...]:
     """Get all points that share an edge with the point.
 
     :param point: The source point.
@@ -1026,7 +1026,7 @@ def connected_points(point: hou.Point) -> Tuple[hou.Point]:
     return utils.get_points_from_list(geometry, result)
 
 
-def prims_connected_to_point(point: hou.Point) -> Tuple[hou.Prim]:
+def prims_connected_to_point(point: hou.Point) -> Tuple[hou.Prim, ...]:
     """Get all primitives that reference the point.
 
     :param point: The source point.
@@ -1042,7 +1042,7 @@ def prims_connected_to_point(point: hou.Point) -> Tuple[hou.Prim]:
     return utils.get_prims_from_list(geometry, result)
 
 
-def referencing_vertices(point: hou.Point) -> Tuple[hou.Vertex]:
+def referencing_vertices(point: hou.Point) -> Tuple[hou.Vertex, ...]:
     """Get all the vertices referencing the point.
 
     :param point: The source point.
@@ -1065,7 +1065,7 @@ def referencing_vertices(point: hou.Point) -> Tuple[hou.Vertex]:
     return geometry.globVertices(" ".join(vertex_strings))
 
 
-def string_table_indices(attrib: hou.Attrib) -> Tuple[int]:
+def string_table_indices(attrib: hou.Attrib) -> Tuple[int, ...]:
     """Return at tuple of string attribute table indices.
 
     String attributes are stored using integers referencing a table of
@@ -1175,6 +1175,8 @@ def set_shared_point_string_attrib(
     if attribute.dataType() != hou.attribData.String:
         raise ValueError("Attribute must be a string.")
 
+    group_name: Union[bytes, int]  # Can be a valid name or 0 to indicate no name.
+
     # If the group is valid use that group's name.
     if group:
         group_name = utils.string_encode(group.name())
@@ -1218,6 +1220,8 @@ def set_shared_prim_string_attrib(
 
     if attribute.dataType() != hou.attribData.String:
         raise ValueError("Attribute must be a string.")
+
+    group_name: Union[bytes, int]  # Can be a valid name or 0 to indicate no name.
 
     # If the group is valid use that group's name.
     if group:
@@ -1275,7 +1279,7 @@ def face_has_edge(face: hou.Face, point1: hou.Point, point2: hou.Point) -> bool:
     )
 
 
-def shared_edges(face1: hou.Face, face2: hou.Face) -> Tuple[hou.Edge]:
+def shared_edges(face1: hou.Face, face2: hou.Face) -> Tuple[hou.Edge, ...]:
     """Get a tuple of any shared edges between two primitives.
 
     :param face1: The face to check for shared edges.
@@ -1465,7 +1469,7 @@ def geometry_has_prims_with_shared_vertex_points(geometry: hou.Geometry) -> bool
     return _cpp_methods.hasPrimsWithSharedVertexPoints(geometry)
 
 
-def get_primitives_with_shared_vertex_points(geometry: hou.Geometry) -> Tuple[hou.Prim]:
+def get_primitives_with_shared_vertex_points(geometry: hou.Geometry) -> Tuple[hou.Prim, ...]:
     """Get any primitives in the geometry which have more than one vertex
     referencing the same point.
 
@@ -2023,7 +2027,7 @@ def eval_parm_tuple_as_color(parm_tuple: hou.ParmTuple) -> hou.Color:
     return hou.Color(parm_tuple.eval())
 
 
-def eval_parm_as_strip(parm: hou.Parm) -> Tuple[bool]:
+def eval_parm_as_strip(parm: hou.Parm) -> Tuple[bool, ...]:
     """Evaluate the parameter as a Button/Icon Strip.
 
     Returns a tuple of True/False values indicated which buttons
@@ -2066,7 +2070,7 @@ def eval_parm_as_strip(parm: hou.Parm) -> Tuple[bool]:
     return tuple(values)
 
 
-def eval_parm_strip_as_string(parm: hou.Parm) -> Tuple[str]:
+def eval_parm_strip_as_string(parm: hou.Parm) -> StringTuple:
     """Evaluate the parameter as a Button Strip as strings.
 
     Returns a tuple of the string tokens which are enabled.
@@ -2103,7 +2107,7 @@ def is_parm_multiparm(parm: Union[hou.Parm, hou.ParmTuple]) -> bool:
 
 def get_multiparm_instance_indices(
     parm: Union[hou.Parm, hou.ParmTuple], instance_index: bool = False
-) -> Tuple[int]:
+) -> Tuple[int, ...]:
     """Get the multiparm instance indices for this parameter tuple.
 
     If this parameter tuple is part of a multiparm, then its index in the
@@ -2188,7 +2192,7 @@ def get_multiparm_siblings(parm: Union[hou.Parm, hou.ParmTuple]) -> dict:
 
 
 def resolve_multiparm_tokens(
-    name: str, indices: Union[int, List[int], Tuple[int]]
+    name: str, indices: Union[int, List[int], Tuple[int, ...]]
 ) -> str:
     """Resolve a multiparm token string with the supplied indices.
 
@@ -2203,11 +2207,11 @@ def resolve_multiparm_tokens(
 
     utils.validate_multiparm_resolve_values(name, indices)
 
-    indices = utils.build_c_int_array(indices)
+    c_indices = utils.build_c_int_array(indices)
 
     return utils.string_decode(
         _cpp_methods.resolve_multiparm_tokens(
-            utils.string_encode(name), indices, len(indices)
+            utils.string_encode(name), c_indices, len(c_indices)
         )
     )
 
@@ -2305,7 +2309,7 @@ def eval_multiparm_instance(
 
 def unexpanded_string_multiparm_instance(
     node: hou.Node, name: str, indices: Union[List[int], int], raw_indices: bool = False
-) -> Union[Tuple[str], str]:
+) -> Union[StringTuple, str]:
     """Get the unexpanded string of a multiparm parameter by index.
 
     The name should include the # value which will be replaced by the index.
@@ -2404,7 +2408,7 @@ def disconnect_all_outputs(node: hou.Node):
             connection.outputNode().setInput(connection.inputIndex(), None)
 
 
-def get_node_message_nodes(node: hou.Node) -> Tuple[hou.Node]:
+def get_node_message_nodes(node: hou.Node) -> Tuple[hou.Node, ...]:
     """Get a list of the node's message nodes.
 
     :param node: The node to get the message nodes for.
@@ -2426,7 +2430,7 @@ def get_node_message_nodes(node: hou.Node) -> Tuple[hou.Node]:
     return tuple()
 
 
-def get_node_editable_nodes(node: hou.Node) -> Tuple[hou.Node]:
+def get_node_editable_nodes(node: hou.Node) -> Tuple[hou.Node, ...]:
     """Get a list of the node's editable nodes.
 
     :param node: The node to get the editable nodes for.
@@ -2856,7 +2860,7 @@ def remove_meta_source(meta_source: str) -> bool:
     return _cpp_methods.removeMetaSource(utils.string_encode(meta_source))
 
 
-def libraries_in_meta_source(meta_source: str) -> Tuple[str]:
+def libraries_in_meta_source(meta_source: str) -> StringTuple:
     """Get a list of library paths in a meta source.
 
     :param meta_source: The meta source name.

@@ -52,7 +52,7 @@ class IpOverrides(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @property
-    def bucket_size(self) -> int:
+    def bucket_size(self) -> Optional[int]:
         """Set the bucket rendering size."""
         return self._bucket_size
 
@@ -92,17 +92,17 @@ class IpOverrides(PyFilterOperation):
         return self._disable_tilecallback
 
     @property
-    def res_scale(self) -> float:
+    def res_scale(self) -> Optional[float]:
         """Amount to scale the image resolution by."""
         return self._res_scale
 
     @property
-    def sample_scale(self) -> float:
+    def sample_scale(self) -> Optional[float]:
         """Amount to scale the pixel sample count by."""
         return self._sample_scale
 
     @property
-    def transparent_samples(self) -> int:
+    def transparent_samples(self) -> Optional[int]:
         """Number of transparent samples."""
         return self._transparent_samples
 

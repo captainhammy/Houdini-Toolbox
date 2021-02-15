@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Standard Library Imports
-from typing import List, Optional, Tuple
+from typing import Optional, Sequence, Tuple
 
 # Third Party Imports
 import numpy
@@ -88,7 +88,7 @@ class PointCloud:
     # NON-PUBLIC METHODS
     # -------------------------------------------------------------------------
 
-    def _get_result_points(self, indexes: List[int]) -> Tuple[hou.Point]:
+    def _get_result_points(self, indexes: Sequence[int]) -> Tuple[hou.Point, ...]:
         """This method converts a list of integers into corresponding hou.Point
         objects belonging to the geometry depending on whether a point map is
         being used.
@@ -115,7 +115,7 @@ class PointCloud:
 
     def find_all_close_points(
         self, position: hou.Vector3, maxdist: float
-    ) -> Tuple[hou.Point]:
+    ) -> Tuple[hou.Point, ...]:
         """Find all points within the maxdist from the position.
 
         :param position: A search position.
@@ -142,7 +142,7 @@ class PointCloud:
         position: hou.Vector3,
         num_points: int = 1,
         maxdist: Optional[float] = None,
-    ) -> Tuple[hou.Point]:
+    ) -> Tuple[hou.Point, ...]:
         """Find the closest N points to the position.
 
         :param position: A search position.

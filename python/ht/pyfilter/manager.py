@@ -12,7 +12,7 @@ import argparse
 import importlib
 import json
 import logging
-from typing import TYPE_CHECKING, List, Tuple, Type
+from typing import TYPE_CHECKING, List, Optional, Tuple, Type
 
 if TYPE_CHECKING:
     from ht.pyfilter.operations.operation import PyFilterOperation
@@ -197,7 +197,7 @@ def _find_operation_files() -> Tuple[str]:
     return files
 
 
-def _get_class(module_name: str, class_name: str) -> Type:
+def _get_class(module_name: str, class_name: str) -> Optional[Type]:
     """Try to import class_name from module_name.
 
     :param module_name: The name of the module containing the class.

@@ -48,7 +48,7 @@ class SetPrimaryImage(PyFilterOperation):
         return self._disable_primary_image
 
     @property
-    def primary_image_path(self) -> str:
+    def primary_image_path(self) -> Optional[str]:
         """The primary image path to set."""
         return self._primary_image_path
 

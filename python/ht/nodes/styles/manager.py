@@ -465,7 +465,7 @@ def _build_color(rule: dict) -> Union[Tuple[hou.Color, str], Tuple[None, None]]:
     return color, data[constants.RULE_COLOR_TYPE_KEY]
 
 
-def _build_shape(rule: dict) -> str:
+def _build_shape(rule: dict) -> Optional[str]:
     """Build shape information.
 
     :param rule: Style information
@@ -477,7 +477,7 @@ def _build_shape(rule: dict) -> str:
     return shape
 
 
-def _find_files() -> Tuple[str]:
+def _find_files() -> Tuple[str, ...]:
     """Find any .json files that should be read.
 
     :return: Any found style files.
@@ -497,7 +497,7 @@ def _find_files() -> Tuple[str]:
     return tuple(str(f) for f in all_files)
 
 
-def _get_tool_menu_locations(node_type: hou.NodeType) -> Tuple[str]:
+def _get_tool_menu_locations(node_type: hou.NodeType) -> Tuple[str, ...]:
     """Get any Tab menu locations the tool for the node type lives in.
 
     :param node_type: A node type to get Tab menu locations for

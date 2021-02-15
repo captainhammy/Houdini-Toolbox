@@ -31,7 +31,7 @@ if platform.system() == "Windows":
 
 else:
     _CONTEXT_SEP = ":"
-    from pwd import getpwuid
+    from pwd import getpwuid  # type: ignore
 
 
 # ==============================================================================
@@ -288,7 +288,7 @@ class HomeDirSource(CopyPasteSource):
         :return:
 
         """
-        context_sources = self.sources.get(item.context, {})
+        context_sources = self.sources.get(item.context, [])
 
         if item in context_sources:
             item.destroy()
@@ -299,7 +299,6 @@ class HomeDirSource(CopyPasteSource):
 
         :param context: An operator context name.
         :return: Available sources for the context.
-
 
         """
         return self.sources.get(context, [])
@@ -538,17 +537,17 @@ class CPIOContextCopyPasteItemFile(CopyPasteItemSource):
     # -------------------------------------------------------------------------
 
     @property
-    def author(self) -> str:
+    def author(self) -> Optional[str]:
         """The name of the item author."""
         return self._author
 
     @property
-    def date(self) -> datetime.datetime:
+    def date(self) -> Optional[datetime.datetime]:
         """The date of creation."""
         return self._date
 
     @property
-    def description(self) -> str:
+    def description(self) -> Optional[str]:
         """The item description."""
         return self._description
 

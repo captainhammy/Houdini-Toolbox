@@ -257,10 +257,11 @@ def _install_handler(args: argparse.Namespace):
     if result is None:
         print("Could not find installable build {}".format(args.version))
 
-    result.install(not args.no_symlink)
+    else:
+        result.install(not args.no_symlink)
 
 
-def _print_local_build_list(build_list: List[ht.machinery.package.HoudiniBase], message: str):
+def _print_local_build_list(build_list: List[ht.machinery.package.HoudiniBuildType], message: str):
     """Print a list of local builds.
 
     :param build_list: A list of builds on disk.

@@ -17,7 +17,7 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, TypeVar
 
 # Houdini Toolbox Imports
 from ht.machinery import sidefx_web_api
@@ -147,7 +147,7 @@ class HoudiniBase:
         return self._build
 
     @property
-    def candidate(self) -> int:
+    def candidate(self) -> Optional[int]:
         """The release candidate number for this build. """
         return self._candidate
 
@@ -185,12 +185,12 @@ class HoudiniBase:
         return os.path.expandvars(self._plugin_path)
 
     @property
-    def product(self) -> str:
+    def product(self) -> Optional[str]:
         """The optional extra product."""
         return self._product
 
     @property
-    def version(self) -> Tuple[int]:
+    def version(self) -> Tuple[int, ...]:
         """A tuple containing version information."""
         version = [self.major, self.minor, self.build]
 
@@ -275,7 +275,7 @@ class HoudiniBuildData:
 
         return self._types[system]["ext"]
 
-    def get_install_args(self, major_minor: str, extract_path: str) -> Tuple[str]:
+    def get_install_args(self, major_minor: str, extract_path: str) -> Tuple[str, ...]:
         """Get installer args.
 
         :param major_minor: The base version to install.
@@ -285,7 +285,7 @@ class HoudiniBuildData:
         """
         system = platform.system()
 
-        all_args = []
+        all_args: List[str] = list()
 
         # Try to get any installer args for the current system.
         all_args.extend(_flatten_items(self._types[system].get("installer_args", [])))
@@ -647,6 +647,9 @@ class HoudiniInstallFile(HoudiniBase):
 
         result = re.match(pattern, os.path.basename(path))
 
+        if result is None:
+            raise RuntimeError("Could not determine build data from {}".format(path))
+
         product = result.group(1)
 
         if product is not None:
@@ -667,11 +670,11 @@ class HoudiniInstallFile(HoudiniBase):
     # NON-PUBLIC METHODS
     # -------------------------------------------------------------------------
 
-    def _install_linux(self, install_path: str, link_path: str):
+    def _install_linux(self, install_path: str, link_path: str = None):
         """Install the build on linux.
 
         :param install_path: The path to install to.
-        :param link_path: The symlink path.
+        :param link_path: Optional symlink path.
         :return:
 
         """
@@ -747,7 +750,7 @@ class HoudiniInstallFile(HoudiniBase):
 
         link_path = None
 
-        if create_symlink:
+        if create_symlink and self._link_name is not None:
             link_path = os.path.join(
                 self._install_target, self.format_string(self._link_name)
             )
@@ -789,7 +792,7 @@ class HoudiniInstallationSettings:
     # -------------------------------------------------------------------------
 
     @property
-    def link_name(self) -> str:
+    def link_name(self) -> Optional[str]:
         """The name of the symlink, if any."""
         return self._link_name
 
@@ -977,6 +980,9 @@ class InstalledHoudiniBuild(HoudiniBase):
 
         result = re.match(pattern, os.path.basename(path))
 
+        if result is None:
+            raise RuntimeError("Could not determine build data from {}".format(path))
+
         # Extract the build version numbers from the directory name.
         version_string = result.group(1)
         product = result.group(2)
@@ -1097,7 +1103,7 @@ class UnsupportedOSError(HoudiniPackageError):
 # =============================================================================
 
 
-def _flatten_items(items: List) -> List:
+def _flatten_items(items: List[str]) -> List[str]:
     """Flatten a list of items.
 
     :param items: A list of items to flatted.
@@ -1199,12 +1205,12 @@ def _set_variable(name: str, value: Any):
 
 
 def find_matching_builds(
-    match_string: str, builds: List[Union[HoudiniInstallFile, InstalledHoudiniBuild]]
-) -> Union[HoudiniInstallFile, InstalledHoudiniBuild, None]:
+    match_string: str, builds: Sequence[HoudiniBuildType]
+) -> Optional[HoudiniBuildType]:
     """Find a matching build given a string and list of builds.
 
     :param match_string: The string to match against.
-    :param builds: Installed builds to match against.
+    :param builds: Builds to match against.
     :return: A matching build.
 
     """
@@ -1236,3 +1242,5 @@ def find_matching_builds(
 
 # Build settings for common use by all Houdini objects.
 _SETTINGS_MANAGER = HoudiniSettingsManager()
+
+HoudiniBuildType = TypeVar("HoudiniBuildType", bound=HoudiniBase)

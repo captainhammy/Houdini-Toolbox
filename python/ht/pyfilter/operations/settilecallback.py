@@ -40,7 +40,7 @@ class SetTileCallback(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @property
-    def tilecallback(self) -> str:
+    def tilecallback(self) -> Optional[str]:
         """The path to the tile callback."""
         return self._tilecallback
 

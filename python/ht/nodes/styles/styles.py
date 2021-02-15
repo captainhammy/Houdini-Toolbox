@@ -32,9 +32,9 @@ class StyleConstant:
     def __init__(
         self,
         name: str,
-        color,
+        color: hou.Color,
         color_type: str,
-        shape: str,
+        shape: Optional[str] = None,
         file_path: Optional[str] = None,
     ):
         self._color = color
@@ -99,7 +99,7 @@ class StyleConstant:
     # -------------------------------------------------------------------------
 
     @property
-    def shape(self) -> str:
+    def shape(self) -> Optional[str]:
         """The mapped shape."""
         return self._shape
 
@@ -138,7 +138,7 @@ class StyleRule:
         name: str,
         color: hou.Color,
         color_type: str,
-        shape: str,
+        shape: Optional[str] = None,
         file_path: Optional[str] = None,
     ):
         self._color = color
@@ -206,7 +206,7 @@ class StyleRule:
         return self._color_type
 
     @property
-    def shape(self) -> str:
+    def shape(self) -> Optional[str]:
         """The mapped shape name."""
         return self._shape
 

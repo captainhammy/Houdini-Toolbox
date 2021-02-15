@@ -101,17 +101,17 @@ class SetDeepImage(PyFilterOperation):
         return self._all_passes
 
     @property
-    def compositing(self) -> int:
+    def compositing(self) -> Optional[int]:
         """Pre-composite the samples."""
         return self._compositing
 
     @property
-    def deepcompression(self) -> int:
+    def deepcompression(self) -> Optional[int]:
         """Compression value."""
         return self._deepcompression
 
     @property
-    def depth_planes(self) -> str:
+    def depth_planes(self) -> Optional[str]:
         """Special planes."""
         return self._depth_planes
 
@@ -121,37 +121,37 @@ class SetDeepImage(PyFilterOperation):
         return self._disable_deep_image
 
     @property
-    def filename(self) -> str:
+    def filename(self) -> Optional[str]:
         """The deep image path to set."""
         return self._filename
 
     @property
-    def mipmaps(self) -> int:
+    def mipmaps(self) -> Optional[int]:
         """Create MIP mapped images."""
         return self._mipmaps
 
     @property
-    def ofsize(self) -> int:
+    def ofsize(self) -> Optional[int]:
         """The opacity storage size."""
         return self._ofsize
 
     @property
-    def ofstorage(self) -> str:
+    def ofstorage(self) -> Optional[str]:
         """The opacity bit depth."""
         return self._ofstorage
 
     @property
-    def pzstorage(self) -> str:
+    def pzstorage(self) -> Optional[str]:
         """The depth bit depth."""
         return self._pzstorage
 
     @property
-    def resolver(self) -> str:
+    def resolver(self) -> Optional[str]:
         """The type of deep to generate."""
         return self._resolver
 
     @property
-    def zbias(self) -> float:
+    def zbias(self) -> Optional[float]:
         """Compression bias."""
         return self._zbias
 

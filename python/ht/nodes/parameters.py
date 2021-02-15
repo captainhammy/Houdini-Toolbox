@@ -19,7 +19,7 @@ import hou
 
 def _find_parameters_with_value(
     target_value: str, check_func: Callable
-) -> Tuple[hou.Parm]:
+) -> Tuple[hou.Parm, ...]:
     """Find parameters which contain the target value.
 
     :param target_value: The string value to search for.
@@ -64,7 +64,7 @@ def _find_parameters_with_value(
 # =============================================================================
 
 
-def find_parameters_using_variable(variable: str) -> Tuple[hou.Parm]:
+def find_parameters_using_variable(variable: str) -> Tuple[hou.Parm, ...]:
     """Find parameters which contain a variable.
 
     This only works for string parameters
@@ -97,7 +97,7 @@ def find_parameters_using_variable(variable: str) -> Tuple[hou.Parm]:
     return _find_parameters_with_value(search_variable, _checker)
 
 
-def find_parameters_with_value(target_value: str) -> Tuple[hou.Parm]:
+def find_parameters_with_value(target_value: str) -> Tuple[hou.Parm, ...]:
     """Find parameters which contain the target value.
 
     This only works for string parameters.

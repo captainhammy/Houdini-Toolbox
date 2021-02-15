@@ -82,8 +82,8 @@ def find_current_pane_tab(scriptargs: dict) -> Optional[hou.NetworkEditor]:
 def paste_items_from_sources(
     sources: List[CopyPasteItemSource],
     editor: hou.NetworkEditor,
-    pos: Optional[List[float, float]] = None,
-    mousepos: Optional[List[float, float]] = None,
+    pos: Optional[List[float]] = None,
+    mousepos: Optional[List[float]] = None,
 ):
     """Paste sources to the current location.
 

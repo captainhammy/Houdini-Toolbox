@@ -12,7 +12,7 @@ from __future__ import annotations
 import glob
 import json
 import os
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, TypedDict, Union
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
@@ -274,7 +274,7 @@ class AOVManager:
         self._aovs.clear()
         self._groups.clear()
 
-    def get_aovs_from_string(self, aov_str: str) -> Tuple[Union[AOV, AOVGroup]]:
+    def get_aovs_from_string(self, aov_str: str) -> Tuple[Union[AOV, AOVGroup], ...]:
         """Get a list of AOVs and AOVGroups from a string.
 
         :param aov_str: A string containing aov/group names.
@@ -356,9 +356,9 @@ class AOVFile:
     def __init__(self, path: str):
         self._path = path
 
-        self._aovs = []
-        self._data = {}
-        self._groups = []
+        self._aovs: List[AOV] = list()
+        self._data: Dict[Any, Any] = dict()
+        self._groups: List[AOVGroup] = list()
 
         if self.exists:
             self._init_from_file()
@@ -546,17 +546,17 @@ class AOVFile:
         :return:
 
         """
-        data = {}
+        data: Dict[str, Union[Dict, List]] = dict()
 
         for group in self.groups:
             group_data = data.setdefault(consts.FILE_GROUPS_KEY, {})
 
-            group_data.update(group.as_data())
+            group_data.update(group.as_data())  # type: ignore
 
         for aov in self.aovs:
             aov_data = data.setdefault(consts.FILE_DEFINITIONS_KEY, [])
 
-            aov_data.append(aov.as_data())
+            aov_data.append(aov.as_data())  # type: ignore
 
         if path is None:
             path = self.path
@@ -570,7 +570,7 @@ class AOVFile:
 # =============================================================================
 
 
-def _find_aov_files() -> Tuple[str]:
+def _find_aov_files() -> Tuple[str, ...]:
     """Find any .json files that should be read.
 
     :return: json files to be read.
@@ -591,7 +591,7 @@ def _find_aov_files() -> Tuple[str]:
     return tuple(str(f) for f in all_files)
 
 
-def _find_houdinipath_aov_folders() -> Tuple[str]:
+def _find_houdinipath_aov_folders() -> Tuple[str, ...]:
     """Look for any config/aovs folders in the HOUDINI_PATH.
 
     :return: Folder paths to search.
@@ -607,7 +607,7 @@ def _find_houdinipath_aov_folders() -> Tuple[str]:
     return directories
 
 
-def _get_aov_path_folders() -> Tuple[str]:
+def _get_aov_path_folders() -> Tuple[str, ...]:
     """Get a list of paths to search from HT_AOV_PATH.
 
     :return: Folder paths to search.
@@ -634,7 +634,7 @@ def _get_aov_path_folders() -> Tuple[str]:
 # =============================================================================
 
 
-def build_menu_script() -> Tuple[str]:
+def build_menu_script() -> Tuple[str, ...]:
     """Build a menu script for choosing AOVs and groups.
 
     :return: The menu script.
@@ -654,7 +654,7 @@ def build_menu_script() -> Tuple[str]:
     return tuple(menu)
 
 
-def flatten_aov_items(items: Tuple[Union[AOV, AOVGroup]]) -> Tuple[AOV]:
+def flatten_aov_items(items: Tuple[Union[AOV, AOVGroup], ...]) -> Tuple[AOV, ...]:
     """Flatten a list that contains AOVs and groups into a list of all AOVs.
 
     :param items: A list of items to flatten,

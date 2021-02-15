@@ -7,7 +7,7 @@
 # Standard Library Imports
 from __future__ import annotations
 import re
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List, Optional, Union
 
 # Third Party Imports
 from PySide2 import QtCore, QtGui, QtWidgets
@@ -67,7 +67,7 @@ class BasicSourceItemTable(QtWidgets.QTableView):
         self,
         source: CopyPasteSource,
         context: str,
-        selection_mode: Optional[
+        selection_mode: Union[
             QtWidgets.QAbstractItemView.SelectionMode
         ] = QtWidgets.QAbstractItemView.SingleSelection,
         allow_double_click: bool = False,
