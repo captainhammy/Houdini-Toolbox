@@ -6,14 +6,16 @@
 
 # Standard Library Imports
 from __future__ import annotations
-from collections import OrderedDict
+import collections
 from contextlib import contextmanager
 import logging
 import time
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, OrderedDict,Tuple, Type, TypeVar
 
 _logger = logging.getLogger(__name__)
 
+
+ItemStatsType = TypeVar("ItemStatsType", bound="HoudiniEventStats")
 
 # =============================================================================
 # CLASSES
@@ -28,7 +30,7 @@ class _StatsMeta(type):
     """
 
     # Dict of stats classes and their instances.
-    INSTANCES = {}
+    INSTANCES: Dict[Type, Dict] = {}
 
     # -------------------------------------------------------------------------
     # SPECIAL METHODS
@@ -93,7 +95,7 @@ class HoudiniEventStats(metaclass=_StatsMeta):
     """
 
     def __init__(
-        self, name: str, tags: Optional[List[str]] = None, post_report: bool = False
+        self, name: Optional[str] = None, tags: Optional[List[str]] = None, post_report: bool = False
     ):
         self._last_run_time = 0
         self._last_started = 0
@@ -142,7 +144,7 @@ class HoudiniEventStats(metaclass=_StatsMeta):
         return self._last_run_time
 
     @property
-    def name(self) -> str:
+    def name(self) -> Optional[str]:
         """The stats name."""
         return self._name
 
@@ -202,11 +204,11 @@ class HoudiniEventItemStats(HoudiniEventStats):
     """
 
     def __init__(
-        self, name: str, tags: Optional[List[str]] = None, post_report: bool = False
+        self, name: Optional[str] = None, tags: Optional[List[str]] = None, post_report: bool = False
     ):
         super().__init__(name, tags=tags, post_report=post_report)
 
-        self._item_stats = OrderedDict()
+        self._item_stats: OrderedDict = collections.OrderedDict()
 
     # -------------------------------------------------------------------------
     # PROPERTIES
@@ -273,8 +275,8 @@ class HoudiniEventItemStats(HoudiniEventStats):
 
 
 def _get_matching_stats(
-    stats: Union[List[HoudiniEventStats], List[HoudiniEventItemStats]], tags: List[str]
-) -> Union[Tuple[HoudiniEventStats, ...], Tuple[HoudiniEventItemStats, ...]]:
+    stats: List[ItemStatsType], tags: List[str]
+) -> Tuple[ItemStatsType, ...]:
     """Filter a list of stats for ones which match the tags.
 
     :param stats: An list of stats objects to search.

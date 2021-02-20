@@ -179,7 +179,7 @@ def promote_parameter_to_node(scriptargs: dict):  # pylint: disable=too-many-loc
     # The start node for the node chooser prompt
     start_node = None
 
-    parm_tuple = None
+    parm_tuple: hou.ParmTuple = None
     parm_tuple_map: Dict[hou.ParmTuple, List[hou.Parm]] = {}
     parm_tuple_nodes = []
 

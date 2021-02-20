@@ -7,7 +7,7 @@
 # Standard Library Imports
 from __future__ import annotations
 from operator import attrgetter
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 
 # Third Party Imports
 from PySide2 import QtCore
@@ -18,7 +18,7 @@ from ht.ui.paste import utils
 if TYPE_CHECKING:
     # pylint: disable=ungrouped-imports
     from PySide2 import QtWidgets
-    from ht.ui.paste.sources import CopyPasteSource
+    from ht.ui.paste.sources import CopyPasteSource, CopyPasteItemSource
 
 # ==============================================================================
 # CLASSES
@@ -47,7 +47,7 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
         self.context = context
         self.source = source
 
-        self.items = []
+        self.items: List[CopyPasteItemSource] = []
 
         self.refresh()
 

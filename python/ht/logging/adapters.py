@@ -8,7 +8,7 @@
 from __future__ import annotations
 from contextlib import contextmanager
 import logging
-from typing import Optional, Tuple
+from typing import Any, Dict, MutableMapping, Optional, Tuple
 
 # Third Party Imports
 # NOTE: Must use logquacious until in Python 3.8 as that is the version that adds
@@ -41,9 +41,9 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         self,
         base_logger: logging.Logger,
         dialog: bool = False,
-        node: Optional[hou.Node] = None,
+        node: hou.Node = None,
         status_bar: bool = False,
-    ):
+    ) -> None:
         super().__init__(base_logger, {})
 
         self._dialog = dialog
@@ -59,7 +59,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         cls,
         name: str,
         dialog: bool = False,
-        node: Optional[hou.Node] = None,
+        node: hou.Node = None,
         status_bar: bool = False,
     ) -> HoudiniLoggerAdapter:
         """Create a new HoudiniLoggerAdapter from a name.
@@ -120,7 +120,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
     # METHODS
     # --------------------------------------------------------------------------
 
-    def process(self, msg: str, kwargs: dict) -> Tuple[str, dict]:
+    def process(self, msg: str, kwargs: Any) -> Tuple[str, Any]:
         """Override process() function to possibly insert a node path or to
         display a dialog with the log message before being passed to regular
         logging output.
@@ -168,7 +168,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 
         return msg, kwargs
 
-    def critical(self, msg: str, *args, **kwargs):
+    def critical(self, msg: str, *args: Any, **kwargs: Any):
         """Delegate an info call to the underlying logger, after adding
         contextual information from this adapter instance.
 
@@ -179,7 +179,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         with _patch_logger(self.logger):
             self.logger.critical(msg, *args, **kwargs)
 
-    def debug(self, msg: str, *args, **kwargs):
+    def debug(self, msg: str, *args: Any, **kwargs: Any):
         """Delegate an info call to the underlying logger, after adding
         contextual information from this adapter instance.
 
@@ -190,7 +190,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         with _patch_logger(self.logger):
             self.logger.debug(msg, *args, **kwargs)
 
-    def error(self, msg: str, *args, **kwargs):
+    def error(self, msg: str, *args: Any, **kwargs: Any):
         """Delegate an info call to the underlying logger, after adding
         contextual information from this adapter instance.
 
@@ -201,7 +201,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         with _patch_logger(self.logger):
             self.logger.error(msg, *args, **kwargs)
 
-    def exception(self, msg: str, *args, **kwargs):
+    def exception(self, msg: str, *args: Any, **kwargs: Any):
         """Delegate an info call to the underlying logger, after adding
         contextual information from this adapter instance.
 
@@ -214,7 +214,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         with _patch_logger(self.logger):
             self.logger.exception(msg, *args, **kwargs)
 
-    def info(self, msg: str, *args, **kwargs):
+    def info(self, msg: str, *args: Any, **kwargs: Any):
         """Delegate an info call to the underlying logger, after adding
         contextual information from this adapter instance.
 
@@ -225,7 +225,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         with _patch_logger(self.logger):
             self.logger.info(msg, *args, **kwargs)
 
-    def warning(self, msg: str, *args, **kwargs):
+    def warning(self, msg: str, *args: Any, **kwargs: Any):
         """Delegate an info call to the underlying logger, after adding
         contextual information from this adapter instance.
 
@@ -262,7 +262,7 @@ def _patch_logger(logger: logging.Logger):
         logger.__class__ = original_logger_class
 
 
-def _pre_process_args(severity: hou.severityType, args, kwargs):
+def _pre_process_args(severity: hou.severityType, args: Any, kwargs: Any):
     """Pre-process args.
 
     :param severity: The message severity.

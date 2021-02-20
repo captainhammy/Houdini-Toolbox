@@ -7,7 +7,7 @@
 # Standard Library Imports
 from __future__ import annotations
 import copy
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs import constants as consts
@@ -370,7 +370,7 @@ class AOV:
         :return: Data representing this object.
 
         """
-        data = {consts.VARIABLE_KEY: self.variable, consts.VEXTYPE_KEY: self.vextype}
+        data: Dict[str, Any] = {consts.VARIABLE_KEY: self.variable, consts.VEXTYPE_KEY: self.vextype}
 
         if self.channel:
             data[consts.CHANNEL_KEY] = self.channel
@@ -472,8 +472,8 @@ class AOV:
                 plist = cam.wrangle(wrangler, parms, now)
 
                 if plist:
-                    components = plist["vm_exportcomponents"].Value[0]
-                    components = components.split()
+                    export_components = plist["vm_exportcomponents"].Value[0]
+                    components = export_components.split()
 
             # Create a unique channel for each component and output the block.
             for component in components:
@@ -501,10 +501,10 @@ class AOVGroup:
     """
 
     def __init__(self, name: str):
-        self._aovs = []
+        self._aovs: List[AOV] = []
         self._comment = ""
         self._icon = None
-        self._includes = []
+        self._includes: List[str] = []
         self._name = name
         self._path = None
         self._priority = -1
@@ -577,7 +577,7 @@ class AOVGroup:
     # -------------------------------------------------------------------------
 
     @property
-    def icon(self) -> str:
+    def icon(self) -> Optional[str]:
         """Optional path to an icon for this group."""
         return self._icon
 
@@ -602,7 +602,7 @@ class AOVGroup:
     # -------------------------------------------------------------------------
 
     @property
-    def path(self) -> str:
+    def path(self) -> Optional[str]:
         """The path containing the group definition."""
         return self._path
 
@@ -645,7 +645,7 @@ class AOVGroup:
 
         includes.extend([aov.variable for aov in self.aovs])
 
-        data = {consts.GROUP_INCLUDE_KEY: includes}
+        data: Dict[str, Any] = {consts.GROUP_INCLUDE_KEY: includes}
 
         if self.comment:
             data[consts.COMMENT_KEY] = self.comment
@@ -744,12 +744,12 @@ def _build_category_map(lights: List[soho.SohoObject], now: float) -> dict:
     :return: The category map.
 
     """
-    category_map = {}
+    category_map: Dict[Optional[str], List[soho.SohoObject]] = {}
 
     # Process each selected light.
     for light in lights:
         # Get the category for the light.
-        value = []
+        value: List[str] = []
         light.evalString("categories", now, value)
 
         # Light doesn't have a 'categories' parameter.
@@ -757,12 +757,12 @@ def _build_category_map(lights: List[soho.SohoObject], now: float) -> dict:
             continue
 
         # Get the raw string.
-        categories = value[0]
+        categories_value = value[0]
 
         # Since the categories value can be space or comma
         # separated we replace the commas with spaces then split.
-        categories = categories.replace(",", " ")
-        categories = categories.split()
+        categories_value = categories_value.replace(",", " ")
+        categories = categories_value.split()
 
         # If the categories list was empty, put the light in a fake
         # category.
@@ -917,7 +917,7 @@ def _write_light(
     # parameter.  If it doesn't exist, use an empty string.
     suffix = light.getDefaultedString("vm_export_suffix", now, [""])[0]
 
-    prefix = []
+    prefix: List[str] = []
 
     # Look for the prefix parameter.  If it doesn't exist, use
     # the light's name and replace the '/' with '_'.  The

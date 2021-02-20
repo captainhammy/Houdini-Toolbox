@@ -12,7 +12,7 @@ from __future__ import annotations
 import glob
 import json
 import os
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 # Houdini Toolbox Imports
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
@@ -282,7 +282,7 @@ class AOVManager:
 
 
         """
-        result = []
+        result: List[Union[AOV, AOVGroup]] = []
 
         aov_str = aov_str.replace(",", " ")
 

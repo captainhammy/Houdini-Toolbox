@@ -2134,7 +2134,7 @@ def get_multiparm_instance_indices(
 
     if instance_index:
         offsets = utils.get_multiparm_container_offsets(
-            get_multiparm_template_name(parm), parm.node().parmTemplateGroup()
+            get_multiparm_template_name(parm), parm.node().parmTemplateGroup()  # type: ignore
         )
 
         results = [result - offset for result, offset in zip(results, offsets)]
@@ -2163,7 +2163,7 @@ def get_multiparm_siblings(parm: Union[hou.Parm, hou.ParmTuple]) -> dict:
     ptg = node.parmTemplateGroup()
 
     # Find the most immediate containing multiparm folder.
-    containing_template = utils.get_multiparm_containing_folders(template_name, ptg)[0]
+    containing_template = utils.get_multiparm_containing_folders(template_name, ptg)[0]  # type: ignore
 
     # Get a list of template names in that folder.
     names = _get_names_in_folder(containing_template)
