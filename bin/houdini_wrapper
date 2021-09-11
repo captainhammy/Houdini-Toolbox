@@ -5,8 +5,9 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 import argparse
 import os
 import signal
@@ -14,14 +15,15 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING, List, Tuple
 
-# Third Party Imports
+# Third Party
 from termcolor import colored, cprint
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 import ht.machinery.package
 import ht.machinery.sidefx_web_api
 
 if TYPE_CHECKING:
+    # Standard Library
     import types
 
 

@@ -5,7 +5,7 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import argparse
 import os
 import stat

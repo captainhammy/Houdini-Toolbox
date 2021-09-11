@@ -5,21 +5,20 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import argparse
 import glob
-from io import StringIO
 import json
 import os
 import subprocess
 import sys
 import tempfile
+from io import StringIO
 from xml.etree import ElementTree
 
-# Third Party Imports
+# Third Party
 from pylint import lint
 from pylint.reporters.text import TextReporter
-
 
 # =============================================================================
 # CLASSES
