@@ -4,7 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.events import SceneEvents, run_event
 
 

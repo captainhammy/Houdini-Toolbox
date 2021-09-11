@@ -4,9 +4,8 @@
 # IMPORTS
 # =============================================================================
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.sohohooks.manager import HOOK_MANAGER
-
 
 # =============================================================================
 # FUNCTIONS

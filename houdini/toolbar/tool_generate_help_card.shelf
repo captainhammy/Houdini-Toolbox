@@ -12,10 +12,10 @@
 # IMPORTS
 # =============================================================================
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.nodes import helpcard
 
-# Houdini Imports
+# Houdini
 import hou
 
 # =============================================================================

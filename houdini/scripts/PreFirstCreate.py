@@ -4,9 +4,8 @@
 # IMPORTS
 # =============================================================================
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.events import NodeEvents, run_event
-
 
 # =============================================================================
 # FUNCTIONS

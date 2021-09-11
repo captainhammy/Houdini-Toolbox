@@ -11,10 +11,10 @@ For more information, please see:
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import logging
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 import ht.logging.config
 
 # Initialize logging config.

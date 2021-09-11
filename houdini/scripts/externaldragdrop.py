@@ -4,13 +4,12 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import os
 from typing import List
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.events import SceneEvents, run_event
-
 
 # =============================================================================
 # FUNCTIONS

@@ -4,17 +4,17 @@
 # IMPORTS
 # ==============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 from typing import List, Tuple
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.ui import nodegraph, paste
 
-# Houdini Imports
-from canvaseventtypes import KeyboardEvent
+# Houdini
 import nodegraphdisplay
-
+from canvaseventtypes import KeyboardEvent
 
 # ==============================================================================
 # GLOBALS
