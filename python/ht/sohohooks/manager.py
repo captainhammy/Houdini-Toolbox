@@ -4,10 +4,9 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import traceback
 from typing import Callable
-
 
 # =============================================================================
 # CLASSES
@@ -47,6 +46,7 @@ class SohoHookManager:
         :return: Whether or not the hooks succeeded.
 
         """
+        # Houdini
         from IFDapi import ray_comment
 
         # Get a list of hooks to call.

@@ -4,18 +4,17 @@
 # IMPORTS
 # =============================================================================
 
-# Third Party Imports
+# Third Party
 from PySide2 import QtCore, QtGui
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
+import ht.ui.icons  # noqa: F401 # pylint: disable=unused-import
 from ht.sohohooks.aovs import manager
 from ht.sohohooks.aovs.aov import AOV, IntrinsicAOVGroup
 from ht.ui.aovs import utils
-import ht.ui.icons  # noqa: F401 # pylint: disable=unused-import
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # TREE NODES

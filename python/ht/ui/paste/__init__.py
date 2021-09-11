@@ -4,13 +4,12 @@
 # IMPORTS
 # ==============================================================================
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.ui.paste import dialogs, utils
 from ht.ui.paste.sources import HomeDirSource, SourceManager
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # ==============================================================================
 # FUNCTIONS

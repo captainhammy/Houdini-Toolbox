@@ -33,6 +33,14 @@
                     "arch": "linux_x86_64_gcc4.8"
                 }
             }
+        },
+        "19.0": {
+            "types": {
+                "Linux": {
+                    "arch": "linux_x86_64_gcc9.3"
+                }
+            }
         }
+
     }
 }

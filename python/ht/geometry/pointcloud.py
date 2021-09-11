@@ -4,14 +4,14 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 from typing import Optional, Sequence, Tuple
 
-# Third Party Imports
+# Third Party
 import numpy
 from scipy.spatial import KDTree
 
-# Houdini Imports
+# Houdini
 import hou
 
 # =============================================================================

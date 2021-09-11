@@ -11,17 +11,18 @@ and modules they are meant to extend.
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 import ast
 import math
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
-# Houdini Toolbox Imports
-from ht.inline.lib import cpp_methods as _cpp_methods
+# Houdini Toolbox
 from ht.inline import utils
+from ht.inline.lib import cpp_methods as _cpp_methods
 
-# Houdini Imports
+# Houdini
 import hou
 
 if TYPE_CHECKING:

@@ -4,19 +4,19 @@
 # IMPORTS
 # ==============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 from typing import List, Optional
 
-# Third Party Imports
+# Third Party
 from PySide2 import QtCore, QtWidgets
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.ui.paste import utils, widgets
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # ==============================================================================
 # CLASSES

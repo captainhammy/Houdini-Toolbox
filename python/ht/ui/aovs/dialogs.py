@@ -7,22 +7,21 @@ AOVGroups.
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import os
 import re
 
-# Third Party Imports
+# Third Party
 from PySide2 import QtCore, QtWidgets
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.sohohooks.aovs import constants as consts
 from ht.sohohooks.aovs import manager
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.ui.aovs import uidata, utils, widgets
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # CLASSES
@@ -450,6 +449,8 @@ class _BaseAOVDialog(_BaseHoudiniStyleDialog):
 
         # ---------------------------------------------------------------------
 
+        aov_data = {key: value for key, value in aov_data.items() if value is not None}
+
         return aov_data
 
     # -------------------------------------------------------------------------
@@ -651,6 +652,7 @@ class NewAOVDialog(_BaseAOVDialog):
         aov_data["variable"] = self.variable_name.text()
         aov_data["vextype"] = self.type_box.itemData(self.type_box.currentIndex())
 
+        print(aov_data)
         aov = AOV(aov_data)
 
         # Open file for writing.
@@ -888,7 +890,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
             group.priority = priority
 
         # Find the AOVs to be in this group.
-        aovs = self.aov_list.getSelectedAOVs()
+        aovs = self.aov_list.get_selected_aovs()
 
         group.aovs.extend(aovs)
 
@@ -921,7 +923,7 @@ class _BaseGroupDialog(_BaseHoudiniStyleDialog):
         """Check that one or more AOVs is selected."""
         self.status_widget.clear(2)
 
-        num_checked = len(self.aov_list.getSelectedAOVs())
+        num_checked = len(self.aov_list.get_selected_aovs())
 
         self._aovs_valid = num_checked > 0
 

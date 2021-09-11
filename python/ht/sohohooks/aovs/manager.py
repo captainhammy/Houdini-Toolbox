@@ -7,22 +7,26 @@ with AOVs.
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 import glob
 import json
 import os
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
-# Houdini Toolbox Imports
-from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
+# Houdini Toolbox
 from ht.sohohooks.aovs import constants as consts
+from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 
-# Houdini Imports
+# Houdini
 import hou
 
 if TYPE_CHECKING:
+    # Houdini Toolbox
     from ht.ui.aovs.utils import AOVViewerInterface  # pylint: disable=ungrouped-imports
+
+    # Houdini
     import soho
 
 
@@ -207,6 +211,7 @@ class AOVManager:
         :return:
 
         """
+        # Houdini
         import IFDapi
         import IFDsettings
         import soho

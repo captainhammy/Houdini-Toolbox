@@ -4,15 +4,17 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 import copy
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.sohohooks.aovs import constants as consts
 
 if TYPE_CHECKING:
+    # Houdini
     import soho
 
 
@@ -445,6 +447,7 @@ class AOV:
         :return:
 
         """
+        # Houdini
         import soho
 
         # The base data to pass along.
@@ -632,6 +635,7 @@ class AOVGroup:
 
         """
         self._aovs = []
+        self._includes = []
 
     def as_data(self) -> dict:
         """Get a dictionary representing the group.
@@ -792,6 +796,7 @@ def _call_post_defplane(
     :return: Whether or not the hook was successful.
 
     """
+    # Houdini
     import IFDhooks
 
     return IFDhooks.call(
@@ -819,6 +824,7 @@ def _call_pre_defplane(
     :return: Whether or not the hook was successful.
 
     """
+    # Houdini
     import IFDhooks
 
     return IFDhooks.call(
@@ -844,6 +850,7 @@ def _write_data_to_ifd(data: dict, wrangler: Any, cam: soho.SohoObject, now: flo
     :return:
 
     """
+    # Houdini
     import IFDapi
 
     # Call the 'pre_defplane' hook.  If the function returns True,
@@ -911,6 +918,7 @@ def _write_light(
     :return:
 
     """
+    # Houdini
     import soho
 
     # Try and find the suffix using the 'vm_export_suffix'

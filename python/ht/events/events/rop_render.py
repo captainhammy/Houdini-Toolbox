@@ -7,17 +7,17 @@ scripts.
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import logging
 import time
 from typing import Optional
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.events.group import HoudiniEventGroup
 from ht.events.item import HoudiniEventItem
 from ht.events.types import RopEvents
 
-# Houdini Imports
+# Houdini
 import hou
 
 _logger = logging.getLogger(__name__)

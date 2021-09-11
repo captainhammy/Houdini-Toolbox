@@ -4,7 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import base64
 import datetime
 import hashlib
@@ -14,13 +14,12 @@ import os
 import time
 from typing import List, Optional, Tuple
 
-# Third Party Imports
+# Third Party
 import humanfriendly
-from humanfriendly.tables import format_pretty_table
 import requests
+from humanfriendly.tables import format_pretty_table
 from termcolor import colored, cprint
 from tqdm import tqdm
-
 
 # =============================================================================
 # GLOBALS
@@ -30,6 +29,9 @@ _RELEASE_TYPE_MAP = {"devel": ("Daily", "white"), "gold": ("Production", "blue")
 
 _STATUS_MAP = {"good": "white", "bad": "red"}
 
+_VERSION_PLATFORM_MAP = {
+    "19.0": "linux_x86_64_gcc9.3"
+}
 
 # =============================================================================
 # CLASSES
@@ -74,6 +76,9 @@ class _Service:
         releases_list = self.download.get_daily_builds_list(
             product, version=version, platform=platform, only_production=only_production
         )
+
+        releases_list = [release for release in releases_list
+                         if release["platform"] == _VERSION_PLATFORM_MAP.get(release["version"], release["platform"])]
 
         # Sort the release list by integer version/build since it will be sorted by string
         def sorter(data):

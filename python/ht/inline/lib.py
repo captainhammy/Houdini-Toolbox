@@ -11,7 +11,7 @@ and modules they are meant to extend.
 # IMPORTS
 # =============================================================================
 
-# Houdini Imports
+# Houdini
 import inlinecpp
 
 # flake8: noqa: E501

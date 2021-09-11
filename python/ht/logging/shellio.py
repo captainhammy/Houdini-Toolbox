@@ -4,13 +4,12 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import logging
 import sys
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # CLASSES

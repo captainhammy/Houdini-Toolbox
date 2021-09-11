@@ -4,12 +4,12 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 import errno
 import glob
 import json
-from operator import attrgetter
 import os
 import platform
 import re
@@ -17,11 +17,11 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
+from operator import attrgetter
 from typing import Any, List, Optional, Sequence, Tuple, TypeVar
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.machinery import sidefx_web_api
-
 
 # =============================================================================
 # GLOBALS

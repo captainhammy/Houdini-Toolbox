@@ -4,7 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.sohohooks.aovs.manager import AOV_MANAGER as _AOV_MANAGER
 from ht.sohohooks.manager import HOOK_MANAGER as _HOOK_MANAGER
 

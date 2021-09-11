@@ -4,17 +4,19 @@
 # IMPORTS
 # ==============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 from typing import TYPE_CHECKING, List, Optional
 
-# Third Party Imports
+# Third Party
 from PySide2 import QtCore, QtWidgets
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.ui.paste import widgets
 
 if TYPE_CHECKING:
+    # Houdini Toolbox
     from ht.ui.paste.sources import CopyPasteItemSource, CopyPasteSource
 
 # ==============================================================================

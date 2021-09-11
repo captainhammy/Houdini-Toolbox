@@ -4,11 +4,10 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-from collections.abc import Iterable
+# Standard Library
 import json
+from collections.abc import Iterable
 from typing import Any, List, Optional, Union
-
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
@@ -131,6 +130,7 @@ def get_property(name: str) -> Any:
     :return: The value.
 
     """
+    # Houdini
     import mantra
 
     values = mantra.property(name)
@@ -146,6 +146,7 @@ def set_property(name: str, value: Any):
     :return:
 
     """
+    # Houdini
     import mantra
 
     value = _prep_value_to_set(value)

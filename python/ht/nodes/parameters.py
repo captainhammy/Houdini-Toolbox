@@ -4,13 +4,12 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import re
 from typing import Callable, Tuple
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS

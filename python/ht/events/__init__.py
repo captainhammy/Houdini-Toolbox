@@ -4,7 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.events.events import rop_render, scene_load
 from ht.events.manager import (
     register_event_group,
@@ -13,7 +13,6 @@ from ht.events.manager import (
     run_event,
 )
 from ht.events.types import HipFileEvents, NodeEvents, RopEvents, SceneEvents
-
 
 # =============================================================================
 

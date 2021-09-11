@@ -4,10 +4,10 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import logging
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.pyfilter.operations.operation import PyFilterOperation
 
 # Name the _logger 'mantra' since we're logging Mantra output.

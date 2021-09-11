@@ -4,16 +4,15 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 from typing import Optional
 
-# Houdini Toolbox Imports
+# Third Party
 import _ht_generic_image_badge
 import _ht_generic_text_badge
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # ==============================================================================
 # FUNCTIONS

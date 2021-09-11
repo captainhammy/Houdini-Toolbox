@@ -4,20 +4,19 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import os
 import pickle
 from typing import List
 
-# Third Party Imports
+# Third Party
 from PySide2 import QtCore, QtGui
 
-# Houdini Toolbox Imports
-from ht.sohohooks.aovs.aov import ALLOWABLE_VALUES
-from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
+# Houdini Toolbox
+from ht.sohohooks.aovs.aov import ALLOWABLE_VALUES, AOV, AOVGroup, IntrinsicAOVGroup
 from ht.ui.aovs import uidata
 
-# Houdini Imports
+# Houdini
 import hou
 
 # =============================================================================

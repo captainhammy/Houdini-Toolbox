@@ -4,9 +4,8 @@
 # IMPORTS
 # =============================================================================
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.ui.paste import copy_item
-
 
 # =============================================================================
 # FUNCTIONS

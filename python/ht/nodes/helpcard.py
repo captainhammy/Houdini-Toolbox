@@ -4,20 +4,19 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import collections.abc
 import io
 import os
 import re
 from typing import List, OrderedDict, Tuple, Union
+
+# Third Party
+import jinja2
 import yaml
 
-# Third Party Imports
-import jinja2
-
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # GLOBALS

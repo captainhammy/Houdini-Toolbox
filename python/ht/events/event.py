@@ -4,15 +4,15 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 import enum
 from typing import Any, Dict, List, Type
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.events.item import HoudiniEventItem
 from ht.events.stats import HoudiniEventStats
-
 
 # =============================================================================
 # CLASSES

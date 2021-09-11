@@ -4,14 +4,14 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 import ctypes
 from typing import List, Optional, Sequence, Tuple, Union
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # GLOBALS

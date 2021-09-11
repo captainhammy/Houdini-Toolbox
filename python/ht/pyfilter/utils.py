@@ -4,7 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import logging
 import os
 from typing import List, Optional
@@ -27,6 +27,7 @@ def build_pyfilter_command(
     :return: The constructed PyFilter command.
 
     """
+    # Houdini
     import hou
 
     if pyfilter_args is None:

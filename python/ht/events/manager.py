@@ -7,16 +7,15 @@ events in Houdini.
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
-from contextlib import contextmanager
+# Standard Library
 import enum
+from contextlib import contextmanager
 from typing import Callable, List, Optional
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.events.event import HoudiniEvent, HoudiniEventFactory
 from ht.events.group import HoudiniEventGroup
 from ht.events.item import HoudiniEventItem
-
 
 # =============================================================================
 # CLASSES

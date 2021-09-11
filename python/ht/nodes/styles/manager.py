@@ -7,18 +7,19 @@ colors in Houdini.
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 import glob
 import json
 import os
 from typing import List, Optional, Tuple, Union
 
-# Houdini Toolbox Imports
-from ht.nodes.styles.styles import ConstantRule, StyleConstant, StyleRule
+# Houdini Toolbox
 from ht.nodes.styles import constants
+from ht.nodes.styles.styles import ConstantRule, StyleConstant, StyleRule
 
-# Houdini Imports
+# Houdini
 import hou
 
 
@@ -183,7 +184,7 @@ class StyleManager:
             if category_name in self.name_rules:
                 # Check if the name matches any of the category rules.
                 for rule in list(self.name_rules[category_name].values()):
-                    if hou.patternMatch(rule.name, name):
+                    if hou.text.patternMatch(rule.name, name):
                         return self._resolve_rule(rule)
 
         return None
@@ -209,7 +210,7 @@ class StyleManager:
                 # Check if the node type name matches any of the category
                 # rules.
                 for rule in list(self.node_type_rules[category_name].values()):
-                    if hou.patternMatch(rule.name, type_name):
+                    if hou.text.patternMatch(rule.name, type_name):
                         return self._resolve_rule(rule)
 
         return None
@@ -235,7 +236,7 @@ class StyleManager:
                 for location in menu_locations:
                     # Check if the location matches any of the category rules.
                     for rule in list(self.tool_rules[category_name].values()):
-                        if hou.patternMatch(rule.name, location):
+                        if hou.text.patternMatch(rule.name, location):
                             return self._resolve_rule(rule)
 
         return None

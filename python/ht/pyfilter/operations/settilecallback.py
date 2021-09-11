@@ -4,16 +4,20 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 from typing import TYPE_CHECKING, Optional
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.pyfilter.operations.operation import PyFilterOperation, log_filter_call
 from ht.pyfilter.property import set_property
 
 if TYPE_CHECKING:
+    # Standard Library
     import argparse
+
+    # Houdini Toolbox
     from ht.pyfilter.manager import PyFilterManager
 
 # =============================================================================

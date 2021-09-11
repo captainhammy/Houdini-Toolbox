@@ -4,9 +4,8 @@
 # IMPORTS
 # =============================================================================
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.nodes.styles.manager import STYLE_MANAGER
-
 
 # =============================================================================
 # FUNCTIONS

@@ -4,21 +4,21 @@
 # IMPORTS
 # ==============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
-from contextlib import contextmanager
+
+# Standard Library
 import logging
+from contextlib import contextmanager
 from typing import Any, Dict, MutableMapping, Optional, Tuple
 
-# Third Party Imports
+# Third Party
 # NOTE: Must use logquacious until in Python 3.8 as that is the version that adds
 # the stacklevel arg.  I think we can also go back to using __new__ to wrap the
 # function names when doing that too?
 from logquacious.backport_configurable_stacklevel import patch_logger
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # ==============================================================================
 # CLASSES

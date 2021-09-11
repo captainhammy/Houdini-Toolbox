@@ -4,8 +4,9 @@
 # IMPORTS
 # ==============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 import abc
 import datetime
 import getpass
@@ -14,14 +15,15 @@ import os
 import platform
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
-# Houdini Toolbox Imports
-from ht.ui.paste import utils
+# Houdini Toolbox
 import ht.ui.paste.helpers
+from ht.ui.paste import utils
 
-# Houdini Imports
+# Houdini
 import hou
 
 if TYPE_CHECKING:
+    # Third Party
     from PySide2 import QtGui
 
 # Handle differences between platforms.
@@ -31,6 +33,7 @@ if platform.system() == "Windows":
 
 else:
     _CONTEXT_SEP = ":"
+    # Standard Library
     from pwd import getpwuid  # type: ignore
 
 

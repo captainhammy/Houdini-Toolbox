@@ -4,21 +4,25 @@
 # IMPORTS
 # ==============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 from operator import attrgetter
 from typing import TYPE_CHECKING, Any, List, Optional
 
-# Third Party Imports
+# Third Party
 from PySide2 import QtCore
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.ui.paste import utils
 
 if TYPE_CHECKING:
     # pylint: disable=ungrouped-imports
+    # Third Party
     from PySide2 import QtWidgets
-    from ht.ui.paste.sources import CopyPasteSource, CopyPasteItemSource
+
+    # Houdini Toolbox
+    from ht.ui.paste.sources import CopyPasteItemSource, CopyPasteSource
 
 # ==============================================================================
 # CLASSES

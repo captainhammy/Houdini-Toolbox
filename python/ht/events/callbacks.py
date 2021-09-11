@@ -4,16 +4,15 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import atexit
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.events.manager import run_event
 from ht.events.types import HipFileEvents, SceneEvents
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
@@ -63,6 +62,7 @@ def _register_when_ui_available():
 
     """
     # Import here in case UI is not available.
+    # Houdini
     import hdefereval
 
     # Emit the event after the event loop has run once.

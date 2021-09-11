@@ -4,21 +4,20 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import os
 import pickle
 
-# Third Party Imports
+# Third Party
 from PySide2 import QtCore, QtGui, QtWidgets
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.sohohooks.aovs import manager
 from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 from ht.ui.aovs import models, uidata, utils
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # CLASSES
@@ -236,6 +235,7 @@ class AOVSelectTreeWidget(
 
     def dropEvent(self, event):
         """Event when dropping items onto widget."""
+        # Houdini Toolbox
         import ht.ui.aovs.dialogs
 
         # Get the data attached to this event.
@@ -296,6 +296,7 @@ class AOVSelectTreeWidget(
 
     def edit_selected_aovs(self):
         """Edit selected AOVs."""
+        # Houdini Toolbox
         import ht.ui.aovs.dialogs
 
         aovs = self.get_selected_aovs()
@@ -309,6 +310,7 @@ class AOVSelectTreeWidget(
 
     def edit_selected_groups(self):
         """Edit selected groups."""
+        # Houdini Toolbox
         import ht.ui.aovs.dialogs
 
         groups = self.get_selected_groups(allow_intrinsic=False)
@@ -556,6 +558,7 @@ class AOVSelectTreeWidget(
 
     def show_aov_info(self):
         """Show info for selected AOVs."""
+        # Houdini Toolbox
         import ht.ui.aovs.dialogs
 
         aovs = self.get_selected_aovs()
@@ -569,6 +572,7 @@ class AOVSelectTreeWidget(
 
     def show_aov_group_info(self):
         """Show info for selected AOVGroups."""
+        # Houdini Toolbox
         import ht.ui.aovs.dialogs
 
         groups = self.get_selected_groups()
@@ -688,6 +692,7 @@ class AvailableAOVsToolBar(AOVViewerToolBar):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        # Houdini Toolbox
         import ht.ui.aovs.dialogs
 
         # Button and action to create a new AOV.
@@ -895,6 +900,7 @@ class AOVSelectWidget(QtWidgets.QWidget):
 
     def create_group(self):
         """Create a new group using any selected AOVs."""
+        # Houdini Toolbox
         import ht.ui.aovs.dialogs
 
         aovs = [
@@ -1501,6 +1507,7 @@ class AOVsToAddWidget(QtWidgets.QWidget):
 
     def create_group(self):
         """Create a new AOVGroup from items in the tree."""
+        # Houdini Toolbox
         import ht.ui.aovs.dialogs
 
         aovs = utils.flatten_element_list(self.tree.get_elements_to_add())

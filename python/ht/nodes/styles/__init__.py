@@ -7,10 +7,9 @@ Houdini.
 # IMPORTS
 # =============================================================================
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.events import NodeEvents, register_function
 from ht.nodes.styles.event import style_node_by_name, style_node_on_creation
-
 
 # =============================================================================
 

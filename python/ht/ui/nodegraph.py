@@ -4,20 +4,20 @@
 # IMPORTS
 # ==============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 from typing import Tuple
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.events.manager import EVENT_MANAGER
 from ht.events.types import KeyboardEvents
 
-# Houdini Imports
-from canvaseventtypes import KeyboardEvent
+# Houdini
 import hou
-from nodegraphdisplay import setKeyPrompt
 import nodegraphutils
-
+from canvaseventtypes import KeyboardEvent
+from nodegraphdisplay import setKeyPrompt
 
 # ==============================================================================
 # FUNCTIONS

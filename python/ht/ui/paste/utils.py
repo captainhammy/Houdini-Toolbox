@@ -4,15 +4,17 @@
 # IMPORTS
 # ==============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 import datetime
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
-# Houdini Imports
+# Houdini
 import hou
 
 if TYPE_CHECKING:
+    # Houdini Toolbox
     from ht.ui.paste.sources import CopyPasteItemSource
 
 
@@ -95,6 +97,7 @@ def paste_items_from_sources(
 
     """
     # Tuck away to avoid possible UI related import errors.
+    # Houdini
     import nodegraphutils
 
     parent = editor.pwd()

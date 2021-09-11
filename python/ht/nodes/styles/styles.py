@@ -4,12 +4,14 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 import re
 from typing import TYPE_CHECKING, Optional, Tuple
 
 if TYPE_CHECKING:
+    # Houdini
     import hou
 
 # =============================================================================

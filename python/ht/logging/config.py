@@ -4,11 +4,10 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import json
 import logging.config
 import os
-
 
 # =============================================================================
 # FUNCTIONS

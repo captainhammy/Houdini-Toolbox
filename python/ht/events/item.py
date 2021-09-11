@@ -4,13 +4,13 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
 from __future__ import annotations
+
+# Standard Library
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.events.stats import HoudiniEventItemStats
-
 
 # =============================================================================
 # CLASSES

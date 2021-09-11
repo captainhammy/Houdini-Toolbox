@@ -4,11 +4,11 @@
 # IMPORTS
 # =============================================================================
 
+# Standard Library
 from typing import Dict, List
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS
