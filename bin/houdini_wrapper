@@ -23,7 +23,6 @@ import ht.machinery.package
 import ht.machinery.sidefx_web_api
 
 if TYPE_CHECKING:
-    # Standard Library
     import types
 
 
