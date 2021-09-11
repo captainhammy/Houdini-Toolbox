@@ -4,7 +4,7 @@
 # IMPORTS
 # =============================================================================
 
-# Houdini Imports
+# Houdini
 import hou
 import hutil.cppinline
 
