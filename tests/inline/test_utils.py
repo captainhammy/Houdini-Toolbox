@@ -4,19 +4,18 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import ctypes
 import os
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.inline import utils
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # GLOBALS

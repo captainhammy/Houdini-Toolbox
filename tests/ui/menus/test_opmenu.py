@@ -4,12 +4,11 @@
 # IMPORTS
 # =============================================================================
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 import ht.ui.menus.opmenu
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # TESTS

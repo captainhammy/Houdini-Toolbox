@@ -4,13 +4,12 @@
 # IMPORTS
 # =============================================================================
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Imports
+# Houdini
 import hou
 
-# Houdini Toolbox Imports
 badges = pytest.importorskip("ht.nodes.badges")
 
 

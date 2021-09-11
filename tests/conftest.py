@@ -4,16 +4,15 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import os
 from xml.etree import ElementTree
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # NON-PUBLIC FUNCTIONS

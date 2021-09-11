@@ -4,9 +4,8 @@
 # IMPORTS
 # =============================================================================
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.pyfilter import property as prop
-
 
 # =============================================================================
 # TESTS

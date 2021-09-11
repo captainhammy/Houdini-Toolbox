@@ -4,10 +4,10 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import os
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 import ht.logging.config
 
 # =============================================================================

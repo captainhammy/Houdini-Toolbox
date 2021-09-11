@@ -4,15 +4,14 @@
 # IMPORTS
 # =============================================================================
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 import ht.ui.menus.parmmenu
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # TESTS

@@ -4,16 +4,15 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import copy
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 import ht.events.item
 import ht.events.stats
-
 
 # =============================================================================
 # FIXTURES

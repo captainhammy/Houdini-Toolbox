@@ -4,18 +4,17 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import logging
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 import ht.logging.shellio
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # FIXTURES

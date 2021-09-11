@@ -4,15 +4,14 @@
 # IMPORTS
 # =============================================================================
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.nodes.styles import styles
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # FIXTURES

@@ -4,12 +4,11 @@
 # IMPORTS
 # =============================================================================
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 import ht.nodes.styles.event
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # TESTS

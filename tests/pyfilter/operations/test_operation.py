@@ -4,16 +4,15 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import argparse
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.operations import operation
-
 
 # =============================================================================
 # FIXTURES
@@ -72,7 +71,7 @@ class Test_PyFilterOperation:
 
     def test_build_arg_string(self):
         """Test arg string construction."""
-        assert operation.PyFilterOperation.build_arg_string() is None
+        assert operation.PyFilterOperation.build_arg_string() == ""
 
     def test_register_parser_args(self, mocker):
         """Test registering all the argument parser args."""

@@ -4,16 +4,15 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import argparse
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.operations import zdepth
-
 
 # =============================================================================
 # FIXTURES

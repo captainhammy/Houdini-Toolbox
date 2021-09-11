@@ -4,19 +4,19 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import os
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
-from ht.sohohooks.aovs import aov, manager
+# Houdini Toolbox
+from ht.sohohooks.aovs import aov
 from ht.sohohooks.aovs import constants as consts
+from ht.sohohooks.aovs import manager
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # FIXTURES

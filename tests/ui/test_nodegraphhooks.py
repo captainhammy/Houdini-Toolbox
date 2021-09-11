@@ -4,16 +4,15 @@
 # IMPORTS
 # ==============================================================================
 
-# Standard Library Imports
+# Standard Library
 import importlib.util
 
 spec = importlib.util.spec_from_file_location("nodegraphhooks", "houdini/python3.7libs/nodegraphhooks.py")
 nodegraphhooks = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(nodegraphhooks)
 
-# Houdini Imports
+# Houdini
 from canvaseventtypes import KeyboardEvent  # pylint: disable=wrong-import-position
-
 
 # ==============================================================================
 # TESTS

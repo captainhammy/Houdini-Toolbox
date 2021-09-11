@@ -4,19 +4,18 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import os
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.nodes.styles import constants as consts
 from ht.nodes.styles import manager
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # FIXTURES
@@ -522,7 +521,7 @@ class Test_StyleManager:
         mock_name_rules = mocker.patch.object(
             manager.StyleManager, "name_rules", new_callable=mocker.PropertyMock
         )
-        mock_match = mocker.patch("hou.patternMatch", return_value=True)
+        mock_match = mocker.patch("hou.text.patternMatch", return_value=True)
         mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
 
         style_name = mocker.MagicMock(spec=str)
@@ -558,7 +557,7 @@ class Test_StyleManager:
         mock_name_rules = mocker.patch.object(
             manager.StyleManager, "name_rules", new_callable=mocker.PropertyMock
         )
-        mock_match = mocker.patch("hou.patternMatch", return_value=True)
+        mock_match = mocker.patch("hou.text.patternMatch", return_value=True)
         mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
 
         style_name = mocker.MagicMock(spec=str)
@@ -594,7 +593,7 @@ class Test_StyleManager:
         mock_name_rules = mocker.patch.object(
             manager.StyleManager, "name_rules", new_callable=mocker.PropertyMock
         )
-        mock_match = mocker.patch("hou.patternMatch", return_value=False)
+        mock_match = mocker.patch("hou.text.patternMatch", return_value=False)
         mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
 
         style_name = mocker.MagicMock(spec=str)
@@ -632,7 +631,7 @@ class Test_StyleManager:
         mock_node_type_rules = mocker.patch.object(
             manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock
         )
-        mock_match = mocker.patch("hou.patternMatch", return_value=True)
+        mock_match = mocker.patch("hou.text.patternMatch", return_value=True)
         mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
 
         style_name = mocker.MagicMock(spec=str)
@@ -665,7 +664,7 @@ class Test_StyleManager:
         mock_node_type_rules = mocker.patch.object(
             manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock
         )
-        mock_match = mocker.patch("hou.patternMatch", return_value=True)
+        mock_match = mocker.patch("hou.text.patternMatch", return_value=True)
         mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
 
         style_name = mocker.MagicMock(spec=str)
@@ -700,7 +699,7 @@ class Test_StyleManager:
         mock_node_type_rules = mocker.patch.object(
             manager.StyleManager, "node_type_rules", new_callable=mocker.PropertyMock
         )
-        mock_match = mocker.patch("hou.patternMatch", return_value=False)
+        mock_match = mocker.patch("hou.text.patternMatch", return_value=False)
         mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
 
         style_name = mocker.MagicMock(spec=str)
@@ -741,7 +740,7 @@ class Test_StyleManager:
         mock_tool_rules = mocker.patch.object(
             manager.StyleManager, "tool_rules", new_callable=mocker.PropertyMock
         )
-        mock_match = mocker.patch("hou.patternMatch", return_value=True)
+        mock_match = mocker.patch("hou.text.patternMatch", return_value=True)
         mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
 
         location = mocker.MagicMock(spec=str)
@@ -782,7 +781,7 @@ class Test_StyleManager:
         mock_tool_rules = mocker.patch.object(
             manager.StyleManager, "tool_rules", new_callable=mocker.PropertyMock
         )
-        mock_match = mocker.patch("hou.patternMatch", return_value=True)
+        mock_match = mocker.patch("hou.text.patternMatch", return_value=True)
         mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
 
         location = mocker.MagicMock(spec=str)
@@ -823,7 +822,7 @@ class Test_StyleManager:
         mock_tool_rules = mocker.patch.object(
             manager.StyleManager, "tool_rules", new_callable=mocker.PropertyMock
         )
-        mock_match = mocker.patch("hou.patternMatch", return_value=False)
+        mock_match = mocker.patch("hou.text.patternMatch", return_value=False)
         mock_resolve = mocker.patch.object(manager.StyleManager, "_resolve_rule")
 
         location = mocker.MagicMock(spec=str)

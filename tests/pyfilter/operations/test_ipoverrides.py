@@ -4,18 +4,18 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import argparse
 import copy
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.pyfilter.manager import PyFilterManager
 from ht.pyfilter.operations import ipoverrides
 
-# Houdini Imports
+# Houdini
 import hou
 
 _DEFAULTS = {

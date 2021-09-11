@@ -4,12 +4,11 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import sys
 
-# Third Party Imports
+# Third Party
 import mock
-
 
 # =============================================================================
 

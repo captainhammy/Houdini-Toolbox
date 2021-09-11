@@ -4,17 +4,16 @@
 # IMPORTS
 # =============================================================================
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 import ht.events.events.rop_render
 from ht.events.item import HoudiniEventItem
 from ht.events.types import RopEvents
 
-# Houdini Imports
+# Houdini
 import hou
-
 
 # =============================================================================
 # FIXTURES

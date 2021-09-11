@@ -4,14 +4,15 @@
 # IMPORTS
 # =============================================================================
 
-# Third Party Imports
+# Standard Library
 from contextlib import contextmanager
+
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.sohohooks.aovs import aov
 from ht.sohohooks.aovs import constants as consts
-
 
 # =============================================================================
 # FIXTURES

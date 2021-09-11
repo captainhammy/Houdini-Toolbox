@@ -4,17 +4,17 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 import argparse
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 from ht.pyfilter import manager
 from ht.pyfilter.operations.operation import PyFilterOperation
 
-# Houdini Imports
+# Houdini
 import hou
 
 # =============================================================================

@@ -4,15 +4,14 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library Imports
+# Standard Library
 from collections import OrderedDict
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 import ht.events.stats
-
 
 # =============================================================================
 # FIXTURES

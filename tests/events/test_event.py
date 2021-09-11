@@ -4,14 +4,13 @@
 # IMPORTS
 # =============================================================================
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
-import ht.events.item
+# Houdini Toolbox
 import ht.events.event
+import ht.events.item
 import ht.events.stats
-
 
 # =============================================================================
 # FIXTURES
@@ -46,14 +45,16 @@ class Test_HoudiniEventFactory:
         )
 
         mock_name = mocker.MagicMock(spec=str)
+        mock_event_name = mocker.MagicMock()
+        mock_event_name.value = mock_name
         mock_return = mocker.MagicMock(spec=ht.events.event.HoudiniEvent)
 
-        mock_mappings.return_value = {mock_name: mock_return}
+        mock_mappings.return_value = {mock_event_name: mock_return}
 
-        result = ht.events.event.HoudiniEventFactory.get_event_type(mock_name)
+        result = ht.events.event.HoudiniEventFactory.get_event_type(mock_event_name)
 
         assert result == mock_return.return_value
-        mock_return.assert_called_once()
+        mock_return.assert_called_with(mock_name)
 
     def test_get_event_type__unmapped(self, mocker):
         """Test where no mapping exists, returns the default event."""

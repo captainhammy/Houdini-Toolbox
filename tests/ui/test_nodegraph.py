@@ -4,12 +4,11 @@
 # IMPORTS
 # ==============================================================================
 
-# Houdini Toolbox Imports
+# Houdini Toolbox
 import ht.ui.nodegraph
 
-# Houdini Imports
+# Houdini
 from canvaseventtypes import KeyboardEvent
-
 
 # ==============================================================================
 # TESTS

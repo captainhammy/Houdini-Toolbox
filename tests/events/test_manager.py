@@ -4,15 +4,14 @@
 # IMPORTS
 # =============================================================================
 
-# Third Party Imports
+# Third Party
 import pytest
 
-# Houdini Toolbox Imports
-from ht.events.item import HoudiniEventItem
+# Houdini Toolbox
+import ht.events.manager
 from ht.events.event import HoudiniEvent
 from ht.events.group import HoudiniEventGroup
-import ht.events.manager
-
+from ht.events.item import HoudiniEventItem
 
 # =============================================================================
 # FIXTURES
