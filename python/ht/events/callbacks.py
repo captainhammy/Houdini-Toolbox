@@ -62,7 +62,6 @@ def _register_when_ui_available():
 
     """
     # Import here in case UI is not available.
-    # Houdini
     import hdefereval
 
     # Emit the event after the event loop has run once.

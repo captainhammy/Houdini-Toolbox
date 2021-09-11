@@ -23,7 +23,6 @@ from ht.ui.paste import utils
 import hou
 
 if TYPE_CHECKING:
-    # Third Party
     from PySide2 import QtGui
 
 # Handle differences between platforms.
@@ -33,7 +32,6 @@ if platform.system() == "Windows":
 
 else:
     _CONTEXT_SEP = ":"
-    # Standard Library
     from pwd import getpwuid  # type: ignore
 
 

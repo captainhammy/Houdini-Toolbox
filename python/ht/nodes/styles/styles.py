@@ -11,7 +11,6 @@ import re
 from typing import TYPE_CHECKING, Optional, Tuple
 
 if TYPE_CHECKING:
-    # Houdini
     import hou
 
 # =============================================================================

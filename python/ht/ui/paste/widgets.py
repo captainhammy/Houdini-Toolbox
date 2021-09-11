@@ -21,7 +21,6 @@ import ht.ui.paste.models
 import hou
 
 if TYPE_CHECKING:
-    # Houdini Toolbox
     from ht.ui.paste.sources import CopyPasteItemSource, CopyPasteSource
 
 # ==============================================================================

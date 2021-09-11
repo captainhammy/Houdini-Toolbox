@@ -27,7 +27,6 @@ def build_pyfilter_command(
     :return: The constructed PyFilter command.
 
     """
-    # Houdini
     import hou
 
     if pyfilter_args is None:

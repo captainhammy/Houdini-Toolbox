@@ -16,7 +16,6 @@ from PySide2 import QtCore, QtWidgets
 from ht.ui.paste import widgets
 
 if TYPE_CHECKING:
-    # Houdini Toolbox
     from ht.ui.paste.sources import CopyPasteItemSource, CopyPasteSource
 
 # ==============================================================================

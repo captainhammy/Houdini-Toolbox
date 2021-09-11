@@ -18,10 +18,8 @@ from ht.ui.paste import utils
 
 if TYPE_CHECKING:
     # pylint: disable=ungrouped-imports
-    # Third Party
     from PySide2 import QtWidgets
 
-    # Houdini Toolbox
     from ht.ui.paste.sources import CopyPasteItemSource, CopyPasteSource
 
 # ==============================================================================

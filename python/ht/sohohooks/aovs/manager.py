@@ -23,10 +23,8 @@ from ht.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 import hou
 
 if TYPE_CHECKING:
-    # Houdini Toolbox
     from ht.ui.aovs.utils import AOVViewerInterface  # pylint: disable=ungrouped-imports
 
-    # Houdini
     import soho
 
 
@@ -211,7 +209,6 @@ class AOVManager:
         :return:
 
         """
-        # Houdini
         import IFDapi
         import IFDsettings
         import soho

@@ -12,10 +12,8 @@ from functools import wraps
 from typing import TYPE_CHECKING, Callable, Dict, Union
 
 if TYPE_CHECKING:
-    # Standard Library
     import argparse
 
-    # Houdini Toolbox
     from ht.pyfilter.manager import PyFilterManager
 
 _logger = logging.getLogger(__name__)
@@ -132,7 +130,6 @@ def log_filter_call(method_or_name: Union[Callable, str]) -> Callable:
             msg = "{}.{}()".format(class_name, func_name)
 
             if isinstance(method_or_name, str):
-                # Houdini
                 import mantra
 
                 msg = "{} ({})".format(msg, mantra.property(method_or_name)[0])

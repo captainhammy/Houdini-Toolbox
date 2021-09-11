@@ -13,7 +13,6 @@ import time
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    # Houdini
     import hou
 
 _logger = logging.getLogger(__name__)
@@ -38,7 +37,6 @@ def restore_update_mode(update_mode: hou.updateMode):
     :return:
 
     """
-    # Houdini
     import hou
 
     # Get the current update mode so it can be restored.

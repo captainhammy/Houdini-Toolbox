@@ -22,7 +22,6 @@ from ht.nodes.styles.styles import ConstantRule, StyleConstant, StyleRule
 # Houdini
 import hou
 
-
 # =============================================================================
 # CLASSES
 # =============================================================================

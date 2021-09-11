@@ -16,7 +16,6 @@ import logging
 from typing import TYPE_CHECKING, List, Optional, Tuple, Type
 
 if TYPE_CHECKING:
-    # Houdini Toolbox
     from ht.pyfilter.operations.operation import PyFilterOperation
 
 _logger = logging.getLogger(__name__)
@@ -185,7 +184,6 @@ def _find_operation_files() -> Tuple[str]:
     :return: Any found operations files.
 
     """
-    # Houdini
     import hou
 
     # Look for files containing a list of operations.
