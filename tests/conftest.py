@@ -6,6 +6,7 @@
 
 # Standard Library
 import os
+import pathlib
 from xml.etree import ElementTree
 
 # Third Party
@@ -108,6 +109,28 @@ def exec_tool_script():
         exec(contents, {"kwargs": kwargs})
 
     return _exec
+
+
+@pytest.fixture(scope="module")
+def load_module_test_file(request):
+    """Load a test hip file with the same name as the running module.
+
+    The file must be under a data/ directory which is a sibling of the test file.
+
+    The fixture will clear the hip file after the tests are completed.
+
+    """
+    test_file_name = request.module.__name__.rsplit(".", 1)[-1] + ".hip"
+
+    parent = pathlib.Path(request.module.__file__).parent
+    test_file_path = parent / "data" / test_file_name
+
+    hou.hipFile.load(str(test_file_path), ignore_load_warnings=True)
+
+    yield
+
+    hou.hipFile.clear()
+
 
 
 @pytest.fixture

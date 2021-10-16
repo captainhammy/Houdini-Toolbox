@@ -16,30 +16,9 @@ import ht.nodes.parameters
 # Houdini
 import hou
 
-# =============================================================================
-# FIXTURES
-# =============================================================================
-
-
-@pytest.fixture(scope="module")
-def load_test_file():
-    """Load the test hip file."""
-    hou.hipFile.load(
-        os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
-            "data",
-            "test_parameters.hipnc",
-        ),
-        ignore_load_warnings=True,
-    )
-
-    yield
-
-    hou.hipFile.clear()
-
 
 # Need to ensure the hip file gets loaded.
-pytestmark = pytest.mark.usefixtures("load_test_file")
+pytestmark = pytest.mark.usefixtures("load_module_test_file")
 
 
 # =============================================================================

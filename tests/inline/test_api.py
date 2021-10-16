@@ -16,33 +16,15 @@ import ht.inline.api
 # Houdini
 import hou
 
+
+pytestmark = pytest.mark.usefixtures("load_module_test_file")
+
+
 # =============================================================================
 # GLOBALS
 # =============================================================================
 
 OBJ = hou.node("/obj")
-
-
-# =============================================================================
-# FIXTURES
-# =============================================================================
-
-
-@pytest.fixture(scope="module")
-def load_test_file():
-    """Load the test hip file."""
-    hou.hipFile.load(
-        os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
-            "data",
-            "test_api_integration.hip",
-        ),
-        ignore_load_warnings=True,
-    )
-
-
-# Need to ensure the hip file gets loaded.
-pytestmark = pytest.mark.usefixtures("load_test_file")
 
 
 # =============================================================================
