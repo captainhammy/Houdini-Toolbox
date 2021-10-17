@@ -1,6 +1,7 @@
 
 # Default Houdini version to use for commands.
 HOUDINI_VERSION := $(shell houdini --default-version)
+_HOUDINI_PLUGIN_DIR = ${TOOLBOX_PLUGIN_INSTALL_DIR}/${HOUDINI_VERSION}
 
 # Quickly compile Qt icons using PySide2.
 build-icons:
@@ -46,4 +47,4 @@ run-lint:
 # Run Python unit tests
 run-tests:
 	@coverage erase
-	env --unset=HOUDINI_PATH TOOLBAR_PATH=`pwd`/houdini/toolbar hython --version $(HOUDINI_VERSION) -m pytest tests/
+	env --unset=HOUDINI_PACKAGE_DIR TOOLBAR_PATH=`pwd`/houdini/toolbar HOUDINI_DSO_PATH="${_HOUDINI_PLUGIN_DIR}/dso:&" PYTHONPATH=${_HOUDINI_PLUGIN_DIR}/python:${PYTHONPATH} hython --version $(HOUDINI_VERSION) -m pytest tests/
