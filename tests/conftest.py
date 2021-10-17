@@ -120,10 +120,10 @@ def load_module_test_file(request):
     The fixture will clear the hip file after the tests are completed.
 
     """
-    test_file_name = request.module.__name__.rsplit(".", 1)[-1] + ".hip"
+    test_file_name = os.path.splitext(os.path.basename(request.module.__file__))[0] + ".hip"
 
-    parent = pathlib.Path(request.module.__file__).parent
-    test_file_path = parent / "data" / test_file_name
+    test_dir = request.fspath.dirpath()
+    test_file_path = test_dir / "data" / test_file_name
 
     hou.hipFile.load(str(test_file_path), ignore_load_warnings=True)
 
