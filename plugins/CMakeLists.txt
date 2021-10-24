@@ -10,6 +10,12 @@ project( HoudiniToolbox )
 # specifying this path.
 list( APPEND CMAKE_PREFIX_PATH "$ENV{HFS}/toolkit/cmake" )
 
+# If something hasn't already defined the HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR var then
+# set it based on the same named env var.
+if(NOT DEFINED HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR)
+    set(HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR "$ENV{HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR}")
+endif()
+
 # Locate Houdini's libraries and header files.
 # Registers an imported library target named 'Houdini'.
 find_package( Houdini REQUIRED )
@@ -44,11 +50,11 @@ function ( add_secondary_files )
 	    TARGET ${library_name} POST_BUILD 
 	    COMMAND "${CMAKE_COMMAND}" -E copy
 		    "${PROJECT_SOURCE_DIR}/tool.shelf"
-		    "$ENV{PLUGIN_BUILD_DIR}/toolbar/${shelf_name}"
+		    "${HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR}/toolbar/${shelf_name}"
 	    COMMENT "Copying shelf file to target"
 	)
 	
-	list(APPEND files_to_clean "$ENV{PLUGIN_BUILD_DIR}/toolbar/${shelf_name}")
+	list(APPEND files_to_clean "${HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR}/toolbar/${shelf_name}")
 
     endif()
 
@@ -58,11 +64,11 @@ function ( add_secondary_files )
 	    TARGET ${library_name} POST_BUILD 
 	    COMMAND "${CMAKE_COMMAND}" -E copy
 		    "${PROJECT_SOURCE_DIR}/help.txt"
-		    "$ENV{PLUGIN_BUILD_DIR}/help/nodes/${help_context}/${help_name}"
+		    "${HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR}/help/nodes/${help_context}/${help_name}"
 	    COMMENT "Copying help file to target"
 	)
 
-	list(APPEND files_to_clean "$ENV{PLUGIN_BUILD_DIR}/help/nodes/${help_context}/${help_name}")
+	list(APPEND files_to_clean "${HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR}/help/nodes/${help_context}/${help_name}")
 
     endif()
 
@@ -71,7 +77,7 @@ function ( add_secondary_files )
 	    TARGET ${library_name} POST_BUILD 
 	    COMMAND "${CMAKE_COMMAND}" -E copy
 		    "${PROJECT_SOURCE_DIR}/icon.${MY_INSTALL_ICON}"
-		    "$ENV{PLUGIN_BUILD_DIR}/config/Icons/${tool_icon_file}"
+		    "${HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR}/config/Icons/${tool_icon_file}"
 	    COMMENT "Copying icon file for operator"
 	)
 
@@ -79,14 +85,14 @@ function ( add_secondary_files )
 	    TARGET ${library_name} POST_BUILD 
 	    COMMAND "${CMAKE_COMMAND}" -E copy
 		    "${PROJECT_SOURCE_DIR}/icon.${MY_INSTALL_ICON}"
-		    "$ENV{PLUGIN_BUILD_DIR}/help/nodes/${help_context}/${help_icon_name}"
+		    "${HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR}/help/nodes/${help_context}/${help_icon_name}"
 	    COMMENT "Copying icon file for help card"
 	)
 
 	if ( MY_INSTALL_SHELF )
 	    add_custom_command(
 		TARGET ${library_name} POST_BUILD 
-		COMMAND sed -i -e "s/\{ICON_INSTALL_NAME\}/${tool_icon_name}/g" "$ENV{PLUGIN_BUILD_DIR}/toolbar/${shelf_name}"
+		COMMAND sed -i -e "s/\{ICON_INSTALL_NAME\}/${tool_icon_name}/g" "${HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR}/toolbar/${shelf_name}"
 		COMMENT "Updating shelf icon path"
 	    )
 
@@ -95,14 +101,14 @@ function ( add_secondary_files )
 	if ( MY_INSTALL_HELP )
 	    add_custom_command(
 		TARGET ${library_name} POST_BUILD 
-		COMMAND sed -i -e "s/\{ICON_INSTALL_PATH\}/${help_icon_name}/g" "$ENV{PLUGIN_BUILD_DIR}/help/nodes/${help_context}/${help_name}"
+		COMMAND sed -i -e "s/\{ICON_INSTALL_PATH\}/${help_icon_name}/g" "${HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR}/help/nodes/${help_context}/${help_name}"
 	    )
 
 	endif()
 
 
-	list(APPEND files_to_clean "$ENV{PLUGIN_BUILD_DIR}/config/Icons/${tool_icon_file}")
-	list(APPEND files_to_clean "$ENV{PLUGIN_BUILD_DIR}/help/nodes/${help_context}/${help_icon_name}")
+	list(APPEND files_to_clean "${HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR}/config/Icons/${tool_icon_file}")
+	list(APPEND files_to_clean "${HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR}/help/nodes/${help_context}/${help_icon_name}")
 
     endif()
 

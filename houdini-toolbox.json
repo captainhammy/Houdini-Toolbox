@@ -10,9 +10,6 @@
 	{
 	    "PYTHONPATH":
 	    [
-		"${TOOLBOX_HOUDINI_PLUGIN_DIR}/python", {
-		    "method": "prepend"
-		},
 		"${HOUDINI_PACKAGE_PATH}/python", {
 		    "method": "prepend"
 		}

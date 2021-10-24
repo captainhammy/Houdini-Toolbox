@@ -57,4 +57,7 @@ plugins/build
 *.ifd
 */backup/*
 houdini/otls/backup
-*pylint.*.out
+
+# Local stuff
+*.code-workspace
+*.vscode

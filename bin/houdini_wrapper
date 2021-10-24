@@ -431,7 +431,7 @@ def main():
         # Set the plugin installation directory to the plugin path if
         # the build has one.
         if build.plugin_path is not None:
-            os.environ["PLUGIN_BUILD_DIR"] = build.plugin_path
+            os.environ["HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR"] = build.plugin_path
 
     # Dumping all the environment and Houdini settings.
     if args.dump_env:

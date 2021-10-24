@@ -18,7 +18,7 @@ target_include_directories( ${library_name} PRIVATE
 )
 
 # Sets several common target properties, such as the library's output directory.
-houdini_configure_target( ${library_name} INSTDIR "$ENV{PLUGIN_BUILD_DIR}/python" )
+houdini_configure_target( ${library_name} INSTDIR "${HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR}/python${_houdini_python_version}libs" )
 
 target_include_directories( ${library_name} PRIVATE ${OPUI_GenericTextBadge_SOURCE_DIR} )
 
