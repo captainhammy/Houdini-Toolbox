@@ -27,7 +27,8 @@ def dropAccept(file_paths: List[str]) -> bool:  # pylint: disable=invalid-name
     """
     # Let Houdini handle dropping .hip files.
     if any(
-        file_path for file_path in file_paths
+        file_path
+        for file_path in file_paths
         if os.path.splitext(file_path)[1] == ".hip"
     ):
         return False

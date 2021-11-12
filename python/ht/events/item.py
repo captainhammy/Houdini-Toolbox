@@ -81,7 +81,9 @@ class HoudiniEventItem:
         return not self.__eq__(other)
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} {self.name} ({len(self.callables)} callables)>"
+        return (
+            f"<{self.__class__.__name__} {self.name} ({len(self.callables)} callables)>"
+        )
 
     # -------------------------------------------------------------------------
     # PROPERTIES

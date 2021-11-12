@@ -29,9 +29,7 @@ _RELEASE_TYPE_MAP = {"devel": ("Daily", "white"), "gold": ("Production", "blue")
 
 _STATUS_MAP = {"good": "white", "bad": "red"}
 
-_VERSION_PLATFORM_MAP = {
-    "19.0": "linux_x86_64_gcc9.3"
-}
+_VERSION_PLATFORM_MAP = {"19.0": "linux_x86_64_gcc9.3"}
 
 # =============================================================================
 # CLASSES
@@ -77,8 +75,12 @@ class _Service:
             product, version=version, platform=platform, only_production=only_production
         )
 
-        releases_list = [release for release in releases_list
-                         if release["platform"] == _VERSION_PLATFORM_MAP.get(release["version"], release["platform"])]
+        releases_list = [
+            release
+            for release in releases_list
+            if release["platform"]
+            == _VERSION_PLATFORM_MAP.get(release["version"], release["platform"])
+        ]
 
         # Sort the release list by integer version/build since it will be sorted by string
         def sorter(data):
@@ -179,21 +181,19 @@ def _get_access_token_and_expiry_time(
     :return: An access token and token expiration time.
 
     """
-    basic_value = base64.b64encode(
-        f"{client_id}:{client_secret_key}".encode()
-    ).decode("utf-8")
+    basic_value = base64.b64encode(f"{client_id}:{client_secret_key}".encode()).decode(
+        "utf-8"
+    )
 
     response = requests.post(
         access_token_url,
-        headers={
-            "Authorization": f"Basic {basic_value}"
-        },
+        headers={"Authorization": f"Basic {basic_value}"},
     )
 
     if response.status_code != 200:
         raise AuthorizationError(
             response.status_code,
-            f"{response.status_code}: {_extract_traceback_from_response(response)}"
+            f"{response.status_code}: {_extract_traceback_from_response(response)}",
         )
 
     response_json = response.json()
@@ -310,7 +310,9 @@ def _get_build_to_download(
     release = filtered[0]
 
     # Get the actual release information for this build.
-    release_info = service.get_daily_build_download(product, version, release["build"], platform)
+    release_info = service.get_daily_build_download(
+        product, version, release["build"], platform
+    )
 
     return release_info
 
@@ -321,7 +323,9 @@ def _get_sidefx_app_credentials() -> dict:
     :return: The loaded api credentials.
 
     """
-    with open(os.path.expandvars("$HOME/sesi_app_info.json"), encoding="utf-8") as handle:
+    with open(
+        os.path.expandvars("$HOME/sesi_app_info.json"), encoding="utf-8"
+    ) as handle:
         data = json.load(handle)
 
     return data
@@ -402,7 +406,9 @@ def download_build(  # pylint: disable=too-many-locals
         print(f"Downloading to {target_path}")
         print(f"\tFile size: {humanfriendly.format_size(file_size, binary=True)}")
 
-        print(f"\tDownload chunk size: {humanfriendly.format_size(chunk_size, binary=True)}\n")
+        print(
+            f"\tDownload chunk size: {humanfriendly.format_size(chunk_size, binary=True)}\n"
+        )
 
         with tqdm(
             desc="Downloading build",

@@ -121,7 +121,9 @@ def load_module_test_file(request):
     """
     test_dir = request.fspath.dirpath()
 
-    test_file_name = os.path.splitext(os.path.basename(request.module.__file__))[0] + ".hip"
+    test_file_name = (
+        os.path.splitext(os.path.basename(request.module.__file__))[0] + ".hip"
+    )
 
     test_file_path = test_dir / "data" / test_file_name
 
@@ -130,7 +132,6 @@ def load_module_test_file(request):
     yield
 
     hou.hipFile.clear()
-
 
 
 @pytest.fixture

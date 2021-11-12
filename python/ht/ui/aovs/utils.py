@@ -167,12 +167,8 @@ def build_aovs_from_multiparm(node):
 
         if lightexport:
             aov_data["lightexport"] = lightexport
-            aov_data["lightexport_scope"] = node.evalParm(
-                f"vm_lightexport_scope{idx}"
-            )
-            aov_data["lighexport_select"] = node.evalParm(
-                f"vm_lightexport_select{idx}"
-            )
+            aov_data["lightexport_scope"] = node.evalParm(f"vm_lightexport_scope{idx}")
+            aov_data["lighexport_select"] = node.evalParm(f"vm_lightexport_select{idx}")
 
         aovs.append(AOV(aov_data))
 

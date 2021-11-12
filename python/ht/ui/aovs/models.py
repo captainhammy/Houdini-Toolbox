@@ -250,9 +250,7 @@ class AOVNode(AOVBaseNode):
             lines.append(f"Exclude from DCM: {aov.exclude_from_dcm}")
 
         if aov.componentexport:
-            lines.append(
-                f"\nExport variable for each component: {aov.componentexport}"
-            )
+            lines.append(f"\nExport variable for each component: {aov.componentexport}")
 
             lines.append(f"Export Components: {', '.join(aov.components)}")
 

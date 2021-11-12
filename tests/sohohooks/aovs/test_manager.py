@@ -1196,7 +1196,9 @@ class Test_AOVFile:
             mock_handle.assert_called_with(path, "w", encoding="utf-8")
 
         else:
-            mock_handle.assert_called_with(mock_path_prop.return_value, "w", encoding="utf-8")
+            mock_handle.assert_called_with(
+                mock_path_prop.return_value, "w", encoding="utf-8"
+            )
 
         mock_dump.assert_called_with(expected, mock_handle.return_value, indent=4)
 

@@ -192,7 +192,7 @@ class Test_ZDepthPass:
         properties.mock_set.assert_not_called()
 
     def test_filter_plane__pz_already_set(self, init_operation, properties, patch_soho):
-        """Test filtering Pz when Pz has already been manually set. """
+        """Test filtering Pz when Pz has already been manually set."""
         properties.mock_get.return_value = "Pz"
 
         op = init_operation()
@@ -203,7 +203,7 @@ class Test_ZDepthPass:
         properties.mock_set.assert_called_with("plane:disable", True)
 
     def test_filter_plane__no_pz_c(self, init_operation, properties, patch_soho):
-        """Test filtering C when Pz has not already been set. """
+        """Test filtering C when Pz has not already been set."""
         properties.mock_get.return_value = "C"
 
         op = init_operation()
@@ -216,7 +216,7 @@ class Test_ZDepthPass:
         properties.mock_set.assert_not_called()
 
     def test_filter_plane__no_pz_of(self, init_operation, properties, patch_soho):
-        """Test filtering Of when Pz has not already been set. """
+        """Test filtering Of when Pz has not already been set."""
         properties.mock_get.return_value = "Of"
 
         op = init_operation()
@@ -231,7 +231,7 @@ class Test_ZDepthPass:
     def test_filter_plane__not_set_misc_channel(
         self, init_operation, properties, mocker, patch_soho
     ):
-        """Test filtering a non-special plane when Pz has not already been set. """
+        """Test filtering a non-special plane when Pz has not already been set."""
         properties.mock_get.return_value = "channel1"
 
         op = init_operation()
@@ -252,7 +252,7 @@ class Test_ZDepthPass:
         properties.mock_set.assert_has_calls(calls)
 
     def test_filter_plane__set_pz_misc(self, init_operation, properties, patch_soho):
-        """Test filtering a non-special plane when Pz has already been set. """
+        """Test filtering a non-special plane when Pz has already been set."""
         properties.mock_get.return_value = "channel1"
 
         op = init_operation()

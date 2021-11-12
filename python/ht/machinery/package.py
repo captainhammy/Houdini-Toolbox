@@ -141,12 +141,12 @@ class HoudiniBase:
 
     @property
     def build(self) -> int:
-        """The build number for this build. """
+        """The build number for this build."""
         return self._build
 
     @property
     def candidate(self) -> Optional[int]:
-        """The release candidate number for this build. """
+        """The release candidate number for this build."""
         return self._candidate
 
     @property
@@ -156,22 +156,22 @@ class HoudiniBase:
 
     @property
     def major(self) -> int:
-        """The major number for this build. """
+        """The major number for this build."""
         return self._major
 
     @property
     def major_minor(self) -> str:
-        """The major.minor number for this build. """
+        """The major.minor number for this build."""
         return f"{self.major}.{ self.minor}"
 
     @property
     def minor(self) -> int:
-        """The minor number for this build. """
+        """The minor number for this build."""
         return self._minor
 
     @property
     def path(self) -> str:
-        """The file path on disk of the build. """
+        """The file path on disk of the build."""
         return self._path
 
     @property

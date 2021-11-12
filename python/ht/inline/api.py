@@ -1470,7 +1470,9 @@ def geometry_has_prims_with_shared_vertex_points(geometry: hou.Geometry) -> bool
     return _cpp_methods.hasPrimsWithSharedVertexPoints(geometry)
 
 
-def get_primitives_with_shared_vertex_points(geometry: hou.Geometry) -> Tuple[hou.Prim, ...]:
+def get_primitives_with_shared_vertex_points(
+    geometry: hou.Geometry,
+) -> Tuple[hou.Prim, ...]:
     """Get any primitives in the geometry which have more than one vertex
     referencing the same point.
 
@@ -2703,7 +2705,9 @@ def get_oriented_point_transform(point: hou.Point) -> hou.Matrix4:
 
         # If the primitive is a Face of Surface we can't do anything.
         if isinstance(prim, (hou.Face, hou.Surface)):
-            raise hou.OperationFailed(f"Point {point.number()} is bound to raw geometry")
+            raise hou.OperationFailed(
+                f"Point {point.number()} is bound to raw geometry"
+            )
 
         # Get the primitive's rotation matrix.
         rot_matrix = prim.transform()

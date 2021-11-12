@@ -13,6 +13,7 @@ from enum import Enum
 
 # pylint: disable=invalid-name
 
+
 class HipFileEvents(Enum):
     """Events mapping to hou.hipFileEventType values."""
 

@@ -253,7 +253,9 @@ def _patch_logger(logger: logging.Logger):
     """
     original_logger_class = logger.__class__
 
-    logger.__class__ = patch_logger(logger.__class__)  # pylint: disable=invalid-class-object
+    logger.__class__ = patch_logger(  # pylint: disable=invalid-class-object
+        logger.__class__
+    )
 
     try:
         yield

@@ -42,13 +42,21 @@ class Test_handle_houdini_paste_event:
 
         mock_paste.assert_called_with(mock_editor)
 
-        mock_editor.posFromScreen.assert_called_with(mock_editor.screenBounds().center())
+        mock_editor.posFromScreen.assert_called_with(
+            mock_editor.screenBounds().center()
+        )
 
-        mock_move.assert_called_with(mock_editor, mock_editor.posFromScreen(), mock_editor.screenBounds().center())
+        mock_move.assert_called_with(
+            mock_editor,
+            mock_editor.posFromScreen(),
+            mock_editor.screenBounds().center(),
+        )
         mock_update.assert_called_with(mock_editor)
 
         scriptargs = {"items": mock_editor.pwd().selectedItems(), "uievent": mock_event}
-        mock_run_event.assert_called_with(ht.ui.nodegraph.KeyboardEvents.PostPasteEvent, scriptargs)
+        mock_run_event.assert_called_with(
+            ht.ui.nodegraph.KeyboardEvents.PostPasteEvent, scriptargs
+        )
 
     def test_keyhit(self, mocker):
         """Test when the eventtype is "keyhit"."""
@@ -75,11 +83,15 @@ class Test_handle_houdini_paste_event:
 
         mock_editor.posFromScreen.assert_called_with(mock_event.mousepos)
 
-        mock_move.assert_called_with(mock_editor, mock_editor.posFromScreen(), mock_event.mousepos)
+        mock_move.assert_called_with(
+            mock_editor, mock_editor.posFromScreen(), mock_event.mousepos
+        )
         mock_update.assert_called_with(mock_editor)
 
         scriptargs = {"items": mock_editor.pwd().selectedItems(), "uievent": mock_event}
-        mock_run_event.assert_called_with(ht.ui.nodegraph.KeyboardEvents.PostPasteEvent, scriptargs)
+        mock_run_event.assert_called_with(
+            ht.ui.nodegraph.KeyboardEvents.PostPasteEvent, scriptargs
+        )
 
     def test_parentkeyhit(self, mocker):
         """Test when the eventtype is "parentkeyhit"."""
@@ -109,7 +121,9 @@ class Test_handle_houdini_paste_event:
         mock_update.assert_called_with(mock_editor)
 
         scriptargs = {"items": mock_editor.pwd().selectedItems(), "uievent": mock_event}
-        mock_run_event.assert_called_with(ht.ui.nodegraph.KeyboardEvents.PostPasteEvent, scriptargs)
+        mock_run_event.assert_called_with(
+            ht.ui.nodegraph.KeyboardEvents.PostPasteEvent, scriptargs
+        )
 
 
 def test_is_houdini_paste_event(mocker):
@@ -121,4 +135,6 @@ def test_is_houdini_paste_event(mocker):
 
     assert result == mock_set.return_value
 
-    mock_set.assert_called_with(mock_event.editor, mock_event.key, "h.paste", mock_event.eventtype)
+    mock_set.assert_called_with(
+        mock_event.editor, mock_event.key, "h.paste", mock_event.eventtype
+    )

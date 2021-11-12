@@ -96,7 +96,10 @@ class HoudiniEventStats(metaclass=_StatsMeta):
     """
 
     def __init__(
-        self, name: Optional[str] = None, tags: Optional[List[str]] = None, post_report: bool = False
+        self,
+        name: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        post_report: bool = False,
     ):
         self._last_run_time = 0
         self._last_started = 0
@@ -203,7 +206,10 @@ class HoudiniEventItemStats(HoudiniEventStats):
     """
 
     def __init__(
-        self, name: Optional[str] = None, tags: Optional[List[str]] = None, post_report: bool = False
+        self,
+        name: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        post_report: bool = False,
     ):
         super().__init__(name, tags=tags, post_report=post_report)
 
@@ -301,7 +307,9 @@ def _get_matching_stats(
 # =============================================================================
 
 
-def get_event_stats(matching_tags: Optional[List[str]] = None) -> Tuple[HoudiniEventStats, ...]:
+def get_event_stats(
+    matching_tags: Optional[List[str]] = None,
+) -> Tuple[HoudiniEventStats, ...]:
     """Get a list of event item related stats, optionally filtered by tag.
 
     :param matching_tags: An optional list of tag values to filter by.
@@ -320,7 +328,9 @@ def get_event_stats(matching_tags: Optional[List[str]] = None) -> Tuple[HoudiniE
     return _get_matching_stats(all_stats, matching_tags)
 
 
-def get_item_stats(matching_tags: Optional[List[str]] = None) -> Tuple[HoudiniEventItemStats, ...]:
+def get_item_stats(
+    matching_tags: Optional[List[str]] = None,
+) -> Tuple[HoudiniEventItemStats, ...]:
     """Get a list of event related stats, optionally filtered by tag.
 
     :param matching_tags: An optional list of tag values to filter by.

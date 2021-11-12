@@ -1014,7 +1014,9 @@ class NewGroupDialog(_BaseGroupDialog):
                 self.status_widget.add_info(0, msg)
 
             else:
-                msg = f"Group {group_name} already exists with priority {group.priority}"
+                msg = (
+                    f"Group {group_name} already exists with priority {group.priority}"
+                )
                 self.status_widget.add_warning(0, msg)
 
         super()._additional_group_name_validation(group_name)

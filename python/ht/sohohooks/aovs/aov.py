@@ -371,7 +371,10 @@ class AOV:
         :return: Data representing this object.
 
         """
-        data: Dict[str, Any] = {consts.VARIABLE_KEY: self.variable, consts.VEXTYPE_KEY: self.vextype}
+        data: Dict[str, Any] = {
+            consts.VARIABLE_KEY: self.variable,
+            consts.VEXTYPE_KEY: self.vextype,
+        }
 
         if self.channel:
             data[consts.CHANNEL_KEY] = self.channel
