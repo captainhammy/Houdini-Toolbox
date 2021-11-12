@@ -227,7 +227,7 @@ def _get_operation_data(file_path: str) -> dict:
 
     """
     try:
-        with open(file_path) as handle:
+        with open(file_path, encoding="utf-8") as handle:
             data = json.load(handle)
 
     except (IOError, ValueError) as inst:

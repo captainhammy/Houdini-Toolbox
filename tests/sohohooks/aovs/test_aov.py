@@ -1912,9 +1912,7 @@ class Test__write_light:
         mock_write.assert_called_with(
             {
                 consts.LIGHTEXPORT_KEY: mock_light.getName.return_value,
-                consts.CHANNEL_KEY: "{}_{}{}".format(
-                    mock_prefix, mock_base, mock_suffix
-                ),
+                consts.CHANNEL_KEY: f"{mock_prefix}_{mock_base}{mock_suffix}",
             },
             mock_wrangler,
             mock_cam,
@@ -1944,9 +1942,7 @@ class Test__write_light:
         mock_write.assert_called_with(
             {
                 consts.LIGHTEXPORT_KEY: mock_light.getName.return_value,
-                consts.CHANNEL_KEY: "{}_{}".format(
-                    mock_name.__getitem__.return_value.replace.return_value, mock_base
-                ),
+                consts.CHANNEL_KEY: f"{mock_name.__getitem__.return_value.replace.return_value}_{mock_base}",
             },
             mock_wrangler,
             mock_cam,
@@ -1982,9 +1978,7 @@ class Test__write_light:
         mock_write.assert_called_with(
             {
                 consts.LIGHTEXPORT_KEY: mock_name,
-                consts.CHANNEL_KEY: "{}{}".format(
-                    mock_base, mock_default_suffix.__getitem__.return_value
-                ),
+                consts.CHANNEL_KEY: f"{mock_base}{mock_default_suffix.__getitem__.return_value}",
             },
             mock_wrangler,
             mock_cam,
@@ -2093,7 +2087,7 @@ class Test__write_per_category:
         mock_write.assert_called_with(
             {
                 consts.LIGHTEXPORT_KEY: "light1 light2",
-                consts.CHANNEL_KEY: "{}_{}".format(category, base_channel),
+                consts.CHANNEL_KEY: f"{category}_{base_channel}",
             },
             mock_wrangler,
             mock_cam,

@@ -120,5 +120,5 @@ def set_generic_text_badge_color(node: hou.Node, color: hou.Color):
         # Set the user data with a valid text -> color string.
         node.setUserData(
             _ht_generic_text_badge.get_generic_text_color_key(),
-            "rgb {} {} {}".format(*rgb_value),
+            f"rgb {rgb_value[0]} {rgb_value[1]} {rgb_value[2]}",
         )

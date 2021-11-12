@@ -58,7 +58,7 @@ class TreeNode:
         return hash(self.name)
 
     def __repr__(self):
-        return "<{} {}>".format(self.__class__.__name__, self.name)
+        return f"<{self.__class__.__name__} {self.name}>"
 
     # -------------------------------------------------------------------------
     # PROPERTIES
@@ -230,45 +230,45 @@ class AOVNode(AOVBaseNode):
         aov = self.aov
 
         lines = [
-            "VEX Variable: {}".format(aov.variable),
-            "VEX Type: {}".format(aov.vextype),
+            f"VEX Variable: {aov.variable}",
+            f"VEX Type: {aov.vextype}",
         ]
 
         if aov.channel:
-            lines.append("Channel Name: {}".format(aov.channel))
+            lines.append(f"Channel Name: {aov.channel}")
 
         if aov.quantize is not None:
-            lines.append("Quantize: {}".format(aov.quantize))
+            lines.append(f"Quantize: {aov.quantize}")
 
         if aov.sfilter is not None:
-            lines.append("Sample Filter: {}".format(aov.sfilter))
+            lines.append(f"Sample Filter: {aov.sfilter}")
 
         if aov.pfilter is not None:
-            lines.append("Pixel Filter: {}".format(aov.pfilter))
+            lines.append(f"Pixel Filter: {aov.pfilter}")
 
         if aov.exclude_from_dcm is not None:
-            lines.append("Exclude from DCM: {}".format(aov.exclude_from_dcm))
+            lines.append(f"Exclude from DCM: {aov.exclude_from_dcm}")
 
         if aov.componentexport:
             lines.append(
-                "\nExport variable for each component: {}".format(aov.componentexport)
+                f"\nExport variable for each component: {aov.componentexport}"
             )
 
-            lines.append("Export Components: {}".format(", ".join(aov.components)))
+            lines.append(f"Export Components: {', '.join(aov.components)}")
 
         if aov.lightexport is not None:
-            lines.append("\nLight Exports: {}".format(aov.lightexport))
-            lines.append("Light Mask: {}".format(aov.lightexport_scope))
-            lines.append("Light Selection: {}".format(aov.lightexport_select))
+            lines.append(f"\nLight Exports: {aov.lightexport}")
+            lines.append(f"Light Mask: {aov.lightexport_scope}")
+            lines.append(f"Light Selection: {aov.lightexport_select}")
 
         if aov.comment:
-            lines.append("\nComment: {}".format(aov.comment))
+            lines.append(f"\nComment: {aov.comment}")
 
         if aov.priority > -1:
-            lines.append("\nPriority: {}".format(aov.priority))
+            lines.append(f"\nPriority: {aov.priority}")
 
         if aov.path is not None:
-            lines.append("\n{}".format(aov.path))
+            lines.append(f"\n{aov.path}")
 
         return "\n".join(lines)
 
@@ -318,19 +318,19 @@ class AOVGroupNode(AOVBaseNode):
         """Return a tooltip for the AOV group."""
         group = self.group
 
-        lines = ["Name: {}".format(group.name)]
+        lines = [f"Name: {group.name}"]
 
         if group.comment:
-            lines.append("\nComment: {}".format(group.comment))
+            lines.append(f"\nComment: {group.comment}")
 
         if group.priority > -1:
-            lines.append("\nPriority: {}".format(group.priority))
+            lines.append(f"\nPriority: {group.priority}")
 
         if group.icon is not None:
-            lines.append("\nIcon: {}".format(group.icon))
+            lines.append(f"\nIcon: {group.icon}")
 
         if group.path is not None:
-            lines.append("\n{}".format(group.path))
+            lines.append(f"\n{group.path}")
 
         return "\n".join(lines)
 
@@ -475,7 +475,7 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
                 aov = node.item
 
                 if aov.channel:
-                    return "{} ({})".format(aov.variable, aov.channel)
+                    return f"{aov.variable} ({aov.channel})"
 
             return node.name
 
@@ -588,9 +588,7 @@ class AOVSelectModel(BaseAOVTreeModel):
         """Find a folder with a given name."""
         node = self.get_node(QtCore.QModelIndex())
 
-        for row in range(len(node.children)):
-            child = node.children[row]
-
+        for row, child in enumerate(node.children):
             if child.name == name:
                 return self.createIndex(row, 0, child)
 

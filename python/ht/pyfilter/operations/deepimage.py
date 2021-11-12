@@ -200,37 +200,37 @@ class SetDeepImage(PyFilterOperation):
             args.append("--disable-deep-image")
 
         if deep_image_path is not None:
-            args.append("--deep-image-path={}".format(deep_image_path))
+            args.append(f"--deep-image-path={deep_image_path}")
 
         if resolver is not None:
-            args.append("--deep-resolver={}".format(resolver))
+            args.append(f"--deep-resolver={resolver}")
 
         if compositing is not None:
-            args.append("--deep-compositing={}".format(compositing))
+            args.append(f"--deep-compositing={compositing}")
 
         if compression is not None:
-            args.append("--deep-compression={}".format(compression))
+            args.append(f"--deep-compression={compression}")
 
         if depth_planes is not None:
             if not isinstance(depth_planes, str):
                 depth_planes = ",".join(depth_planes)
 
-            args.append("--deep-depth-planes={}".format(depth_planes))
+            args.append(f"--deep-depth-planes={depth_planes}")
 
         if mipmaps is not None:
-            args.append("--deep-mipmaps={}".format(mipmaps))
+            args.append(f"--deep-mipmaps={mipmaps}")
 
         if ofsize is not None:
-            args.append("--deep-ofsize={}".format(ofsize))
+            args.append(f"--deep-ofsize={ofsize}")
 
         if ofstorage is not None:
-            args.append("--deep-ofstorage={}".format(ofstorage))
+            args.append(f"--deep-ofstorage={ofstorage}")
 
         if pzstorage is not None:
-            args.append("--deep-pzstorage={}".format(pzstorage))
+            args.append(f"--deep-pzstorage={pzstorage}")
 
         if zbias is not None:
-            args.append("--deep-zbias={}".format(zbias))
+            args.append(f"--deep-zbias={zbias}")
 
         if deep_all_passes:
             args.append("--deep-all-passes")

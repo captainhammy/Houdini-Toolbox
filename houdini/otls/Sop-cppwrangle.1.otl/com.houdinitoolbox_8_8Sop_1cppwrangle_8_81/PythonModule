@@ -127,10 +127,10 @@ def _get_compile_target_folder(node: hou.SopNode) -> Optional[str]:
         compile_target = node.evalParm("custom_compile_target")
 
     else:
-        raise ValueError("Invalid target: {}".format(target))
+        raise ValueError(f"Invalid target: {target}")
 
     if not os.path.isdir(compile_target):
-        raise IOError("Target directory '{}' does not exist".format(compile_target))
+        raise IOError(f"Target directory '{compile_target}' does not exist")
 
     return compile_target
 
@@ -191,13 +191,13 @@ def _get_includes(node: hou.SopNode) -> str:
             headers.append(header)
 
     # Build include statements.
-    includes = "\n".join(["#include <{}>".format(header) for header in headers])
+    includes = "\n".join([f"#include <{header}>" for header in headers])
 
     # Handle any custom code to add as well.
     include_code = node.evalParm("include_code")
 
     if include_code:
-        includes += "\n\n{}\n\n".format(include_code)
+        includes += f"\n\n{include_code}\n\n"
 
     return includes
 
@@ -303,4 +303,4 @@ def view_c_file(node: hou.SopNode):
 
     if os.path.exists(cpp_file_path):
         args = os.environ.get("EDITOR", "gvim").split() + [cpp_file_path]
-        subprocess.Popen(args)
+        subprocess.Popen(args)  # pylint: disable=consider-using-with

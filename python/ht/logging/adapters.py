@@ -9,7 +9,7 @@ from __future__ import annotations
 # Standard Library
 import logging
 from contextlib import contextmanager
-from typing import Any, Dict, MutableMapping, Optional, Tuple
+from typing import Any, Optional, Tuple
 
 # Third Party
 # NOTE: Must use logquacious until in Python 3.8 as that is the version that adds
@@ -138,7 +138,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
             # Prepend the message with the node path.
             if node is not None:
                 path = node.path()
-                msg = "{} - {}".format(path, msg)
+                msg = f"{path} - {msg}"
 
             dialog = extra.pop("dialog", self.dialog)
             status_bar = extra.pop("status_bar", self.status_bar)
@@ -253,7 +253,7 @@ def _patch_logger(logger: logging.Logger):
     """
     original_logger_class = logger.__class__
 
-    logger.__class__ = patch_logger(logger.__class__)
+    logger.__class__ = patch_logger(logger.__class__)  # pylint: disable=invalid-class-object
 
     try:
         yield

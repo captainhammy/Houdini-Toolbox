@@ -223,77 +223,77 @@ class Test_DeepImage:
 
         result = deepimage.SetDeepImage.build_arg_string(deep_image_path=mock_path)
 
-        assert result == "--deep-image-path={}".format(mock_path)
+        assert result == f"--deep-image-path={mock_path}"
 
         # Set deep resolver
         mock_resolver = mocker.MagicMock(spec=str)
 
         result = deepimage.SetDeepImage.build_arg_string(resolver=mock_resolver)
 
-        assert result == "--deep-resolver={}".format(mock_resolver)
+        assert result == f"--deep-resolver={mock_resolver}"
 
         # Set compositing
         mock_compositing = mocker.MagicMock(spec=int)
 
         result = deepimage.SetDeepImage.build_arg_string(compositing=mock_compositing)
 
-        assert result == "--deep-compositing={}".format(mock_compositing)
+        assert result == f"--deep-compositing={mock_compositing}"
 
         # Set compression
         mock_compression = mocker.MagicMock(spec=int)
 
         result = deepimage.SetDeepImage.build_arg_string(compression=mock_compression)
 
-        assert result == "--deep-compression={}".format(mock_compression)
+        assert result == f"--deep-compression={mock_compression}"
 
         # Set depth planes
         mock_planes = mocker.MagicMock(spec=str)
 
         result = deepimage.SetDeepImage.build_arg_string(depth_planes=mock_planes)
 
-        assert result == "--deep-depth-planes={}".format(mock_planes)
+        assert result == f"--deep-depth-planes={mock_planes}"
 
         # Test depth planes with string list.
         result = deepimage.SetDeepImage.build_arg_string(
             depth_planes="zfront,zback".split(",")
         )
 
-        assert result == "--deep-depth-planes={}".format("zfront,zback")
+        assert result == "--deep-depth-planes=zfront,zback"
 
         # Set mipmaps
         mock_mips = mocker.MagicMock(spec=int)
 
         result = deepimage.SetDeepImage.build_arg_string(mipmaps=mock_mips)
 
-        assert result == "--deep-mipmaps={}".format(mock_mips)
+        assert result == f"--deep-mipmaps={mock_mips}"
 
         # Set ofsize
         mock_ofsize = mocker.MagicMock(spec=int)
 
         result = deepimage.SetDeepImage.build_arg_string(ofsize=mock_ofsize)
 
-        assert result == "--deep-ofsize={}".format(mock_ofsize)
+        assert result == f"--deep-ofsize={mock_ofsize}"
 
         # Set ofstorage
         mock_ofstorage = mocker.MagicMock(spec=str)
 
         result = deepimage.SetDeepImage.build_arg_string(ofstorage=mock_ofstorage)
 
-        assert result == "--deep-ofstorage={}".format(mock_ofstorage)
+        assert result == f"--deep-ofstorage={mock_ofstorage}"
 
         # Set pzstorage
         mock_pzstorage = mocker.MagicMock(spec=str)
 
         result = deepimage.SetDeepImage.build_arg_string(pzstorage=mock_pzstorage)
 
-        assert result == "--deep-pzstorage={}".format(mock_pzstorage)
+        assert result == f"--deep-pzstorage={mock_pzstorage}"
 
         # Set zbias
         mock_zbias = mocker.MagicMock(spec=str)
 
         result = deepimage.SetDeepImage.build_arg_string(zbias=mock_zbias)
 
-        assert result == "--deep-zbias={}".format(mock_zbias)
+        assert result == f"--deep-zbias={mock_zbias}"
 
     def test_register_parser_args(self, mocker):
         """Test registering parser args."""

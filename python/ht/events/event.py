@@ -29,7 +29,7 @@ class HoudiniEventFactory:
     # -------------------------------------------------------------------------
 
     def __repr__(self):
-        return "<{}>".format(self.__class__.__name__)
+        return f"<{self.__class__.__name__}>"
 
     # -------------------------------------------------------------------------
     # STATIC METHODS
@@ -62,10 +62,10 @@ class HoudiniEvent:
     """
 
     def __init__(self, name: str):
-        self._data: Dict[Any, Any] = dict()
+        self._data: Dict[Any, Any] = {}
         self._enabled = True
         self._name = name
-        self._item_map: Dict[int, List[HoudiniEventItem]] = dict()
+        self._item_map: Dict[int, List[HoudiniEventItem]] = {}
 
         self._stats = HoudiniEventStats(name)
 
@@ -74,7 +74,7 @@ class HoudiniEvent:
     # -------------------------------------------------------------------------
 
     def __repr__(self):
-        return "<{}: {}>".format(self.__class__.__name__, self.name)
+        return f"<{self.__class__.__name__}: {self.name}>"
 
     # -------------------------------------------------------------------------
     # PROPERTIES
@@ -121,7 +121,7 @@ class HoudiniEvent:
 
         """
         if not isinstance(item, HoudiniEventItem):
-            raise TypeError("Expected HoudiniEventItem, got {}".format(type(item)))
+            raise TypeError(f"Expected HoudiniEventItem, got {type(item)}")
 
         priority_items = self.item_map.setdefault(item.priority, [])
         priority_items.append(item)

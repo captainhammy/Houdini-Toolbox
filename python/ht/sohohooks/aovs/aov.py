@@ -111,7 +111,7 @@ class AOV:
         return not self.__eq__(other)
 
     def __repr__(self):
-        return "<AOV {} ({})>".format(self.variable, self.vextype)
+        return f"<AOV {self.variable} ({self.vextype})>"
 
     def __str__(self):
         return self.variable
@@ -479,7 +479,7 @@ class AOV:
             # Create a unique channel for each component and output the block.
             for component in components:
                 comp_data = copy.copy(data)
-                comp_data[consts.CHANNEL_KEY] = "{}_{}".format(channel, component)
+                comp_data[consts.CHANNEL_KEY] = f"{channel}_{component}"
                 comp_data[consts.COMPONENT_KEY] = component
 
                 self._light_export_planes(comp_data, wrangler, cam, now)
@@ -551,9 +551,7 @@ class AOVGroup:
         return not self.__eq__(other)
 
     def __repr__(self):
-        return "<{} {} ({} AOVs)>".format(
-            self.__class__.__name__, self.name, len(self.aovs)
-        )
+        return f"<{self.__class__.__name__} {self.name} ({len(self.aovs)} AOVs)>"
 
     # -------------------------------------------------------------------------
     # PROPERTIES
@@ -706,9 +704,7 @@ class InvalidAOVValueError(AOVError):  # pragma: no cover
         self.value = value
 
     def __str__(self):
-        return "Invalid value '{}' in '{}': Must be one of {}".format(
-            self.value, self.name, ALLOWABLE_VALUES[self.name]
-        )
+        return f"Invalid value '{self.value}' in '{self.name}': Must be one of {ALLOWABLE_VALUES[self.name]}"
 
 
 class MissingVariableError(AOVError):  # pragma: no cover
@@ -730,7 +726,7 @@ class MissingVexTypeError(AOVError):  # pragma: no cover
         self.variable = variable
 
     def __str__(self):
-        return "Cannot create AOV {}: missing 'vextype'.".format(self.variable)
+        return f"Cannot create AOV {self.variable}: missing 'vextype'."
 
 
 # =============================================================================
@@ -930,12 +926,12 @@ def _write_light(
     # If there is a prefix we construct the channel name using
     # it and the suffix.
     if prefix:
-        channel = "{}_{}{}".format(prefix[0], base_channel, suffix)
+        channel = f"{prefix[0]}_{base_channel}{suffix}"
 
     # If not and there is a valid suffix, add it to the channel
     # name.
     elif suffix:
-        channel = "{}{}".format(base_channel, suffix)
+        channel = f"{base_channel}{suffix}"
 
     # Throw an error because all the per-light channels will
     # have the same name.
@@ -983,7 +979,7 @@ def _write_per_category(
         if category is not None:
             # The channel is the regular channel named prefixed with
             # the category name.
-            data[consts.CHANNEL_KEY] = "{}_{}".format(category, base_channel)
+            data[consts.CHANNEL_KEY] = f"{category}_{base_channel}"
 
         else:
             data[consts.CHANNEL_KEY] = base_channel

@@ -38,7 +38,7 @@ class HoudiniEventManager:
     # -------------------------------------------------------------------------
 
     def __repr__(self):
-        return "<{}>".format(self.__class__.__name__)
+        return f"<{self.__class__.__name__}>"
 
     # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
@@ -135,9 +135,7 @@ class HoudiniEventManager:
 
         """
         if not isinstance(event_group, HoudiniEventGroup):
-            raise TypeError(
-                "Expected HoudiniEventGroup, got {}".format(type(event_group))
-            )
+            raise TypeError(f"Expected HoudiniEventGroup, got {type(event_group)}")
 
         event_mappings = event_group.event_map
 
@@ -162,7 +160,7 @@ class HoudiniEventManager:
 
         """
         if not isinstance(item, HoudiniEventItem):
-            raise TypeError("Expected HoudiniEventItem, got {}".format(type(item)))
+            raise TypeError(f"Expected HoudiniEventItem, got {type(item)}")
 
         if event_name not in self.events:
             self.create_event(event_name)
@@ -228,7 +226,7 @@ def register_function(
 
     """
     if not callable(func):
-        raise TypeError("{} is not callable".format(func))
+        raise TypeError(f"{func} is not callable")
 
     item = HoudiniEventItem((func,), item_name, priority, stat_tags=stat_tags)
 
@@ -244,7 +242,7 @@ def register_item(item: HoudiniEventItem, event_name: enum.Enum):
 
     """
     if not isinstance(item, HoudiniEventItem):
-        raise TypeError("{} is not a valid item".format(item))
+        raise TypeError(f"{item} is not a valid item")
 
     EVENT_MANAGER.register_item(item, event_name)
 

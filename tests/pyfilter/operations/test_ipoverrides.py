@@ -73,7 +73,7 @@ def init_operation(mocker):
                 setattr(type(op), key, prop)
 
             else:
-                setattr(op, "_{}".format(key), value)
+                setattr(op, f"_{key}", value)
 
         return op
 
@@ -865,7 +865,7 @@ def test_build_pixel_sample_scale_display(mocker):
     mock_node.evalParmTuple.assert_called_with("vm_samples")
     mock_node.evalParm.assert_called_with("ip_sample_scale")
     mock_scale.assert_called_with(source_samples, scale)
-    assert result == "{}x{}".format(target_samples[0], target_samples[1])
+    assert result == f"{target_samples[0]}x{target_samples[1]}"
 
 
 class Test_build_resolution_scale_display:

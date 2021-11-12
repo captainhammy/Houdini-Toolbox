@@ -146,10 +146,10 @@ class IpOverrides(PyFilterOperation):
         args = []
 
         if res_scale is not None:
-            args.append("--ip-res-scale={}".format(res_scale))
+            args.append(f"--ip-res-scale={res_scale}")
 
         if sample_scale is not None:
-            args.append("--ip-sample-scale={}".format(sample_scale))
+            args.append(f"--ip-sample-scale={sample_scale}")
 
         if disable_blur:
             args.append("--ip-disable-blur")
@@ -170,10 +170,10 @@ class IpOverrides(PyFilterOperation):
             args.append("--ip-disable-tilecallback")
 
         if bucket_size is not None:
-            args.append("--ip-bucket-size={}".format(bucket_size))
+            args.append(f"--ip-bucket-size={bucket_size}")
 
         if transparent_samples is not None:
-            args.append("--ip-transparent-samples={}".format(transparent_samples))
+            args.append(f"--ip-transparent-samples={transparent_samples}")
 
         if disable_matte:
             args.append("--ip-disable-matte")
@@ -463,7 +463,7 @@ def build_pixel_sample_scale_display(node: hou.RopNode) -> str:
 
     scale_x, scale_y = _scale_samples(samples, sample_scale)
 
-    return "{}x{}".format(scale_x, scale_y)
+    return f"{scale_x}x{scale_y}"
 
 
 def build_resolution_scale_display(node: hou.RopNode) -> str:
@@ -500,7 +500,7 @@ def build_resolution_scale_display(node: hou.RopNode) -> str:
     # Scale based our override.
     width, height = _scale_resolution(resolution, res_scale)
 
-    return "{}x{}".format(width, height)
+    return f"{width}x{height}"
 
 
 def build_pyfilter_command_from_node(node: hou.RopNode) -> str:

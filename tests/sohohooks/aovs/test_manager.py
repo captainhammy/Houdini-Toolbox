@@ -966,7 +966,7 @@ class Test_AOVFile:
 
         aov_file._init_from_file()
 
-        mock_handle.assert_called_with(mock_path.return_value)
+        mock_handle.assert_called_with(mock_path.return_value, encoding="utf-8")
 
         mock_load.assert_called_with(mock_handle.return_value)
 
@@ -1193,10 +1193,10 @@ class Test_AOVFile:
         aov_file.write_to_file(path)
 
         if external_path:
-            mock_handle.assert_called_with(path, "w")
+            mock_handle.assert_called_with(path, "w", encoding="utf-8")
 
         else:
-            mock_handle.assert_called_with(mock_path_prop.return_value, "w")
+            mock_handle.assert_called_with(mock_path_prop.return_value, "w", encoding="utf-8")
 
         mock_dump.assert_called_with(expected, mock_handle.return_value, indent=4)
 

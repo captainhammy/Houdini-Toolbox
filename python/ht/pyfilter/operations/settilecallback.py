@@ -63,7 +63,7 @@ class SetTileCallback(PyFilterOperation):
         args = []
 
         if path is not None:
-            args.append("--tile-callback={}".format(path))
+            args.append(f"--tile-callback={path}")
 
         return " ".join(args)
 

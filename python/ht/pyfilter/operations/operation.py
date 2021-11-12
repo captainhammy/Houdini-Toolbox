@@ -40,7 +40,7 @@ class PyFilterOperation:
     # -------------------------------------------------------------------------
 
     def __repr__(self):
-        return "<PyFilterOperation: {}>".format(self.__class__.__name__)
+        return f"<PyFilterOperation: {self.__class__.__name__}>"
 
     # -------------------------------------------------------------------------
     # PROPERTIES
@@ -127,12 +127,12 @@ def log_filter_call(method_or_name: Union[Callable, str]) -> Callable:
             func_name = func.__name__
             class_name = args[0].__class__.__name__
 
-            msg = "{}.{}()".format(class_name, func_name)
+            msg = f"{class_name}.{func_name}()"
 
             if isinstance(method_or_name, str):
                 import mantra
 
-                msg = "{} ({})".format(msg, mantra.property(method_or_name)[0])
+                msg = f"{msg} ({mantra.property(method_or_name)[0]})"
 
             _logger.debug(msg)
 

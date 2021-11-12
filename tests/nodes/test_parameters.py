@@ -4,9 +4,6 @@
 # IMPORTS
 # =============================================================================
 
-# Standard Library
-import os
-
 # Third Party
 import pytest
 

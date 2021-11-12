@@ -65,7 +65,7 @@ class StyleConstant:
         return not self.__eq__(other)
 
     def __repr__(self):
-        return "<StyleConstant {} ({})>".format(self.name, self.color)
+        return f"<StyleConstant {self.name} ({self.color})>"
 
     # -------------------------------------------------------------------------
     # PROPERTIES
@@ -169,12 +169,12 @@ class StyleRule:
         return not self.__eq__(other)
 
     def __repr__(self):
-        return "<StyleRule {} ({})>".format(self.name, self.color)
+        return f"<StyleRule {self.name} ({self.color})>"
 
     def __str__(self):
         value = self._get_typed_color_value()
 
-        components = [re.sub("\\.*0+$", "", "{:0.3f}".format(val)) for val in value]
+        components = [re.sub("\\.*0+$", "", f"{val:0.3f}") for val in value]
 
         return "(" + ", ".join(components) + ")"
 
@@ -275,7 +275,7 @@ class ConstantRule:
         return not self.__eq__(other)
 
     def __repr__(self):
-        return "<ConstantRule {} ({})>".format(self.name, self.constant_name)
+        return f"<ConstantRule {self.name} ({self.constant_name})>"
 
     # -------------------------------------------------------------------------
     # PROPERTIES

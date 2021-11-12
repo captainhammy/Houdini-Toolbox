@@ -155,7 +155,7 @@ class Test_HoudiniLoggerAdapter:
         result = log.process(mock_message, kwargs)
 
         assert result == (
-            "{} - {}".format(mock_node.path.return_value, mock_message),
+            f"{mock_node.path.return_value} - {mock_message}",
             kwargs,
         )
 
@@ -188,9 +188,7 @@ class Test_HoudiniLoggerAdapter:
         result = log.process(mock_message, kwargs)
 
         assert result == (
-            "{} - {}".format(
-                mock_node_prop.return_value.path.return_value, mock_message
-            ),
+            f"{ mock_node_prop.return_value.path.return_value} - {mock_message}",
             kwargs,
         )
 

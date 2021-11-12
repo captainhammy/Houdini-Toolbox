@@ -184,7 +184,7 @@ class HomeDirSource(CopyPasteSource):
         """
         sidecar_path = base_path.replace(self._extension, ".json")
 
-        with open(sidecar_path, "w") as handle:
+        with open(sidecar_path, "w", encoding="utf-8") as handle:
             json.dump(data, handle, indent=4)
 
         return sidecar_path
@@ -257,9 +257,7 @@ class HomeDirSource(CopyPasteSource):
 
         # The file name consists of the user name and the description, separated
         # by a :.
-        file_name = "{}{}{}{}".format(
-            context, _CONTEXT_SEP, clean_name, self._extension
-        )
+        file_name = f"{context}{_CONTEXT_SEP}{clean_name}{self._extension}"
 
         file_path = os.path.join(self._base_path, file_name)
 
@@ -437,7 +435,7 @@ class CPIOContextCopyPasteItemFile(CopyPasteItemSource):
     # -------------------------------------------------------------------------
 
     def __repr__(self):
-        return "<{} {}>".format(self.__class__.__name__, self.file_path)
+        return f"<{self.__class__.__name__} {self.file_path}>"
 
     # -------------------------------------------------------------------------
     # CLASS METHODS
@@ -503,7 +501,7 @@ class CPIOContextCopyPasteItemFile(CopyPasteItemSource):
 
         # If the file exists, read it.
         if os.path.exists(self._sidecar_path):
-            with open(self._sidecar_path) as handle:
+            with open(self._sidecar_path, encoding="utf-8") as handle:
                 sidecar_data = json.load(handle)
 
         else:

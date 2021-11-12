@@ -115,9 +115,7 @@ class HoudiniEventStats(metaclass=_StatsMeta):
     # -------------------------------------------------------------------------
 
     def __repr__(self):
-        return "<{}: {} run_count={} total_time={:0.3f}>".format(
-            self.__class__.__name__, self.name, self.run_count, self.total_time
-        )
+        return f"<{self.__class__.__name__}: {self.name} run_count={self.run_count} total_time={self.total_time:0.3f}>"
 
     def __enter__(self):
         self._last_started = time.time()

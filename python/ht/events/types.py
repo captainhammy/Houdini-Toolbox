@@ -11,6 +11,7 @@ from enum import Enum
 # CLASSES
 # =============================================================================
 
+# pylint: disable=invalid-name
 
 class HipFileEvents(Enum):
     """Events mapping to hou.hipFileEventType values."""

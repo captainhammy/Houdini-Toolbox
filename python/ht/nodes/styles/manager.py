@@ -63,7 +63,7 @@ class StyleManager:
         # Read all the target files in reverse.
         for path in reversed(files):
             # Open the target file and load the data.
-            with open(path) as handle:
+            with open(path, encoding="utf-8") as handle:
                 data = json.load(handle)
 
             data[constants.PATH_KEY] = path
@@ -157,9 +157,7 @@ class StyleManager:
 
                 else:
                     raise ValueError(
-                        "{} is not a manager or a generator type".format(
-                            node_type.nameWithCategory()
-                        )
+                        f"{node_type.nameWithCategory()} is not a manager or a generator type"
                     )
 
         return None

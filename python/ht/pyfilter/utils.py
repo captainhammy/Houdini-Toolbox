@@ -46,8 +46,8 @@ def build_pyfilter_command(
     else:
         # Ensure the script path exists.
         if not os.path.isfile(pyfilter_path):
-            raise OSError("No such file: {}".format(pyfilter_path))
+            raise OSError(f"No such file: {pyfilter_path}")
 
-    cmd = '-P "{} {}"'.format(pyfilter_path, " ".join(pyfilter_args))
+    cmd = f'-P "{pyfilter_path} {" ".join(pyfilter_args)}"'
 
     return cmd

@@ -123,7 +123,7 @@ class _APIFunction:
     def __getattr__(self, attr_name):
         # This isn't actually an API function, but a family of them.  Append
         # the requested function name to our name.
-        return _APIFunction("{}.{}".format(self.function_name, attr_name), self.service)
+        return _APIFunction(f"{self.function_name}.{attr_name}", self.service)
 
     def __call__(self, *args, **kwargs):
         return _call_api_with_access_token(
@@ -179,23 +179,21 @@ def _get_access_token_and_expiry_time(
     :return: An access token and token expiration time.
 
     """
+    basic_value = base64.b64encode(
+        f"{client_id}:{client_secret_key}".encode()
+    ).decode("utf-8")
+
     response = requests.post(
         access_token_url,
         headers={
-            "Authorization": "Basic {}".format(
-                base64.b64encode(
-                    "{}:{}".format(client_id, client_secret_key).encode()
-                ).decode("utf-8")
-            )
+            "Authorization": f"Basic {basic_value}"
         },
     )
 
     if response.status_code != 200:
         raise AuthorizationError(
             response.status_code,
-            "{}: {}".format(
-                response.status_code, _extract_traceback_from_response(response)
-            ),
+            f"{response.status_code}: {_extract_traceback_from_response(response)}"
         )
 
     response_json = response.json()
@@ -323,7 +321,7 @@ def _get_sidefx_app_credentials() -> dict:
     :return: The loaded api credentials.
 
     """
-    with open(os.path.expandvars("$HOME/sesi_app_info.json")) as handle:
+    with open(os.path.expandvars("$HOME/sesi_app_info.json"), encoding="utf-8") as handle:
         data = json.load(handle)
 
     return data
@@ -382,9 +380,9 @@ def download_build(  # pylint: disable=too-many-locals
         build_str = version
 
         if build is not None:
-            build_str = "{}.{}".format(build_str, build)
+            build_str = f"{build_str}.{build}"
 
-        print("No such build {}".format(build_str))
+        print(f"No such build {build_str}")
 
         return None
 
@@ -401,16 +399,10 @@ def download_build(  # pylint: disable=too-many-locals
     request = requests.get(release_info["download_url"], stream=True)
 
     if request.status_code == 200:
-        print("Downloading to {}".format(target_path))
-        print(
-            "\tFile size: {}".format(humanfriendly.format_size(file_size, binary=True))
-        )
+        print(f"Downloading to {target_path}")
+        print(f"\tFile size: {humanfriendly.format_size(file_size, binary=True)}")
 
-        print(
-            "\tDownload chunk size: {}\n".format(
-                humanfriendly.format_size(chunk_size, binary=True)
-            )
-        )
+        print(f"\tDownload chunk size: {humanfriendly.format_size(chunk_size, binary=True)}\n")
 
         with tqdm(
             desc="Downloading build",
@@ -479,7 +471,7 @@ def list_builds(
 
         row = [
             colored(
-                "{}.{}".format(release["version"], release["build"]),
+                f"{release['version']}.{release['build']}",
                 _STATUS_MAP[release["status"]],
             ),
             date_string,

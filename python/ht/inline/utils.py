@@ -118,7 +118,7 @@ def clean_string_values(values: List[str]) -> Tuple[str, ...]:
     :return: A clean tuple.
 
     """
-    return tuple([string_decode(val) for val in values if val])
+    return tuple(string_decode(val) for val in values if val)
 
 
 def find_attrib(
@@ -144,7 +144,7 @@ def find_attrib(
     if attrib_type == hou.attribType.Global:
         return geometry.findGlobalAttrib(name)
 
-    raise ValueError("Expected hou.attribType, got {}".format(type(attrib_type)))
+    raise ValueError(f"Expected hou.attribType, got {type(attrib_type)}")
 
 
 def find_group(
@@ -172,7 +172,7 @@ def find_group(
     if group_type == 3:
         return geometry.findVertexGroup(name)
 
-    raise ValueError("Invalid group type {}".format(group_type))
+    raise ValueError(f"Invalid group type {group_type}")
 
 
 def geo_details_match(geometry1: hou.Geometry, geometry2: hou.Geometry) -> bool:
@@ -206,7 +206,7 @@ def get_attrib_owner(attribute_type: hou.attribType) -> int:
         return _ATTRIB_TYPE_MAP[attribute_type]
 
     except KeyError as exc:
-        raise ValueError("Invalid attribute type: {}".format(attribute_type)) from exc
+        raise ValueError(f"Invalid attribute type: {attribute_type}") from exc
 
 
 def get_attrib_owner_from_geometry_entity_type(
@@ -236,7 +236,7 @@ def get_attrib_owner_from_geometry_entity_type(
             return value
 
     # Something went wrong so raise an exception.
-    raise ValueError("Invalid entity type: {}".format(entity_type))
+    raise ValueError(f"Invalid entity type: {entity_type}")
 
 
 def get_attrib_owner_from_geometry_type(geometry_type: hou.geometryType) -> int:
@@ -252,7 +252,7 @@ def get_attrib_owner_from_geometry_type(geometry_type: hou.geometryType) -> int:
 
     except KeyError as exc:
         # Something went wrong so raise an exception.
-        raise ValueError("Invalid geometry type: {}".format(geometry_type)) from exc
+        raise ValueError(f"Invalid geometry type: {geometry_type}") from exc
 
 
 def get_attrib_storage(data_type: hou.attribType) -> int:
@@ -266,7 +266,7 @@ def get_attrib_storage(data_type: hou.attribType) -> int:
         return _ATTRIB_STORAGE_MAP[data_type]
 
     except KeyError as exc:
-        raise ValueError("Invalid data type: {}".format(data_type)) from exc
+        raise ValueError(f"Invalid data type: {data_type}") from exc
 
 
 def get_entity_data(
@@ -566,7 +566,5 @@ def validate_multiparm_resolve_values(name: str, indices: Sequence[int]):
     # indices but if there are not enough it won't like that and return an unexpected value.
     if multi_token_count > len(indices):
         raise ValueError(
-            "Not enough indices provided. Parameter {} expects {}, {} token(s) provided.".format(
-                name, multi_token_count, len(indices)
-            )
+            f"Not enough indices provided. Parameter {name} expects {multi_token_count}, {len(indices)} token(s) provided."
         )

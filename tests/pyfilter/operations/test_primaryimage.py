@@ -85,7 +85,7 @@ class Test_SetPrimaryImage:
         result = primaryimage.SetPrimaryImage.build_arg_string(
             primary_image_path=mock_value
         )
-        assert result == "--primary-image-path={}".format(mock_value)
+        assert result == f"--primary-image-path={mock_value}"
 
         result = primaryimage.SetPrimaryImage.build_arg_string(
             disable_primary_image=True

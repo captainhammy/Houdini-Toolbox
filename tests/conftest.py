@@ -6,7 +6,6 @@
 
 # Standard Library
 import os
-import pathlib
 from xml.etree import ElementTree
 
 # Third Party
@@ -40,7 +39,7 @@ def _find_matching_node(parent, request):
         test_name = test_name[5:]
 
         # Look for a node with the class name + test name (minus test_ from function name)
-        names.append("{}_{}".format(cls_name, test_name))
+        names.append(f"{cls_name}_{test_name}")
 
         # Finally try to find a node with the class name.
         names.append(cls_name)
@@ -79,7 +78,7 @@ def exec_tool_script():
 
         # Fail if we can't find it.
         if not os.path.exists(path):
-            raise OSError("Could not find file {}".format(path))
+            raise OSError(f"Could not find file {path}")
 
         # Read the file and find all the tools.
         tree = ElementTree.parse(path)
@@ -97,11 +96,11 @@ def exec_tool_script():
 
         # We didn't find the target tool in the file so fail.
         else:
-            raise RuntimeError("Could not find tool {}".format(tool_name))
+            raise RuntimeError(f"Could not find tool {tool_name}")
 
         temp_path = os.path.join("/var/tmp/", file_name)
 
-        with open(temp_path, "w") as handle:
+        with open(temp_path, "w", encoding="utf-8") as handle:
             handle.writelines(contents)
 
         # execfile(temp_path,  {"kwargs": kwargs})
@@ -207,14 +206,14 @@ def obj_test_geo(request):
         return None
 
     if test_node.childTypeCategory() != hou.sopNodeTypeCategory():
-        raise RuntimeError("{} does not contain SOP nodes".format(test_node.path()))
+        raise RuntimeError(f"{test_node.path()} does not contain SOP nodes")
 
     return test_node.displayNode().geometry()
 
 
 @pytest.fixture(scope="function")
 def obj_test_geo_copy(obj_test_geo):
-    """Fixture to get a writable copy of the display node geometry of a ndoe in /obj matching the test."""
+    """Fixture to get a writable copy of the display node geometry of a node in /obj matching the test."""
     geo = hou.Geometry()
 
     geo.merge(obj_test_geo)

@@ -80,7 +80,7 @@ class PointCloud:
 
     def __repr__(self):
         if self._geometry.sopNode() is not None:
-            return "<PointCloud for {}>".format(self._geometry.sopNode().path())
+            return f"<PointCloud for {self._geometry.sopNode().path()}>"
 
         return "<PointCloud>"
 

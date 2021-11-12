@@ -231,7 +231,7 @@ class Test_get_global_variable_names:
 
         assert name not in result
 
-        hou.hscript("set -g {}=6666".format(name))
+        hou.hscript(f"set -g {name}=6666")
 
         result = ht.inline.api.get_global_variable_names(dirty=True)
 
@@ -264,7 +264,7 @@ class Test_get_variable_names:
 
         assert name not in result
 
-        hou.hscript("set {}=6666".format(name))
+        hou.hscript(f"set {name}=6666")
 
         result = ht.inline.api.get_variable_names(dirty=True)
 
@@ -591,7 +591,7 @@ class Test_copy_packed_prims_to_points(object):
             prim.setAttribValue(id_attrib, idx)
             prim.setAttribValue(other_attrib, "foo")
 
-            group = geo.createPrimGroup("group{}".format(idx))
+            group = geo.createPrimGroup(f"group{idx}")
             group.add(prim)
 
         return geo
@@ -654,7 +654,7 @@ class Test_copy_packed_prims_to_points(object):
             assert prim.attribValue("orig_id") == pr_idx
             assert prim.attribValue("other") == "foo"
 
-            group = obj_test_geo_copy.findPrimGroup("group{}".format(pr_idx))
+            group = obj_test_geo_copy.findPrimGroup(f"group{pr_idx}")
             assert prim in group.prims()
 
     def test_copy_none(self, obj_test_geo_copy):
@@ -3269,7 +3269,7 @@ def test_build_instance_matrix():
 )
 def test_get_node_message_nodes(node_name, expected_node):
     """Test ht.inline.api.get_node_message_nodes."""
-    node = OBJ.node("test_message_nodes/{}".format(node_name))
+    node = OBJ.node(f"test_message_nodes/{node_name}")
 
     if expected_node is not None:
         target = (node.node(expected_node),)
@@ -3290,7 +3290,7 @@ def test_get_node_message_nodes(node_name, expected_node):
 )
 def test_get_node_editable_nodes(node_name, expected_node):
     """Test ht.inline.api.get_node_editable_nodes."""
-    node = OBJ.node("test_message_nodes/{}".format(node_name))
+    node = OBJ.node(f"test_message_nodes/{node_name}")
 
     if expected_node is not None:
         target = (node.node(expected_node),)
@@ -3311,7 +3311,7 @@ def test_get_node_editable_nodes(node_name, expected_node):
 )
 def test_get_node_dive_target(node_name, expected_node):
     """Test ht.inline.api.get_node_dive_target."""
-    node = OBJ.node("test_message_nodes/{}".format(node_name))
+    node = OBJ.node(f"test_message_nodes/{node_name}")
 
     if expected_node is not None:
         target = node.node(expected_node)

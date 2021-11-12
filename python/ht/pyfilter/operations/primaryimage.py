@@ -72,7 +72,7 @@ class SetPrimaryImage(PyFilterOperation):
         args = []
 
         if primary_image_path is not None:
-            args.append("--primary-image-path={}".format(primary_image_path))
+            args.append(f"--primary-image-path={primary_image_path}")
 
         if disable_primary_image:
             args.append("--disable-primary-image")

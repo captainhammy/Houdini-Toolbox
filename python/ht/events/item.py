@@ -39,7 +39,7 @@ class HoudiniEventItem:
         self._name = name
         self._priority = priority
 
-        self._data: Dict[Any, Any] = dict()
+        self._data: Dict[Any, Any] = {}
 
         self._stats = HoudiniEventItemStats(self.name, tags=stat_tags)
 
@@ -81,9 +81,7 @@ class HoudiniEventItem:
         return not self.__eq__(other)
 
     def __repr__(self):
-        return "<{} {} ({} callables)>".format(
-            self.__class__.__name__, self.name, len(self.callables)
-        )
+        return f"<{self.__class__.__name__} {self.name} ({len(self.callables)} callables)>"
 
     # -------------------------------------------------------------------------
     # PROPERTIES

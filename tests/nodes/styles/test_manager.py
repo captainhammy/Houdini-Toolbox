@@ -127,8 +127,8 @@ class Test_StyleManager:
 
         mock_load.assert_called_with(mock_handle())
 
-        mock_handle.assert_any_call(path1)
-        mock_handle.assert_any_call(path2)
+        mock_handle.assert_any_call(path1, encoding="utf-8")
+        mock_handle.assert_any_call(path2, encoding="utf-8")
 
         mock_build_consts.assert_called_with(expected_data)
         mock_build_rules.assert_called_with(expected_data)

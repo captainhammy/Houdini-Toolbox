@@ -45,7 +45,7 @@ class CopyItemsDialog(QtWidgets.QDialog):
 
         self.context = self.parent_node.childTypeCategory().name()
 
-        self.setWindowTitle("Copy Items - {}".format(self.parent_node.path()))
+        self.setWindowTitle(f"Copy Items - {self.parent_node.path()}")
         self.setProperty("houdiniStyle", True)
         self.setStyleSheet(hou.qt.styleSheet())
         self.setMinimumWidth(650)
@@ -122,7 +122,7 @@ class PasteItemsDialog(QtWidgets.QDialog):
         self.pos = pos
         self.mousepos = mousepos
 
-        self.setWindowTitle("Paste Items - {}".format(self.editor.pwd().path()))
+        self.setWindowTitle(f"Paste Items - {self.editor.pwd().path()}")
         self.setProperty("houdiniStyle", True)
         self.setStyleSheet(hou.qt.styleSheet())
         self.setMinimumWidth(650)

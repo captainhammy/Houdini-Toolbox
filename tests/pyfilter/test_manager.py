@@ -414,6 +414,6 @@ class Test__get_operation_data:
 
         assert result == mock_load.return_value
 
-        mock_handle.assert_called_with(mock_path)
+        mock_handle.assert_called_with(mock_path, encoding="utf-8")
 
         mock_load.assert_called_with(mock_handle.return_value)

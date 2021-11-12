@@ -116,7 +116,7 @@ def convert_absolute_to_relative_path_context(scriptargs: dict) -> bool:
     """
     parms = scriptargs["parms"]
 
-    return any([_valid_to_convert_to_relative_reference(parm) for parm in parms])
+    return any(_valid_to_convert_to_relative_reference(parm) for parm in parms)
 
 
 def convert_absolute_to_relative_path(scriptargs: dict):
@@ -147,7 +147,7 @@ def convert_relative_to_absolute_path_context(scriptargs: dict) -> bool:
     """
     parms = scriptargs["parms"]
 
-    return any([_valid_to_convert_to_absolute_reference(parm) for parm in parms])
+    return any(_valid_to_convert_to_absolute_reference(parm) for parm in parms)
 
 
 def convert_relative_to_absolute_path(scriptargs: dict):
@@ -222,9 +222,7 @@ def promote_parameter_to_node(scriptargs: dict):  # pylint: disable=too-many-loc
         # should prompt to use it.
         if target_node.parmTuple(parm_tuple.name()) is not None:
             choice = hou.ui.displayMessage(
-                "Parameter already exists on {}.  Link to existing parameter?".format(
-                    target_node.path()
-                ),
+                f"Parameter already exists on {target_node.path()}.  Link to existing parameter?",
                 buttons=(
                     "Yes and keep current value",
                     "Yes and update value",

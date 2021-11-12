@@ -78,7 +78,7 @@ def _assert_prim_vertex_index(prim: hou.Prim, index: int):
 
     # If the index is too high it is also invalid.
     if index >= num_prim_vertices(prim):
-        raise IndexError("Invalid index: {}".format(index))
+        raise IndexError(f"Invalid index: {index}")
 
 
 def _get_names_in_folder(parent_template: hou.FolderParmTemplate) -> StringTuple:
@@ -1059,7 +1059,7 @@ def referencing_vertices(point: hou.Point) -> Tuple[hou.Vertex, ...]:
     # Construct a list of vertex strings.  Each element has the format:
     # {prim_num}v{vertex_index}.
     vertex_strings = [
-        "{}v{}".format(prim, idx) for prim, idx in zip(result.prims, result.indices)
+        f"{prim}v{idx}" for prim, idx in zip(result.prims, result.indices)
     ]
 
     # Glob for the vertices and return them.
@@ -1644,7 +1644,7 @@ def copy_group(
     # Check for an existing group of the same name.
     if utils.find_group(geometry, group_type, new_group_name) is not None:
         # If one exists, raise an exception.
-        raise hou.OperationFailed("Group '{}' already exists.".format(new_group_name))
+        raise hou.OperationFailed(f"Group '{new_group_name}' already exists.")
 
     attrib_owner = utils.get_group_attrib_owner(group)
 
@@ -1827,10 +1827,10 @@ def group_ungrouped_points(geometry: hou.Geometry, group_name: str) -> hou.Point
         raise hou.GeometryPermissionError()
 
     if not group_name:
-        raise ValueError("Invalid group name: {}".format(group_name))
+        raise ValueError(f"Invalid group name: {group_name}")
 
     if geometry.findPointGroup(group_name) is not None:
-        raise hou.OperationFailed("Group '{}' already exists".format(group_name))
+        raise hou.OperationFailed(f"Group '{group_name}' already exists")
 
     _cpp_methods.groupUngroupedPoints(geometry, utils.string_encode(group_name))
 
@@ -1860,10 +1860,10 @@ def group_ungrouped_prims(geometry: hou.Geometry, group_name: str) -> hou.PrimGr
         raise hou.GeometryPermissionError()
 
     if not group_name:
-        raise ValueError("Invalid group name: {}".format(group_name))
+        raise ValueError(f"Invalid group name: {group_name}")
 
     if geometry.findPrimGroup(group_name) is not None:
-        raise hou.OperationFailed("Group '{}' already exists".format(group_name))
+        raise hou.OperationFailed(f"Group '{group_name}' already exists")
 
     _cpp_methods.groupUngroupedPrims(geometry, utils.string_encode(group_name))
 
@@ -2274,9 +2274,7 @@ def eval_multiparm_instance(
     parm_template = ptg.find(name)
 
     if parm_template is None:
-        raise ValueError(
-            "Name {} does not map to a parameter on {}".format(name, node.path())
-        )
+        raise ValueError(f"Name {name} does not map to a parameter on {node.path}")
 
     # Handle directly passing a single index.
     if not isinstance(indices, (list, tuple)):
@@ -2297,7 +2295,7 @@ def eval_multiparm_instance(
     parm_tuple = node.parmTuple(full_name)
 
     if parm_tuple is None:
-        raise IndexError("Invalid indices: {} does not exist".format(full_name))
+        raise IndexError(f"Invalid indices: {full_name} does not exist")
 
     values = parm_tuple.eval()
 
@@ -2345,9 +2343,7 @@ def unexpanded_string_multiparm_instance(
     parm_template = ptg.find(name)
 
     if parm_template is None:
-        raise ValueError(
-            "Name {} does not map to a parameter on {}".format(name, node.path())
-        )
+        raise ValueError(f"Name {name} does not map to a parameter on {node.path()}")
 
     if parm_template.dataType() != hou.parmData.String:
         raise TypeError("Parameter must be a string parameter")
@@ -2370,7 +2366,7 @@ def unexpanded_string_multiparm_instance(
     parm_tuple = node.parmTuple(full_name)
 
     if parm_tuple is None:
-        raise IndexError("Invalid indices: {} does not exist".format(full_name))
+        raise IndexError(f"Invalid indices: {full_name} does not exist")
 
     values = tuple(str(parm.unexpandedString()) for parm in parm_tuple)
 
@@ -2707,9 +2703,7 @@ def get_oriented_point_transform(point: hou.Point) -> hou.Matrix4:
 
         # If the primitive is a Face of Surface we can't do anything.
         if isinstance(prim, (hou.Face, hou.Surface)):
-            raise hou.OperationFailed(
-                "Point {} is bound to raw geometry".format(point.number())
-            )
+            raise hou.OperationFailed(f"Point {point.number()} is bound to raw geometry")
 
         # Get the primitive's rotation matrix.
         rot_matrix = prim.transform()

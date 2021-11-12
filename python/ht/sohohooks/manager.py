@@ -24,7 +24,7 @@ class SohoHookManager:
     # -------------------------------------------------------------------------
 
     def __repr__(self):
-        return "<SohoHookManager ({} hooks)>".format(len(self.hooks))
+        return f"<SohoHookManager ({len(self.hooks)} hooks)>"
 
     # -------------------------------------------------------------------------
     # PROPERTIES
@@ -59,13 +59,10 @@ class SohoHookManager:
 
             # Catch any exceptions and 'log' them to the ifd via comments.
             except Exception as inst:  # pylint: disable=broad-except
-                ray_comment("Hook Error[{}]: {}".format(name, inst))
+                ray_comment(f"Hook Error[{name}]: {inst}")
 
-                ray_comment(
-                    "Traceback:\n# {}\n".format(
-                        "\n#".join(traceback.format_exc().split("\n"))
-                    )
-                )
+                msg = "\n#".join(traceback.format_exc().split("\n"))
+                ray_comment(f"Traceback:\n# {msg}\n")
 
             else:
                 if result:

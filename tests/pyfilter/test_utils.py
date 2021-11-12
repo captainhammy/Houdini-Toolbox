@@ -45,7 +45,7 @@ class Test_build_pyfilter_command:
 
         result = utils.build_pyfilter_command()
 
-        assert result == '-P "{} "'.format(mock_path)
+        assert result == f'-P "{mock_path} "'
 
         mock_find.assert_called_with("pyfilter/ht-pyfilter.py")
 
@@ -58,7 +58,7 @@ class Test_build_pyfilter_command:
 
         result = utils.build_pyfilter_command(pyfilter_path=mock_path)
 
-        assert result == '-P "{} "'.format(mock_path)
+        assert result == f'-P "{mock_path} "'
 
         mock_find.assert_not_called()
         mock_isfile.assert_called_with(mock_path)
@@ -86,6 +86,6 @@ class Test_build_pyfilter_command:
 
         result = utils.build_pyfilter_command(pyfilter_args=args)
 
-        assert result == '-P "{} {}"'.format(mock_path, " ".join(args))
+        assert result == f'-P "{mock_path} {" ".join(args)}"'
 
         mock_find.assert_called_with("pyfilter/ht-pyfilter.py")

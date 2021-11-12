@@ -28,9 +28,9 @@ KEY_HIT_TYPES = ("keyhit", "menukeyhit", "parentkeyhit")
 # ==============================================================================
 
 
-def createEventHandler(
+def createEventHandler(  # pylint: disable=invalid-name,unused-argument
     uievent: KeyboardEvent, pending_actions: List
-) -> Tuple[None, bool]:  # pylint: disable=invalid-name,unused-argument
+) -> Tuple[None, bool]:
     """Create an event handler for Houdini's network editor.
 
     :param uievent: The occurring event.

@@ -630,14 +630,12 @@ class NewAOVDialog(_BaseAOVDialog):
             priority = self.priority.value()
 
             if priority > aov.priority:
-                msg = "This definition will have priority for {}".format(variable_name)
+                msg = f"This definition will have priority for {variable_name}"
 
                 self.status_widget.add_info(0, msg)
 
             else:
-                msg = "Variable {} already exists with priority {}".format(
-                    variable_name, aov.priority
-                )
+                msg = f"Variable {variable_name} already exists with priority {aov.priority}"
 
                 self.status_widget.add_warning(0, msg)
 
@@ -664,7 +662,7 @@ class NewAOVDialog(_BaseAOVDialog):
         #                    existing_aov = aov_file.aovs[aov_file.aovs.index(new_aov)]
 
         #                    choice = hou.ui.displayMessage(
-        #                        "{} already exists in file, overwrite?".format(new_aov.variable),
+        #                        f"{new_aov.variable} already exists in file, overwrite?",
         #                        buttons=("Cancel", "OK"),
         #                        severity=hou.severityType.Warning,
         #                        details=str(existing_aov.as_data()),
@@ -1012,15 +1010,11 @@ class NewGroupDialog(_BaseGroupDialog):
             priority = self.priority.value()
 
             if priority > group.priority:
-                msg = "This definition will have priority for {}".format(group_name)
-
+                msg = f"This definition will have priority for {group_name}"
                 self.status_widget.add_info(0, msg)
 
             else:
-                msg = "Group {} already exists with priority {}".format(
-                    group_name, group.priority
-                )
-
+                msg = f"Group {group_name} already exists with priority {group.priority}"
                 self.status_widget.add_warning(0, msg)
 
         super()._additional_group_name_validation(group_name)
@@ -1156,7 +1150,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         for idx, available_aov in enumerate(sorted(manager.AOV_MANAGER.aovs.values())):
             # If a channel is specified, put it into the display name.
             if available_aov.channel is not None:
-                label = "{} ({})".format(available_aov.variable, available_aov.channel)
+                label = f"{available_aov.variable} ({available_aov.channel})"
 
             else:
                 label = available_aov.variable
@@ -1244,7 +1238,7 @@ class AOVInfoDialog(_BaseHoudiniStyleDialog):
         self.accept()
 
         choice = hou.ui.displayMessage(
-            "Are you sure you want to delete {}?".format(self.aov.variable),
+            f"Are you sure you want to delete {self.aov.variable}?",
             buttons=("Cancel", "OK"),
             severity=hou.severityType.Warning,
             close_choice=0,
@@ -1394,7 +1388,7 @@ class AOVGroupInfoDialog(_BaseHoudiniStyleDialog):
         self.accept()
 
         choice = hou.ui.displayMessage(
-            "Are you sure you want to delete {}?".format(self.group.name),
+            f"Are you sure you want to delete {self.group.name}?",
             buttons=("Cancel", "OK"),
             severity=hou.severityType.Warning,
             close_choice=0,

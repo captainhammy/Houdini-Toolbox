@@ -89,9 +89,7 @@ def apply_elements_as_string(elements, nodes):
         if node.parm("auto_aovs") is None:
             # Add the parameters from the .ds file.
             hou.hscript(
-                'opproperty -f -F "Extra Image Planes" {} ht_parms ht_automatic_aovs'.format(
-                    node.path()
-                )
+                f'opproperty -f -F "Extra Image Planes" {node.path()} ht_parms ht_automatic_aovs'
             )
 
         parm = node.parm("auto_aovs")
@@ -108,33 +106,33 @@ def apply_to_node_as_parms(node, aovs):
     node.parm("vm_numaux").set(num_aovs)
 
     for idx, aov in enumerate(aovs, 1):
-        node.parm("vm_variable_plane{}".format(idx)).set(aov.variable)
-        node.parm("vm_vextype_plane{}".format(idx)).set(aov.vextype)
+        node.parm(f"vm_variable_plane{idx}").set(aov.variable)
+        node.parm(f"vm_vextype_plane{idx}").set(aov.vextype)
 
         if aov.channel is not None and aov.channel != aov.variable:
-            node.parm("vm_channel_plane{}".format(idx)).set(aov.channel)
+            node.parm(f"vm_channel_plane{idx}").set(aov.channel)
 
         if aov.planefile is not None:
-            node.parm("vm_usefile_plane{}".format(idx)).set(True)
-            node.parm("vm_filename_plane{}".format(idx)).set(aov.planefile)
+            node.parm(f"vm_usefile_plane{idx}").set(True)
+            node.parm(f"vm_filename_plane{idx}").set(aov.planefile)
 
         if aov.quantize is not None:
-            node.parm("vm_quantize_plane{}".format(idx)).set(aov.quantize)
+            node.parm(f"vm_quantize_plane{idx}").set(aov.quantize)
 
         if aov.sfilter is not None:
-            node.parm("vm_sfilter_plane{}".format(idx)).set(aov.sfilter)
+            node.parm(f"vm_sfilter_plane{idx}").set(aov.sfilter)
 
         if aov.pfilter is not None:
-            node.parm("vm_pfilter_plane{}".format(idx)).set(aov.pfilter)
+            node.parm(f"vm_pfilter_plane{idx}").set(aov.pfilter)
 
         if aov.componentexport:
-            node.parm("vm_componentexport{}".format(idx)).set(True)
+            node.parm(f"vm_componentexport{idx}").set(True)
 
         if aov.lightexport is not None:
             menu_idx = ALLOWABLE_VALUES["lightexport"].index(aov.lightexport)
-            node.parm("vm_lightexport{}".format(idx)).set(menu_idx)
-            node.parm("vm_lightexport_scope{}".format(idx)).set(aov.lightexport_scope)
-            node.parm("vm_lightexport_select{}".format(idx)).set(aov.lightexport_select)
+            node.parm(f"vm_lightexport{idx}").set(menu_idx)
+            node.parm(f"vm_lightexport_scope{idx}").set(aov.lightexport_scope)
+            node.parm(f"vm_lightexport_select{idx}").set(aov.lightexport_select)
 
 
 def build_aovs_from_multiparm(node):
@@ -145,35 +143,35 @@ def build_aovs_from_multiparm(node):
 
     for idx in range(1, num_aovs + 1):
         aov_data = {
-            "variable": node.evalParm("vm_variable_plane{}".format(idx)),
-            "vextype": node.evalParm("vm_vextype_plane{}".format(idx)),
+            "variable": node.evalParm(f"vm_variable_plane{idx}"),
+            "vextype": node.evalParm(f"vm_vextype_plane{idx}"),
         }
 
-        channel = node.evalParm("vm_channel_plane{}".format(idx))
+        channel = node.evalParm(f"vm_channel_plane{idx}")
         if channel:
             aov_data["channel"] = channel
 
-        aov_data["quantize"] = node.evalParm("vm_quantize_plane{}".format(idx))
+        aov_data["quantize"] = node.evalParm(f"vm_quantize_plane{idx}")
 
-        aov_data["sfilter"] = node.evalParm("vm_sfilter_plane{}".format(idx))
+        aov_data["sfilter"] = node.evalParm(f"vm_sfilter_plane{idx}")
 
-        pfilter = node.evalParm("vm_pfilter_plane{}".format(idx))
+        pfilter = node.evalParm(f"vm_pfilter_plane{idx}")
 
         if pfilter:
-            aov_data["pfilter"] = node.evalParm("vm_pfilter_plane{}".format(idx))
+            aov_data["pfilter"] = node.evalParm(f"vm_pfilter_plane{idx}")
 
-        aov_data["componentexport"] = node.evalParm("vm_componentexport{}".format(idx))
+        aov_data["componentexport"] = node.evalParm(f"vm_componentexport{idx}")
 
-        lightexport = node.evalParm("vm_lightexport{}".format(idx))
+        lightexport = node.evalParm(f"vm_lightexport{idx}")
         lightexport = uidata.LIGHTEXPORT_MENU_ITEMS[lightexport][0]
 
         if lightexport:
             aov_data["lightexport"] = lightexport
             aov_data["lightexport_scope"] = node.evalParm(
-                "vm_lightexport_scope{}".format(idx)
+                f"vm_lightexport_scope{idx}"
             )
             aov_data["lighexport_select"] = node.evalParm(
-                "vm_lightexport_select{}".format(idx)
+                f"vm_lightexport_select{idx}"
             )
 
         aovs.append(AOV(aov_data))
@@ -240,7 +238,7 @@ def get_aov_names_from_multiparms(node):
     num_aovs = node.evalParm("vm_numaux")
 
     for idx in range(1, num_aovs + 1):
-        names.append(node.evalParm("vm_variable_plane{}".format(idx)))
+        names.append(node.evalParm(f"vm_variable_plane{idx}"))
 
     return names
 
@@ -262,7 +260,7 @@ def get_icon_for_vex_type(vextype):
     if vextype == "unitvector":
         vextype = "vector"
 
-    return hou.qt.createIcon("DATATYPES_{}".format(vextype))
+    return hou.qt.createIcon(f"DATATYPES_{vextype}")
 
 
 def get_light_export_menu_index(lightexport):
@@ -324,7 +322,7 @@ def element_list_as_string(elements):
 
     for element in elements:
         if isinstance(element, AOVGroup):
-            names.append("@{}".format(element.name))
+            names.append(f"@{element.name}")
 
         else:
             names.append(element.variable)

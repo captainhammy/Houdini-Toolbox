@@ -1075,7 +1075,7 @@ class AOVsToAddTreeWidget(QtWidgets.QTreeView):
 
                     names = utils.get_aov_names_from_multiparms(node)
                     if names:
-                        value = "{} {}".format(value, " ".join(names))
+                        value = f"{value} {' '.join(names)}"
 
                     aovs = manager.AOV_MANAGER.get_aovs_from_string(value)
 
@@ -1386,7 +1386,7 @@ class AOVsToAddToolBar(AOVViewerToolBar):
             names = utils.get_aov_names_from_multiparms(node)
 
             if names:
-                value = "{} {}".format(value, " ".join(names))
+                value = f"{value} {' '.join(names)}"
 
             items.extend(manager.AOV_MANAGER.get_aovs_from_string(value))
 
@@ -1553,7 +1553,7 @@ class AOVsToAddWidget(QtWidgets.QWidget):
 
             # Update the top label to indicate that we are targeting a specific
             # node when applying.
-            self.label.setText("AOVs to Apply - {}".format(node.path()))
+            self.label.setText(f"AOVs to Apply - {node.path()}")
 
             # Initialize the tree by loading the AOVs from the target node.
             self.toolbar.load_from_node(node)
@@ -1758,7 +1758,7 @@ class FileChooser(QtWidgets.QWidget):
         ext = os.path.splitext(path)[1]
 
         if not ext:
-            path = "{}.json".format(path)
+            path = f"{path}.json"
 
         self.set_path(path)
 
@@ -1828,7 +1828,7 @@ class HelpButton(QtWidgets.QPushButton):
             desktop = hou.ui.curDesktop()
             browser = desktop.createFloatingPaneTab(hou.paneTabType.HelpBrowser)
 
-        browser.displayHelpPath("/aov_manager/{}".format(self._name))
+        browser.displayHelpPath(f"/aov_manager/{self._name}")
 
 
 class MenuFieldMode:
@@ -1902,7 +1902,7 @@ class MenuField(QtWidgets.QWidget):
                 text = value
 
             else:
-                text = "{} {}".format(text, value)
+                text = f"{text} {value}"
 
             self.set(text)
 

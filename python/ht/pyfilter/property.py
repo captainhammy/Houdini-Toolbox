@@ -59,7 +59,7 @@ def _prep_value_to_set(value: Any) -> List:
     # The value is already a list/tuple.
     else:
         # Check all the values to see if any are dicts.
-        if all([isinstance(val, dict) for val in value]):
+        if all(isinstance(val, dict) for val in value):
             # If they are, try to convert them to strings.
             try:
                 value = [json.dumps(val) for val in value]

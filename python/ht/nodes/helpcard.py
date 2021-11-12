@@ -26,7 +26,7 @@ _PATH = os.path.join(
     os.path.expandvars("$HOUDINI_TOOLBOX_DIR"), "resources", "help_template.yaml"
 )
 
-with open(_PATH) as handle:
+with open(_PATH, encoding="utf-8") as handle:
     _TEMPLATES = yaml.safe_load(handle)
 
 # Parameter templates which are multiparms.
@@ -262,7 +262,7 @@ def _get_help_text(
     if isinstance(items, collections.OrderedDict):
         for key, value in list(items.items()):
             for line in key.split("\n"):
-                string_buf.write("{}{}\n".format("    " * indent, line))
+                string_buf.write(f"{'    ' * indent}{line}\n")
 
             string_buf.write("\n")
 
@@ -274,7 +274,7 @@ def _get_help_text(
 
     else:
         for line in items.split("\n"):
-            string_buf.write("{}{}\n".format("    " * indent, line))
+            string_buf.write(f"{'    ' * indent}{line}\n")
 
         string_buf.write("\n")
 
@@ -321,13 +321,13 @@ def _resolve_icon(icon: str, node_type: hou.NodeType) -> str:
     :return: An icon value.
 
     """
-    if icon.startswith("opdef:/{}".format(node_type.nameWithCategory())):
-        icon = icon.replace("/{}".format(node_type.nameWithCategory()), ".")
+    if icon.startswith(f"opdef:/{node_type.nameWithCategory()}"):
+        icon = icon.replace(f"/{node_type.nameWithCategory()}", ".")
 
     result = re.match("([A-Z]+)_([a-z_]+)", icon)
 
     if result is not None:
-        icon = "{}/{}".format(result.group(1), result.group(2))
+        icon = f"{result.group(1)}/{result.group(2)}"
 
     return icon
 

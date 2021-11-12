@@ -72,7 +72,7 @@ class Test_SetTileCallback:
         mock_path = mocker.MagicMock(spec=str)
         result = settilecallback.SetTileCallback.build_arg_string(path=mock_path)
 
-        assert result == "--tile-callback={}".format(mock_path)
+        assert result == f"--tile-callback={mock_path}"
 
     def test_register_parser_args(self, mocker):
         """Test registering parser args."""

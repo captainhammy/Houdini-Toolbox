@@ -27,7 +27,7 @@ def _find_parameters_with_value(
     """
     # Use 'opfind' hscript command to find all the nodes which have parameters
     # containing our value.
-    paths = hou.hscript("opfind '{}'".format(target_value))[0].split()
+    paths = hou.hscript(f"opfind '{target_value}'")[0].split()
 
     parms_with_value = []
 
@@ -91,7 +91,7 @@ def find_parameters_using_variable(variable: str) -> Tuple[hou.Parm, ...]:
         # Regex to match the variable string but ensuring that it matches exactly.
         # For example of you are looking for $HIP you want to ensure you don't also
         # match $HIPNAME or $HIPFILE
-        return bool(re.search("(?=.*{}(?![a-zA-Z]))".format(var), value))
+        return bool(re.search(f"(?=.*{var}(?![a-zA-Z]))", value))
 
     return _find_parameters_with_value(search_variable, _checker)
 

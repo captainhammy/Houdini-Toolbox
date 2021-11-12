@@ -48,7 +48,7 @@ class AOVManager:
     # -------------------------------------------------------------------------
 
     def __repr__(self):
-        return "<AOVManager AOVs:{} groups:{}>".format(len(self.aovs), len(self.groups))
+        return f"<AOVManager AOVs:{len(self.aovs)} groups:{len(self.groups)}>"
 
     # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
@@ -358,9 +358,9 @@ class AOVFile:
     def __init__(self, path: str):
         self._path = path
 
-        self._aovs: List[AOV] = list()
-        self._data: Dict[Any, Any] = dict()
-        self._groups: List[AOVGroup] = list()
+        self._aovs: List[AOV] = []
+        self._data: Dict[Any, Any] = {}
+        self._groups: List[AOVGroup] = []
 
         if self.exists:
             self._init_from_file()
@@ -422,7 +422,7 @@ class AOVFile:
         :return:
 
         """
-        with open(self.path) as handle:
+        with open(self.path, encoding="utf-8") as handle:
             data = json.load(handle)
 
         if consts.FILE_DEFINITIONS_KEY in data:
@@ -548,7 +548,7 @@ class AOVFile:
         :return:
 
         """
-        data: Dict[str, Union[Dict, List]] = dict()
+        data: Dict[str, Union[Dict, List]] = {}
 
         for group in self.groups:
             group_data = data.setdefault(consts.FILE_GROUPS_KEY, {})
@@ -563,7 +563,7 @@ class AOVFile:
         if path is None:
             path = self.path
 
-        with open(path, "w") as handle:
+        with open(path, "w", encoding="utf-8") as handle:
             json.dump(data, handle, indent=4)
 
 
@@ -646,7 +646,7 @@ def build_menu_script() -> Tuple[str, ...]:
 
     if AOV_MANAGER.groups:
         for group in sorted(AOV_MANAGER.groups.keys()):
-            menu.extend(["@{}".format(group), group])
+            menu.extend([f"@{group}", group])
 
         menu.extend(["_separator_", ""])
 

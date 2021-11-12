@@ -122,18 +122,16 @@ class HoudiniBase:
         return hash((self.major, self.minor, self.build, self.candidate, self.path))
 
     def __repr__(self):
-        return "<{} {} @ {}>".format(
-            self.__class__.__name__, self.display_name, self.path
-        )
+        return f"<{self.__class__.__name__} {self.display_name} @ {self.path}>"
 
     def __str__(self):
-        version = "{}.{}.{}".format(self.major, self.minor, self.build)
+        version = f"{self.major}.{ self.minor}.{self.build}"
 
         if self.candidate is not None:
-            version = "{}.{}".format(version, self.candidate)
+            version = f"{version}.{self.candidate}"
 
         if self.product is not None:
-            version = "{}-{}".format(version, self.product)
+            version = f"{version}-{self.product}"
 
         return version
 
@@ -164,7 +162,7 @@ class HoudiniBase:
     @property
     def major_minor(self) -> str:
         """The major.minor number for this build. """
-        return "{}.{}".format(self.major, self.minor)
+        return f"{self.major}.{ self.minor}"
 
     @property
     def minor(self) -> int:
@@ -221,7 +219,7 @@ class HoudiniBase:
         }
 
         if self.product is not None:
-            args["product"] = "-{}".format(self.product)
+            args["product"] = f"-{self.product}"
 
         else:
             args["product"] = ""
@@ -285,7 +283,7 @@ class HoudiniBuildData:
         """
         system = platform.system()
 
-        all_args: List[str] = list()
+        all_args: List[str] = []
 
         # Try to get any installer args for the current system.
         all_args.extend(_flatten_items(self._types[system].get("installer_args", [])))
@@ -500,7 +498,7 @@ class HoudiniBuildManager:
             # If a default name was given then filter the builds based on that.
             if default_name is not None:
                 if default_product:
-                    default_name = "{}-{}".format(default_name, default_product)
+                    default_name = f"{default_name}-{default_product}"
                 default = find_matching_builds(default_name, builds)
 
         # If the default could not be found (or none was specified) use the
@@ -648,7 +646,7 @@ class HoudiniInstallFile(HoudiniBase):
         result = re.match(pattern, os.path.basename(path))
 
         if result is None:
-            raise RuntimeError("Could not determine build data from {}".format(path))
+            raise RuntimeError(f"Could not determine build data from {path}")
 
         product = result.group(1)
 
@@ -681,7 +679,7 @@ class HoudiniInstallFile(HoudiniBase):
         # Let our system tell us where we can store the temp files.
         temp_path = tempfile.gettempdir()
 
-        print("Extracting {} to {}".format(self.path, temp_path))
+        print(f"Extracting {self.path} to {temp_path}")
 
         # Open the tar file that this object represents and extract
         # everything to our temp directory, closing the file afterwards.
@@ -707,7 +705,7 @@ class HoudiniInstallFile(HoudiniBase):
         # Last arg is the target path.
         cmd.append(install_path)
 
-        print("Running Houdini installer: {}".format(" ".join(cmd)))
+        print(f"Running Houdini installer: {' '.join(cmd)}")
         subprocess.call(cmd)
 
         # Remove the temporary extraction directory.
@@ -715,7 +713,7 @@ class HoudiniInstallFile(HoudiniBase):
         shutil.rmtree(extract_path)
 
         if link_path is not None:
-            print("Linking {} to {}".format(link_path, install_path))
+            print(f"Linking {link_path} to {install_path}")
 
             try:
                 os.symlink(install_path, link_path)
@@ -772,7 +770,7 @@ class HoudiniInstallFile(HoudiniBase):
             raise UnsupportedOSError("OS X is not supported")
 
         # Notify that the build installation has completed.
-        print("Installation of Houdini {} complete.".format(self.display_name))
+        print(f"Installation of Houdini {self.display_name} complete.")
 
 
 class HoudiniInstallationSettings:
@@ -871,7 +869,7 @@ class HoudiniSettingsManager:
         if not os.path.exists(config_path):
             raise IOError("Could not find houdini package configuration file")
 
-        with open(config_path) as handle:
+        with open(config_path, encoding="utf-8") as handle:
             # Get the json data.
             data = json.load(handle)
 
@@ -888,7 +886,7 @@ class HoudiniSettingsManager:
         if not os.path.exists(build_config_path):
             raise IOError("Could not find houdini build configuration file")
 
-        with open(build_config_path) as handle:
+        with open(build_config_path, encoding="utf-8") as handle:
             data = json.load(handle)
 
             self._build_data = HoudiniBuildData(data)
@@ -981,7 +979,7 @@ class InstalledHoudiniBuild(HoudiniBase):
         result = re.match(pattern, os.path.basename(path))
 
         if result is None:
-            raise RuntimeError("Could not determine build data from {}".format(path))
+            raise RuntimeError(f"Could not determine build data from {path}")
 
         # Extract the build version numbers from the directory name.
         version_string = result.group(1)
@@ -1041,7 +1039,7 @@ class InstalledHoudiniBuild(HoudiniBase):
         # to remove it.
         if os.path.islink(link_path):
             if os.path.realpath(link_path) == self.path:
-                print("Removing symlink {} -> {}".format(link_path, self.path))
+                print(f"Removing symlink {link_path} -> {self.path}")
 
                 try:
                     os.unlink(link_path)
@@ -1050,14 +1048,14 @@ class InstalledHoudiniBuild(HoudiniBase):
                     print("Error: Could not remove symlink")
                     print(inst)
 
-        print("Removing installation directory {}".format(self.path))
+        print(f"Removing installation directory {self.path}")
 
         shutil.rmtree(self.path)
 
         # If there are plugins, remove them.
         if self.plugin_path is not None:
             if os.path.isdir(self.plugin_path):
-                print("Removing compiled operators in {}".format(self.plugin_path))
+                print(f"Removing compiled operators in {self.plugin_path}")
 
                 shutil.rmtree(self.plugin_path)
 
@@ -1084,7 +1082,7 @@ class BuildAlreadyInstalledError(HoudiniPackageError):
         self.build = build
 
     def __str__(self):
-        return "Houdini {} is already installed.".format(self.build)
+        return f"Houdini {self.build} is already installed."
 
 
 class UnsupportedMachineArchitectureError(HoudiniPackageError):
@@ -1161,7 +1159,7 @@ def _get_eula_date(extract_path: str) -> Optional[str]:
     if not os.path.exists(install_script):
         return None
 
-    with open(install_script) as handle:
+    with open(install_script, encoding="utf-8") as handle:
         for line in handle:
             if line.startswith("LICENSE_DATE"):
                 return line.split("=")[1].strip()

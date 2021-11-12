@@ -6,7 +6,6 @@
 
 # Standard Library
 import ctypes
-import os
 
 # Third Party
 import pytest

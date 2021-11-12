@@ -326,7 +326,7 @@ class CopyItemNameWidget(QtWidgets.QWidget):
 
         if value in self.invalid_names:
             valid = False
-            warning_message = "'{}' already exists".format(value)
+            warning_message = f"'{value}' already exists"
 
         if not valid and value:
             self.warning_widget.set_warning(warning_message)
