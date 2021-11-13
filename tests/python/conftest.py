@@ -6,7 +6,6 @@
 
 # Standard Library
 import os
-from xml.etree import ElementTree
 
 # Third Party
 import pytest

@@ -227,7 +227,7 @@ def _find_build(args: argparse.Namespace):
         result = houdini_toolbox.machinery.package.find_matching_builds(version, search_builds)
 
         if result is None:
-            print("Could not find version: {}".format(version))
+            print(f"Could not find version: {version}")
 
         else:
             build = result
@@ -256,7 +256,7 @@ def _install_handler(args: argparse.Namespace):
     result = houdini_toolbox.machinery.package.find_matching_builds(args.version, _BUILD_MANAGER.installable)
 
     if result is None:
-        print("Could not find installable build {}".format(args.version))
+        print(f"Could not find installable build {args.version}")
 
     else:
         result.install(not args.no_symlink)
@@ -287,7 +287,7 @@ def _signal_handler(caught_signal: int, current_frame: types.FrameType):  # pyli
     :return:
 
     """
-    print("Houdini wrapper caught sig {}".format(signal.Signals(caught_signal).name))
+    print(f"Houdini wrapper caught sig {signal.Signals(caught_signal).name}")
 
     # Ignore further signals.
     for sig in _SIGNALS:
@@ -332,7 +332,7 @@ def _set_no_jemalloc(build_path: str, program_name: str) -> List[str]:
         "/lib64/ld-linux-x86-64.so.2",
         "--inhibit-rpath",
         "''",
-        "{}/bin/{}-bin".format(build_path, program_name)
+        f"{build_path}/bin/{program_name}-bin"
     ]
 
     return run_args
@@ -360,7 +360,7 @@ def _uninstall_handler(args: argparse.Namespace):
         result = houdini_toolbox.machinery.package.find_matching_builds(version, _BUILD_MANAGER.installed)
 
         if result is None:
-            print("Could not find version: {}".format(version))
+            print(f"Could not find version: {version}")
 
             continue
 
@@ -441,10 +441,9 @@ def main():
         extras = ["-a"]
 
         # Dump the environment with 'printenv'.
-        proc = subprocess.Popen("printenv", stdout=subprocess.PIPE)
-
-        print(proc.communicate()[0])
-        print()
+        with subprocess.Popen("printenv", stdout=subprocess.PIPE) as proc:
+            print(proc.communicate()[0])
+            print()
 
     # Start with the name of the program to run.
     run_args = [program_name]
@@ -456,19 +455,16 @@ def main():
         run_args = _set_no_jemalloc(build.path, program_name)
 
     # Run the application.
-    proc = subprocess.Popen(run_args + extras)
+    with subprocess.Popen(run_args + extras) as proc:
+        # Wait for the program to complete.
+        proc.wait()
 
-    # Display the process id.
-
-    # Wait for the program to complete.
-    proc.wait()
-
-    # Get the return code.
-    return_code = proc.returncode
+        # Get the return code.
+        return_code = proc.returncode
 
     # If the program didn't end clean, print a message.
     if return_code != 0:
-        cprint("{} exited with signal {}.".format(program_name, abs(return_code)), "red")
+        cprint(f"{program_name} exited with signal {abs(return_code)}.", "red")
 
     # Exit with the program's return code.
     sys.exit(return_code)

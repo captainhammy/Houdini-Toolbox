@@ -14,6 +14,7 @@ nodegraphhooks = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(nodegraphhooks)
 
 # Houdini
+# flake8: noqa: E402
 from canvaseventtypes import KeyboardEvent  # pylint: disable=wrong-import-position
 
 # ==============================================================================

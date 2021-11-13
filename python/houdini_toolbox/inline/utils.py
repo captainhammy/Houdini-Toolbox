@@ -560,11 +560,11 @@ def validate_multiparm_resolve_values(name: str, indices: Sequence[int]):
 
     """
     # Get the number of multiparm tokens in the name.
-    multi_token_count = name.count("#")
+    token_count = name.count("#")
 
     # Ensure that there are enough indices for the name.  Houdini can handle too many
     # indices but if there are not enough it won't like that and return an unexpected value.
-    if multi_token_count > len(indices):
+    if token_count > len(indices):
         raise ValueError(
-            f"Not enough indices provided. Parameter {name} expects {multi_token_count}, {len(indices)} token(s) provided."
+            f"Not enough indices provided. Parameter {name} expects {token_count}, {len(indices)} token(s) provided."
         )

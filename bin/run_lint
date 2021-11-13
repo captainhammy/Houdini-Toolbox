@@ -20,6 +20,7 @@ from xml.etree import ElementTree
 from pylint import lint
 from pylint.reporters.text import TextReporter
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -39,7 +40,7 @@ class _BaseLintable:
         self._path = path
 
     def __repr__(self):
-        return "<{} {}>".format(self.__class__.__name__, self.path)
+        return f"<{self.__class__.__name__} {self.path}>"
 
     # -------------------------------------------------------------------------
     # PROPERTIES
@@ -75,7 +76,7 @@ class ExtractedOperator(_BaseLintable):
         self._gather_files()
 
     def __repr__(self):
-        return "<ExtractedOperator {} ({})>".format(self.name, self.path)
+        return f"<ExtractedOperator {self.name} ({self.path})>"
 
     # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
@@ -109,7 +110,7 @@ class ExtractedOperator(_BaseLintable):
         extra_options = os.path.join(self.path, "ExtraFileOptions")
 
         if os.path.exists(extra_options):
-            with open(extra_options) as handle:
+            with open(extra_options, encoding="utf-8") as handle:
                 data = json.load(handle)
 
             for key, values in list(data.items()):
@@ -203,7 +204,7 @@ class ExtractedOtl:
         :rtype:
 
         """
-        with open(sections_list) as handle:
+        with open(sections_list, encoding="utf-8") as handle:
             data = handle.readlines()
 
         results = []
@@ -290,7 +291,7 @@ class HoudiniLintRunner:
             all_disabled.extend(disabled_checks)
 
         if all_disabled:
-            disabled = ["--disable={}".format(",".join(all_disabled))]
+            disabled = [f"--disable={','.join(all_disabled)}"]
 
         else:
             disabled = []
@@ -320,10 +321,10 @@ class HoudiniLintRunner:
 
         if self._verbose:
             if file_path == item.path or isinstance(item, LintableDirectory):
-                print("Linting {}".format(file_path))
+                print(f"Linting {file_path}")
 
             else:
-                print("Linting {} ({})".format(file_path, item.path))
+                print(f"Linting {file_path} ({item.path})")
 
         # Run the test, capturing and filtering error output.
         lint.Run([file_path] + flags, reporter=TextReporter(buf), exit=False)
@@ -340,7 +341,7 @@ class LintableDirectory(_BaseLintable):
     """Class representing a lintable directory."""
 
     def __repr__(self):
-        return "<{} {}>".format(self.__class__.__name__, self.path)
+        return f"<{self.__class__.__name__} {self.path}>"
 
     # -------------------------------------------------------------------------
     # METHODS
@@ -417,10 +418,7 @@ class LintableFile(_BaseLintable):
         else:
             path = self.path
 
-        return "<{} {}>".format(
-            self.__class__.__name__,
-            path
-        )
+        return f"<{self.__class__.__name__} {path}>"
 
     # -------------------------------------------------------------------------
     # PROPERTIES
@@ -482,11 +480,11 @@ class LintableMenuFile(LintableFile):
         :rtype: bool
 
         """
-        file_name = "{}.py".format(base_file_name)
+        file_name = f"{base_file_name}.py"
 
         temp_path = os.path.join(runner.temp_dir, file_name)
 
-        with open(temp_path, 'w') as handle:
+        with open(temp_path, "w", encoding="utf-8") as handle:
             handle.write(text)
             handle.flush()
 
@@ -498,7 +496,7 @@ class LintableMenuFile(LintableFile):
         clean = runner.lint_path(temp_path, self, disabled_checks=disabled_checks)
 
         if not clean:
-            print("{}: {} ({})".format(self.path, base_file_name, temp_path))
+            print(f"{self.path}: {base_file_name} ({temp_path})")
 
         return clean
 
@@ -530,7 +528,7 @@ class LintableMenuFile(LintableFile):
                 clean_code &= self._lint_code_section(
                     context.text,
                     runner,
-                    "{}.context".format(script_item.get("id")),
+                    f"{script_item.get('id')}.context",
                     disabled_checks=["return-outside-function", "missing-docstring"]
                 )
 
@@ -585,18 +583,18 @@ class LintablePythonPanelFile(LintableFile):
 
             interface_name = interface.get("name")
 
-            file_name = "{}.py".format(interface_name)
+            file_name = f"{interface_name}.py"
 
             temp_path = os.path.join(runner.temp_dir, file_name)
 
-            with open(temp_path, 'w') as handle:
+            with open(temp_path, "w", encoding="utf-8") as handle:
                 handle.write(script_code)
                 handle.flush()
 
             clean = runner.lint_path(temp_path, self)
 
             if not clean:
-                print("{}: {} ({})".format(self.path, interface_name, temp_path))
+                print(f"{self.path}: {interface_name} ({temp_path})")
 
             clean_code &= clean
 
@@ -662,18 +660,18 @@ class LintableShelfFile(LintableFile):
             if tool_name == "$HDA_DEFAULT_TOOL":
                 tool_name = self._tool_name.replace("::", "__").replace("/", "_") + "_DEFAULT_TOOL"
 
-            file_name = "{}.py".format(tool_name)
+            file_name = f"{tool_name}.py"
 
             temp_path = os.path.join(runner.temp_dir, file_name)
 
-            with open(temp_path, 'w') as handle:
+            with open(temp_path, "w", encoding="utf-8") as handle:
                 handle.write(script_code)
                 handle.flush()
 
             clean = runner.lint_path(temp_path, self)
 
             if not clean:
-                print("{}: {} ({})".format(self.path, tool_name, temp_path))
+                print(f"{self.path}: {tool_name} ({temp_path})")
 
             clean_code &= clean
 
@@ -697,12 +695,11 @@ class OtlFile(ExtractedOtl):
 
         target_folder = os.path.join(temp_dir, file_name)
 
-        proc = subprocess.Popen(
+        with subprocess.Popen(
             ["hotl", "-t", target_folder, file_path],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-
-        proc.wait()
+        ) as proc:
+            proc.wait()
 
         super().__init__(target_folder)
 
@@ -725,11 +722,7 @@ class OtlFile(ExtractedOtl):
                 op_path = op_file.path
                 base_name = os.path.basename(op_path)
 
-                op_file.display_name = "{}?{}/{}".format(
-                    self._file_path,
-                    operator.name,
-                    base_name
-                )
+                op_file.display_name = f"{self._file_path}?{operator.name}/{base_name}"
 
 
 # =============================================================================
@@ -950,7 +943,7 @@ def _is_python_file(file_path, runner):
         return False
 
     if runner.python_bins:
-        with open(file_path) as handle:
+        with open(file_path, encoding="utf-8") as handle:
             try:
                 first_line = handle.readline()
 
@@ -992,7 +985,7 @@ def main():  # pylint: disable=too-many-locals
     )
 
     if results.rcfile is not None:
-        runner.flags.append("--rcfile={}".format(results.rcfile))
+        runner.flags.append(f"--rcfile={results.rcfile}")
 
     # The list of things which will be linted.
     items_to_lint = []

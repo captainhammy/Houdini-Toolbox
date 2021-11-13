@@ -123,7 +123,7 @@ def main():
 
         # Create the link.
         if arguments.install:
-            print("Creating {link} -> {target}".format(link=link_path, target=wrapper))
+            print(f"Creating {link_path} -> {wrapper}")
 
             os.symlink(wrapper, link_path)
 
@@ -136,16 +136,11 @@ def main():
             # If the link isn't pointing to the specified wrapper we can't
             # remove it.
             if os.path.realpath(link_path) != wrapper:
-                print(
-                    "Warning: Cannot remove {}.  Not linked to {}".format(
-                        link_path,
-                        wrapper
-                    )
-                )
+                print(f"Warning: Cannot remove {link_path}.  Not linked to {wrapper}")
 
                 continue
 
-            print("Removing {link} -> {target}".format(link=link_path, target=wrapper))
+            print(f"Removing {link_path} -> {wrapper}")
 
             # Remove the link.
             os.unlink(link_path)

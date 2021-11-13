@@ -42,7 +42,7 @@ run-flake:
 
 # Run python linting
 run-lint:
-	bin/run_lint --rcfile=pylint.rc --package-name=ht --add-file houdini/pyfilter/ht-pyfilter.py --add-dir bin
+	bin/run_lint --rcfile=pylint.rc --package-name=houdini_toolbox --add-file houdini/pyfilter/ht-pyfilter.py --add-dir bin
 
 # Run Python unit tests
 run-tests:

@@ -4,6 +4,7 @@
 # IMPORTS
 # =============================================================================
 
+# flake8: noqa: F401
 # Houdini Toolbox
 from houdini_toolbox.events.events import rop_render, scene_load
 from houdini_toolbox.events.manager import (
