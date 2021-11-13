@@ -1,4 +1,4 @@
-"""Tests for ht.nodes.badges module."""
+"""Tests for houdini_toolbox.nodes.badges module."""
 # flake8: noqa
 # =============================================================================
 # IMPORTS
@@ -10,7 +10,7 @@ import pytest
 # Houdini
 import hou
 
-badges = pytest.importorskip("ht.nodes.badges")
+badges = pytest.importorskip("houdini_toolbox.nodes.badges")
 
 
 # =============================================================================
@@ -19,13 +19,13 @@ badges = pytest.importorskip("ht.nodes.badges")
 
 
 class Test_clear_generic_image_badge:
-    """Test ht.nodes.badges.clear_generic_image_badge."""
+    """Test houdini_toolbox.nodes.badges.clear_generic_image_badge."""
 
     def test_no_data(self, mocker):
         """Test when there is no user data to remove."""
-        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_disabler = mocker.patch("houdini_toolbox.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
-            "ht.nodes.badges._ht_generic_image_badge.get_generic_image_key"
+            "houdini_toolbox.nodes.badges._ht_generic_image_badge.get_generic_image_key"
         )
 
         mock_node = mocker.MagicMock(spec=hou.Node)
@@ -40,9 +40,9 @@ class Test_clear_generic_image_badge:
 
     def test(self, mocker):
         """Test when there is user data to remove."""
-        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_disabler = mocker.patch("houdini_toolbox.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
-            "ht.nodes.badges._ht_generic_image_badge.get_generic_image_key"
+            "houdini_toolbox.nodes.badges._ht_generic_image_badge.get_generic_image_key"
         )
 
         mock_node = mocker.MagicMock(spec=hou.Node)
@@ -55,16 +55,16 @@ class Test_clear_generic_image_badge:
 
 
 class Test_clear_generic_text_badge:
-    """Test ht.nodes.badges.clear_generic_text_badge."""
+    """Test houdini_toolbox.nodes.badges.clear_generic_text_badge."""
 
     def test_no_data(self, mocker):
         """Test when there is no user data to remove."""
-        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_disabler = mocker.patch("houdini_toolbox.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
-            "ht.nodes.badges._ht_generic_text_badge.get_generic_text_key"
+            "houdini_toolbox.nodes.badges._ht_generic_text_badge.get_generic_text_key"
         )
         mock_clear_color = mocker.patch(
-            "ht.nodes.badges.clear_generic_text_badge_color"
+            "houdini_toolbox.nodes.badges.clear_generic_text_badge_color"
         )
 
         mock_node = mocker.MagicMock(spec=hou.Node)
@@ -81,12 +81,12 @@ class Test_clear_generic_text_badge:
 
     def test(self, mocker):
         """Test when there is user data to remove."""
-        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_disabler = mocker.patch("houdini_toolbox.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
-            "ht.nodes.badges._ht_generic_text_badge.get_generic_text_key"
+            "houdini_toolbox.nodes.badges._ht_generic_text_badge.get_generic_text_key"
         )
         mock_clear_color = mocker.patch(
-            "ht.nodes.badges.clear_generic_text_badge_color"
+            "houdini_toolbox.nodes.badges.clear_generic_text_badge_color"
         )
 
         mock_node = mocker.MagicMock(spec=hou.Node)
@@ -101,13 +101,13 @@ class Test_clear_generic_text_badge:
 
 
 class Test_clear_generic_text_badge_color:
-    """Test ht.nodes.badges.clear_generic_text_badge_color."""
+    """Test houdini_toolbox.nodes.badges.clear_generic_text_badge_color."""
 
     def test_no_data(self, mocker):
         """Test when there is no user data to remove."""
-        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_disabler = mocker.patch("houdini_toolbox.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
-            "ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key"
+            "houdini_toolbox.nodes.badges._ht_generic_text_badge.get_generic_text_color_key"
         )
 
         mock_node = mocker.MagicMock(spec=hou.Node)
@@ -122,9 +122,9 @@ class Test_clear_generic_text_badge_color:
 
     def test(self, mocker):
         """Test when there is user data to remove."""
-        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_disabler = mocker.patch("houdini_toolbox.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
-            "ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key"
+            "houdini_toolbox.nodes.badges._ht_generic_text_badge.get_generic_text_color_key"
         )
 
         mock_node = mocker.MagicMock(spec=hou.Node)
@@ -136,10 +136,10 @@ class Test_clear_generic_text_badge_color:
 
 
 def test_set_generic_image_badge(mocker):
-    """Test ht.nodes.badges.set_generic_image_badge."""
-    mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+    """Test houdini_toolbox.nodes.badges.set_generic_image_badge."""
+    mock_disabler = mocker.patch("houdini_toolbox.nodes.badges.hou.undos.disabler")
     mock_data_name = mocker.patch(
-        "ht.nodes.badges._ht_generic_image_badge.get_generic_image_key"
+        "houdini_toolbox.nodes.badges._ht_generic_image_badge.get_generic_image_key"
     )
 
     mock_node = mocker.MagicMock(spec=hou.Node)
@@ -153,15 +153,15 @@ def test_set_generic_image_badge(mocker):
 
 
 class Test_set_generic_text_badge:
-    """Test ht.nodes.badges.set_generic_text_badge."""
+    """Test houdini_toolbox.nodes.badges.set_generic_text_badge."""
 
     def test_no_color(self, mocker):
         """Test not passing a color."""
-        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_disabler = mocker.patch("houdini_toolbox.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
-            "ht.nodes.badges._ht_generic_text_badge.get_generic_text_key"
+            "houdini_toolbox.nodes.badges._ht_generic_text_badge.get_generic_text_key"
         )
-        mock_set_color = mocker.patch("ht.nodes.badges.set_generic_text_badge_color")
+        mock_set_color = mocker.patch("houdini_toolbox.nodes.badges.set_generic_text_badge_color")
 
         mock_node = mocker.MagicMock(spec=hou.Node)
         mock_value = mocker.MagicMock(spec=str)
@@ -178,11 +178,11 @@ class Test_set_generic_text_badge:
 
     def test_color(self, mocker):
         """Test passing a color."""
-        mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+        mock_disabler = mocker.patch("houdini_toolbox.nodes.badges.hou.undos.disabler")
         mock_data_name = mocker.patch(
-            "ht.nodes.badges._ht_generic_text_badge.get_generic_text_key"
+            "houdini_toolbox.nodes.badges._ht_generic_text_badge.get_generic_text_key"
         )
-        mock_set_color = mocker.patch("ht.nodes.badges.set_generic_text_badge_color")
+        mock_set_color = mocker.patch("houdini_toolbox.nodes.badges.set_generic_text_badge_color")
 
         mock_color = mocker.MagicMock(spec=hou.Color)
         mock_value = mocker.MagicMock(spec=str)
@@ -200,10 +200,10 @@ class Test_set_generic_text_badge:
 
 
 def test_set_generic_text_badge_color(mocker):
-    """Test ht.nodes.badges.set_generic_text_badge_color."""
-    mock_disabler = mocker.patch("ht.nodes.badges.hou.undos.disabler")
+    """Test houdini_toolbox.nodes.badges.set_generic_text_badge_color."""
+    mock_disabler = mocker.patch("houdini_toolbox.nodes.badges.hou.undos.disabler")
     mock_data_name = mocker.patch(
-        "ht.nodes.badges._ht_generic_text_badge.get_generic_text_color_key"
+        "houdini_toolbox.nodes.badges._ht_generic_text_badge.get_generic_text_color_key"
     )
 
     mock_node = mocker.MagicMock(spec=hou.Node)

@@ -1,4 +1,4 @@
-"""Tests for ht.events.event.rop_render module."""
+"""Tests for houdini_toolbox.events.event.rop_render module."""
 
 # =============================================================================
 # IMPORTS
@@ -8,9 +8,9 @@
 import pytest
 
 # Houdini Toolbox
-import ht.events.events.rop_render
-from ht.events.item import HoudiniEventItem
-from ht.events.types import RopEvents
+import houdini_toolbox.events.events.rop_render
+from houdini_toolbox.events.item import HoudiniEventItem
+from houdini_toolbox.events.types import RopEvents
 
 # Houdini
 import hou
@@ -24,11 +24,11 @@ import hou
 def init_event(mocker):
     """Fixture to initialize an event."""
     mocker.patch.object(
-        ht.events.events.rop_render.RopRenderEvent, "__init__", lambda x: None
+        houdini_toolbox.events.events.rop_render.RopRenderEvent, "__init__", lambda x: None
     )
 
     def _create():
-        return ht.events.events.rop_render.RopRenderEvent()
+        return houdini_toolbox.events.events.rop_render.RopRenderEvent()
 
     return _create
 
@@ -36,7 +36,7 @@ def init_event(mocker):
 @pytest.fixture
 def mock_logger(mocker):
     """Mock the module logger."""
-    yield mocker.patch("ht.events.events.rop_render._logger")
+    yield mocker.patch("houdini_toolbox.events.events.rop_render._logger")
 
 
 # =============================================================================
@@ -45,20 +45,20 @@ def mock_logger(mocker):
 
 
 class Test_RopRenderEvent:
-    """Test ht.events.events.rop_render.RopRenderEvent class."""
+    """Test houdini_toolbox.events.events.rop_render.RopRenderEvent class."""
 
     def test___init__(self, mocker):
         """Test object initialization."""
         mock_super_init = mocker.patch.object(
-            ht.events.rop_render.HoudiniEventGroup, "__init__"
+            houdini_toolbox.events.rop_render.HoudiniEventGroup, "__init__"
         )
 
         event_map = {}
         mocker.patch.object(
-            ht.events.events.rop_render.RopRenderEvent, "event_map", event_map
+            houdini_toolbox.events.events.rop_render.RopRenderEvent, "event_map", event_map
         )
 
-        event = ht.events.events.rop_render.RopRenderEvent()
+        event = houdini_toolbox.events.events.rop_render.RopRenderEvent()
 
         mock_super_init.assert_called()
 
@@ -138,7 +138,7 @@ class Test_RopRenderEvent:
 
     def test_post_frame__valid_start_frame(self, init_event, mocker, mock_logger):
         """Test when a start time exists."""
-        mock_print = mocker.patch("ht.events.events.rop_render._print_frame_write")
+        mock_print = mocker.patch("houdini_toolbox.events.events.rop_render._print_frame_write")
 
         event = init_event()
         event._frame_start = mocker.MagicMock(spec=float)
@@ -161,7 +161,7 @@ class Test_RopRenderEvent:
 
     def test_post_frame__no_start_frame(self, init_event, mocker, mock_logger):
         """Test when no start time is known."""
-        mock_print = mocker.patch("ht.events.events.rop_render._print_frame_write")
+        mock_print = mocker.patch("houdini_toolbox.events.events.rop_render._print_frame_write")
 
         event = init_event()
         event._frame_start = None
@@ -247,7 +247,7 @@ class Test_RopRenderEvent:
     ],
 )
 def test__get_target_file(mocker, type_name, return_value, expected):
-    """Test ht.events.events.rop_render._get_target_file."""
+    """Test houdini_toolbox.events.events.rop_render._get_target_file."""
     mock_type = mocker.MagicMock(spec=hou.NodeType)
     mock_type.name.return_value = type_name
 
@@ -258,7 +258,7 @@ def test__get_target_file(mocker, type_name, return_value, expected):
     mock_node.evalParm.return_value = return_value
     mock_node.type.return_value = mock_type
 
-    result = ht.events.events.rop_render._get_target_file(mock_node)
+    result = houdini_toolbox.events.events.rop_render._get_target_file(mock_node)
 
     if expected:
         assert result == mock_node.evalParm.return_value
@@ -271,14 +271,14 @@ def test__get_target_file(mocker, type_name, return_value, expected):
 
 
 class Test__print_frame_write:
-    """Test ht.events.events.rop_render._print_frame_write."""
+    """Test houdini_toolbox.events.events.rop_render._print_frame_write."""
 
     def test_no_path(self, mocker):
         """Test when no path is found."""
         mock_node = mocker.MagicMock(spec=hou.Node)
         scriptargs = {"node": mock_node}
 
-        ht.events.events.rop_render._print_frame_write(scriptargs)
+        houdini_toolbox.events.events.rop_render._print_frame_write(scriptargs)
 
         mock_node.parm.assert_not_called()
 
@@ -295,7 +295,7 @@ class Test__print_frame_write:
 
         scriptargs = {"node": mock_node, "path": mocker.MagicMock(spec=str)}
 
-        ht.events.events.rop_render._print_frame_write(scriptargs)
+        houdini_toolbox.events.events.rop_render._print_frame_write(scriptargs)
 
         mock_logger.info.assert_not_called()
 
@@ -313,21 +313,21 @@ class Test__print_frame_write:
             "path": mocker.MagicMock(spec=str),
         }
 
-        ht.events.events.rop_render._print_frame_write(scriptargs)
+        houdini_toolbox.events.events.rop_render._print_frame_write(scriptargs)
 
         mock_logger.info.assert_called()
 
 
 class Test_build_scriptargs:
-    """Test ht.events.events.rop_render.build_scriptargs."""
+    """Test houdini_toolbox.events.events.rop_render.build_scriptargs."""
 
     def test_no_args(self, mocker):
         """Test where there all args are default."""
-        mock_time = mocker.patch("ht.events.events.rop_render.time.time")
-        mock_frame = mocker.patch("ht.events.events.rop_render.hou.frame")
-        mock_get = mocker.patch("ht.events.events.rop_render._get_target_file")
+        mock_time = mocker.patch("houdini_toolbox.events.events.rop_render.time.time")
+        mock_frame = mocker.patch("houdini_toolbox.events.events.rop_render.hou.frame")
+        mock_get = mocker.patch("houdini_toolbox.events.events.rop_render._get_target_file")
 
-        result = ht.events.events.rop_render.build_scriptargs()
+        result = houdini_toolbox.events.events.rop_render.build_scriptargs()
 
         expected = {
             "node": None,
@@ -342,14 +342,14 @@ class Test_build_scriptargs:
 
     def test_no_trange(self, mocker):
         """Test where there is no 'trange' parm."""
-        mock_time = mocker.patch("ht.events.events.rop_render.time.time")
-        mock_frame = mocker.patch("ht.events.events.rop_render.hou.frame")
-        mock_get = mocker.patch("ht.events.events.rop_render._get_target_file")
+        mock_time = mocker.patch("houdini_toolbox.events.events.rop_render.time.time")
+        mock_frame = mocker.patch("houdini_toolbox.events.events.rop_render.hou.frame")
+        mock_get = mocker.patch("houdini_toolbox.events.events.rop_render._get_target_file")
 
         mock_node = mocker.MagicMock(spec=hou.Node)
         mock_node.parm.return_value = None
 
-        result = ht.events.events.rop_render.build_scriptargs(mock_node)
+        result = houdini_toolbox.events.events.rop_render.build_scriptargs(mock_node)
 
         expected = {
             "node": mock_node,
@@ -365,9 +365,9 @@ class Test_build_scriptargs:
 
     def test_trange_off(self, mocker):
         """Test where we can't get a frame range because it is off."""
-        mock_time = mocker.patch("ht.events.events.rop_render.time.time")
-        mock_frame = mocker.patch("ht.events.events.rop_render.hou.frame")
-        mock_get = mocker.patch("ht.events.events.rop_render._get_target_file")
+        mock_time = mocker.patch("houdini_toolbox.events.events.rop_render.time.time")
+        mock_frame = mocker.patch("houdini_toolbox.events.events.rop_render.hou.frame")
+        mock_get = mocker.patch("houdini_toolbox.events.events.rop_render._get_target_file")
 
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.evalAsString.return_value = "off"
@@ -375,7 +375,7 @@ class Test_build_scriptargs:
         mock_node = mocker.MagicMock(spec=hou.Node)
         mock_node.parm.return_value = mock_parm
 
-        result = ht.events.events.rop_render.build_scriptargs(mock_node)
+        result = houdini_toolbox.events.events.rop_render.build_scriptargs(mock_node)
 
         expected = {
             "node": mock_node,
@@ -391,13 +391,13 @@ class Test_build_scriptargs:
 
     def test_found_frame_range(self, mocker):
         """Test where we actually get a frame range."""
-        mock_time = mocker.patch("ht.events.events.rop_render.time.time")
-        mock_frame = mocker.patch("ht.events.events.rop_render.hou.frame")
-        mock_get = mocker.patch("ht.events.events.rop_render._get_target_file")
+        mock_time = mocker.patch("houdini_toolbox.events.events.rop_render.time.time")
+        mock_frame = mocker.patch("houdini_toolbox.events.events.rop_render.hou.frame")
+        mock_get = mocker.patch("houdini_toolbox.events.events.rop_render._get_target_file")
 
         mock_node = mocker.MagicMock(spec=hou.Node)
 
-        result = ht.events.events.rop_render.build_scriptargs(mock_node)
+        result = houdini_toolbox.events.events.rop_render.build_scriptargs(mock_node)
 
         expected = {
             "node": mock_node,
@@ -414,17 +414,17 @@ class Test_build_scriptargs:
 
     def test_no_path(self, mocker):
         """Test where we actually get a frame range."""
-        mock_time = mocker.patch("ht.events.events.rop_render.time.time")
-        mock_frame = mocker.patch("ht.events.events.rop_render.hou.frame")
+        mock_time = mocker.patch("houdini_toolbox.events.events.rop_render.time.time")
+        mock_frame = mocker.patch("houdini_toolbox.events.events.rop_render.hou.frame")
         mock_get = mocker.patch(
-            "ht.events.events.rop_render._get_target_file", return_value=None
+            "houdini_toolbox.events.events.rop_render._get_target_file", return_value=None
         )
 
         mock_node = mocker.MagicMock(spec=hou.Node)
 
         mock_get.return_value = None
 
-        result = ht.events.events.rop_render.build_scriptargs(mock_node)
+        result = houdini_toolbox.events.events.rop_render.build_scriptargs(mock_node)
 
         expected = {
             "node": mock_node,

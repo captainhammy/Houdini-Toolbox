@@ -2,22 +2,22 @@
 <menuDocument>
     <menu>
         <subMenu id="opmenu.actions_menu">
-            <scriptItem id="ht.absolute_reference_copy">
+            <scriptItem id="houdini_toolbox.absolute_reference_copy">
                 <label>Create Reference Copy (absolute)</label>
                 <insertAfter>opmenu.refcopy</insertAfter>
-                <scriptCode><![CDATA[import ht.ui.menus.opmenu
+                <scriptCode><![CDATA[import houdini_toolbox.ui.menus.opmenu
 
-ht.ui.menus.opmenu.create_absolute_reference_copy(kwargs)  # pylint: disable=undefined-variable
+houdini_toolbox.ui.menus.opmenu.create_absolute_reference_copy(kwargs)  # pylint: disable=undefined-variable
 ]]></scriptCode>
             </scriptItem>
         </subMenu>
 
         <subMenu id="opmenu.save_menu">
-            <scriptItem id="ht.save_item_to_file">
+            <scriptItem id="houdini_toolbox.save_item_to_file">
                 <label>To File...</label>
-                <scriptCode><![CDATA[import ht.ui.menus.opmenu
+                <scriptCode><![CDATA[import houdini_toolbox.ui.menus.opmenu
 
-ht.ui.menus.opmenu.save_item_to_file(kwargs)  # pylint: disable=undefined-variable
+houdini_toolbox.ui.menus.opmenu.save_item_to_file(kwargs)  # pylint: disable=undefined-variable
 ]]></scriptCode>
             </scriptItem>
         </subMenu>

@@ -1,4 +1,4 @@
-"""Test the ht.nodes.parameters module."""
+"""Test the houdini_toolbox.nodes.parameters module."""
 
 # =============================================================================
 # IMPORTS
@@ -8,7 +8,7 @@
 import pytest
 
 # Houdini Toolbox
-import ht.nodes.parameters
+import houdini_toolbox.nodes.parameters
 
 # Houdini
 import hou
@@ -24,8 +24,8 @@ pytestmark = pytest.mark.usefixtures("load_module_test_file")
 
 
 def test_find_parameters_using_variable():
-    """Test ht.nodes.parameters.find_parameters_using_variable."""
-    result = ht.nodes.parameters.find_parameters_using_variable("BAR")
+    """Test houdini_toolbox.nodes.parameters.find_parameters_using_variable."""
+    result = houdini_toolbox.nodes.parameters.find_parameters_using_variable("BAR")
 
     assert result == ()
 
@@ -41,7 +41,7 @@ def test_find_parameters_using_variable():
         hou.parm("/tasks/topnet1/localscheduler/pdg_workingdir"),
     )
 
-    result = ht.nodes.parameters.find_parameters_using_variable("HIP")
+    result = houdini_toolbox.nodes.parameters.find_parameters_using_variable("HIP")
 
     assert result == expected
 
@@ -52,13 +52,13 @@ def test_find_parameters_using_variable():
         hou.parm("/tasks/topnet1/localscheduler/tempdircustom"),
     )
 
-    result = ht.nodes.parameters.find_parameters_using_variable("$HIPNAME")
+    result = houdini_toolbox.nodes.parameters.find_parameters_using_variable("$HIPNAME")
 
     assert result == expected
 
     expected = (hou.parm("/obj/geo1/font2/text"),)
 
-    result = ht.nodes.parameters.find_parameters_using_variable("$HIPFILE")
+    result = houdini_toolbox.nodes.parameters.find_parameters_using_variable("$HIPFILE")
 
     assert result == expected
 
@@ -67,30 +67,30 @@ def test_find_parameters_using_variable():
         hou.parm("/tasks/topnet1/taskgraphfile"),
     )
 
-    result = ht.nodes.parameters.find_parameters_using_variable("F")
+    result = houdini_toolbox.nodes.parameters.find_parameters_using_variable("F")
 
     assert result == expected
 
     expected = (hou.parm("/out/mantra1/vm_picture"),)
 
-    result = ht.nodes.parameters.find_parameters_using_variable("$F4")
+    result = houdini_toolbox.nodes.parameters.find_parameters_using_variable("$F4")
 
     assert result == expected
 
 
 def test_find_parameters_with_value():
-    """Test ht.nodes.parameters.find_parameters_with_value."""
-    result = ht.nodes.parameters.find_parameters_with_value("gaussian")
+    """Test houdini_toolbox.nodes.parameters.find_parameters_with_value."""
+    result = houdini_toolbox.nodes.parameters.find_parameters_with_value("gaussian")
     assert result == (hou.parm("/out/mantra1/vm_pfilter"),)
 
-    result = ht.nodes.parameters.find_parameters_with_value("render1")
+    result = houdini_toolbox.nodes.parameters.find_parameters_with_value("render1")
     assert result == ()
 
-    result = ht.nodes.parameters.find_parameters_with_value("render")
+    result = houdini_toolbox.nodes.parameters.find_parameters_with_value("render")
     assert result == (
         hou.parm("/obj/geo1/font1/text"),
         hou.parm("/out/mantra1/vm_picture"),
     )
 
-    result = ht.nodes.parameters.find_parameters_with_value("renders")
+    result = houdini_toolbox.nodes.parameters.find_parameters_with_value("renders")
     assert result == (hou.parm("/obj/geo1/font2/text"),)

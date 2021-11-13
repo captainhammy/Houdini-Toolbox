@@ -1,11 +1,11 @@
-"""Tests for ht.nodes.styles.event module."""
+"""Tests for houdini_toolbox.nodes.styles.event module."""
 
 # =============================================================================
 # IMPORTS
 # =============================================================================
 
 # Houdini Toolbox
-import ht.nodes.styles.event
+import houdini_toolbox.nodes.styles.event
 
 # Houdini
 import hou
@@ -17,25 +17,25 @@ import hou
 
 def test_style_node_by_name(mocker):
     """Test styling a node by name."""
-    mock_manager = mocker.patch("ht.nodes.styles.event.STYLE_MANAGER", autospec=True)
+    mock_manager = mocker.patch("houdini_toolbox.nodes.styles.event.STYLE_MANAGER", autospec=True)
 
     mock_node = mocker.MagicMock(spec=hou.Node)
 
     scriptargs = {"node": mock_node}
 
-    ht.nodes.styles.event.style_node_by_name(scriptargs)
+    houdini_toolbox.nodes.styles.event.style_node_by_name(scriptargs)
 
     mock_manager.style_node_by_name.assert_called_with(mock_node)
 
 
 def test_style_node_on_creation(mocker):
     """Test styling a node on creation."""
-    mock_manager = mocker.patch("ht.nodes.styles.event.STYLE_MANAGER", autospec=True)
+    mock_manager = mocker.patch("houdini_toolbox.nodes.styles.event.STYLE_MANAGER", autospec=True)
 
     mock_node = mocker.MagicMock(spec=hou.Node)
 
     scriptargs = {"node": mock_node}
 
-    ht.nodes.styles.event.style_node_on_creation(scriptargs)
+    houdini_toolbox.nodes.styles.event.style_node_on_creation(scriptargs)
 
     mock_manager.style_node.assert_called_with(mock_node)

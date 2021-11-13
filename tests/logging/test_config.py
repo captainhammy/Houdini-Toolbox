@@ -1,4 +1,4 @@
-"""Tests for ht.logging.config module."""
+"""Tests for houdini_toolbox.logging.config module."""
 
 # =============================================================================
 # IMPORTS
@@ -8,7 +8,7 @@
 import os
 
 # Houdini Toolbox
-import ht.logging.config
+import houdini_toolbox.logging.config
 
 # =============================================================================
 # TESTS
@@ -16,13 +16,13 @@ import ht.logging.config
 
 
 class Test_init_config:
-    """Test ht.logging.config.init_config."""
+    """Test houdini_toolbox.logging.config.init_config."""
 
     def test_config_exists(self, mocker):
         """Test when a config file exists."""
         fake_path = "/path/to/file.py"
 
-        mocker.patch("ht.logging.config.__file__", fake_path)
+        mocker.patch("houdini_toolbox.logging.config.__file__", fake_path)
 
         mock_exists = mocker.patch("os.path.exists", return_value=True)
         mock_load = mocker.patch("json.load")
@@ -32,7 +32,7 @@ class Test_init_config:
 
         mocker.patch("builtins.open", mock_handle)
 
-        ht.logging.config.init_config()
+        houdini_toolbox.logging.config.init_config()
 
         mock_exists.assert_called_with(
             os.path.join(os.path.dirname(fake_path), "config.json")
@@ -44,7 +44,7 @@ class Test_init_config:
         """Test when a config file does not exist."""
         fake_path = "/path/to/file.py"
 
-        mocker.patch("ht.logging.config.__file__", fake_path)
+        mocker.patch("houdini_toolbox.logging.config.__file__", fake_path)
 
         mock_exists = mocker.patch("os.path.exists", return_value=False)
 
@@ -52,7 +52,7 @@ class Test_init_config:
 
         mocker.patch("builtins.open", mock_handle)
 
-        ht.logging.config.init_config()
+        houdini_toolbox.logging.config.init_config()
 
         mock_exists.assert_called_with(
             os.path.join(os.path.dirname(fake_path), "config.json")

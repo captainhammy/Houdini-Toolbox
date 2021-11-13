@@ -1,4 +1,4 @@
-"""Test the ht.pyfilter.operations.ipoverrides module."""
+"""Test the houdini_toolbox.pyfilter.operations.ipoverrides module."""
 
 # =============================================================================
 # IMPORTS
@@ -12,8 +12,8 @@ import copy
 import pytest
 
 # Houdini Toolbox
-from ht.pyfilter.manager import PyFilterManager
-from ht.pyfilter.operations import ipoverrides
+from houdini_toolbox.pyfilter.manager import PyFilterManager
+from houdini_toolbox.pyfilter.operations import ipoverrides
 
 # Houdini
 import hou
@@ -84,8 +84,8 @@ def init_operation(mocker):
 def properties(mocker):
     """Fixture to handle mocking (get|set)_property calls."""
 
-    _mock_get = mocker.patch("ht.pyfilter.operations.ipoverrides.get_property")
-    _mock_set = mocker.patch("ht.pyfilter.operations.ipoverrides.set_property")
+    _mock_get = mocker.patch("houdini_toolbox.pyfilter.operations.ipoverrides.get_property")
+    _mock_set = mocker.patch("houdini_toolbox.pyfilter.operations.ipoverrides.set_property")
 
     class Properties:
         """Fake class for accessing and setting properties."""
@@ -109,7 +109,7 @@ def properties(mocker):
 
 
 class Test_IpOverrides:
-    """Test the ht.pyfilter.operations.ipoverrides.IpOverride class."""
+    """Test the houdini_toolbox.pyfilter.operations.ipoverrides.IpOverride class."""
 
     def test___init__(self, mocker):
         """Test object initialization."""
@@ -345,7 +345,7 @@ class Test_IpOverrides:
     ):
         """Test 'filter_camera' when scaling the resolution."""
         mock_scale = mocker.patch(
-            "ht.pyfilter.operations.ipoverrides._scale_resolution"
+            "houdini_toolbox.pyfilter.operations.ipoverrides._scale_resolution"
         )
 
         op = init_operation({"res_scale": int}, as_properties=True)
@@ -362,7 +362,7 @@ class Test_IpOverrides:
         self, init_operation, properties, patch_operation_logger, mocker
     ):
         """Test 'filter_camera' when scaling the samples."""
-        mock_scale = mocker.patch("ht.pyfilter.operations.ipoverrides._scale_samples")
+        mock_scale = mocker.patch("houdini_toolbox.pyfilter.operations.ipoverrides._scale_samples")
 
         op = init_operation({"sample_scale": float}, as_properties=True)
 
@@ -735,7 +735,7 @@ class Test_IpOverrides:
     ],
 )
 def test__scale_resolution(resolution, scale, expected):
-    """Test the ht.pyfilter.operations.ipoverrides._scale_resolution."""
+    """Test the houdini_toolbox.pyfilter.operations.ipoverrides._scale_resolution."""
     assert ipoverrides._scale_resolution(resolution, scale) == expected
 
 
@@ -744,17 +744,17 @@ def test__scale_resolution(resolution, scale, expected):
     [((10, 10), 1.0, [10, 10]), ((10, 10), 0.5, [5, 5]), ((10, 10), 0.333, [4, 4])],
 )
 def test__scale_sample_value(samples, scale, expected):
-    """Test the ht.pyfilter.operations.ipoverrides._scale_sample_value."""
+    """Test the houdini_toolbox.pyfilter.operations.ipoverrides._scale_sample_value."""
     assert ipoverrides._scale_samples(samples, scale) == expected
 
 
 class Test_build_arg_string_from_node:
-    """Test the ht.pyfilter.operations.ipoverrides.build_arg_string_from_node."""
+    """Test the houdini_toolbox.pyfilter.operations.ipoverrides.build_arg_string_from_node."""
 
     def test(self, mocker):
         """Test with scaling."""
         mock_build = mocker.patch(
-            "ht.pyfilter.operations.ipoverrides.IpOverrides.build_arg_string"
+            "houdini_toolbox.pyfilter.operations.ipoverrides.IpOverrides.build_arg_string"
         )
 
         mock_node = mocker.MagicMock()
@@ -802,7 +802,7 @@ class Test_build_arg_string_from_node:
     def test_no_scales(self, mocker):
         """Test with no scaling."""
         mock_build = mocker.patch(
-            "ht.pyfilter.operations.ipoverrides.IpOverrides.build_arg_string"
+            "houdini_toolbox.pyfilter.operations.ipoverrides.IpOverrides.build_arg_string"
         )
 
         mock_node = mocker.MagicMock()
@@ -847,8 +847,8 @@ class Test_build_arg_string_from_node:
 
 
 def test_build_pixel_sample_scale_display(mocker):
-    """Test the ht.pyfilter.operations.ipoverrides.build_pixel_sample_scale_display."""
-    mock_scale = mocker.patch("ht.pyfilter.operations.ipoverrides._scale_samples")
+    """Test the houdini_toolbox.pyfilter.operations.ipoverrides.build_pixel_sample_scale_display."""
+    mock_scale = mocker.patch("houdini_toolbox.pyfilter.operations.ipoverrides._scale_samples")
 
     source_samples = (6, 6)
     target_samples = (3, 3)
@@ -869,7 +869,7 @@ def test_build_pixel_sample_scale_display(mocker):
 
 
 class Test_build_resolution_scale_display:
-    """Test the ht.pyfilter.operations.ipoverrides.build_resolution_scale_display."""
+    """Test the houdini_toolbox.pyfilter.operations.ipoverrides.build_resolution_scale_display."""
 
     def test_no_camera(self, mocker):
         """Test when there is no target camera."""
@@ -885,7 +885,7 @@ class Test_build_resolution_scale_display:
     def test_no_override(self, mocker):
         """Test when there is no override being applied on the Mantra ROP."""
         mock_scale = mocker.patch(
-            "ht.pyfilter.operations.ipoverrides._scale_resolution"
+            "houdini_toolbox.pyfilter.operations.ipoverrides._scale_resolution"
         )
 
         mock_scale.return_value = (960, 540)
@@ -911,7 +911,7 @@ class Test_build_resolution_scale_display:
     def test_override_specific(self, mocker):
         """Test when there is a specific resolution override being applied on the Mantra ROP."""
         mock_scale = mocker.patch(
-            "ht.pyfilter.operations.ipoverrides._scale_resolution"
+            "houdini_toolbox.pyfilter.operations.ipoverrides._scale_resolution"
         )
         mock_scale.return_value = (250, 250)
 
@@ -940,7 +940,7 @@ class Test_build_resolution_scale_display:
     def test_override_scaled(self, mocker):
         """Test when there is a resolution scale override being applied on the Mantra ROP."""
         mock_scale = mocker.patch(
-            "ht.pyfilter.operations.ipoverrides._scale_resolution"
+            "houdini_toolbox.pyfilter.operations.ipoverrides._scale_resolution"
         )
         mock_scale.side_effect = ((960, 540), (480, 270))
 
@@ -969,12 +969,12 @@ class Test_build_resolution_scale_display:
 
 
 def test_build_pyfilter_command_from_node(mocker):
-    """Test the ht.pyfilter.operations.ipoverrides.build_pyfilter_command_from_node."""
+    """Test the houdini_toolbox.pyfilter.operations.ipoverrides.build_pyfilter_command_from_node."""
     mock_build_arg = mocker.patch(
-        "ht.pyfilter.operations.ipoverrides.build_arg_string_from_node"
+        "houdini_toolbox.pyfilter.operations.ipoverrides.build_arg_string_from_node"
     )
     mock_build_command = mocker.patch(
-        "ht.pyfilter.operations.ipoverrides.build_pyfilter_command"
+        "houdini_toolbox.pyfilter.operations.ipoverrides.build_pyfilter_command"
     )
 
     mock_node = mocker.MagicMock(spec=hou.RopNode)
@@ -991,14 +991,14 @@ def test_build_pyfilter_command_from_node(mocker):
 
 
 def test_set_mantra_command(mocker):
-    """Test the ht.pyfilter.operations.ipoverrides.set_mantra_command."""
+    """Test the houdini_toolbox.pyfilter.operations.ipoverrides.set_mantra_command."""
 
     mock_node = mocker.MagicMock(spec=hou.RopNode)
 
     ipoverrides.set_mantra_command(mock_node)
 
     mock_node.parm.return_value.set.assert_called_with(
-        "mantra `pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.build_pyfilter_command_from_node(hou.pwd())\")`"
+        "mantra `pythonexprs(\"__import__('houdini_toolbox.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.build_pyfilter_command_from_node(hou.pwd())\")`"
     )
 
     mock_node.parm.assert_called_with("soho_pipecmd")

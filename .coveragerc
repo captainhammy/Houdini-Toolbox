@@ -4,7 +4,7 @@
 #    shelf_coverage_plugin
 branch = True
 source =
-    ht
+    houdini_toolbox
     houdini/python3.7libs/nodegraphhooks.py
     houdini/toolbar
   #  /var/tmp/
@@ -12,13 +12,13 @@ source =
 omit =
         *tests*
         *__init__*
-	python/ht/machinery/*
+	python/houdini_toolbox/machinery/*
 	*/constants.py
-	python/ht/events/types.py
-	python/ht/inline/lib.py
-	python/ht/ui/aovs/*
-	python/ht/ui/paste/*
-	python/ht/ui/icons.py
+	python/houdini_toolbox/events/types.py
+	python/houdini_toolbox/inline/lib.py
+	python/houdini_toolbox/ui/aovs/*
+	python/houdini_toolbox/ui/paste/*
+	python/houdini_toolbox/ui/icons.py
 
 disable_warnings = 
 	module-not-imported

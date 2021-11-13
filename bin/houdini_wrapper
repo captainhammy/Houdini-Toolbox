@@ -19,8 +19,8 @@ from typing import TYPE_CHECKING, List, Tuple
 from termcolor import colored, cprint
 
 # Houdini Toolbox
-import ht.machinery.package
-import ht.machinery.sidefx_web_api
+import houdini_toolbox.machinery.package
+import houdini_toolbox.machinery.sidefx_web_api
 
 if TYPE_CHECKING:
     import types
@@ -39,7 +39,7 @@ _SIGNALS = (
 )
 
 # Construct a HoudiniBuildManager to handle all our available Houdini options.
-_BUILD_MANAGER = ht.machinery.package.HoudiniBuildManager()
+_BUILD_MANAGER = houdini_toolbox.machinery.package.HoudiniBuildManager()
 
 
 # =============================================================================
@@ -174,7 +174,7 @@ def _download_handler(args: argparse.Namespace):
     if args.list_builds:
         print("Houdini builds available to download:\n")
 
-        ht.machinery.sidefx_web_api.list_builds(
+        houdini_toolbox.machinery.sidefx_web_api.list_builds(
             version=args.version,
             product=product,
             only_production=args.only_production
@@ -191,7 +191,7 @@ def _download_handler(args: argparse.Namespace):
 
     if not args.no_install:
         for archive in downloaded_archives:
-            package = ht.machinery.package.HoudiniInstallFile(archive)
+            package = houdini_toolbox.machinery.package.HoudiniInstallFile(archive)
             package.install(not args.no_symlink)
 
 
@@ -224,7 +224,7 @@ def _find_build(args: argparse.Namespace):
 
     # Look for a build matching the string.
     else:
-        result = ht.machinery.package.find_matching_builds(version, search_builds)
+        result = houdini_toolbox.machinery.package.find_matching_builds(version, search_builds)
 
         if result is None:
             print("Could not find version: {}".format(version))
@@ -253,7 +253,7 @@ def _install_handler(args: argparse.Namespace):
 
         return
 
-    result = ht.machinery.package.find_matching_builds(args.version, _BUILD_MANAGER.installable)
+    result = houdini_toolbox.machinery.package.find_matching_builds(args.version, _BUILD_MANAGER.installable)
 
     if result is None:
         print("Could not find installable build {}".format(args.version))
@@ -262,7 +262,7 @@ def _install_handler(args: argparse.Namespace):
         result.install(not args.no_symlink)
 
 
-def _print_local_build_list(build_list: List[ht.machinery.package.HoudiniBuildType], message: str):
+def _print_local_build_list(build_list: List[houdini_toolbox.machinery.package.HoudiniBuildType], message: str):
     """Print a list of local builds.
 
     :param build_list: A list of builds on disk.
@@ -357,7 +357,7 @@ def _uninstall_handler(args: argparse.Namespace):
         return
 
     for version in args.versions:
-        result = ht.machinery.package.find_matching_builds(version, _BUILD_MANAGER.installed)
+        result = houdini_toolbox.machinery.package.find_matching_builds(version, _BUILD_MANAGER.installed)
 
         if result is None:
             print("Could not find version: {}".format(version))

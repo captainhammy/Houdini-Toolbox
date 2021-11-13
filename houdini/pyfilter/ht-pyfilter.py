@@ -15,15 +15,15 @@ For more information, please see:
 import logging
 
 # Houdini Toolbox
-import ht.logging.config
+import houdini_toolbox.logging.config
 
 # Initialize logging config.
-ht.logging.config.init_config()
+houdini_toolbox.logging.config.init_config()
 
-from ht.pyfilter.manager import PyFilterManager
-from ht.pyfilter.property import get_property
+from houdini_toolbox.pyfilter.manager import PyFilterManager
+from houdini_toolbox.pyfilter.property import get_property
 
-_logger = logging.getLogger("ht-pyfilter")
+_logger = logging.getLogger("houdini_toolbox-pyfilter")
 
 
 # =============================================================================

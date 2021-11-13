@@ -1,4 +1,4 @@
-"""Test the ht.pyfilter.operations.settilecallback module."""
+"""Test the houdini_toolbox.pyfilter.operations.settilecallback module."""
 
 # =============================================================================
 # IMPORTS
@@ -11,8 +11,8 @@ import argparse
 import pytest
 
 # Houdini Toolbox
-from ht.pyfilter.manager import PyFilterManager
-from ht.pyfilter.operations import settilecallback
+from houdini_toolbox.pyfilter.manager import PyFilterManager
+from houdini_toolbox.pyfilter.operations import settilecallback
 
 # =============================================================================
 # FIXTURES
@@ -36,7 +36,7 @@ def init_operation(mocker):
 
 
 class Test_SetTileCallback:
-    """Test the ht.pyfilter.operations.settilecallback.SetTileCallback object."""
+    """Test the houdini_toolbox.pyfilter.operations.settilecallback.SetTileCallback object."""
 
     def test___init__(self, mocker):
         """Test object initialization."""
@@ -87,7 +87,7 @@ class Test_SetTileCallback:
 
     def test_filter_camera(self, init_operation, mocker, patch_operation_logger):
         """Test filter_camera."""
-        mock_set = mocker.patch("ht.pyfilter.operations.settilecallback.set_property")
+        mock_set = mocker.patch("houdini_toolbox.pyfilter.operations.settilecallback.set_property")
 
         mock_tilecallback = mocker.PropertyMock(spec=str)
 

@@ -1,4 +1,4 @@
-"""Test the ht.pyfilter.operations.logoutput module."""
+"""Test the houdini_toolbox.pyfilter.operations.logoutput module."""
 
 # =============================================================================
 # IMPORTS
@@ -8,7 +8,7 @@
 import pytest
 
 # Houdini Toolbox
-from ht.pyfilter.operations import logoutput
+from houdini_toolbox.pyfilter.operations import logoutput
 
 # =============================================================================
 # FIXTURES
@@ -29,7 +29,7 @@ def init_operation(mocker):
 @pytest.fixture
 def patch_logger(mocker):
     """Mock the fake 'mantra' module logger."""
-    yield mocker.patch("ht.pyfilter.operations.logoutput._logger", autospec=True)
+    yield mocker.patch("houdini_toolbox.pyfilter.operations.logoutput._logger", autospec=True)
 
 
 # =============================================================================
@@ -38,7 +38,7 @@ def patch_logger(mocker):
 
 
 class Test_LogOutput:
-    """Test the ht.pyfilter.operations.logoutput.LogOutput object."""
+    """Test the houdini_toolbox.pyfilter.operations.logoutput.LogOutput object."""
 
     # Methods
 

@@ -1,4 +1,4 @@
-"""Test the ht.pyfilter.operations.zdepth module."""
+"""Test the houdini_toolbox.pyfilter.operations.zdepth module."""
 
 # =============================================================================
 # IMPORTS
@@ -11,8 +11,8 @@ import argparse
 import pytest
 
 # Houdini Toolbox
-from ht.pyfilter.manager import PyFilterManager
-from ht.pyfilter.operations import zdepth
+from houdini_toolbox.pyfilter.manager import PyFilterManager
+from houdini_toolbox.pyfilter.operations import zdepth
 
 # =============================================================================
 # FIXTURES
@@ -34,8 +34,8 @@ def init_operation(mocker):
 def properties(mocker):
     """Fixture to handle mocking (get|set)_property calls."""
 
-    _mock_get = mocker.patch("ht.pyfilter.operations.zdepth.get_property")
-    _mock_set = mocker.patch("ht.pyfilter.operations.zdepth.set_property")
+    _mock_get = mocker.patch("houdini_toolbox.pyfilter.operations.zdepth.get_property")
+    _mock_set = mocker.patch("houdini_toolbox.pyfilter.operations.zdepth.set_property")
 
     class Properties:
         """Fake class for accessing and setting properties."""
@@ -59,7 +59,7 @@ def properties(mocker):
 
 
 class Test_ZDepthPass:
-    """Test the ht.pyfilter.operations.zdepth.ZDepthPass class."""
+    """Test the houdini_toolbox.pyfilter.operations.zdepth.ZDepthPass class."""
 
     def test___init__(self, mocker):
         """Test object initialization."""

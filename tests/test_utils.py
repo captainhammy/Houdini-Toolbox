@@ -1,4 +1,4 @@
-"""Test the ht.utils module."""
+"""Test the houdini_toolbox.utils module."""
 
 # =============================================================================
 # IMPORTS
@@ -8,7 +8,7 @@
 import pytest
 
 # Houdini Toolbox
-from ht import utils
+from houdini_toolbox import utils
 
 # Houdini
 import hou
@@ -19,7 +19,7 @@ import hou
 
 
 def test_restore_update_mode(mocker, mock_hou_ui):
-    """Test ht.utils.restore_update_mode.
+    """Test houdini_toolbox.utils.restore_update_mode.
 
     Since we're using 'finally' we'll throw an exception inside the code to ensure
     that the mode gets restored.
@@ -39,7 +39,7 @@ def test_restore_update_mode(mocker, mock_hou_ui):
 
 
 class Test_timer:
-    """Test ht.utils.timer."""
+    """Test houdini_toolbox.utils.timer."""
 
     def test_label(self, mocker):
         """Test passing a label."""
@@ -48,7 +48,7 @@ class Test_timer:
 
         mocker.patch("time.time", side_effect=(mock_start, mock_end))
 
-        mock_logger = mocker.patch("ht.utils._logger")
+        mock_logger = mocker.patch("houdini_toolbox.utils._logger")
 
         mock_label = mocker.MagicMock(spec=str)
 
@@ -67,7 +67,7 @@ class Test_timer:
 
         mocker.patch("time.time", side_effect=(mock_start, mock_end))
 
-        mock_logger = mocker.patch("ht.utils._logger")
+        mock_logger = mocker.patch("houdini_toolbox.utils._logger")
 
         with pytest.raises(RuntimeError):
             with utils.timer():

@@ -1,4 +1,4 @@
-"""Tests for ht.nodes.styles.styles module."""
+"""Tests for houdini_toolbox.nodes.styles.styles module."""
 
 # =============================================================================
 # IMPORTS
@@ -8,7 +8,7 @@
 import pytest
 
 # Houdini Toolbox
-from ht.nodes.styles import styles
+from houdini_toolbox.nodes.styles import styles
 
 # Houdini
 import hou
@@ -57,7 +57,7 @@ def init_style_rule(mocker):
 
 
 class Test_StyleConstant:
-    """Test ht.nodes.styles.styles.StyleConstant."""
+    """Test houdini_toolbox.nodes.styles.styles.StyleConstant."""
 
     def test___init__(self, mocker):
         """Test object initialization."""
@@ -226,7 +226,7 @@ class Test_StyleConstant:
 
 
 class Test_StyleRule:
-    """Test ht.nodes.styles.styles.StyleRule."""
+    """Test houdini_toolbox.nodes.styles.styles.StyleRule."""
 
     def test___init__(self, mocker):
         """Test the constructor."""
@@ -428,7 +428,7 @@ class Test_StyleRule:
 
 
 class Test_ConstantRule:
-    """Test ht.nodes.styles.styles.ConstantRule."""
+    """Test houdini_toolbox.nodes.styles.styles.ConstantRule."""
 
     def test___init__(self, mocker):
         """Test the constructor."""

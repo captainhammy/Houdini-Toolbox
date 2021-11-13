@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import List, Tuple
 
 # Houdini Toolbox
-from ht.ui import nodegraph, paste
+from houdini_toolbox.ui import nodegraph, paste
 
 # Houdini
 import nodegraphdisplay

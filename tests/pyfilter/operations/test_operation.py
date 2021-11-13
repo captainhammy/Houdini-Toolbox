@@ -1,4 +1,4 @@
-"""Test the ht.pyfilter.operations.operation module."""
+"""Test the houdini_toolbox.pyfilter.operations.operation module."""
 
 # =============================================================================
 # IMPORTS
@@ -11,8 +11,8 @@ import argparse
 import pytest
 
 # Houdini Toolbox
-from ht.pyfilter.manager import PyFilterManager
-from ht.pyfilter.operations import operation
+from houdini_toolbox.pyfilter.manager import PyFilterManager
+from houdini_toolbox.pyfilter.operations import operation
 
 # =============================================================================
 # FIXTURES
@@ -36,7 +36,7 @@ def init_operation(mocker):
 
 
 class Test_PyFilterOperation:
-    """Test the ht.pyfilter.operations.operation.PyFilterOperation object."""
+    """Test the houdini_toolbox.pyfilter.operations.operation.PyFilterOperation object."""
 
     def test___init__(self, mocker):
         """Test object initialization."""

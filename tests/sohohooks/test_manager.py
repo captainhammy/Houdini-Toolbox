@@ -1,4 +1,4 @@
-"""Test the ht.sohohooks.aovs.manager module."""
+"""Test the houdini_toolbox.sohohooks.aovs.manager module."""
 
 # =============================================================================
 # IMPORTS
@@ -8,7 +8,7 @@
 import pytest
 
 # Houdini Toolbox
-from ht.sohohooks import manager
+from houdini_toolbox.sohohooks import manager
 
 # =============================================================================
 # FIXTURES
@@ -32,7 +32,7 @@ def init_manager(mocker):
 
 
 class Test_SohoHookManager:
-    """Test ht.sohohooks.manager.SohoHookManager object."""
+    """Test houdini_toolbox.sohohooks.manager.SohoHookManager object."""
 
     def test___init__(self):
         """Test object initialization."""

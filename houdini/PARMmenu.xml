@@ -4,9 +4,9 @@
 	    <scriptItem id="promote_parm_to_node">
             <label>Promote Parameter to Node</label>
             <insertAfter>export_parm_type_props</insertAfter>
-            <scriptCode><![CDATA[import ht.ui.menus.parmmenu
+            <scriptCode><![CDATA[import houdini_toolbox.ui.menus.parmmenu
 
-ht.ui.menus.parmmenu.promote_parameter_to_node(kwargs)  # pylint: disable=undefined-variable
+houdini_toolbox.ui.menus.parmmenu.promote_parameter_to_node(kwargs)  # pylint: disable=undefined-variable
 ]]></scriptCode>
         </scriptItem>
 
@@ -14,14 +14,14 @@ ht.ui.menus.parmmenu.promote_parameter_to_node(kwargs)  # pylint: disable=undefi
             <insertAfter>motion_effects_menu</insertAfter>
             <label>Convert to Absolute Path</label>
             <context>
-                <expression><![CDATA[import ht.ui.menus.parmmenu
+                <expression><![CDATA[import houdini_toolbox.ui.menus.parmmenu
 
-return ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context(kwargs)  # pylint: disable=undefined-variable
+return houdini_toolbox.ui.menus.parmmenu.convert_relative_to_absolute_path_context(kwargs)  # pylint: disable=undefined-variable
 ]]></expression>
             </context>
-            <scriptCode><![CDATA[import ht.ui.menus.parmmenu
+            <scriptCode><![CDATA[import houdini_toolbox.ui.menus.parmmenu
 
-ht.ui.menus.parmmenu.convert_relative_to_absolute_path(kwargs)  # pylint: disable=undefined-variable
+houdini_toolbox.ui.menus.parmmenu.convert_relative_to_absolute_path(kwargs)  # pylint: disable=undefined-variable
 ]]></scriptCode>
         </scriptItem>
 
@@ -29,14 +29,14 @@ ht.ui.menus.parmmenu.convert_relative_to_absolute_path(kwargs)  # pylint: disabl
             <insertAfter>motion_effects_menu</insertAfter>
             <label>Convert to Relative Path</label>
             <context>
-                <expression><![CDATA[import ht.ui.menus.parmmenu
+                <expression><![CDATA[import houdini_toolbox.ui.menus.parmmenu
 
-return ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context(kwargs)  # pylint: disable=undefined-variable
+return houdini_toolbox.ui.menus.parmmenu.convert_absolute_to_relative_path_context(kwargs)  # pylint: disable=undefined-variable
 ]]></expression>
             </context>
-            <scriptCode><![CDATA[import ht.ui.menus.parmmenu
+            <scriptCode><![CDATA[import houdini_toolbox.ui.menus.parmmenu
 
-ht.ui.menus.parmmenu.convert_absolute_to_relative_path(kwargs)  # pylint: disable=undefined-variable
+houdini_toolbox.ui.menus.parmmenu.convert_absolute_to_relative_path(kwargs)  # pylint: disable=undefined-variable
 ]]></scriptCode>
         </scriptItem>
     </menu>

@@ -1,4 +1,4 @@
-"""Tests for ht.nodes.styles.module module."""
+"""Tests for houdini_toolbox.nodes.styles.module module."""
 
 # =============================================================================
 # IMPORTS
@@ -11,8 +11,8 @@ import os
 import pytest
 
 # Houdini Toolbox
-from ht.nodes.styles import constants as consts
-from ht.nodes.styles import manager
+from houdini_toolbox.nodes.styles import constants as consts
+from houdini_toolbox.nodes.styles import manager
 
 # Houdini
 import hou
@@ -39,7 +39,7 @@ def init_manager(mocker):
 
 
 class Test_StyleManager:
-    """Test ht.nodes.styles.manager.StyleManager."""
+    """Test houdini_toolbox.nodes.styles.manager.StyleManager."""
 
     def test___init__(self, mocker):
         """Test the constructor."""
@@ -94,8 +94,8 @@ class Test_StyleManager:
 
     def test__build(self, init_manager, mocker):
         """Test building all the data from files."""
-        mock_find = mocker.patch("ht.nodes.styles.manager._find_files")
-        mock_load = mocker.patch("ht.nodes.styles.manager.json.load")
+        mock_find = mocker.patch("houdini_toolbox.nodes.styles.manager._find_files")
+        mock_load = mocker.patch("houdini_toolbox.nodes.styles.manager.json.load")
         mock_build_consts = mocker.patch.object(
             manager.StyleManager, "_build_constants_from_data"
         )
@@ -137,10 +137,10 @@ class Test_StyleManager:
 
     def test__build_constants_from_data(self, init_manager, mocker):
         """Test building StyleConstants from data."""
-        mock_build_color = mocker.patch("ht.nodes.styles.manager._build_color")
-        mock_build_shape = mocker.patch("ht.nodes.styles.manager._build_shape")
+        mock_build_color = mocker.patch("houdini_toolbox.nodes.styles.manager._build_color")
+        mock_build_shape = mocker.patch("houdini_toolbox.nodes.styles.manager._build_shape")
         mock_constant = mocker.patch(
-            "ht.nodes.styles.manager.StyleConstant", autospec=True
+            "houdini_toolbox.nodes.styles.manager.StyleConstant", autospec=True
         )
 
         mock_rule1 = mocker.MagicMock(spec=dict)
@@ -208,10 +208,10 @@ class Test_StyleManager:
 
     def test__build_constants_from_data__no_constants(self, init_manager, mocker):
         """Test building StyleConstants from data when there are no constant definitions."""
-        mock_build_color = mocker.patch("ht.nodes.styles.manager._build_color")
-        mock_build_shape = mocker.patch("ht.nodes.styles.manager._build_shape")
+        mock_build_color = mocker.patch("houdini_toolbox.nodes.styles.manager._build_color")
+        mock_build_shape = mocker.patch("houdini_toolbox.nodes.styles.manager._build_shape")
         mock_constant = mocker.patch(
-            "ht.nodes.styles.manager.StyleConstant", autospec=True
+            "houdini_toolbox.nodes.styles.manager.StyleConstant", autospec=True
         )
 
         all_data = [{consts.PATH_KEY: mocker.MagicMock(spec=str)}]
@@ -228,7 +228,7 @@ class Test_StyleManager:
 
     def test__build_rules_from_data__no_rules(self, init_manager, mocker):
         """Test building rules from data when the data contains no rules."""
-        mock_build = mocker.patch("ht.nodes.styles.manager._build_category_rules")
+        mock_build = mocker.patch("houdini_toolbox.nodes.styles.manager._build_category_rules")
 
         all_data = [{consts.PATH_KEY: mocker.MagicMock(spec=str)}]
 
@@ -239,7 +239,7 @@ class Test_StyleManager:
 
     def test__build_rules_from_data__names(self, init_manager, mocker):
         """Test building rules from data when the data contains name rules."""
-        mock_build = mocker.patch("ht.nodes.styles.manager._build_category_rules")
+        mock_build = mocker.patch("houdini_toolbox.nodes.styles.manager._build_category_rules")
         mock_constants = mocker.patch.object(
             manager.StyleManager, "constants", new_callable=mocker.PropertyMock
         )
@@ -268,7 +268,7 @@ class Test_StyleManager:
 
     def test__build_rules_from_data__nodes(self, init_manager, mocker):
         """Test building rules from data when the data contains node type rules."""
-        mock_build = mocker.patch("ht.nodes.styles.manager._build_category_rules")
+        mock_build = mocker.patch("houdini_toolbox.nodes.styles.manager._build_category_rules")
         mock_constants = mocker.patch.object(
             manager.StyleManager, "constants", new_callable=mocker.PropertyMock
         )
@@ -299,7 +299,7 @@ class Test_StyleManager:
 
     def test__build_rules_from_data__tools(self, init_manager, mocker):
         """Test building rules from data when the data contains tool rules."""
-        mock_build = mocker.patch("ht.nodes.styles.manager._build_category_rules")
+        mock_build = mocker.patch("houdini_toolbox.nodes.styles.manager._build_category_rules")
         mock_constants = mocker.patch.object(
             manager.StyleManager, "constants", new_callable=mocker.PropertyMock
         )
@@ -735,7 +735,7 @@ class Test_StyleManager:
     def test__get_tool_style__category(self, init_manager, mocker):
         """Test getting a tool style which matches a specific category."""
         mock_get_locations = mocker.patch(
-            "ht.nodes.styles.manager._get_tool_menu_locations"
+            "houdini_toolbox.nodes.styles.manager._get_tool_menu_locations"
         )
         mock_tool_rules = mocker.patch.object(
             manager.StyleManager, "tool_rules", new_callable=mocker.PropertyMock
@@ -776,7 +776,7 @@ class Test_StyleManager:
     def test__get_tool_style__all(self, init_manager, mocker):
         """Test getting a tool style which matches the generic 'all' category."""
         mock_get_locations = mocker.patch(
-            "ht.nodes.styles.manager._get_tool_menu_locations"
+            "houdini_toolbox.nodes.styles.manager._get_tool_menu_locations"
         )
         mock_tool_rules = mocker.patch.object(
             manager.StyleManager, "tool_rules", new_callable=mocker.PropertyMock
@@ -817,7 +817,7 @@ class Test_StyleManager:
     def test__get_tool_style__no_match(self, init_manager, mocker):
         """Test getting a tool style that does not match any rules."""
         mock_get_locations = mocker.patch(
-            "ht.nodes.styles.manager._get_tool_menu_locations"
+            "houdini_toolbox.nodes.styles.manager._get_tool_menu_locations"
         )
         mock_tool_rules = mocker.patch.object(
             manager.StyleManager, "tool_rules", new_callable=mocker.PropertyMock
@@ -1111,7 +1111,7 @@ class Test_StyleManager:
 
 
 class Test__build_category_rules:
-    """Test ht.nodes.styles.manager._build_category_rules."""
+    """Test houdini_toolbox.nodes.styles.manager._build_category_rules."""
 
     def test_invalid_constant(self, mocker):
         """Test building with an invalid constant."""
@@ -1130,9 +1130,9 @@ class Test__build_category_rules:
 
     def test_constant(self, mocker):
         """Test building a ConstantRule."""
-        mock_build_color = mocker.patch("ht.nodes.styles.manager._build_color")
+        mock_build_color = mocker.patch("houdini_toolbox.nodes.styles.manager._build_color")
         mock_const_rule = mocker.patch(
-            "ht.nodes.styles.manager.ConstantRule", autospec=True
+            "houdini_toolbox.nodes.styles.manager.ConstantRule", autospec=True
         )
 
         constant_name = mocker.MagicMock(spec=str)
@@ -1158,13 +1158,13 @@ class Test__build_category_rules:
 
     def test_style(self, mocker):
         """Test building a StyleRule."""
-        mock_build_color = mocker.patch("ht.nodes.styles.manager._build_color")
-        mock_build_shape = mocker.patch("ht.nodes.styles.manager._build_shape")
+        mock_build_color = mocker.patch("houdini_toolbox.nodes.styles.manager._build_color")
+        mock_build_shape = mocker.patch("houdini_toolbox.nodes.styles.manager._build_shape")
         mock_const_rule = mocker.patch(
-            "ht.nodes.styles.manager.ConstantRule", autospec=True
+            "houdini_toolbox.nodes.styles.manager.ConstantRule", autospec=True
         )
         mock_style_rule = mocker.patch(
-            "ht.nodes.styles.manager.StyleRule", autospec=True
+            "houdini_toolbox.nodes.styles.manager.StyleRule", autospec=True
         )
 
         mock_color = mocker.MagicMock(spec=hou.Color)
@@ -1195,7 +1195,7 @@ class Test__build_category_rules:
 
 
 class Test__build_color:
-    """Test ht.nodes.styles.manager._build_color."""
+    """Test houdini_toolbox.nodes.styles.manager._build_color."""
 
     def test_no_data(self):
         """Test building a color when there is no data."""
@@ -1330,7 +1330,7 @@ class Test__build_color:
 
 
 class Test__build_shape:
-    """Test ht.nodes.styles.manager._build_shape."""
+    """Test houdini_toolbox.nodes.styles.manager._build_shape."""
 
     def test(self):
         """Test building a shape where there is a shape key."""
@@ -1349,7 +1349,7 @@ class Test__build_shape:
 
 
 class Test__find_files:
-    """Test ht.nodes.styles.manager._find_files."""
+    """Test houdini_toolbox.nodes.styles.manager._find_files."""
 
     def test_no_dirs(self, mocker):
         """Test finding files where there are no config/styles folders in the HOUDINI_PATH."""
@@ -1392,7 +1392,7 @@ class Test__find_files:
 
 
 class Test__get_tool_menu_locations:
-    """Test ht.nodes.styles.manager._get_tool_menu_locations."""
+    """Test houdini_toolbox.nodes.styles.manager._get_tool_menu_locations."""
 
     def test_no_match(self, mocker):
         """Test getting tab menu locations when no default tool exists."""

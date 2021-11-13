@@ -1,12 +1,12 @@
 {
     "operations":
     [
-        ["ht.pyfilter.operations.deepimage", "SetDeepImage"],
-        ["ht.pyfilter.operations.ipoverrides", "IpOverrides"],
-        ["ht.pyfilter.operations.logoutput", "LogOutput"],
-        ["ht.pyfilter.operations.primaryimage", "SetPrimaryImage"],
-        ["ht.pyfilter.operations.setproperties", "SetProperties"],
-        ["ht.pyfilter.operations.settilecallback", "SetTileCallback"],
-        ["ht.pyfilter.operations.zdepth", "ZDepthPass"]
+        ["houdini_toolbox.pyfilter.operations.deepimage", "SetDeepImage"],
+        ["houdini_toolbox.pyfilter.operations.ipoverrides", "IpOverrides"],
+        ["houdini_toolbox.pyfilter.operations.logoutput", "LogOutput"],
+        ["houdini_toolbox.pyfilter.operations.primaryimage", "SetPrimaryImage"],
+        ["houdini_toolbox.pyfilter.operations.setproperties", "SetProperties"],
+        ["houdini_toolbox.pyfilter.operations.settilecallback", "SetTileCallback"],
+        ["houdini_toolbox.pyfilter.operations.zdepth", "ZDepthPass"]
     ]
 }

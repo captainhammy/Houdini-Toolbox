@@ -1,4 +1,4 @@
-"""Test the ht.pyfilter.operations.primaryimage module."""
+"""Test the houdini_toolbox.pyfilter.operations.primaryimage module."""
 
 # =============================================================================
 # IMPORTS
@@ -11,8 +11,8 @@ import argparse
 import pytest
 
 # Houdini Toolbox
-from ht.pyfilter.manager import PyFilterManager
-from ht.pyfilter.operations import primaryimage
+from houdini_toolbox.pyfilter.manager import PyFilterManager
+from houdini_toolbox.pyfilter.operations import primaryimage
 
 # =============================================================================
 # FIXTURES
@@ -36,7 +36,7 @@ def init_operation(mocker):
 
 
 class Test_SetPrimaryImage:
-    """Test the ht.pyfilter.operations.primaryimage.SetPrimaryImage object."""
+    """Test the houdini_toolbox.pyfilter.operations.primaryimage.SetPrimaryImage object."""
 
     def test___init__(self, mocker):
         """Test object initialization."""
@@ -114,7 +114,7 @@ class Test_SetPrimaryImage:
 
     def test_filter_camera__no_op(self, init_operation, patch_operation_logger, mocker):
         """Test 'filter_camera' when doing nothing."""
-        mock_set = mocker.patch("ht.pyfilter.operations.primaryimage.set_property")
+        mock_set = mocker.patch("houdini_toolbox.pyfilter.operations.primaryimage.set_property")
 
         op = init_operation()
         op._disable_primary_image = False
@@ -128,9 +128,9 @@ class Test_SetPrimaryImage:
         self, init_operation, patch_operation_logger, mocker
     ):
         """Test 'filter_camera' when disabling the image."""
-        mock_set = mocker.patch("ht.pyfilter.operations.primaryimage.set_property")
+        mock_set = mocker.patch("houdini_toolbox.pyfilter.operations.primaryimage.set_property")
         mock_logger = mocker.patch(
-            "ht.pyfilter.operations.primaryimage._logger", autospec=True
+            "houdini_toolbox.pyfilter.operations.primaryimage._logger", autospec=True
         )
 
         op = init_operation()
@@ -143,7 +143,7 @@ class Test_SetPrimaryImage:
 
     def test_filter_camera__path(self, init_operation, patch_operation_logger, mocker):
         """Test 'filter_camera' when setting the image path."""
-        mock_set = mocker.patch("ht.pyfilter.operations.primaryimage.set_property")
+        mock_set = mocker.patch("houdini_toolbox.pyfilter.operations.primaryimage.set_property")
 
         mock_path = mocker.MagicMock(spec=str)
 

@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <mainMenu>
     <menuBar>
-        <subMenu id="ht.menu">
+        <subMenu id="houdini_toolbox.menu">
             <label>Houdini Toolbox</label>
 
-            <scriptItem id="ht.menurefresh">
+            <scriptItem id="houdini_toolbox.menurefresh">
                 <label>Reload Menus</label>
                 <scriptCode><![CDATA[import hou
 

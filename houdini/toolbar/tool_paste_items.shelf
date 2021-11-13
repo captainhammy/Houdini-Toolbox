@@ -7,9 +7,9 @@
   <tool name="paste_items" label="Paste Items from File" icon="BUTTONS_paste">
     <script scriptType="python"><![CDATA["""Paste items from a file."""
 
-import ht.ui.paste
+import houdini_toolbox.ui.paste
 
-ht.ui.paste.paste_items(kwargs)  # pylint: disable=undefined-variable
+houdini_toolbox.ui.paste.paste_items(kwargs)  # pylint: disable=undefined-variable
 ]]></script>
     <toolMenuContext name="network">
       <contextNetType>OBJ</contextNetType>

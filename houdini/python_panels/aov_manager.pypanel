@@ -5,10 +5,10 @@
 
 
 def onCreateInterface():
-    import ht.ui.aovs.widgets
+    import houdini_toolbox.ui.aovs.widgets
 
     global manager_widget  # pylint: disable=global-statement
-    manager_widget = ht.ui.aovs.widgets.AOVManagerWidget()
+    manager_widget = houdini_toolbox.ui.aovs.widgets.AOVManagerWidget()
 
     return manager_widget
 ]]></script>

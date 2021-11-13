@@ -1,4 +1,4 @@
-"""Tests for ht.events.item module."""
+"""Tests for houdini_toolbox.events.item module."""
 
 # =============================================================================
 # IMPORTS
@@ -11,8 +11,8 @@ import copy
 import pytest
 
 # Houdini Toolbox
-import ht.events.item
-import ht.events.stats
+import houdini_toolbox.events.item
+import houdini_toolbox.events.stats
 
 # =============================================================================
 # FIXTURES
@@ -23,11 +23,11 @@ import ht.events.stats
 def init_exclusive_item(mocker):
     """Fixture to initialize an exclusive item."""
     mocker.patch.object(
-        ht.events.item.ExclusiveHoudiniEventItem, "__init__", lambda x, y, z: None
+        houdini_toolbox.events.item.ExclusiveHoudiniEventItem, "__init__", lambda x, y, z: None
     )
 
     def _create():
-        return ht.events.item.ExclusiveHoudiniEventItem(None, None)
+        return houdini_toolbox.events.item.ExclusiveHoudiniEventItem(None, None)
 
     return _create
 
@@ -35,10 +35,10 @@ def init_exclusive_item(mocker):
 @pytest.fixture
 def init_item(mocker):
     """Fixture to initialize an item."""
-    mocker.patch.object(ht.events.item.HoudiniEventItem, "__init__", lambda x, y: None)
+    mocker.patch.object(houdini_toolbox.events.item.HoudiniEventItem, "__init__", lambda x, y: None)
 
     def _create():
-        return ht.events.item.HoudiniEventItem(None)
+        return houdini_toolbox.events.item.HoudiniEventItem(None)
 
     return _create
 
@@ -49,18 +49,18 @@ def init_item(mocker):
 
 
 class Test_HoudiniEventItem:
-    """Test ht.events.item.HoudiniEventItem class."""
+    """Test houdini_toolbox.events.item.HoudiniEventItem class."""
 
     def test___init__(self, mocker):
         """Test object initialization."""
-        mock_stats = mocker.patch("ht.events.item.HoudiniEventItemStats", autospec=True)
+        mock_stats = mocker.patch("houdini_toolbox.events.item.HoudiniEventItemStats", autospec=True)
 
         callables = (mocker.MagicMock(), mocker.MagicMock(), mocker.MagicMock())
         mock_name = mocker.MagicMock(spec=str)
         mock_priority = mocker.MagicMock(spec=int)
         mock_tags = mocker.MagicMock(spec=list)
 
-        item = ht.events.item.HoudiniEventItem(
+        item = houdini_toolbox.events.item.HoudiniEventItem(
             callables, mock_name, mock_priority, mock_tags
         )
 
@@ -75,15 +75,15 @@ class Test_HoudiniEventItem:
     def test___eq__(self, init_item, mocker):
         """Test the equality operator."""
         mock_name = mocker.patch.object(
-            ht.events.item.HoudiniEventItem, "name", new_callable=mocker.PropertyMock
+            houdini_toolbox.events.item.HoudiniEventItem, "name", new_callable=mocker.PropertyMock
         )
         mock_callables = mocker.patch.object(
-            ht.events.item.HoudiniEventItem,
+            houdini_toolbox.events.item.HoudiniEventItem,
             "callables",
             new_callable=mocker.PropertyMock,
         )
         mock_priority = mocker.patch.object(
-            ht.events.item.HoudiniEventItem,
+            houdini_toolbox.events.item.HoudiniEventItem,
             "priority",
             new_callable=mocker.PropertyMock,
         )
@@ -96,7 +96,7 @@ class Test_HoudiniEventItem:
 
         item1 = init_item()
 
-        item2 = mocker.MagicMock(spec=ht.events.item.HoudiniEventItem)
+        item2 = mocker.MagicMock(spec=houdini_toolbox.events.item.HoudiniEventItem)
         item2.callables = []
         item2.name = "name2"
         item2.priority = 4
@@ -124,10 +124,10 @@ class Test_HoudiniEventItem:
 
     def test___ne__(self, init_item, mocker):
         """Test the not-equals operator."""
-        mock_eq = mocker.patch.object(ht.events.item.HoudiniEventItem, "__eq__")
+        mock_eq = mocker.patch.object(houdini_toolbox.events.item.HoudiniEventItem, "__eq__")
 
         item = init_item()
-        mock_item = mocker.MagicMock(spec=ht.events.item.HoudiniEventItem)
+        mock_item = mocker.MagicMock(spec=houdini_toolbox.events.item.HoudiniEventItem)
 
         assert item.__ne__(mock_item) != mock_eq.return_value
         mock_eq.assert_called_with(mock_item)
@@ -186,7 +186,7 @@ class Test_HoudiniEventItem:
         """Test the 'stats' property."""
         item = init_item()
 
-        mock_stats = mocker.MagicMock(spec=ht.events.stats.HoudiniEventItemStats)
+        mock_stats = mocker.MagicMock(spec=houdini_toolbox.events.stats.HoudiniEventItemStats)
         item._stats = mock_stats
         assert item.stats == mock_stats
 
@@ -195,17 +195,17 @@ class Test_HoudiniEventItem:
     def test_run(self, init_item, mocker):
         """Test running an item."""
         mock_stats = mocker.patch.object(
-            ht.events.item.HoudiniEventItem, "stats", new_callable=mocker.PropertyMock
+            houdini_toolbox.events.item.HoudiniEventItem, "stats", new_callable=mocker.PropertyMock
         )
         mock_callables = mocker.patch.object(
-            ht.events.item.HoudiniEventItem,
+            houdini_toolbox.events.item.HoudiniEventItem,
             "callables",
             new_callable=mocker.PropertyMock,
         )
 
         item = init_item()
 
-        stats = mocker.MagicMock(spec=ht.events.stats.HoudiniEventItemStats)
+        stats = mocker.MagicMock(spec=houdini_toolbox.events.stats.HoudiniEventItemStats)
 
         mock_stats.return_value = stats
 
@@ -246,24 +246,24 @@ class Test_HoudiniEventItem:
 
 
 class Test_ExclusiveHoudiniEventItem:
-    """Test ht.events.item.ExclusiveHoudiniEventItem class."""
+    """Test houdini_toolbox.events.item.ExclusiveHoudiniEventItem class."""
 
     # __init__
 
     def test___init__(self, mocker):
         """Test object initialization."""
         mock_priority = mocker.patch.object(
-            ht.events.item.ExclusiveHoudiniEventItem,
+            houdini_toolbox.events.item.ExclusiveHoudiniEventItem,
             "priority",
             new_callable=mocker.PropertyMock,
         )
 
         mock_super_init = mocker.patch.object(
-            ht.events.item.HoudiniEventItem, "__init__"
+            houdini_toolbox.events.item.HoudiniEventItem, "__init__"
         )
 
         mock_map = mocker.patch.object(
-            ht.events.item.ExclusiveHoudiniEventItem,
+            houdini_toolbox.events.item.ExclusiveHoudiniEventItem,
             "_exclusive_map",
             new_callable=mocker.PropertyMock,
         )
@@ -277,7 +277,7 @@ class Test_ExclusiveHoudiniEventItem:
 
         mock_map.return_value = {}
 
-        item = ht.events.item.ExclusiveHoudiniEventItem(
+        item = houdini_toolbox.events.item.ExclusiveHoudiniEventItem(
             mock_callables, mock_name, priority, mock_stat_tags
         )
 
@@ -285,27 +285,27 @@ class Test_ExclusiveHoudiniEventItem:
             mock_callables, mock_name, priority, mock_stat_tags
         )
 
-        assert ht.events.item.ExclusiveHoudiniEventItem._exclusive_map == {
+        assert houdini_toolbox.events.item.ExclusiveHoudiniEventItem._exclusive_map == {
             mock_name: item
         }
 
     def test___init__replace(self, mocker):
         """Test initialization when replacing an existing item."""
         mock_priority = mocker.patch.object(
-            ht.events.item.ExclusiveHoudiniEventItem,
+            houdini_toolbox.events.item.ExclusiveHoudiniEventItem,
             "priority",
             new_callable=mocker.PropertyMock,
         )
         mock_super_init = mocker.patch.object(
-            ht.events.item.HoudiniEventItem, "__init__"
+            houdini_toolbox.events.item.HoudiniEventItem, "__init__"
         )
         mock_map = mocker.patch.object(
-            ht.events.item.ExclusiveHoudiniEventItem,
+            houdini_toolbox.events.item.ExclusiveHoudiniEventItem,
             "_exclusive_map",
             new_callable=mocker.PropertyMock,
         )
 
-        mock_existing = mocker.MagicMock(spec=ht.events.item.ExclusiveHoudiniEventItem)
+        mock_existing = mocker.MagicMock(spec=houdini_toolbox.events.item.ExclusiveHoudiniEventItem)
         mock_existing.priority = 1
 
         mock_callables = (mocker.MagicMock(),)
@@ -318,7 +318,7 @@ class Test_ExclusiveHoudiniEventItem:
         mapping = {mock_name: mock_existing}
         mock_map.return_value = mapping
 
-        item = ht.events.item.ExclusiveHoudiniEventItem(
+        item = houdini_toolbox.events.item.ExclusiveHoudiniEventItem(
             mock_callables, mock_name, priority, mock_stat_tags
         )
 
@@ -335,16 +335,16 @@ class Test_ExclusiveHoudiniEventItem:
     def test_run__no_run(self, init_exclusive_item, mocker):
         """Test when the event item is not the exclusive item."""
         mocker.patch(
-            "ht.events.item.ExclusiveHoudiniEventItem.__eq__", return_value=False
+            "houdini_toolbox.events.item.ExclusiveHoudiniEventItem.__eq__", return_value=False
         )
-        mock_super_run = mocker.patch.object(ht.events.item.HoudiniEventItem, "run")
+        mock_super_run = mocker.patch.object(houdini_toolbox.events.item.HoudiniEventItem, "run")
         mock_map = mocker.patch.object(
-            ht.events.item.ExclusiveHoudiniEventItem,
+            houdini_toolbox.events.item.ExclusiveHoudiniEventItem,
             "_exclusive_map",
             new_callable=mocker.PropertyMock,
         )
         mock_name = mocker.patch.object(
-            ht.events.item.ExclusiveHoudiniEventItem,
+            houdini_toolbox.events.item.ExclusiveHoudiniEventItem,
             "name",
             new_callable=mocker.PropertyMock,
         )
@@ -361,16 +361,16 @@ class Test_ExclusiveHoudiniEventItem:
     def test__run(self, init_exclusive_item, mocker):
         """Test when the event item is the exclusive item."""
         mocker.patch(
-            "ht.events.item.ExclusiveHoudiniEventItem.__eq__", return_value=True
+            "houdini_toolbox.events.item.ExclusiveHoudiniEventItem.__eq__", return_value=True
         )
-        mock_super_run = mocker.patch.object(ht.events.item.HoudiniEventItem, "run")
+        mock_super_run = mocker.patch.object(houdini_toolbox.events.item.HoudiniEventItem, "run")
         mock_map = mocker.patch.object(
-            ht.events.item.ExclusiveHoudiniEventItem,
+            houdini_toolbox.events.item.ExclusiveHoudiniEventItem,
             "_exclusive_map",
             new_callable=mocker.PropertyMock,
         )
         mock_name = mocker.patch.object(
-            ht.events.item.ExclusiveHoudiniEventItem,
+            houdini_toolbox.events.item.ExclusiveHoudiniEventItem,
             "name",
             new_callable=mocker.PropertyMock,
         )

@@ -1,4 +1,4 @@
-"""Tests for ht.events.callbacks module."""
+"""Tests for houdini_toolbox.events.callbacks module."""
 
 # =============================================================================
 # IMPORTS
@@ -8,7 +8,7 @@
 import pytest
 
 # Houdini Toolbox
-from ht.events import SceneEvents, callbacks
+from houdini_toolbox.events import SceneEvents, callbacks
 
 # =============================================================================
 # TESTS
@@ -16,8 +16,8 @@ from ht.events import SceneEvents, callbacks
 
 
 def test_atexit_callback(mocker):
-    """Test ht.events.callbacks._atexit_callback."""
-    mock_run = mocker.patch("ht.events.callbacks.run_event")
+    """Test houdini_toolbox.events.callbacks._atexit_callback."""
+    mock_run = mocker.patch("houdini_toolbox.events.callbacks.run_event")
 
     callbacks._atexit_callback()
 
@@ -25,8 +25,8 @@ def test_atexit_callback(mocker):
 
 
 def test_emit_ui_available(mocker):
-    """Test ht.events.callbacks._emit_ui_available."""
-    mock_run = mocker.patch("ht.events.callbacks.run_event")
+    """Test houdini_toolbox.events.callbacks._emit_ui_available."""
+    mock_run = mocker.patch("houdini_toolbox.events.callbacks.run_event")
 
     callbacks._emit_ui_available()
 
@@ -35,8 +35,8 @@ def test_emit_ui_available(mocker):
 
 @pytest.mark.parametrize("exists", (True, False))
 def test__hip_event_callback(mocker, exists):
-    """Test ht.events.callbacks._hip_event_callback."""
-    mock_run = mocker.patch("ht.events.callbacks.run_event")
+    """Test houdini_toolbox.events.callbacks._hip_event_callback."""
+    mock_run = mocker.patch("houdini_toolbox.events.callbacks.run_event")
 
     mock_event_type = mocker.MagicMock()
     mock_event_type.name.return_value = "event_name"
@@ -51,7 +51,7 @@ def test__hip_event_callback(mocker, exists):
     else:
         del mock_event.event_name
 
-    mocker.patch("ht.events.callbacks.HipFileEvents", mock_event)
+    mocker.patch("houdini_toolbox.events.callbacks.HipFileEvents", mock_event)
     callbacks._hip_event_callback(mock_event_type)
 
     if exists:
@@ -75,11 +75,11 @@ def test_register_when_ui_available(mock_hdefereval):
 
 @pytest.mark.parametrize("ui_available", (False, True))
 def test_register_callbacks(mocker, ui_available):
-    """Test ht.events.callbacks.register_callbacks."""
+    """Test houdini_toolbox.events.callbacks.register_callbacks."""
     mocker.patch("hou.isUIAvailable", return_value=ui_available)
-    mock_register = mocker.patch("ht.events.callbacks.atexit.register")
-    mock_emit = mocker.patch("ht.events.callbacks._register_when_ui_available")
-    mock_add = mocker.patch("ht.events.callbacks.hou.hipFile.addEventCallback")
+    mock_register = mocker.patch("houdini_toolbox.events.callbacks.atexit.register")
+    mock_emit = mocker.patch("houdini_toolbox.events.callbacks._register_when_ui_available")
+    mock_add = mocker.patch("houdini_toolbox.events.callbacks.hou.hipFile.addEventCallback")
 
     callbacks.register_callbacks()
 

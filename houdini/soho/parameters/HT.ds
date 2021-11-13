@@ -5,12 +5,12 @@
 #include "$HFS/houdini/soho/parameters/CommonMacros.ds"
 
 {
-    name ht_parms
+    name houdini_toolbox_parms
     label "Houdini Toolbox Properties"
     parmtag { spare_category "Houdini Toolbox Properties" }
 
     collection {
-        name    ht_automatic_aovs
+        name    houdini_toolbox_automatic_aovs
         label   "Automatic AOVs"
         parmtag { spare_category "Automatic AOVs" }
 
@@ -34,7 +34,7 @@
             help	"Automatically add AOVs at IFD generation time."
             disablewhen	"{ enable_auto_aovs == 0 }"
             menutoggle	{
-                [ "from ht.sohohooks.aovs import manager" ]
+                [ "from houdini_toolbox.sohohooks.aovs import manager" ]
                 [ "" ]
                 [ "return manager.build_menu_script()" ]
                 language	python
@@ -52,13 +52,13 @@
 	    range	{ 0 1 }
 	    export	none
 	    parmtag	{ "button_icon" "PANETYPES_viewer_cop" }
-	    parmtag	{ "script_callback" "import ht.ui.aovs.utils; ht.ui.aovs.utils.open_aov_editor(hou.pwd())" }
+	    parmtag	{ "script_callback" "import houdini_toolbox.ui.aovs.utils; houdini_toolbox.ui.aovs.utils.open_aov_editor(hou.pwd())" }
 	    parmtag	{ "script_callback_language" "python" }
 	}
     }
 
     collection {
-        name    ht_ip_overrides
+        name    houdini_toolbox_ip_overrides
         label   "ip Overrides"
         parmtag { spare_category "ip Overrides" }
 
@@ -82,7 +82,7 @@
 	    range	{ 0 1 }
 	    export	none
 	    parmtag	{ "button_icon" "hicon:/SVGIcons.index?ROP_soho.svg" }
-	    parmtag	{ "script_callback" "__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.set_mantra_command(hou.pwd())" }
+	    parmtag	{ "script_callback" "__import__('houdini_toolbox.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.set_mantra_command(hou.pwd())" }
 	    parmtag	{ "script_callback_language" "python" }
 	}
 	parm {
@@ -122,7 +122,7 @@
 	    label	"Resolution"
 	    type	label
 	    nolabel
-	    default	{ "`pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.build_resolution_scale_display(hou.pwd())\")`" }
+	    default	{ "`pythonexprs(\"__import__('houdini_toolbox.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.build_resolution_scale_display(hou.pwd())\")`" }
 	    hidewhen	"{ enable_ip_override == 0 } { ip_override_camerares == 0 }"
 	    range	{ 0 1 }
 	    export	none
@@ -143,7 +143,7 @@
 	    label	"Pixel Samples"
 	    type	label
 	    nolabel
-	    default	{ "`pythonexprs(\"__import__('ht.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.build_pixel_sample_scale_display(hou.pwd())\")`" }
+	    default	{ "`pythonexprs(\"__import__('houdini_toolbox.pyfilter.operations', globals(), locals(), ['ipoverrides']).ipoverrides.build_pixel_sample_scale_display(hou.pwd())\")`" }
 	    hidewhen	"{ enable_ip_override == 0 }"
 	    range	{ 0 1 }
 	    export	none

@@ -1,11 +1,11 @@
-"""Test the ht.ui.nodegraph module."""
+"""Test the houdini_toolbox.ui.nodegraph module."""
 
 # ==============================================================================
 # IMPORTS
 # ==============================================================================
 
 # Houdini Toolbox
-import ht.ui.nodegraph
+import houdini_toolbox.ui.nodegraph
 
 # Houdini
 from canvaseventtypes import KeyboardEvent
@@ -16,7 +16,7 @@ from canvaseventtypes import KeyboardEvent
 
 
 class Test_handle_houdini_paste_event:
-    """Test ht.ui.nodegraph.handle_houdini_paste_event."""
+    """Test houdini_toolbox.ui.nodegraph.handle_houdini_paste_event."""
 
     def test_menukeyhit(self, mocker):
         """Test when the eventtype is "menukeyhit"."""
@@ -32,9 +32,9 @@ class Test_handle_houdini_paste_event:
         mock_move = mocker.patch("nodegraphutils.moveItemsToLocation")
         mock_update = mocker.patch("nodegraphutils.updateCurrentItem")
 
-        mock_run_event = mocker.patch("ht.ui.nodegraph.EVENT_MANAGER.run_event")
+        mock_run_event = mocker.patch("houdini_toolbox.ui.nodegraph.EVENT_MANAGER.run_event")
 
-        result = ht.ui.nodegraph.handle_houdini_paste_event(mock_event)
+        result = houdini_toolbox.ui.nodegraph.handle_houdini_paste_event(mock_event)
 
         assert result == (None, True)
 
@@ -55,7 +55,7 @@ class Test_handle_houdini_paste_event:
 
         scriptargs = {"items": mock_editor.pwd().selectedItems(), "uievent": mock_event}
         mock_run_event.assert_called_with(
-            ht.ui.nodegraph.KeyboardEvents.PostPasteEvent, scriptargs
+            houdini_toolbox.ui.nodegraph.KeyboardEvents.PostPasteEvent, scriptargs
         )
 
     def test_keyhit(self, mocker):
@@ -71,9 +71,9 @@ class Test_handle_houdini_paste_event:
         mock_move = mocker.patch("nodegraphutils.moveItemsToLocation")
         mock_update = mocker.patch("nodegraphutils.updateCurrentItem")
 
-        mock_run_event = mocker.patch("ht.ui.nodegraph.EVENT_MANAGER.run_event")
+        mock_run_event = mocker.patch("houdini_toolbox.ui.nodegraph.EVENT_MANAGER.run_event")
 
-        result = ht.ui.nodegraph.handle_houdini_paste_event(mock_event)
+        result = houdini_toolbox.ui.nodegraph.handle_houdini_paste_event(mock_event)
 
         assert result == (None, True)
 
@@ -90,7 +90,7 @@ class Test_handle_houdini_paste_event:
 
         scriptargs = {"items": mock_editor.pwd().selectedItems(), "uievent": mock_event}
         mock_run_event.assert_called_with(
-            ht.ui.nodegraph.KeyboardEvents.PostPasteEvent, scriptargs
+            houdini_toolbox.ui.nodegraph.KeyboardEvents.PostPasteEvent, scriptargs
         )
 
     def test_parentkeyhit(self, mocker):
@@ -107,9 +107,9 @@ class Test_handle_houdini_paste_event:
         mock_move = mocker.patch("nodegraphutils.moveItemsToLocation")
         mock_update = mocker.patch("nodegraphutils.updateCurrentItem")
 
-        mock_run_event = mocker.patch("ht.ui.nodegraph.EVENT_MANAGER.run_event")
+        mock_run_event = mocker.patch("houdini_toolbox.ui.nodegraph.EVENT_MANAGER.run_event")
 
-        result = ht.ui.nodegraph.handle_houdini_paste_event(mock_event)
+        result = houdini_toolbox.ui.nodegraph.handle_houdini_paste_event(mock_event)
 
         assert result == (None, True)
 
@@ -122,16 +122,16 @@ class Test_handle_houdini_paste_event:
 
         scriptargs = {"items": mock_editor.pwd().selectedItems(), "uievent": mock_event}
         mock_run_event.assert_called_with(
-            ht.ui.nodegraph.KeyboardEvents.PostPasteEvent, scriptargs
+            houdini_toolbox.ui.nodegraph.KeyboardEvents.PostPasteEvent, scriptargs
         )
 
 
 def test_is_houdini_paste_event(mocker):
-    """Test ht.ui.nodegraph.is_houdini_paste_event."""
+    """Test houdini_toolbox.ui.nodegraph.is_houdini_paste_event."""
     mock_event = mocker.MagicMock()
-    mock_set = mocker.patch("ht.ui.nodegraph.setKeyPrompt")
+    mock_set = mocker.patch("houdini_toolbox.ui.nodegraph.setKeyPrompt")
 
-    result = ht.ui.nodegraph.is_houdini_paste_event(mock_event)
+    result = houdini_toolbox.ui.nodegraph.is_houdini_paste_event(mock_event)
 
     assert result == mock_set.return_value
 

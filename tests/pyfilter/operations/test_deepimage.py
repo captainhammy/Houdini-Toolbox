@@ -1,4 +1,4 @@
-"""Test the ht.pyfilter.operations.deepimage module."""
+"""Test the houdini_toolbox.pyfilter.operations.deepimage module."""
 
 # =============================================================================
 # IMPORTS
@@ -11,8 +11,8 @@ import argparse
 import pytest
 
 # Houdini Toolbox
-from ht.pyfilter.manager import PyFilterManager
-from ht.pyfilter.operations import deepimage
+from houdini_toolbox.pyfilter.manager import PyFilterManager
+from houdini_toolbox.pyfilter.operations import deepimage
 
 # =============================================================================
 # FIXTURES
@@ -34,15 +34,15 @@ def init_operation(mocker):
 def patch_logger(mocker):
     """Fixture to handle mocking the module logger calls."""
 
-    return mocker.patch("ht.pyfilter.operations.deepimage._logger")
+    return mocker.patch("houdini_toolbox.pyfilter.operations.deepimage._logger")
 
 
 @pytest.fixture
 def properties(mocker):
     """Fixture to handle mocking (get|set)_property calls."""
 
-    _mock_get = mocker.patch("ht.pyfilter.operations.deepimage.get_property")
-    _mock_set = mocker.patch("ht.pyfilter.operations.deepimage.set_property")
+    _mock_get = mocker.patch("houdini_toolbox.pyfilter.operations.deepimage.get_property")
+    _mock_set = mocker.patch("houdini_toolbox.pyfilter.operations.deepimage.set_property")
 
     class Properties:
         """Fake class for accessing and setting properties."""
@@ -66,7 +66,7 @@ def properties(mocker):
 
 
 class Test_DeepImage:
-    """Test the ht.pyfilter.operations.deepimage.DeepImage class."""
+    """Test the houdini_toolbox.pyfilter.operations.deepimage.DeepImage class."""
 
     def test___init__(self, mocker):
         """Test object initialization."""

@@ -1,4 +1,4 @@
-"""Tests for ht.ui.menus.parmmenu module."""
+"""Tests for houdini_toolbox.ui.menus.parmmenu module."""
 
 # =============================================================================
 # IMPORTS
@@ -8,7 +8,7 @@
 import pytest
 
 # Houdini Toolbox
-import ht.ui.menus.parmmenu
+import houdini_toolbox.ui.menus.parmmenu
 
 # Houdini
 import hou
@@ -19,7 +19,7 @@ import hou
 
 
 class Test__valid_to_convert_to_absolute_reference:
-    """Test ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference."""
+    """Test houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference."""
 
     def test_empty_string(self, mocker):
         """Test when the path is an empty string."""
@@ -30,7 +30,7 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm.eval.return_value = mocker.MagicMock(spec=str)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
 
         assert not result
 
@@ -49,7 +49,7 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm.eval.return_value = mock_path
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
 
         assert not result
 
@@ -69,7 +69,7 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm.eval.return_value = mock_path
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
 
         assert not result
 
@@ -93,7 +93,7 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm.parmTemplate.return_value = mock_template
         mock_parm.evalAsNode.return_value = mocker.MagicMock(spec=hou.Node)
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
 
         assert result
 
@@ -117,7 +117,7 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm.parmTemplate.return_value = mock_template
         mock_parm.evalAsNode.return_value = None
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
 
         assert not result
 
@@ -140,7 +140,7 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm.unexpandedString.return_value = mocker.MagicMock(spec=str)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
 
         assert not result
 
@@ -158,7 +158,7 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
 
         assert not result
 
@@ -171,13 +171,13 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
 
         assert not result
 
 
 class Test__valid_to_convert_to_relative_reference:
-    """Test ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference."""
+    """Test houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference."""
 
     def test_empty_string(self, mocker):
         """Test when the path is an empty string."""
@@ -188,7 +188,7 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm.eval.return_value = mocker.MagicMock(spec=str)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
 
         assert not result
 
@@ -207,7 +207,7 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm.eval.return_value = mock_path
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
 
         assert not result
 
@@ -227,7 +227,7 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm.eval.return_value = mock_path
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
 
         assert not result
 
@@ -251,7 +251,7 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm.parmTemplate.return_value = mock_template
         mock_parm.evalAsNode.return_value = mocker.MagicMock(spec=hou.Node)
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
 
         assert result
 
@@ -275,7 +275,7 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm.parmTemplate.return_value = mock_template
         mock_parm.evalAsNode.return_value = None
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
 
         assert not result
 
@@ -298,7 +298,7 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm.unexpandedString.return_value = mocker.MagicMock(spec=str)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
 
         assert not result
 
@@ -316,7 +316,7 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
 
         assert not result
 
@@ -329,18 +329,18 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
 
         assert not result
 
 
 class Test_convert_absolute_to_relative_path_context:
-    """Test ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context."""
+    """Test houdini_toolbox.ui.menus.parmmenu.convert_absolute_to_relative_path_context."""
 
     def test_none(self, mocker):
         """Test converting when no parms are suitable to convert."""
         mock_valid = mocker.patch(
-            "ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference",
+            "houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference",
             return_value=False,
         )
 
@@ -349,7 +349,7 @@ class Test_convert_absolute_to_relative_path_context:
 
         scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
-        result = ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context(
+        result = houdini_toolbox.ui.menus.parmmenu.convert_absolute_to_relative_path_context(
             scriptargs
         )
 
@@ -360,7 +360,7 @@ class Test_convert_absolute_to_relative_path_context:
     def test_some(self, mocker):
         """Test converting when at least one parm is suitable to convert."""
         mock_valid = mocker.patch(
-            "ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference",
+            "houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference",
             side_effect=(False, True),
         )
 
@@ -369,7 +369,7 @@ class Test_convert_absolute_to_relative_path_context:
 
         scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
-        result = ht.ui.menus.parmmenu.convert_absolute_to_relative_path_context(
+        result = houdini_toolbox.ui.menus.parmmenu.convert_absolute_to_relative_path_context(
             scriptargs
         )
 
@@ -381,7 +381,7 @@ class Test_convert_absolute_to_relative_path_context:
 def test_convert_absolute_to_relative_path(mocker):
     """Test converting an absolute to relative path."""
     mock_valid = mocker.patch(
-        "ht.ui.menus.parmmenu._valid_to_convert_to_relative_reference",
+        "houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference",
         side_effect=(False, True),
     )
 
@@ -390,7 +390,7 @@ def test_convert_absolute_to_relative_path(mocker):
 
     scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
-    ht.ui.menus.parmmenu.convert_absolute_to_relative_path(scriptargs)
+    houdini_toolbox.ui.menus.parmmenu.convert_absolute_to_relative_path(scriptargs)
 
     mock_valid.assert_has_calls([mocker.call(mock_parm1), mocker.call(mock_parm2)])
 
@@ -406,12 +406,12 @@ def test_convert_absolute_to_relative_path(mocker):
 
 
 class Test_convert_relative_to_absolute_path_context:
-    """Test ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context."""
+    """Test houdini_toolbox.ui.menus.parmmenu.convert_relative_to_absolute_path_context."""
 
     def test_none(self, mocker):
         """Test converting when no parms are suitable to convert."""
         mock_valid = mocker.patch(
-            "ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference",
+            "houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference",
             return_value=False,
         )
 
@@ -420,7 +420,7 @@ class Test_convert_relative_to_absolute_path_context:
 
         scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
-        result = ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context(
+        result = houdini_toolbox.ui.menus.parmmenu.convert_relative_to_absolute_path_context(
             scriptargs
         )
 
@@ -431,7 +431,7 @@ class Test_convert_relative_to_absolute_path_context:
     def test_some(self, mocker):
         """Test converting when at least one parm is suitable to convert."""
         mock_valid = mocker.patch(
-            "ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference",
+            "houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference",
             side_effect=(False, True),
         )
 
@@ -440,7 +440,7 @@ class Test_convert_relative_to_absolute_path_context:
 
         scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
-        result = ht.ui.menus.parmmenu.convert_relative_to_absolute_path_context(
+        result = houdini_toolbox.ui.menus.parmmenu.convert_relative_to_absolute_path_context(
             scriptargs
         )
 
@@ -450,9 +450,9 @@ class Test_convert_relative_to_absolute_path_context:
 
 
 def test_convert_relative_to_absolute_path(mocker):
-    """Test ht.ui.menus.parmmenu.convert_relative_to_absolute_path."""
+    """Test houdini_toolbox.ui.menus.parmmenu.convert_relative_to_absolute_path."""
     mock_valid = mocker.patch(
-        "ht.ui.menus.parmmenu._valid_to_convert_to_absolute_reference",
+        "houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference",
         side_effect=(False, True),
     )
 
@@ -461,7 +461,7 @@ def test_convert_relative_to_absolute_path(mocker):
 
     scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
-    ht.ui.menus.parmmenu.convert_relative_to_absolute_path(scriptargs)
+    houdini_toolbox.ui.menus.parmmenu.convert_relative_to_absolute_path(scriptargs)
 
     mock_valid.assert_has_calls([mocker.call(mock_parm1), mocker.call(mock_parm2)])
 
@@ -474,11 +474,11 @@ def test_convert_relative_to_absolute_path(mocker):
 
 
 class Test_promote_parameter_to_node:
-    """Test ht.ui.menus.parmmenu.promote_parameter_to_node."""
+    """Test houdini_toolbox.ui.menus.parmmenu.promote_parameter_to_node."""
 
     def test_target_is_source(self, mocker, mock_hou_ui):
         """Test when trying to promote to the node containing the parms to promote."""
-        mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
+        mock_hou_node = mocker.patch("houdini_toolbox.ui.menus.parmmenu.hou.node")
 
         mock_node1 = mocker.MagicMock(spec=hou.Node)
 
@@ -494,7 +494,7 @@ class Test_promote_parameter_to_node:
         scriptargs = {"parms": (mock_parm1,)}
 
         with pytest.raises(hou.OperationFailed):
-            ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
+            houdini_toolbox.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
         mock_hou_ui.selectNode.assert_called_with(
             initial_node=mock_node1.parent.return_value
@@ -506,7 +506,7 @@ class Test_promote_parameter_to_node:
         current value before promoting.
 
         """
-        mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
+        mock_hou_node = mocker.patch("houdini_toolbox.ui.menus.parmmenu.hou.node")
 
         mock_node1 = mocker.MagicMock(spec=hou.Node)
 
@@ -529,7 +529,7 @@ class Test_promote_parameter_to_node:
 
         scriptargs = {"parms": (mock_parm1,)}
 
-        ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
+        houdini_toolbox.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
         mock_hou_ui.selectNode.assert_called_with(
             initial_node=mock_node1.parent.return_value
@@ -550,7 +550,7 @@ class Test_promote_parameter_to_node:
         value before promoting.
 
         """
-        mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
+        mock_hou_node = mocker.patch("houdini_toolbox.ui.menus.parmmenu.hou.node")
 
         mock_node1 = mocker.MagicMock(spec=hou.Node)
 
@@ -573,7 +573,7 @@ class Test_promote_parameter_to_node:
 
         scriptargs = {"parms": (mock_parm1,)}
 
-        ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
+        houdini_toolbox.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
         mock_hou_ui.selectNode.assert_called_with(
             initial_node=mock_node1.parent.return_value
@@ -591,7 +591,7 @@ class Test_promote_parameter_to_node:
 
     def test_parm_exists_cancel(self, mocker, mock_hou_ui):
         """Test when the target exists and we want to cancel."""
-        mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
+        mock_hou_node = mocker.patch("houdini_toolbox.ui.menus.parmmenu.hou.node")
 
         mock_node1 = mocker.MagicMock(spec=hou.Node)
 
@@ -614,7 +614,7 @@ class Test_promote_parameter_to_node:
 
         scriptargs = {"parms": (mock_parm1,)}
 
-        ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
+        houdini_toolbox.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
         mock_hou_ui.selectNode.assert_called_with(
             initial_node=mock_node1.parent.return_value
@@ -629,7 +629,7 @@ class Test_promote_parameter_to_node:
 
     def test_no_existing_single_component(self, mocker, mock_hou_ui):
         """Test when there is no existing parm and we want to promote a single parm from the tuple."""
-        mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
+        mock_hou_node = mocker.patch("houdini_toolbox.ui.menus.parmmenu.hou.node")
 
         mock_node1 = mocker.MagicMock(spec=hou.Node)
 
@@ -656,7 +656,7 @@ class Test_promote_parameter_to_node:
 
         scriptargs = {"parms": (mock_parm1,)}
 
-        ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
+        houdini_toolbox.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
         mock_hou_ui.selectNode.assert_called_with(
             initial_node=mock_node1.parent.return_value
@@ -680,7 +680,7 @@ class Test_promote_parameter_to_node:
 
     def test_no_existing_multiple_components(self, mocker, mock_hou_ui):
         """Test when there is no existing parm and we want to promote a full tuple."""
-        mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
+        mock_hou_node = mocker.patch("houdini_toolbox.ui.menus.parmmenu.hou.node")
 
         mock_node1 = mocker.MagicMock(spec=hou.Node)
 
@@ -719,7 +719,7 @@ class Test_promote_parameter_to_node:
 
         scriptargs = {"parms": (mock_parm1, mock_parm2, mock_parm3)}
 
-        ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
+        houdini_toolbox.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
         mock_hou_ui.selectNode.assert_called_with(
             initial_node=mock_node1.parent.return_value
@@ -751,7 +751,7 @@ class Test_promote_parameter_to_node:
 
     def test_no_selection(self, mocker, mock_hou_ui):
         """Test when no target node is selected."""
-        mock_hou_node = mocker.patch("ht.ui.menus.parmmenu.hou.node")
+        mock_hou_node = mocker.patch("houdini_toolbox.ui.menus.parmmenu.hou.node")
 
         mock_node1 = mocker.MagicMock(spec=hou.Node)
 
@@ -778,7 +778,7 @@ class Test_promote_parameter_to_node:
 
         scriptargs = {"parms": (mock_parm1,)}
 
-        ht.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
+        houdini_toolbox.ui.menus.parmmenu.promote_parameter_to_node(scriptargs)
 
         mock_hou_ui.selectNode.assert_called_with(
             initial_node=mock_node1.parent.return_value

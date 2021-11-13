@@ -1,4 +1,4 @@
-"""Tests for ht.events.manager module."""
+"""Tests for houdini_toolbox.events.manager module."""
 
 # =============================================================================
 # IMPORTS
@@ -8,10 +8,10 @@
 import pytest
 
 # Houdini Toolbox
-import ht.events.manager
-from ht.events.event import HoudiniEvent
-from ht.events.group import HoudiniEventGroup
-from ht.events.item import HoudiniEventItem
+import houdini_toolbox.events.manager
+from houdini_toolbox.events.event import HoudiniEvent
+from houdini_toolbox.events.group import HoudiniEventGroup
+from houdini_toolbox.events.item import HoudiniEventItem
 
 # =============================================================================
 # FIXTURES
@@ -22,11 +22,11 @@ from ht.events.item import HoudiniEventItem
 def init_manager(mocker):
     """Fixture to initialize a manager."""
     mocker.patch.object(
-        ht.events.manager.HoudiniEventManager, "__init__", lambda x: None
+        houdini_toolbox.events.manager.HoudiniEventManager, "__init__", lambda x: None
     )
 
     def _create():
-        return ht.events.manager.HoudiniEventManager()
+        return houdini_toolbox.events.manager.HoudiniEventManager()
 
     return _create
 
@@ -37,11 +37,11 @@ def init_manager(mocker):
 
 
 class Test_HoudiniEventManager:
-    """Test ht.events.manager.HoudiniEventManager class."""
+    """Test houdini_toolbox.events.manager.HoudiniEventManager class."""
 
     def test___init__(self):
         """Test object initialization."""
-        manager = ht.events.manager.HoudiniEventManager()
+        manager = houdini_toolbox.events.manager.HoudiniEventManager()
 
         assert manager._data == {}
         assert manager._events == {}
@@ -73,7 +73,7 @@ class Test_HoudiniEventManager:
     def test__disable_events__all(self, init_manager, mocker):
         """Test disabling all events."""
         mock_events = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager,
+            houdini_toolbox.events.manager.HoudiniEventManager,
             "events",
             new_callable=mocker.PropertyMock,
         )
@@ -109,7 +109,7 @@ class Test_HoudiniEventManager:
     def test__disable_events__specific_names(self, init_manager, mocker):
         """Test disabling specific events."""
         mock_events = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager,
+            houdini_toolbox.events.manager.HoudiniEventManager,
             "events",
             new_callable=mocker.PropertyMock,
         )
@@ -147,7 +147,7 @@ class Test_HoudiniEventManager:
     def test__restore_events(self, init_manager, mocker):
         """Test restoring disabled events."""
         mock_events = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager,
+            houdini_toolbox.events.manager.HoudiniEventManager,
             "events",
             new_callable=mocker.PropertyMock,
         )
@@ -184,11 +184,11 @@ class Test_HoudiniEventManager:
     def test_create_event(self, init_manager, mocker):
         """Test creating an event."""
         mock_events = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager,
+            houdini_toolbox.events.manager.HoudiniEventManager,
             "events",
             new_callable=mocker.PropertyMock,
         )
-        mock_factory = mocker.patch("ht.events.manager.HoudiniEventFactory")
+        mock_factory = mocker.patch("houdini_toolbox.events.manager.HoudiniEventFactory")
 
         mock_event = mocker.MagicMock(spec=HoudiniEvent)
         mock_factory.get_event_type.return_value = mock_event
@@ -210,10 +210,10 @@ class Test_HoudiniEventManager:
         """Test the event_disabler context manager."""
 
         mock_disable = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager, "_disable_events"
+            houdini_toolbox.events.manager.HoudiniEventManager, "_disable_events"
         )
         mock_restore = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager, "_restore_events"
+            houdini_toolbox.events.manager.HoudiniEventManager, "_restore_events"
         )
 
         manager = init_manager()
@@ -241,12 +241,12 @@ class Test_HoudiniEventManager:
     def test_register_event_group__single_items(self, init_manager, mocker):
         """Test registering a group where no event of that name has been created."""
         mock_events = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager,
+            houdini_toolbox.events.manager.HoudiniEventManager,
             "events",
             new_callable=mocker.PropertyMock,
         )
         mock_create = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager, "create_event"
+            houdini_toolbox.events.manager.HoudiniEventManager, "create_event"
         )
 
         mock_item1 = mocker.MagicMock(spec=HoudiniEventItem)
@@ -281,12 +281,12 @@ class Test_HoudiniEventManager:
     def test_register_event_group__item_lists(self, init_manager, mocker):
         """Test registering a group where no event of that name has been created."""
         mock_events = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager,
+            houdini_toolbox.events.manager.HoudiniEventManager,
             "events",
             new_callable=mocker.PropertyMock,
         )
         mock_create = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager, "create_event"
+            houdini_toolbox.events.manager.HoudiniEventManager, "create_event"
         )
 
         mock_item1 = mocker.MagicMock(spec=HoudiniEventItem)
@@ -333,12 +333,12 @@ class Test_HoudiniEventManager:
     def test_register_item__new_event(self, init_manager, mocker):
         """Test registering an item whose event does not exist yet."""
         mock_events = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager,
+            houdini_toolbox.events.manager.HoudiniEventManager,
             "events",
             new_callable=mocker.PropertyMock,
         )
         mock_create = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager, "create_event"
+            houdini_toolbox.events.manager.HoudiniEventManager, "create_event"
         )
 
         mock_event_name = mocker.MagicMock(spec=str)
@@ -363,12 +363,12 @@ class Test_HoudiniEventManager:
     def test_register_item__existing_event(self, init_manager, mocker):
         """Test registering an item to an existing event."""
         mock_events = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager,
+            houdini_toolbox.events.manager.HoudiniEventManager,
             "events",
             new_callable=mocker.PropertyMock,
         )
         mock_create = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager, "create_event"
+            houdini_toolbox.events.manager.HoudiniEventManager, "create_event"
         )
 
         mock_event_name = mocker.MagicMock(spec=str)
@@ -391,7 +391,7 @@ class Test_HoudiniEventManager:
     def test_run_event__no_event(self, init_manager, mocker):
         """Test running an event where there are no matching events."""
         mock_events = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager,
+            houdini_toolbox.events.manager.HoudiniEventManager,
             "events",
             new_callable=mocker.PropertyMock,
         )
@@ -411,7 +411,7 @@ class Test_HoudiniEventManager:
     def test_run_event__no_scriptargs(self, init_manager, mocker):
         """Test running an event with no particular args."""
         mock_events = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager,
+            houdini_toolbox.events.manager.HoudiniEventManager,
             "events",
             new_callable=mocker.PropertyMock,
         )
@@ -433,7 +433,7 @@ class Test_HoudiniEventManager:
     def test_run_event__scriptargs(self, init_manager, mocker):
         """Test running an event while passing in args."""
         mock_events = mocker.patch.object(
-            ht.events.manager.HoudiniEventManager,
+            houdini_toolbox.events.manager.HoudiniEventManager,
             "events",
             new_callable=mocker.PropertyMock,
         )
@@ -458,18 +458,18 @@ class Test_HoudiniEventManager:
 
 
 def test_register_event_group(mocker):
-    """Test ht.events.manager.register_event_group."""
-    mock_manager = mocker.patch("ht.events.manager.EVENT_MANAGER")
+    """Test houdini_toolbox.events.manager.register_event_group."""
+    mock_manager = mocker.patch("houdini_toolbox.events.manager.EVENT_MANAGER")
 
     mock_group = mocker.MagicMock(spec=HoudiniEventGroup)
 
-    ht.events.manager.register_event_group(mock_group)
+    houdini_toolbox.events.manager.register_event_group(mock_group)
 
     mock_manager.register_event_group.assert_called_with(mock_group)
 
 
 class Test_register_function:
-    """Test ht.events.manager.register_function."""
+    """Test houdini_toolbox.events.manager.register_function."""
 
     def test_not_callable(self, mocker):
         """Test registering a non-callable object."""
@@ -479,14 +479,14 @@ class Test_register_function:
         mock_tags = mocker.MagicMock(spec=list)
 
         with pytest.raises(TypeError):
-            ht.events.manager.register_function(
+            houdini_toolbox.events.manager.register_function(
                 None, mock_event_name, mock_item_name, mock_priority, mock_tags
             )
 
     def test(self, mocker):
         """Test registering a callable object."""
-        mock_cls = mocker.patch("ht.events.manager.HoudiniEventItem", autospec=True)
-        mock_register_item = mocker.patch("ht.events.manager.register_item")
+        mock_cls = mocker.patch("houdini_toolbox.events.manager.HoudiniEventItem", autospec=True)
+        mock_register_item = mocker.patch("houdini_toolbox.events.manager.register_item")
 
         mock_func = mocker.MagicMock()
         mock_event_name = mocker.MagicMock(spec=str)
@@ -494,7 +494,7 @@ class Test_register_function:
         mock_priority = mocker.MagicMock(spec=int)
         mock_tags = mocker.MagicMock(spec=list)
 
-        ht.events.manager.register_function(
+        houdini_toolbox.events.manager.register_function(
             mock_func, mock_event_name, mock_item_name, mock_priority, mock_tags
         )
 
@@ -506,35 +506,35 @@ class Test_register_function:
 
 
 class Test_register_item:
-    """Test ht.events.manager.register_item."""
+    """Test houdini_toolbox.events.manager.register_item."""
 
     def test_not_item(self, mocker):
         """Test registering an invalid type."""
         mock_event_name = mocker.MagicMock(spec=str)
 
         with pytest.raises(TypeError):
-            ht.events.manager.register_item(None, mock_event_name)
+            houdini_toolbox.events.manager.register_item(None, mock_event_name)
 
     def test(self, mocker):
         """Test registering a valid item."""
-        mock_manager = mocker.patch("ht.events.manager.EVENT_MANAGER")
+        mock_manager = mocker.patch("houdini_toolbox.events.manager.EVENT_MANAGER")
 
         mock_event_name = mocker.MagicMock(spec=str)
 
         mock_item = mocker.MagicMock(spec=HoudiniEventItem)
 
-        ht.events.manager.register_item(mock_item, mock_event_name)
+        houdini_toolbox.events.manager.register_item(mock_item, mock_event_name)
 
         mock_manager.register_item.assert_called_with(mock_item, mock_event_name)
 
 
 def test_run_event(mocker):
-    """Test ht.events.manager.run_event."""
-    mock_manager = mocker.patch("ht.events.manager.EVENT_MANAGER")
+    """Test houdini_toolbox.events.manager.run_event."""
+    mock_manager = mocker.patch("houdini_toolbox.events.manager.EVENT_MANAGER")
 
     mock_event_name = mocker.MagicMock(spec=str)
     mock_scriptargs = mocker.MagicMock(spec=dict)
 
-    ht.events.manager.run_event(mock_event_name, mock_scriptargs)
+    houdini_toolbox.events.manager.run_event(mock_event_name, mock_scriptargs)
 
     mock_manager.run_event.assert_called_with(mock_event_name, mock_scriptargs)

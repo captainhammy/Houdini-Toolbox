@@ -1,4 +1,4 @@
-"""Tests for ht.events.stats module."""
+"""Tests for houdini_toolbox.events.stats module."""
 
 # =============================================================================
 # IMPORTS
@@ -11,7 +11,7 @@ from collections import OrderedDict
 import pytest
 
 # Houdini Toolbox
-import ht.events.stats
+import houdini_toolbox.events.stats
 
 # =============================================================================
 # FIXTURES
@@ -22,11 +22,11 @@ import ht.events.stats
 def init_item_stats(mocker):
     """Fixture to initialize a stats object."""
     mocker.patch.object(
-        ht.events.stats.HoudiniEventItemStats, "__init__", lambda x, y: None
+        houdini_toolbox.events.stats.HoudiniEventItemStats, "__init__", lambda x, y: None
     )
 
     def _create():
-        return ht.events.stats.HoudiniEventItemStats(None)
+        return houdini_toolbox.events.stats.HoudiniEventItemStats(None)
 
     return _create
 
@@ -35,11 +35,11 @@ def init_item_stats(mocker):
 def init_stats(mocker):
     """Fixture to initialize a stats object."""
     mocker.patch.object(
-        ht.events.stats.HoudiniEventStats, "__init__", lambda x, y: None
+        houdini_toolbox.events.stats.HoudiniEventStats, "__init__", lambda x, y: None
     )
 
     def _create():
-        return ht.events.stats.HoudiniEventStats(None)
+        return houdini_toolbox.events.stats.HoudiniEventStats(None)
 
     return _create
 
@@ -50,7 +50,7 @@ def reset_meta_instances():
     yield
 
     # Reset the instances.
-    ht.events.stats._StatsMeta.INSTANCES.clear()
+    houdini_toolbox.events.stats._StatsMeta.INSTANCES.clear()
 
 
 # =============================================================================
@@ -59,26 +59,26 @@ def reset_meta_instances():
 
 
 class Test__StatsMeta:
-    """Test ht.events.stats._StatsMeta metaclass."""
+    """Test houdini_toolbox.events.stats._StatsMeta metaclass."""
 
     def test_new(self, reset_meta_instances, mocker):
         """Test when instantiating a new instance."""
         # Clear instances since there might be some already from other tests.
-        ht.events.stats._StatsMeta.INSTANCES.clear()
+        houdini_toolbox.events.stats._StatsMeta.INSTANCES.clear()
 
         mock_name = mocker.MagicMock(spec=str)
-        inst = ht.events.stats.HoudiniEventStats(mock_name)
+        inst = houdini_toolbox.events.stats.HoudiniEventStats(mock_name)
 
-        assert ht.events.stats._StatsMeta.INSTANCES == {
-            ht.events.stats.HoudiniEventStats: {mock_name: inst}
+        assert houdini_toolbox.events.stats._StatsMeta.INSTANCES == {
+            houdini_toolbox.events.stats.HoudiniEventStats: {mock_name: inst}
         }
 
     def test_existing_default_args(self, reset_meta_instances, mocker):
         """Test reusing an existing instance of default args."""
         mock_name = mocker.MagicMock(spec=str)
 
-        inst1 = ht.events.stats.HoudiniEventStats(mock_name)
-        inst2 = ht.events.stats.HoudiniEventStats(mock_name)
+        inst1 = houdini_toolbox.events.stats.HoudiniEventStats(mock_name)
+        inst2 = houdini_toolbox.events.stats.HoudiniEventStats(mock_name)
 
         assert inst1 is inst2
 
@@ -89,8 +89,8 @@ class Test__StatsMeta:
         mock_tag1 = mocker.MagicMock(spec=str)
         mock_tag2 = mocker.MagicMock(spec=str)
 
-        inst1 = ht.events.stats.HoudiniEventStats(mock_name, [mock_tag1])
-        inst2 = ht.events.stats.HoudiniEventStats(mock_name, [mock_tag2])
+        inst1 = houdini_toolbox.events.stats.HoudiniEventStats(mock_name, [mock_tag1])
+        inst2 = houdini_toolbox.events.stats.HoudiniEventStats(mock_name, [mock_tag2])
 
         assert inst1._tags == [mock_tag1, mock_tag2]
         assert inst1 is inst2
@@ -102,8 +102,8 @@ class Test__StatsMeta:
         mock_tag1 = mocker.MagicMock(spec=str)
         mock_tag2 = mocker.MagicMock(spec=str)
 
-        inst1 = ht.events.stats.HoudiniEventStats(mock_name, tags=[mock_tag1])
-        inst2 = ht.events.stats.HoudiniEventStats(mock_name, tags=[mock_tag2])
+        inst1 = houdini_toolbox.events.stats.HoudiniEventStats(mock_name, tags=[mock_tag1])
+        inst2 = houdini_toolbox.events.stats.HoudiniEventStats(mock_name, tags=[mock_tag2])
 
         assert inst1._tags == [mock_tag1, mock_tag2]
         assert inst1 is inst2
@@ -114,8 +114,8 @@ class Test__StatsMeta:
 
         mock_tag = mocker.MagicMock(spec=str)
 
-        inst1 = ht.events.stats.HoudiniEventStats(mock_name, tags=[mock_tag])
-        inst2 = ht.events.stats.HoudiniEventStats(mock_name, tags=[mock_tag])
+        inst1 = houdini_toolbox.events.stats.HoudiniEventStats(mock_name, tags=[mock_tag])
+        inst2 = houdini_toolbox.events.stats.HoudiniEventStats(mock_name, tags=[mock_tag])
 
         assert inst1._tags == [mock_tag]
         assert inst1 is inst2
@@ -124,8 +124,8 @@ class Test__StatsMeta:
         """Test reusing an existing instance based on a post-report positionally passed."""
         mock_name = mocker.MagicMock(spec=str)
 
-        inst1 = ht.events.stats.HoudiniEventStats(mock_name, None, False)
-        inst2 = ht.events.stats.HoudiniEventStats(mock_name, None, True)
+        inst1 = houdini_toolbox.events.stats.HoudiniEventStats(mock_name, None, False)
+        inst2 = houdini_toolbox.events.stats.HoudiniEventStats(mock_name, None, True)
 
         assert inst1._post_report
         assert inst1 is inst2
@@ -134,8 +134,8 @@ class Test__StatsMeta:
         """Test reusing an existing instance based on a post-report explicitly passed."""
         mock_name = mocker.MagicMock(spec=str)
 
-        inst1 = ht.events.stats.HoudiniEventStats(mock_name, post_report=False)
-        inst2 = ht.events.stats.HoudiniEventStats(mock_name, post_report=True)
+        inst1 = houdini_toolbox.events.stats.HoudiniEventStats(mock_name, post_report=False)
+        inst2 = houdini_toolbox.events.stats.HoudiniEventStats(mock_name, post_report=True)
 
         assert inst1._post_report
         assert inst1 is inst2
@@ -146,21 +146,21 @@ class Test__StatsMeta:
         """Test reusing an existing instance based on a post-report explicitly passed."""
         mock_name = mocker.MagicMock(spec=str)
 
-        inst1 = ht.events.stats.HoudiniEventStats(mock_name, post_report=True)
-        inst2 = ht.events.stats.HoudiniEventStats(mock_name, post_report=False)
+        inst1 = houdini_toolbox.events.stats.HoudiniEventStats(mock_name, post_report=True)
+        inst2 = houdini_toolbox.events.stats.HoudiniEventStats(mock_name, post_report=False)
 
         assert inst1._post_report
         assert inst1 is inst2
 
 
 class Test_HoudiniEventStats:
-    """Test ht.events.stats.HoudiniEventStats class."""
+    """Test houdini_toolbox.events.stats.HoudiniEventStats class."""
 
     def test___init___no_tags(self, mocker):
         """Test object initialization with no tags."""
         mock_name = mocker.MagicMock(spec=str)
 
-        stats = ht.events.stats.HoudiniEventStats(mock_name, post_report=True)
+        stats = houdini_toolbox.events.stats.HoudiniEventStats(mock_name, post_report=True)
 
         assert stats._last_run_time == 0
         assert stats._last_started == 0
@@ -175,7 +175,7 @@ class Test_HoudiniEventStats:
         """Test object initialization with tags."""
         mock_name = mocker.MagicMock(spec=str)
         mock_tags = mocker.MagicMock(spec=list)
-        stats = ht.events.stats.HoudiniEventStats(
+        stats = houdini_toolbox.events.stats.HoudiniEventStats(
             mock_name, tags=mock_tags, post_report=True
         )
 
@@ -254,7 +254,7 @@ class Test_HoudiniEventStats:
         """Test __exit__."""
         mock_time = mocker.patch("time.time")
         mock_print = mocker.patch.object(
-            ht.events.stats.HoudiniEventStats, "print_report"
+            houdini_toolbox.events.stats.HoudiniEventStats, "print_report"
         )
 
         stats = init_stats()
@@ -294,7 +294,7 @@ class Test_HoudiniEventStats:
 
     def test_print_report(self, init_stats, mocker):
         """Test printing a report."""
-        mock_logger = mocker.patch("ht.events.stats._logger")
+        mock_logger = mocker.patch("houdini_toolbox.events.stats._logger")
 
         stats = init_stats()
 
@@ -322,18 +322,18 @@ class Test_HoudiniEventStats:
 
 
 class Test_HoudiniEventItemStats:
-    """Test ht.events.stats.HoudiniEventItemStats class."""
+    """Test houdini_toolbox.events.stats.HoudiniEventItemStats class."""
 
     def test___init__(self, mocker):
         """Test object initialization."""
         mock_super_init = mocker.patch.object(
-            ht.events.stats.HoudiniEventStats, "__init__"
+            houdini_toolbox.events.stats.HoudiniEventStats, "__init__"
         )
 
         mock_name = mocker.MagicMock(spec=str)
         mock_tags = mocker.MagicMock(spec=list)
 
-        stats = ht.events.stats.HoudiniEventItemStats(mock_name, mock_tags, True)
+        stats = houdini_toolbox.events.stats.HoudiniEventItemStats(mock_name, mock_tags, True)
 
         mock_super_init.assert_called_with(mock_name, tags=mock_tags, post_report=True)
         assert isinstance(stats._item_stats, OrderedDict)
@@ -353,7 +353,7 @@ class Test_HoudiniEventItemStats:
 
     def test_print_report(self, init_item_stats, mocker):
         """Test printing a report."""
-        mock_logger = mocker.patch("ht.events.stats._logger")
+        mock_logger = mocker.patch("houdini_toolbox.events.stats._logger")
 
         item_stats = OrderedDict()
         item_stats["stat name"] = 123.456789
@@ -372,11 +372,11 @@ class Test_HoudiniEventItemStats:
     def test_reset(self, init_item_stats, mocker):
         """Test resetting internal data."""
         mock_super_reset = mocker.patch.object(
-            ht.events.stats.HoudiniEventStats, "reset"
+            houdini_toolbox.events.stats.HoudiniEventStats, "reset"
         )
 
         mock_item_stats = mocker.patch.object(
-            ht.events.stats.HoudiniEventItemStats,
+            houdini_toolbox.events.stats.HoudiniEventItemStats,
             "item_stats",
             new_callable=mocker.PropertyMock,
         )
@@ -391,7 +391,7 @@ class Test_HoudiniEventItemStats:
     def test_time_function(self, init_item_stats, mocker, has_existing):
         """Test timing a function."""
         mock_item_stats = mocker.patch.object(
-            ht.events.stats.HoudiniEventItemStats,
+            houdini_toolbox.events.stats.HoudiniEventItemStats,
             "item_stats",
             new_callable=mocker.PropertyMock,
         )
@@ -433,17 +433,17 @@ class Test_HoudiniEventItemStats:
 
 
 def test__get_matching_stats(mocker):
-    """Test ht.events.stats._get_matching_stats."""
+    """Test houdini_toolbox.events.stats._get_matching_stats."""
     mock_tag1 = mocker.MagicMock(spec=str)
     mock_tag2 = mocker.MagicMock(spec=str)
 
-    mock_stats1 = mocker.MagicMock(spec=ht.events.stats.HoudiniEventStats)
+    mock_stats1 = mocker.MagicMock(spec=houdini_toolbox.events.stats.HoudiniEventStats)
     type(mock_stats1).tags = mocker.PropertyMock(return_value=[mock_tag1, mock_tag2])
 
-    mock_stats2 = mocker.MagicMock(spec=ht.events.stats.HoudiniEventStats)
+    mock_stats2 = mocker.MagicMock(spec=houdini_toolbox.events.stats.HoudiniEventStats)
     type(mock_stats2).tags = mocker.PropertyMock(return_value=[mock_tag1])
 
-    result = ht.events.stats._get_matching_stats(
+    result = houdini_toolbox.events.stats._get_matching_stats(
         [mock_stats1, mock_stats2], [mock_tag2]
     )
 
@@ -451,19 +451,19 @@ def test__get_matching_stats(mocker):
 
 
 class Test_get_event_stats:
-    """Test ht.events.stats.get_event_stats."""
+    """Test houdini_toolbox.events.stats.get_event_stats."""
 
     def test_none(self, mocker):
         """Test when there are no stat instances."""
         mocker.patch.object(
-            ht.events.stats._StatsMeta,
+            houdini_toolbox.events.stats._StatsMeta,
             "INSTANCES",
             new_callable=mocker.PropertyMock(return_value={}),
         )
 
-        mock_matching = mocker.patch("ht.events.stats._get_matching_stats")
+        mock_matching = mocker.patch("houdini_toolbox.events.stats._get_matching_stats")
 
-        result = ht.events.stats.get_event_stats()
+        result = houdini_toolbox.events.stats.get_event_stats()
 
         assert result == ()
 
@@ -472,19 +472,19 @@ class Test_get_event_stats:
     def test_all(self, mocker):
         """Test returning all found stats."""
         mockINSTANCES = mocker.patch.object(
-            ht.events.stats._StatsMeta, "INSTANCES", new_callable=mocker.PropertyMock
+            houdini_toolbox.events.stats._StatsMeta, "INSTANCES", new_callable=mocker.PropertyMock
         )
-        mock_matching = mocker.patch("ht.events.stats._get_matching_stats")
+        mock_matching = mocker.patch("houdini_toolbox.events.stats._get_matching_stats")
 
         mock_tag = mocker.MagicMock(spec=str)
 
-        mock_stats = mocker.MagicMock(spec=ht.events.stats.HoudiniEventStats)
+        mock_stats = mocker.MagicMock(spec=houdini_toolbox.events.stats.HoudiniEventStats)
 
         mockINSTANCES.return_value = {
-            ht.events.stats.HoudiniEventStats: {mock_tag: mock_stats}
+            houdini_toolbox.events.stats.HoudiniEventStats: {mock_tag: mock_stats}
         }
 
-        result = ht.events.stats.get_event_stats()
+        result = houdini_toolbox.events.stats.get_event_stats()
 
         assert result == (mock_stats,)
 
@@ -493,19 +493,19 @@ class Test_get_event_stats:
     def test_filtered(self, mocker):
         """Test returning a filtered list of stats."""
         mockINSTANCES = mocker.patch.object(
-            ht.events.stats._StatsMeta, "INSTANCES", new_callable=mocker.PropertyMock
+            houdini_toolbox.events.stats._StatsMeta, "INSTANCES", new_callable=mocker.PropertyMock
         )
-        mock_matching = mocker.patch("ht.events.stats._get_matching_stats")
+        mock_matching = mocker.patch("houdini_toolbox.events.stats._get_matching_stats")
 
         mock_tag = mocker.MagicMock(spec=str)
 
-        mock_stats = mocker.MagicMock(spec=ht.events.stats.HoudiniEventStats)
+        mock_stats = mocker.MagicMock(spec=houdini_toolbox.events.stats.HoudiniEventStats)
 
         mockINSTANCES.return_value = {
-            ht.events.stats.HoudiniEventStats: {mock_tag: mock_stats}
+            houdini_toolbox.events.stats.HoudiniEventStats: {mock_tag: mock_stats}
         }
 
-        result = ht.events.stats.get_event_stats([mock_tag])
+        result = houdini_toolbox.events.stats.get_event_stats([mock_tag])
 
         assert result == mock_matching.return_value
 
@@ -513,18 +513,18 @@ class Test_get_event_stats:
 
 
 class Test_get_item_stats:
-    """Test ht.events.stats.get_item_stats."""
+    """Test houdini_toolbox.events.stats.get_item_stats."""
 
     def test_none(self, mocker):
         """Test when there are no stat instances."""
         mocker.patch.object(
-            ht.events.stats._StatsMeta,
+            houdini_toolbox.events.stats._StatsMeta,
             "INSTANCES",
             new_callable=mocker.PropertyMock(return_value={}),
         )
-        mock_matching = mocker.patch("ht.events.stats._get_matching_stats")
+        mock_matching = mocker.patch("houdini_toolbox.events.stats._get_matching_stats")
 
-        result = ht.events.stats.get_item_stats()
+        result = houdini_toolbox.events.stats.get_item_stats()
 
         assert result == ()
 
@@ -533,19 +533,19 @@ class Test_get_item_stats:
     def test_all(self, mocker):
         """Test returning all found stats."""
         mockINSTANCES = mocker.patch.object(
-            ht.events.stats._StatsMeta, "INSTANCES", new_callable=mocker.PropertyMock
+            houdini_toolbox.events.stats._StatsMeta, "INSTANCES", new_callable=mocker.PropertyMock
         )
-        mock_matching = mocker.patch("ht.events.stats._get_matching_stats")
+        mock_matching = mocker.patch("houdini_toolbox.events.stats._get_matching_stats")
 
         mock_tag = mocker.MagicMock(spec=str)
 
-        mock_stats = mocker.MagicMock(spec=ht.events.stats.HoudiniEventItemStats)
+        mock_stats = mocker.MagicMock(spec=houdini_toolbox.events.stats.HoudiniEventItemStats)
 
         mockINSTANCES.return_value = {
-            ht.events.stats.HoudiniEventItemStats: {mock_tag: mock_stats}
+            houdini_toolbox.events.stats.HoudiniEventItemStats: {mock_tag: mock_stats}
         }
 
-        result = ht.events.stats.get_item_stats()
+        result = houdini_toolbox.events.stats.get_item_stats()
 
         assert result == (mock_stats,)
 
@@ -554,18 +554,18 @@ class Test_get_item_stats:
     def test_filtered(self, mocker):
         """Test returning a filtered list of stats."""
         mockINSTANCES = mocker.patch.object(
-            ht.events.stats._StatsMeta, "INSTANCES", new_callable=mocker.PropertyMock
+            houdini_toolbox.events.stats._StatsMeta, "INSTANCES", new_callable=mocker.PropertyMock
         )
-        mock_matching = mocker.patch("ht.events.stats._get_matching_stats")
+        mock_matching = mocker.patch("houdini_toolbox.events.stats._get_matching_stats")
 
         mock_tag = mocker.MagicMock(spec=str)
 
-        mock_stats = mocker.MagicMock(spec=ht.events.stats.HoudiniEventItemStats)
+        mock_stats = mocker.MagicMock(spec=houdini_toolbox.events.stats.HoudiniEventItemStats)
         mockINSTANCES.return_value = {
-            ht.events.stats.HoudiniEventItemStats: {mock_tag: mock_stats}
+            houdini_toolbox.events.stats.HoudiniEventItemStats: {mock_tag: mock_stats}
         }
 
-        result = ht.events.stats.get_item_stats([mock_tag])
+        result = houdini_toolbox.events.stats.get_item_stats([mock_tag])
 
         assert result == mock_matching.return_value
 

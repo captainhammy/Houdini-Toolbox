@@ -1,4 +1,4 @@
-"""Tests for ht.logging.adapters module."""
+"""Tests for houdini_toolbox.logging.adapters module."""
 
 # =============================================================================
 # IMPORTS
@@ -11,7 +11,7 @@ import logging
 import pytest
 
 # Houdini Toolbox
-import ht.logging.adapters
+import houdini_toolbox.logging.adapters
 
 # Houdini
 import hou
@@ -25,11 +25,11 @@ import hou
 def init_adapter(mocker):
     """Fixture to initialize an adapter."""
     mocker.patch.object(
-        ht.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y: None
+        houdini_toolbox.logging.adapters.HoudiniLoggerAdapter, "__init__", lambda x, y: None
     )
 
     def _create():
-        return ht.logging.adapters.HoudiniLoggerAdapter(None)
+        return houdini_toolbox.logging.adapters.HoudiniLoggerAdapter(None)
 
     return _create
 
@@ -40,12 +40,12 @@ def init_adapter(mocker):
 
 
 class Test_HoudiniLoggerAdapter:
-    """Test ht.logging.adapters.HoudiniLoggerAdapter."""
+    """Test houdini_toolbox.logging.adapters.HoudiniLoggerAdapter."""
 
     def test___init__(self, mocker):
         """Test object initialization."""
         mock_super_init = mocker.patch.object(
-            ht.logging.adapters.logging.LoggerAdapter, "__init__"
+            houdini_toolbox.logging.adapters.logging.LoggerAdapter, "__init__"
         )
 
         mock_base_logger = mocker.MagicMock(spec=logging.Logger)
@@ -53,7 +53,7 @@ class Test_HoudiniLoggerAdapter:
         mock_node = mocker.MagicMock(spec=hou.Node)
         mock_status_bar = mocker.MagicMock(spec=bool)
 
-        log = ht.logging.adapters.HoudiniLoggerAdapter(
+        log = houdini_toolbox.logging.adapters.HoudiniLoggerAdapter(
             mock_base_logger, mock_dialog, mock_node, mock_status_bar
         )
 
@@ -67,16 +67,16 @@ class Test_HoudiniLoggerAdapter:
 
     def test_from_name(self, mocker):
         """Test 'from_name' with default args."""
-        mock_get_logger = mocker.patch("ht.logging.adapters.logging.getLogger")
+        mock_get_logger = mocker.patch("houdini_toolbox.logging.adapters.logging.getLogger")
         mock_init = mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter, "__init__", return_value=None
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter, "__init__", return_value=None
         )
 
         mock_name = mocker.MagicMock(spec=str)
 
-        result = ht.logging.adapters.HoudiniLoggerAdapter.from_name(mock_name)
+        result = houdini_toolbox.logging.adapters.HoudiniLoggerAdapter.from_name(mock_name)
 
-        assert isinstance(result, ht.logging.adapters.HoudiniLoggerAdapter)
+        assert isinstance(result, houdini_toolbox.logging.adapters.HoudiniLoggerAdapter)
 
         mock_get_logger.assert_called_with(mock_name)
         mock_init.assert_called_with(
@@ -129,17 +129,17 @@ class Test_HoudiniLoggerAdapter:
     def test_process__node_arg(self, init_adapter, mocker, mock_ui_unavailable):
         """Test when passing a node."""
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "node",
             new_callable=mocker.PropertyMock,
         )
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "dialog",
             new_callable=mocker.PropertyMock(return_value=False),
         )
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "status_bar",
             new_callable=mocker.PropertyMock(return_value=False),
         )
@@ -164,17 +164,17 @@ class Test_HoudiniLoggerAdapter:
     def test_process__node_property(self, init_adapter, mocker, mock_ui_unavailable):
         """Test when using the 'node' property."""
         mock_node_prop = mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "node",
             new_callable=mocker.PropertyMock,
         )
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "dialog",
             new_callable=mocker.PropertyMock(return_value=False),
         )
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "status_bar",
             new_callable=mocker.PropertyMock(return_value=False),
         )
@@ -199,17 +199,17 @@ class Test_HoudiniLoggerAdapter:
     ):
         """Test passing 'dialog' and 'status_bar' via extra dict with no severity or title."""
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "node",
             new_callable=mocker.PropertyMock(return_value=None),
         )
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "dialog",
             new_callable=mocker.PropertyMock(return_value=False),
         )
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "status_bar",
             new_callable=mocker.PropertyMock(return_value=False),
         )
@@ -236,17 +236,17 @@ class Test_HoudiniLoggerAdapter:
     ):
         """Test passing 'dialog' and 'status_bar' via properties with a severity and title."""
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "node",
             new_callable=mocker.PropertyMock(return_value=None),
         )
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "dialog",
             new_callable=mocker.PropertyMock(return_value=True),
         )
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "status_bar",
             new_callable=mocker.PropertyMock(return_value=True),
         )
@@ -272,17 +272,17 @@ class Test_HoudiniLoggerAdapter:
     def test_process__message_args(self, init_adapter, mocker, mock_hou_ui):
         """Test passing along 'message_args'."""
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "node",
             new_callable=mocker.PropertyMock(return_value=None),
         )
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "dialog",
             new_callable=mocker.PropertyMock(return_value=True),
         )
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "status_bar",
             new_callable=mocker.PropertyMock(return_value=False),
         )
@@ -309,21 +309,21 @@ class Test_HoudiniLoggerAdapter:
     def test_process__message_args_no_display(self, init_adapter, mocker, mock_hou_ui):
         """Test passing along 'message_args' but not displaying them."""
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "node",
             new_callable=mocker.PropertyMock(return_value=None),
         )
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "dialog",
             new_callable=mocker.PropertyMock(return_value=False),
         )
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "status_bar",
             new_callable=mocker.PropertyMock(return_value=False),
         )
-        mocker.patch("ht.logging.adapters.hou.hipFile.basename")
+        mocker.patch("houdini_toolbox.logging.adapters.hou.hipFile.basename")
 
         mock_message = mocker.MagicMock(spec=str)
         mock_arg = mocker.MagicMock(spec=str)
@@ -343,21 +343,21 @@ class Test_HoudiniLoggerAdapter:
     def test_process__no_extra(self, init_adapter, mocker):
         """Test passing along an empty kwargs dict."""
         mock_node_prop = mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "node",
             new_callable=mocker.PropertyMock,
         )
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "dialog",
             new_callable=mocker.PropertyMock(return_value=False),
         )
         mocker.patch.object(
-            ht.logging.adapters.HoudiniLoggerAdapter,
+            houdini_toolbox.logging.adapters.HoudiniLoggerAdapter,
             "status_bar",
             new_callable=mocker.PropertyMock(return_value=False),
         )
-        mocker.patch("ht.logging.adapters.hou.hipFile.basename")
+        mocker.patch("houdini_toolbox.logging.adapters.hou.hipFile.basename")
 
         mock_message = mocker.MagicMock(spec=str)
 
@@ -384,10 +384,10 @@ class Test_HoudiniLoggerAdapter:
     )
     def test_calls(self, init_adapter, mocker, level, severity, extra):
         """Test the various log calls."""
-        mock_process = mocker.patch("ht.logging.adapters.HoudiniLoggerAdapter.process")
-        mock_pre_process = mocker.patch("ht.logging.adapters._pre_process_args")
+        mock_process = mocker.patch("houdini_toolbox.logging.adapters.HoudiniLoggerAdapter.process")
+        mock_pre_process = mocker.patch("houdini_toolbox.logging.adapters._pre_process_args")
 
-        mock_patch = mocker.patch("ht.logging.adapters._patch_logger")
+        mock_patch = mocker.patch("houdini_toolbox.logging.adapters._patch_logger")
 
         mock_process_msg = mocker.MagicMock(spec=str)
 
@@ -418,21 +418,21 @@ class Test_HoudiniLoggerAdapter:
 
 
 def test__patch_logger(mocker):
-    """Test ht.logging.adapters._patch_logger."""
-    mock_patch = mocker.patch("ht.logging.adapters.patch_logger")
+    """Test houdini_toolbox.logging.adapters._patch_logger."""
+    mock_patch = mocker.patch("houdini_toolbox.logging.adapters.patch_logger")
 
     mock_logger = mocker.MagicMock(spec=logging.Logger)
 
     original_class = mock_logger.__class__
 
-    with ht.logging.adapters._patch_logger(mock_logger):
+    with houdini_toolbox.logging.adapters._patch_logger(mock_logger):
         assert mock_logger.__class__ == mock_patch.return_value
 
     assert mock_logger.__class__ == original_class
 
 
 class Test__pre_process_args:
-    """Test ht.logging.adapters._pre_process_args."""
+    """Test houdini_toolbox.logging.adapters._pre_process_args."""
 
     def test_all_kwargs(self, mocker):
         """Test with passing all optional kwarg args."""
@@ -456,7 +456,7 @@ class Test__pre_process_args:
             "stacklevel": mock_stacklevel,
         }
 
-        ht.logging.adapters._pre_process_args(
+        houdini_toolbox.logging.adapters._pre_process_args(
             hou.severityType.Error, (mock_arg1, mock_arg2), kwargs
         )
 
@@ -482,7 +482,7 @@ class Test__pre_process_args:
         """Test with passing none of the optional kwarg args."""
         kwargs = {}
 
-        ht.logging.adapters._pre_process_args(hou.severityType.Error, (), kwargs)
+        houdini_toolbox.logging.adapters._pre_process_args(hou.severityType.Error, (), kwargs)
 
         # The expected extra dict values.
         expected = {"severity": hou.severityType.Error}

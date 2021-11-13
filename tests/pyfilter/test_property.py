@@ -1,11 +1,11 @@
-"""Test the ht.pyfilter.property module."""
+"""Test the houdini_toolbox.pyfilter.property module."""
 
 # =============================================================================
 # IMPORTS
 # =============================================================================
 
 # Houdini Toolbox
-from ht.pyfilter import property as prop
+from houdini_toolbox.pyfilter import property as prop
 
 # =============================================================================
 # TESTS
@@ -13,7 +13,7 @@ from ht.pyfilter import property as prop
 
 
 class Test__parse_string_for_bool:
-    """Test ht.pyfilter.property._parse_string_for_bool."""
+    """Test houdini_toolbox.pyfilter.property._parse_string_for_bool."""
 
     def test_false(self):
         """Test when the value will be remapped to False."""
@@ -31,7 +31,7 @@ class Test__parse_string_for_bool:
 
 
 class Test__prep_value_to_set:
-    """Test ht.pyfilter.property._prep_value_to_set."""
+    """Test houdini_toolbox.pyfilter.property._prep_value_to_set."""
 
     def test_none(self):
         """Test a None value."""
@@ -49,7 +49,7 @@ class Test__prep_value_to_set:
 
     def test_dict(self, mocker):
         """Test a dictionary value."""
-        mock_dumps = mocker.patch("ht.pyfilter.property.json.dumps")
+        mock_dumps = mocker.patch("houdini_toolbox.pyfilter.property.json.dumps")
 
         mock_value = mocker.MagicMock(spec=dict)
 
@@ -69,7 +69,7 @@ class Test__prep_value_to_set:
 
     def test_list_of_dicts(self, mocker):
         """Test a list of dictionaries."""
-        mock_dumps = mocker.patch("ht.pyfilter.property.json.dumps")
+        mock_dumps = mocker.patch("houdini_toolbox.pyfilter.property.json.dumps")
 
         mock_value = mocker.MagicMock(spec=dict)
 
@@ -79,7 +79,7 @@ class Test__prep_value_to_set:
 
     def test_list_of_dicts__typeerror(self, mocker):
         """Test a list of dictionaries that raise a TypeError on dumping."""
-        mocker.patch("ht.pyfilter.property.json.dumps", side_effect=TypeError)
+        mocker.patch("houdini_toolbox.pyfilter.property.json.dumps", side_effect=TypeError)
 
         mock_value = mocker.MagicMock(spec=dict)
 
@@ -91,7 +91,7 @@ class Test__prep_value_to_set:
 
     def test_list_of_dicts__valueerror(self, mocker):
         """Test a list of dictionaries that raise a ValueError on dumping."""
-        mocker.patch("ht.pyfilter.property.json.dumps", side_effect=ValueError)
+        mocker.patch("houdini_toolbox.pyfilter.property.json.dumps", side_effect=ValueError)
 
         mock_value = mocker.MagicMock(spec=dict)
 
@@ -114,7 +114,7 @@ class Test__prep_value_to_set:
 
 
 class Test__transform_values:
-    """Test ht.pyfilter.property._transform_values."""
+    """Test houdini_toolbox.pyfilter.property._transform_values."""
 
     def test_none(self):
         """Test transforming a None value."""
@@ -124,7 +124,7 @@ class Test__transform_values:
 
     def test_single_string(self, mocker):
         """Test transforming a single string list."""
-        mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
+        mock_loads = mocker.patch("houdini_toolbox.pyfilter.property.json.loads")
         mock_value = mocker.MagicMock(spec=str)
 
         result = prop._transform_values([mock_value])
@@ -133,7 +133,7 @@ class Test__transform_values:
 
     def test_single_string_dict_value(self, mocker):
         """Test transforming a single string list which is a json blob."""
-        mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
+        mock_loads = mocker.patch("houdini_toolbox.pyfilter.property.json.loads")
         mock_loads.side_effect = ValueError
 
         mock_key1 = mocker.MagicMock(spec=str)
@@ -152,10 +152,10 @@ class Test__transform_values:
 
     def test_single_string_value(self, mocker):
         """Test transforming a single space separated string value."""
-        mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
+        mock_loads = mocker.patch("houdini_toolbox.pyfilter.property.json.loads")
         mock_loads.side_effect = ValueError
 
-        mock_parse = mocker.patch("ht.pyfilter.property._parse_string_for_bool")
+        mock_parse = mocker.patch("houdini_toolbox.pyfilter.property._parse_string_for_bool")
 
         mock_value = mocker.MagicMock(spec=str)
         mock_value.split.return_value.__len__.return_value = 2
@@ -170,7 +170,7 @@ class Test__transform_values:
 
     def test_single_int(self, mocker):
         """Test a single integer value."""
-        mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
+        mock_loads = mocker.patch("houdini_toolbox.pyfilter.property.json.loads")
         mock_value = mocker.MagicMock(spec=int)
 
         result = prop._transform_values([mock_value])
@@ -181,7 +181,7 @@ class Test__transform_values:
 
     def test_multiple_values(self, mocker):
         """Test multiple string values which can be converted to json."""
-        mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
+        mock_loads = mocker.patch("houdini_toolbox.pyfilter.property.json.loads")
 
         mock_values = [mocker.MagicMock(spec=str), mocker.MagicMock(spec=str)]
 
@@ -191,7 +191,7 @@ class Test__transform_values:
 
     def test_multiple_values__type_error(self, mocker):
         """Test multiple string values which raise a TypeError converting to json."""
-        mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
+        mock_loads = mocker.patch("houdini_toolbox.pyfilter.property.json.loads")
         mock_loads.side_effect = TypeError
 
         mock_values = [mocker.MagicMock(spec=str), mocker.MagicMock(spec=str)]
@@ -202,7 +202,7 @@ class Test__transform_values:
 
     def test_multiple_values__value_error(self, mocker):
         """Test multiple string values which raise a ValueError converting to json."""
-        mock_loads = mocker.patch("ht.pyfilter.property.json.loads")
+        mock_loads = mocker.patch("houdini_toolbox.pyfilter.property.json.loads")
         mock_loads.side_effect = ValueError
 
         mock_values = [mocker.MagicMock(spec=str), mocker.MagicMock(spec=str)]
@@ -213,8 +213,8 @@ class Test__transform_values:
 
 
 def test_get_property(mocker, patch_soho):
-    """Test ht.pyfilter.property.get_property."""
-    mock_transform = mocker.patch("ht.pyfilter.property._transform_values")
+    """Test houdini_toolbox.pyfilter.property.get_property."""
+    mock_transform = mocker.patch("houdini_toolbox.pyfilter.property._transform_values")
 
     mock_name = mocker.MagicMock(spec=str)
 
@@ -226,8 +226,8 @@ def test_get_property(mocker, patch_soho):
 
 
 def test_set_property(mocker, patch_soho):
-    """Test ht.pyfilter.property.set_property."""
-    mock_prep = mocker.patch("ht.pyfilter.property._prep_value_to_set")
+    """Test houdini_toolbox.pyfilter.property.set_property."""
+    mock_prep = mocker.patch("houdini_toolbox.pyfilter.property._prep_value_to_set")
 
     mock_name = mocker.MagicMock(spec=str)
     mock_value = mocker.MagicMock(spec=int)

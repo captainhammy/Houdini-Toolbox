@@ -1,4 +1,4 @@
-"""Test ht.inline.utils module."""
+"""Test houdini_toolbox.inline.utils module."""
 
 # =============================================================================
 # IMPORTS
@@ -11,7 +11,7 @@ import ctypes
 import pytest
 
 # Houdini Toolbox
-from ht.inline import utils
+from houdini_toolbox.inline import utils
 
 # Houdini
 import hou
@@ -34,7 +34,7 @@ OBJ = hou.node("/obj")
 
 
 def test_build_c_double_array():
-    """Test ht.inline.utils.build_c_double_array."""
+    """Test houdini_toolbox.inline.utils.build_c_double_array."""
     values = [float(val) for val in range(5)]
     values.reverse()
 
@@ -47,7 +47,7 @@ def test_build_c_double_array():
 
 
 def test_build_c_int_array():
-    """Test ht.inline.utils.build_c_int_array."""
+    """Test houdini_toolbox.inline.utils.build_c_int_array."""
     values = list(range(5))
     values.reverse()
 
@@ -60,7 +60,7 @@ def test_build_c_int_array():
 
 
 def test_build_c_string_array():
-    """Test ht.inline.utils.build_c_string_array."""
+    """Test houdini_toolbox.inline.utils.build_c_string_array."""
 
     values = ["foo", "bar", "test"]
 
@@ -81,7 +81,7 @@ def test_build_c_string_array():
     ],
 )
 def test_clean_string_values(values, expected):
-    """Test ht.inline.utils.clean_string_values."""
+    """Test houdini_toolbox.inline.utils.clean_string_values."""
     result = utils.clean_string_values(values)
 
     assert result == expected
@@ -98,7 +98,7 @@ def test_clean_string_values(values, expected):
     ],
 )
 def test_find_attrib(attrib_type, name):
-    """Test ht.inline.utils.find_attrib."""
+    """Test houdini_toolbox.inline.utils.find_attrib."""
     geometry = OBJ.node("test_find_attrib").displayNode().geometry()
 
     if attrib_type is not None:
@@ -124,7 +124,7 @@ def test_find_attrib(attrib_type, name):
     ],
 )
 def test_find_group(group_type, name, expected_cls):
-    """Test ht.inline.utils.find_group."""
+    """Test houdini_toolbox.inline.utils.find_group."""
     geometry = OBJ.node("test_find_group").displayNode().geometry()
 
     if group_type != 4:
@@ -147,7 +147,7 @@ def test_find_group(group_type, name, expected_cls):
     ],
 )
 def test_details_match(detail1, detail2, expected):
-    """Test ht.inline.utils.geo_details_match."""
+    """Test houdini_toolbox.inline.utils.geo_details_match."""
     container = OBJ.node("test_geo_details_match")
 
     geo1 = container.node(detail1).geometry()
@@ -167,7 +167,7 @@ def test_details_match(detail1, detail2, expected):
     ],
 )
 def test_get_attrib_owner(value, expected):
-    """Test ht.inline.utils.get_attrib_owner."""
+    """Test houdini_toolbox.inline.utils.get_attrib_owner."""
     if value is not None:
         result = utils.get_attrib_owner(value)
 
@@ -179,7 +179,7 @@ def test_get_attrib_owner(value, expected):
 
 
 class Test_get_attrib_owner_from_geometry_entity_type(object):
-    """Test ht.inline.utils.get_attrib_owner_from_geometry_entity_type."""
+    """Test houdini_toolbox.inline.utils.get_attrib_owner_from_geometry_entity_type."""
 
     def test_in_map(self):
         """Test when the entity type is explicitly in the map."""
@@ -219,7 +219,7 @@ class Test_get_attrib_owner_from_geometry_entity_type(object):
     ],
 )
 def test_get_attrib_owner_from_geometry_type(geometry_type, expected):
-    """Test ht.inline.utils.get_attrib_owner_from_geometry_type."""
+    """Test houdini_toolbox.inline.utils.get_attrib_owner_from_geometry_type."""
     if geometry_type is not None:
         result = utils.get_attrib_owner_from_geometry_type(geometry_type)
 
@@ -240,7 +240,7 @@ def test_get_attrib_owner_from_geometry_type(geometry_type, expected):
     ],
 )
 def test_get_attrib_storage(data_type, expected):
-    """Test ht.inline.utils.get_attrib_storage."""
+    """Test houdini_toolbox.inline.utils.get_attrib_storage."""
     if data_type is not None:
         result = utils.get_attrib_storage(data_type)
 
@@ -252,7 +252,7 @@ def test_get_attrib_storage(data_type, expected):
 
 
 class Test_get_entity_data(object):
-    """Test ht.inline.utils.get_entity_data."""
+    """Test houdini_toolbox.inline.utils.get_entity_data."""
 
     def test_vertex(self):
         """Test getting data for a hou.Vertex object."""
@@ -287,7 +287,7 @@ class Test_get_entity_data(object):
 
 
 class Test_get_entity_data_from_list(object):
-    """Test ht.inline.utils.get_entity_data_from_list."""
+    """Test houdini_toolbox.inline.utils.get_entity_data_from_list."""
 
     def test_vertex(self):
         """Test getting data for a list of hou.Vertex objects."""
@@ -326,7 +326,7 @@ class Test_get_entity_data_from_list(object):
 
 
 class Test_get_group_attrib_owner(object):
-    """Test ht.inline.utils.get_group_attrib_owner."""
+    """Test houdini_toolbox.inline.utils.get_group_attrib_owner."""
 
     def test_point_group(self):
         """Test getting the group owner of a point group."""
@@ -355,7 +355,7 @@ class Test_get_group_attrib_owner(object):
 
 
 class Test_get_group_type(object):
-    """Test ht.inline.utils.get_group_type."""
+    """Test houdini_toolbox.inline.utils.get_group_type."""
 
     def test_point_group(self):
         """Test getting the group type of a point group."""
@@ -412,7 +412,7 @@ class Test_get_group_type(object):
     ],
 )
 def test_get_multiparm_containing_folders(name, expected):
-    """Test ht.inline.utils.get_multiparm_containing_folders."""
+    """Test houdini_toolbox.inline.utils.get_multiparm_containing_folders."""
     node = OBJ.node("test_get_multiparm_containing_folders/null")
 
     ptg = node.parmTemplateGroup()
@@ -431,7 +431,7 @@ def test_get_multiparm_containing_folders(name, expected):
     ],
 )
 def test_get_multiparm_container_offsets(name, expected):
-    """Test ht.inline.utils.get_multiparm_container_offsets."""
+    """Test houdini_toolbox.inline.utils.get_multiparm_container_offsets."""
     node = OBJ.node("test_get_multiparm_container_offsets/null")
 
     ptg = node.parmTemplateGroup()
@@ -449,7 +449,7 @@ def test_get_multiparm_container_offsets(name, expected):
     ],
 )
 def test_get_multiparm_start_offset(name, expected):
-    """Test ht.inline.utils.get_multiparm_start_offset."""
+    """Test houdini_toolbox.inline.utils.get_multiparm_start_offset."""
     node = OBJ.node("test_get_multiparm_start_offset/null")
 
     parm_template = node.parm(name).parmTemplate()
@@ -463,7 +463,7 @@ def test_get_multiparm_start_offset(name, expected):
 
 
 def test_get_nodes_from_paths():
-    """Test ht.inline.utils.get_nodes_from_paths."""
+    """Test houdini_toolbox.inline.utils.get_nodes_from_paths."""
     paths = (
         "/obj/test_get_nodes_from_paths/null1",
         "",
@@ -481,7 +481,7 @@ def test_get_nodes_from_paths():
 
 
 class Test_get_points_from_list(object):
-    """Test ht.inline.utils.get_points_from_list."""
+    """Test houdini_toolbox.inline.utils.get_points_from_list."""
 
     def test_empty(self):
         """Test passing an empty list of point numbers to get."""
@@ -504,7 +504,7 @@ class Test_get_points_from_list(object):
 
 
 class Test_get_prims_from_list(object):
-    """Test ht.inline.utils.get_prims_from_list."""
+    """Test houdini_toolbox.inline.utils.get_prims_from_list."""
 
     def test_empty_list(self):
         """Test passing an empty list of prim numbers to get."""
@@ -537,7 +537,7 @@ class Test_get_prims_from_list(object):
     ],
 )
 def test_is_parm_template_multiparm_folder(name, expected):
-    """Test ht.inline.utils.is_parm_template_multiparm_folder."""
+    """Test houdini_toolbox.inline.utils.is_parm_template_multiparm_folder."""
     node = OBJ.node("test_is_parm_template_multiparm_folder/null")
 
     parm_template = node.parm(name).parmTemplate()
@@ -547,7 +547,7 @@ def test_is_parm_template_multiparm_folder(name, expected):
 
 @pytest.mark.parametrize("value, expected", [(b"foo", "foo"), ("bar", "bar")])
 def test_string_decode(value, expected):
-    """Test ht.inline.utils.string_decode."""
+    """Test houdini_toolbox.inline.utils.string_decode."""
     result = utils.string_decode(value)
 
     assert result == expected
@@ -557,7 +557,7 @@ def test_string_decode(value, expected):
     "value, expected", [(4, b"4"), ("4", b"4"), ("bar", b"bar"), ("bar", b"bar")]
 )
 def test_string_encode(value, expected):
-    """Test ht.inline.utils.string_decode."""
+    """Test houdini_toolbox.inline.utils.string_decode."""
     result = utils.string_encode(value)
 
     assert result == expected
@@ -572,7 +572,7 @@ def test_string_encode(value, expected):
     ],
 )
 def test_validate_multiparm_resolve_values(name, indices, success):
-    """Test ht.inline.utils.validate_multiparm_resolve_values."""
+    """Test houdini_toolbox.inline.utils.validate_multiparm_resolve_values."""
 
     # Test failure scenario (not enough indices)
     if not success:

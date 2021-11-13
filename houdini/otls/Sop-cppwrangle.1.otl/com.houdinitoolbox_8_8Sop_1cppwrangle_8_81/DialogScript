@@ -42,7 +42,7 @@
             name    "code"
             label   "Code"
             type    string
-            default { "# Compiled code is available using the 'lib' var.\n\nfrom ht.inline import utils\n\nnode = hou.pwd()\ngeo = node.geometry()" }
+            default { "# Compiled code is available using the 'lib' var.\n\nfrom houdini_toolbox.inline import utils\n\nnode = hou.pwd()\ngeo = node.geometry()" }
             range   { 0 1 }
             parmtag { "autoscope" "0000000000000000" }
             parmtag { "editor" "1" }

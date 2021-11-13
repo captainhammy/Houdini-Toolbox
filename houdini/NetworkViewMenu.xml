@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <mainMenu>
     <menuBar>
-        <subMenu id="ht_menu">
+        <subMenu id="houdini_toolbox_menu">
             <label>Houdini Toolbox</label>
 
             <actionItem id="h.tool:copy_items">

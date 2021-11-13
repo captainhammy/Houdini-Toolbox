@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Houdini Toolbox
-from ht.events import NodeEvents, run_event
+from houdini_toolbox.events import NodeEvents, run_event
 
 # =============================================================================
 # FUNCTIONS

@@ -32,9 +32,9 @@ class Test_createEventHandler:
     def test_houdini_paste(self, mocker):
         """Test when doing a standard Houdini paste event."""
         mock_is = mocker.patch(
-            "ht.ui.nodegraph.is_houdini_paste_event", return_value=True
+            "houdini_toolbox.ui.nodegraph.is_houdini_paste_event", return_value=True
         )
-        mock_handle = mocker.patch("ht.ui.nodegraph.handle_houdini_paste_event")
+        mock_handle = mocker.patch("houdini_toolbox.ui.nodegraph.handle_houdini_paste_event")
 
         mock_event = mocker.MagicMock(spec=KeyboardEvent)
         mock_event.eventtype = "keyhit"
@@ -51,10 +51,10 @@ class Test_createEventHandler:
     def test_copy_items(self, mocker):
         """Test when doing a h.tool:copy_items event."""
         mock_is = mocker.patch(
-            "ht.ui.nodegraph.is_houdini_paste_event", return_value=False
+            "houdini_toolbox.ui.nodegraph.is_houdini_paste_event", return_value=False
         )
         mock_set = mocker.patch("nodegraphdisplay.setKeyPrompt", return_value=True)
-        mock_copy = mocker.patch("ht.ui.paste.copy_items_from_graph")
+        mock_copy = mocker.patch("houdini_toolbox.ui.paste.copy_items_from_graph")
 
         mock_event = mocker.MagicMock(spec=KeyboardEvent)
         mock_event.eventtype = "keyhit"
@@ -74,13 +74,13 @@ class Test_createEventHandler:
     def test_paste_items(self, mocker):
         """Test when doing a h.tool:paste_items event."""
         mock_is = mocker.patch(
-            "ht.ui.nodegraph.is_houdini_paste_event", return_value=False
+            "houdini_toolbox.ui.nodegraph.is_houdini_paste_event", return_value=False
         )
         mock_set = mocker.patch(
             "nodegraphdisplay.setKeyPrompt", side_effect=(False, True)
         )
-        mock_copy = mocker.patch("ht.ui.paste.copy_items_from_graph")
-        mock_paste = mocker.patch("ht.ui.paste.paste_items_to_graph")
+        mock_copy = mocker.patch("houdini_toolbox.ui.paste.copy_items_from_graph")
+        mock_paste = mocker.patch("houdini_toolbox.ui.paste.paste_items_to_graph")
 
         mock_event = mocker.MagicMock(spec=KeyboardEvent)
         mock_event.eventtype = "keyhit"
@@ -116,7 +116,7 @@ class Test_createEventHandler:
     def test_other_key_hit(self, mocker):
         """Test when the event is something we don't care about."""
         mock_is = mocker.patch(
-            "ht.ui.nodegraph.is_houdini_paste_event", return_value=False
+            "houdini_toolbox.ui.nodegraph.is_houdini_paste_event", return_value=False
         )
         mock_set = mocker.patch("nodegraphdisplay.setKeyPrompt", return_value=False)
 
@@ -150,7 +150,7 @@ class Test_createEventHandler:
     def test_non_keyhit(self, mocker):
         """Test when the eventtype is not a valid type."""
         mock_is = mocker.patch(
-            "ht.ui.nodegraph.is_houdini_paste_event", return_value=False
+            "houdini_toolbox.ui.nodegraph.is_houdini_paste_event", return_value=False
         )
 
         mock_event = mocker.MagicMock(spec=KeyboardEvent)
@@ -164,7 +164,7 @@ class Test_createEventHandler:
     def test_non_keyboard(self, mocker):
         """Test when the event is not a KeyboardEvent."""
         mock_is = mocker.patch(
-            "ht.ui.nodegraph.is_houdini_paste_event", return_value=False
+            "houdini_toolbox.ui.nodegraph.is_houdini_paste_event", return_value=False
         )
 
         mock_event = mocker.MagicMock()

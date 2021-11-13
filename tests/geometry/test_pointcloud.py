@@ -1,4 +1,4 @@
-"""Integration tests for ht.geometry.pointcloud."""
+"""Integration tests for houdini_toolbox.geometry.pointcloud."""
 
 # =============================================================================
 # IMPORTS
@@ -8,7 +8,7 @@
 import pytest
 
 # Houdini Toolbox
-from ht.geometry.pointcloud import PointCloud
+from houdini_toolbox.geometry.pointcloud import PointCloud
 
 # Houdini
 import hou
@@ -24,7 +24,7 @@ pytestmark = pytest.mark.usefixtures("load_module_test_file")
 
 
 class Test_PointCloud:
-    """Test ht.geometry.pointcloud.PointCloud."""
+    """Test houdini_toolbox.geometry.pointcloud.PointCloud."""
 
     def test_no_points(self):
         """Test trying to create a PointCloud when the geometry has no points."""

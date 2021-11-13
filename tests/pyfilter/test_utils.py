@@ -1,4 +1,4 @@
-"""Test the ht.pyfilter.utils module."""
+"""Test the houdini_toolbox.pyfilter.utils module."""
 
 # =============================================================================
 # IMPORTS
@@ -8,7 +8,7 @@
 import pytest
 
 # Houdini Toolbox
-from ht.pyfilter import utils
+from houdini_toolbox.pyfilter import utils
 
 # Houdini
 import hou
@@ -19,19 +19,19 @@ import hou
 
 
 class Test_build_pyfilter_command:
-    """Test ht.pyfilter.utils.build_pyfilter_command"""
+    """Test houdini_toolbox.pyfilter.utils.build_pyfilter_command"""
 
     def test_no_found_script(self, mocker):
         """Test when no file can be found."""
         mock_find = mocker.patch("hou.findFile", side_effect=hou.OperationFailed)
-        mock_logger = mocker.patch("ht.pyfilter.utils._logger")
+        mock_logger = mocker.patch("houdini_toolbox.pyfilter.utils._logger")
         mock_isfile = mocker.patch("os.path.isfile")
 
         result = utils.build_pyfilter_command()
 
         assert result == ""
 
-        mock_find.assert_called_with("pyfilter/ht-pyfilter.py")
+        mock_find.assert_called_with("pyfilter/houdini_toolbox-pyfilter.py")
 
         mock_logger.error.assert_called()
 
@@ -47,7 +47,7 @@ class Test_build_pyfilter_command:
 
         assert result == f'-P "{mock_path} "'
 
-        mock_find.assert_called_with("pyfilter/ht-pyfilter.py")
+        mock_find.assert_called_with("pyfilter/houdini_toolbox-pyfilter.py")
 
     def test_manual_path(self, mocker):
         """Test passing a manual path."""
@@ -88,4 +88,4 @@ class Test_build_pyfilter_command:
 
         assert result == f'-P "{mock_path} {" ".join(args)}"'
 
-        mock_find.assert_called_with("pyfilter/ht-pyfilter.py")
+        mock_find.assert_called_with("pyfilter/houdini_toolbox-pyfilter.py")

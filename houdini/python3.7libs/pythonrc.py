@@ -12,16 +12,16 @@
 # then it will use sys.stdout which is redirected to any interactive Python
 # Shell panes.  We explicitly provide an alternate stream handler for output
 # to only these pane tabs.
-import ht.logging.config
+import houdini_toolbox.logging.config
 
-ht.logging.config.init_config()
+houdini_toolbox.logging.config.init_config()
 
 # Houdini Toolbox
 # flake8: noqa: E402
-import ht.events
-import ht.events.callbacks
-import ht.nodes.styles
-import ht.sohohooks.aovs
+import houdini_toolbox.events
+import houdini_toolbox.events.callbacks
+import houdini_toolbox.nodes.styles
+import houdini_toolbox.sohohooks.aovs
 
 # Create any dynamic event handlers, such as using Python's atexit module
-ht.events.callbacks.register_callbacks()
+houdini_toolbox.events.callbacks.register_callbacks()

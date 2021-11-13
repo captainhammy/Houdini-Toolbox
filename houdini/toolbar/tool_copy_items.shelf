@@ -7,9 +7,9 @@
   <tool name="copy_items" label="Copy Items to File" icon="BUTTONS_copy">
     <script scriptType="python"><![CDATA["""Copy selected items to a file."""
 
-import ht.ui.paste
+import houdini_toolbox.ui.paste
 
-ht.ui.paste.copy_items(kwargs)  # pylint: disable=undefined-variable
+houdini_toolbox.ui.paste.copy_items(kwargs)  # pylint: disable=undefined-variable
 ]]></script>
     <toolMenuContext name="network">
       <contextNetType>OBJ</contextNetType>

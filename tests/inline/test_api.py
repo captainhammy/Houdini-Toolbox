@@ -1,4 +1,4 @@
-"""Integration tests for ht.inline.api."""
+"""Integration tests for houdini_toolbox.inline.api."""
 
 # =============================================================================
 # IMPORTS
@@ -11,7 +11,7 @@ import os
 import pytest
 
 # Houdini Toolbox
-import ht.inline.api
+import houdini_toolbox.inline.api
 
 # Houdini
 import hou
@@ -33,11 +33,11 @@ OBJ = hou.node("/obj")
 
 
 def test__get_names_in_folder():
-    """Test ht.inline.api._get_names_in_folder."""
+    """Test houdini_toolbox.inline.api._get_names_in_folder."""
     node = OBJ.node("test__get_names_in_folder/null")
     parm_template = node.parm("base").parmTemplate()
 
-    result = ht.inline.api._get_names_in_folder(parm_template)
+    result = houdini_toolbox.inline.api._get_names_in_folder(parm_template)
 
     assert result == (
         "stringparm#",
@@ -51,7 +51,7 @@ def test__get_names_in_folder():
 
 
 class Test_clear_caches:
-    """Test ht.inline.api.clear_caches."""
+    """Test houdini_toolbox.inline.api.clear_caches."""
 
     def test_specific(self):
         """Test clearing specific caches."""
@@ -59,7 +59,7 @@ class Test_clear_caches:
         result = hou.hscript("sopcache -l")[0].split("\n")[1]
         old_nodes = int(result.split(": ")[1])
 
-        ht.inline.api.clear_caches(["SOP Cache"])
+        houdini_toolbox.inline.api.clear_caches(["SOP Cache"])
 
         result = hou.hscript("sopcache -l")[0].split("\n")[1]
         current_nodes = int(result.split(": ")[1])
@@ -72,7 +72,7 @@ class Test_clear_caches:
         result = hou.hscript("sopcache -l")[0].split("\n")[1]
         old_nodes = int(result.split(": ")[1])
 
-        ht.inline.api.clear_caches()
+        houdini_toolbox.inline.api.clear_caches()
 
         result = hou.hscript("sopcache -l")[0].split("\n")[1]
         current_nodes = int(result.split(": ")[1])
@@ -81,7 +81,7 @@ class Test_clear_caches:
 
 
 def test_run_python_statements():
-    """Test ht.inline.api.run_python_statements."""
+    """Test houdini_toolbox.inline.api.run_python_statements."""
     if hasattr(hou.session, "pwd_test"):
         delattr(hou.session, "pwd_test")
 
@@ -90,13 +90,13 @@ def test_run_python_statements():
 
     code = """hou.session.pwd_test = hou.pwd()"""
 
-    ht.inline.api.run_python_statements(code, use_new_context=False)
+    houdini_toolbox.inline.api.run_python_statements(code, use_new_context=False)
 
     assert hou.session.pwd_test == hou.node("/obj")
 
     code = """hou.session.pwd_test = hou.pwd()"""
 
-    ht.inline.api.run_python_statements(code)
+    houdini_toolbox.inline.api.run_python_statements(code)
 
     assert hou.session.pwd_test == hou.node("/obj")
     assert hou.pwd() == hou.node("/obj")
@@ -106,17 +106,17 @@ def test_run_python_statements():
     code = """xxx = xxx"""
 
     # Test when an exception occurs in the code.
-    with pytest.raises(ht.inline.api.RunPyStatementsError):
-        ht.inline.api.run_python_statements(code)
+    with pytest.raises(houdini_toolbox.inline.api.RunPyStatementsError):
+        houdini_toolbox.inline.api.run_python_statements(code)
 
 
 def test_clear_user_data(obj_test_node):
-    """Test ht.inline.api.clear_user_data."""
+    """Test houdini_toolbox.inline.api.clear_user_data."""
     # Store the current stack since the main purpose of this function is to
     # not generate any undo entries.
     current_undo_stack = hou.undos.undoLabels()
 
-    ht.inline.api.clear_user_data(obj_test_node)
+    houdini_toolbox.inline.api.clear_user_data(obj_test_node)
 
     assert obj_test_node.userDataDict() == {}
 
@@ -125,10 +125,10 @@ def test_clear_user_data(obj_test_node):
 
 
 def test_has_user_data(obj_test_node):
-    """Test ht.inline.api.has_user_data."""
-    assert ht.inline.api.has_user_data(obj_test_node, "data_to_remove")
+    """Test houdini_toolbox.inline.api.has_user_data."""
+    assert houdini_toolbox.inline.api.has_user_data(obj_test_node, "data_to_remove")
 
-    assert not ht.inline.api.has_user_data(obj_test_node, "nonexistant_data")
+    assert not houdini_toolbox.inline.api.has_user_data(obj_test_node, "nonexistant_data")
 
     user_data = obj_test_node.userDataDict()
 
@@ -137,14 +137,14 @@ def test_has_user_data(obj_test_node):
 
 
 def test_set_user_data(obj_test_node):
-    """Test ht.inline.api.set_user_data."""
+    """Test houdini_toolbox.inline.api.set_user_data."""
     # Store the current stack since the main purpose of this function is to
     # not generate any undo entries.
     current_undo_stack = hou.undos.undoLabels()
 
     assert "set_data" not in obj_test_node.userDataDict()
 
-    ht.inline.api.set_user_data(obj_test_node, "set_data", "data")
+    houdini_toolbox.inline.api.set_user_data(obj_test_node, "set_data", "data")
 
     assert "set_data" in obj_test_node.userDataDict()
 
@@ -153,14 +153,14 @@ def test_set_user_data(obj_test_node):
 
 
 def test_delete_user_data(obj_test_node):
-    """Test ht.inline.api.delete_user_data."""
+    """Test houdini_toolbox.inline.api.delete_user_data."""
     # Store the current stack since the main purpose of this function is to
     # not generate any undo entries.
     current_undo_stack = hou.undos.undoLabels()
 
     assert "data_to_remove" in obj_test_node.userDataDict()
 
-    ht.inline.api.delete_user_data(obj_test_node, "data_to_remove")
+    houdini_toolbox.inline.api.delete_user_data(obj_test_node, "data_to_remove")
 
     assert "data_to_remove" not in obj_test_node.userDataDict()
 
@@ -184,12 +184,12 @@ def test_delete_user_data(obj_test_node):
     ],
 )
 def test_hash_string(value_to_hash, expected):
-    """Test ht.inline.api.hash_string."""
-    assert ht.inline.api.hash_string(value_to_hash) == expected
+    """Test houdini_toolbox.inline.api.hash_string."""
+    assert houdini_toolbox.inline.api.hash_string(value_to_hash) == expected
 
 
 def test_is_rendering(obj_test_node):
-    """Test ht.inline.api.is_rendering."""
+    """Test houdini_toolbox.inline.api.is_rendering."""
     # Force cook the node which should fail.  We manually catch the exception
     # because it comes from within Houdini and we can't patch the Python exception.
     try:
@@ -213,12 +213,12 @@ def test_is_rendering(obj_test_node):
 
 
 class Test_get_global_variable_names:
-    """Test ht.inline.api.get_global_variable_names."""
+    """Test houdini_toolbox.inline.api.get_global_variable_names."""
 
     def test(self):
         """Getting all variable names."""
         hou.hscript("set -g GLOBAL=123")
-        result = ht.inline.api.get_global_variable_names()
+        result = houdini_toolbox.inline.api.get_global_variable_names()
 
         for name in ("ACTIVETAKE", "DRIVER", "E", "HIP", "GLOBAL"):
             assert name in result
@@ -227,31 +227,31 @@ class Test_get_global_variable_names:
         """Test getting only dirty variable names."""
         name = "TEST_DIRTY_GLOBAL_VAR"
 
-        result = ht.inline.api.get_global_variable_names()
+        result = houdini_toolbox.inline.api.get_global_variable_names()
 
         assert name not in result
 
         hou.hscript(f"set -g {name}=6666")
 
-        result = ht.inline.api.get_global_variable_names(dirty=True)
+        result = houdini_toolbox.inline.api.get_global_variable_names(dirty=True)
 
         assert name in result
 
         hou.hscript("varchange")
 
-        result = ht.inline.api.get_global_variable_names(dirty=True)
+        result = houdini_toolbox.inline.api.get_global_variable_names(dirty=True)
 
         assert name not in result
 
 
 class Test_get_variable_names:
-    """Test ht.inline.api.get_variable_names."""
+    """Test houdini_toolbox.inline.api.get_variable_names."""
 
     def test_get_variable_names(self):
         """Getting all variable names."""
         hou.hscript("set -g LOCAL=123")
 
-        result = ht.inline.api.get_variable_names()
+        result = houdini_toolbox.inline.api.get_variable_names()
 
         for name in ("ACTIVETAKE", "DRIVER", "E", "HIP", "LOCAL"):
             assert name in result
@@ -260,29 +260,29 @@ class Test_get_variable_names:
         """Test getting only dirty variable names."""
         name = "TEST_DIRTY_LOCAL_VAR"
 
-        result = ht.inline.api.get_global_variable_names()
+        result = houdini_toolbox.inline.api.get_global_variable_names()
 
         assert name not in result
 
         hou.hscript(f"set {name}=6666")
 
-        result = ht.inline.api.get_variable_names(dirty=True)
+        result = houdini_toolbox.inline.api.get_variable_names(dirty=True)
 
         assert name in result
 
         hou.hscript("varchange")
 
-        result = ht.inline.api.get_variable_names(dirty=True)
+        result = houdini_toolbox.inline.api.get_variable_names(dirty=True)
 
         assert name not in result
 
 
 class Test_get_variable_value:
-    """Test ht.inline.api.get_variable_value."""
+    """Test houdini_toolbox.inline.api.get_variable_value."""
 
     def test(self):
         """Test getting a variable value."""
-        hip_name = ht.inline.api.get_variable_value("HIPNAME")
+        hip_name = houdini_toolbox.inline.api.get_variable_value("HIPNAME")
 
         assert hip_name == os.path.splitext(os.path.basename(hou.hipFile.path()))[0]
 
@@ -290,29 +290,29 @@ class Test_get_variable_value:
         """Test when there is a syntax error."""
         hou.hscript("set ERROR_THING=1.1.1")
 
-        result = ht.inline.api.get_variable_value("ERROR_THING")
+        result = houdini_toolbox.inline.api.get_variable_value("ERROR_THING")
 
         assert result == "1.1.1"
 
 
 def test_set_variable():
-    """Test ht.inline.api.set_variable."""
+    """Test houdini_toolbox.inline.api.set_variable."""
     value = 22
-    ht.inline.api.set_variable("awesome", value)
+    houdini_toolbox.inline.api.set_variable("awesome", value)
 
-    assert ht.inline.api.get_variable_value("awesome") == 22
+    assert houdini_toolbox.inline.api.get_variable_value("awesome") == 22
 
 
 def test_unset_variable():
-    """Test ht.inline.api.unset_variable."""
-    ht.inline.api.set_variable("tester", 10)
-    ht.inline.api.unset_variable("tester")
+    """Test houdini_toolbox.inline.api.unset_variable."""
+    houdini_toolbox.inline.api.set_variable("tester", 10)
+    houdini_toolbox.inline.api.unset_variable("tester")
 
-    assert ht.inline.api.get_variable_value("tester") is None
+    assert houdini_toolbox.inline.api.get_variable_value("tester") is None
 
 
 def test_emit_var_change():
-    """Test ht.inline.api.emit_var_change."""
+    """Test houdini_toolbox.inline.api.emit_var_change."""
     parm = hou.parm("/obj/test_emit_var_change/file1/file")
 
     string = "something_$VARCHANGE.bgeo"
@@ -323,9 +323,9 @@ def test_emit_var_change():
 
     assert path == string.replace("$VARCHANGE", "")
 
-    ht.inline.api.set_variable("VARCHANGE", 22)
+    houdini_toolbox.inline.api.set_variable("VARCHANGE", 22)
 
-    ht.inline.api.emit_var_change()
+    houdini_toolbox.inline.api.emit_var_change()
 
     new_path = parm.eval()
 
@@ -337,83 +337,83 @@ def test_emit_var_change():
 
 
 def test_expand_range():
-    """Test ht.inline.api.expand_range."""
-    values = ht.inline.api.expand_range("0-5 10-20:2 64 65-66")
+    """Test houdini_toolbox.inline.api.expand_range."""
+    values = houdini_toolbox.inline.api.expand_range("0-5 10-20:2 64 65-66")
     target = (0, 1, 2, 3, 4, 5, 10, 12, 14, 16, 18, 20, 64, 65, 66)
 
     assert values == target
 
 
 class Test_geometry_has_prims_with_shared_vertex_points(object):
-    """Test ht.inline.api.geometry_has_prims_with_shared_vertex_points."""
+    """Test houdini_toolbox.inline.api.geometry_has_prims_with_shared_vertex_points."""
 
     def test_true(self, obj_test_geo):
         """Test when the geometry does have prims with shared vertex points."""
-        assert ht.inline.api.geometry_has_prims_with_shared_vertex_points(obj_test_geo)
+        assert houdini_toolbox.inline.api.geometry_has_prims_with_shared_vertex_points(obj_test_geo)
 
     def test_false(self, obj_test_geo):
         """Test when the geometry does not have prims with shared vertex points."""
-        assert not ht.inline.api.geometry_has_prims_with_shared_vertex_points(
+        assert not houdini_toolbox.inline.api.geometry_has_prims_with_shared_vertex_points(
             obj_test_geo
         )
 
 
 class Test_get_primitives_with_shared_vertex_points(object):
-    """Test ht.inline.api.get_primitives_with_shared_vertex_points."""
+    """Test houdini_toolbox.inline.api.get_primitives_with_shared_vertex_points."""
 
     def test_shared(self, obj_test_geo):
         """Test when the geometry does have prims with shared vertex points."""
-        result = ht.inline.api.get_primitives_with_shared_vertex_points(obj_test_geo)
+        result = houdini_toolbox.inline.api.get_primitives_with_shared_vertex_points(obj_test_geo)
         assert result == (obj_test_geo.prims()[-1],)
 
     def test_none(self, obj_test_geo):
         """Test when the geometry does not have prims with shared vertex points."""
-        result = ht.inline.api.get_primitives_with_shared_vertex_points(obj_test_geo)
+        result = houdini_toolbox.inline.api.get_primitives_with_shared_vertex_points(obj_test_geo)
         assert not result
 
 
 def test_num_points(obj_test_geo):
-    """Test ht.inline.api.num_points."""
-    assert ht.inline.api.num_points(obj_test_geo) == 5000
+    """Test houdini_toolbox.inline.api.num_points."""
+    assert houdini_toolbox.inline.api.num_points(obj_test_geo) == 5000
 
 
 def test_num_prims(obj_test_geo):
-    """Test ht.inline.api.num_prims."""
-    assert ht.inline.api.num_prims(obj_test_geo) == 12
+    """Test houdini_toolbox.inline.api.num_prims."""
+    assert houdini_toolbox.inline.api.num_prims(obj_test_geo) == 12
 
 
 class Test_sort_geometry_by_values(object):
-    """Test ht.inline.api.sort_geometry_by_values."""
+    """Test houdini_toolbox.inline.api.sort_geometry_by_values."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.sort_geometry_by_values(obj_test_geo, None, [])
+            houdini_toolbox.inline.api.sort_geometry_by_values(obj_test_geo, None, [])
 
     def test_not_enough_points(self, obj_test_geo_copy):
         """Test when not enough points are passed."""
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.sort_geometry_by_values(
+            houdini_toolbox.inline.api.sort_geometry_by_values(
                 obj_test_geo_copy, hou.geometryType.Points, [1]
             )
 
     def test_not_enough_prims(self, obj_test_geo_copy):
         """Test when not enough prims are passed."""
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.sort_geometry_by_values(
+            houdini_toolbox.inline.api.sort_geometry_by_values(
                 obj_test_geo_copy, hou.geometryType.Primitives, [1, 2]
             )
 
     def test_invalid_geometry_type(self, obj_test_geo_copy):
         """Test when an unsupported type of geometry is passed."""
         with pytest.raises(ValueError):
-            ht.inline.api.sort_geometry_by_values(obj_test_geo_copy, None, [1])
+            houdini_toolbox.inline.api.sort_geometry_by_values(obj_test_geo_copy, None, [1])
 
     def test_points(self, obj_test_geo_copy):
         """Test sorting points."""
         values = obj_test_geo_copy.pointFloatAttribValues("id")
 
-        ht.inline.api.sort_geometry_by_values(
+        houdini_toolbox.inline.api.sort_geometry_by_values(
             obj_test_geo_copy, hou.geometryType.Points, values
         )
 
@@ -423,7 +423,7 @@ class Test_sort_geometry_by_values(object):
         """Test sorting prims."""
         values = obj_test_geo_copy.primFloatAttribValues("id")
 
-        ht.inline.api.sort_geometry_by_values(
+        houdini_toolbox.inline.api.sort_geometry_by_values(
             obj_test_geo_copy, hou.geometryType.Primitives, values
         )
 
@@ -431,45 +431,45 @@ class Test_sort_geometry_by_values(object):
 
 
 def test_create_point_at_position():
-    """Test ht.inline.api.create_point_at_position."""
+    """Test houdini_toolbox.inline.api.create_point_at_position."""
     geo = hou.Geometry()
 
     # Read only
     frozen_geo = geo.freeze(True)
 
     with pytest.raises(hou.GeometryPermissionError):
-        ht.inline.api.create_point_at_position(frozen_geo, hou.Vector3(1, 2, 3))
+        houdini_toolbox.inline.api.create_point_at_position(frozen_geo, hou.Vector3(1, 2, 3))
 
     # Success
     geo = hou.Geometry()
 
-    point = ht.inline.api.create_point_at_position(geo, hou.Vector3(1, 2, 3))
+    point = houdini_toolbox.inline.api.create_point_at_position(geo, hou.Vector3(1, 2, 3))
 
     assert point.position() == hou.Vector3(1, 2, 3)
 
 
 def test_create_n_points():
-    """Test ht.inline.api.create_n_points."""
+    """Test houdini_toolbox.inline.api.create_n_points."""
     geo = hou.Geometry()
 
     # Read only
     frozen_geo = geo.freeze(True)
 
     with pytest.raises(hou.GeometryPermissionError):
-        ht.inline.api.create_n_points(frozen_geo, 15)
+        houdini_toolbox.inline.api.create_n_points(frozen_geo, 15)
 
     # Success
-    points = ht.inline.api.create_n_points(geo, 15)
+    points = houdini_toolbox.inline.api.create_n_points(geo, 15)
 
     assert points == geo.points()
 
     # Invalid Number
     with pytest.raises(ValueError):
-        ht.inline.api.create_n_points(geo, -4)
+        houdini_toolbox.inline.api.create_n_points(geo, -4)
 
 
 def test_merge_point_group(obj_test_geo):
-    """Test ht.inline.api.merge_point_group."""
+    """Test houdini_toolbox.inline.api.merge_point_group."""
     geo = hou.Geometry()
 
     group = obj_test_geo.pointGroups()[0]
@@ -478,22 +478,22 @@ def test_merge_point_group(obj_test_geo):
     frozen_geo = geo.freeze(True)
 
     with pytest.raises(hou.GeometryPermissionError):
-        ht.inline.api.merge_point_group(frozen_geo, group)
+        houdini_toolbox.inline.api.merge_point_group(frozen_geo, group)
 
     # Invalid group type
     prim_group = obj_test_geo.primGroups()[0]
 
     with pytest.raises(ValueError):
-        ht.inline.api.merge_point_group(geo, prim_group)
+        houdini_toolbox.inline.api.merge_point_group(geo, prim_group)
 
     # Success
-    ht.inline.api.merge_point_group(geo, group)
+    houdini_toolbox.inline.api.merge_point_group(geo, group)
 
     assert len(geo.iterPoints()) == len(group.points())
 
 
 def test_merge_points(obj_test_geo):
-    """Test ht.inline.api.merge_points."""
+    """Test houdini_toolbox.inline.api.merge_points."""
     geo = hou.Geometry()
 
     points = obj_test_geo.globPoints("0 6 15 35-38 66")
@@ -502,16 +502,16 @@ def test_merge_points(obj_test_geo):
     frozen_geo = geo.freeze(True)
 
     with pytest.raises(hou.GeometryPermissionError):
-        ht.inline.api.merge_points(frozen_geo, points)
+        houdini_toolbox.inline.api.merge_points(frozen_geo, points)
 
     # Success
-    ht.inline.api.merge_points(geo, points)
+    houdini_toolbox.inline.api.merge_points(geo, points)
 
     assert len(geo.iterPoints()) == len(points)
 
 
 def test_merge_prim_group(obj_test_geo):
-    """Test ht.inline.api.merge_prim_group."""
+    """Test houdini_toolbox.inline.api.merge_prim_group."""
     geo = hou.Geometry()
 
     group = obj_test_geo.primGroups()[0]
@@ -520,22 +520,22 @@ def test_merge_prim_group(obj_test_geo):
     frozen_geo = geo.freeze(True)
 
     with pytest.raises(hou.GeometryPermissionError):
-        ht.inline.api.merge_prim_group(frozen_geo, group)
+        houdini_toolbox.inline.api.merge_prim_group(frozen_geo, group)
 
     # Invalid group type
     point_group = obj_test_geo.pointGroups()[0]
 
     with pytest.raises(ValueError):
-        ht.inline.api.merge_prim_group(geo, point_group)
+        houdini_toolbox.inline.api.merge_prim_group(geo, point_group)
 
     # Success
-    ht.inline.api.merge_prim_group(geo, group)
+    houdini_toolbox.inline.api.merge_prim_group(geo, group)
 
     assert len(geo.iterPrims()) == len(group.prims())
 
 
 def test_merge_prims(obj_test_geo):
-    """Test ht.inline.api.merge_prims."""
+    """Test houdini_toolbox.inline.api.merge_prims."""
     geo = hou.Geometry()
 
     prims = obj_test_geo.globPrims("0 6 15 35-38 66")
@@ -544,16 +544,16 @@ def test_merge_prims(obj_test_geo):
     frozen_geo = geo.freeze(True)
 
     with pytest.raises(hou.GeometryPermissionError):
-        ht.inline.api.merge_prims(frozen_geo, prims)
+        houdini_toolbox.inline.api.merge_prims(frozen_geo, prims)
 
     # Success
-    ht.inline.api.merge_prims(geo, prims)
+    houdini_toolbox.inline.api.merge_prims(geo, prims)
 
     assert len(geo.iterPrims()) == len(prims)
 
 
 class Test_copy_packed_prims_to_points(object):
-    """Test ht.inline.api.copy_packed_prims_to_points."""
+    """Test houdini_toolbox.inline.api.copy_packed_prims_to_points."""
 
     @staticmethod
     def _build_source_prims() -> hou.Geometry:
@@ -603,7 +603,7 @@ class Test_copy_packed_prims_to_points(object):
         prim_order = [2, 0, 1]
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.copy_packed_prims_to_points(
+            houdini_toolbox.inline.api.copy_packed_prims_to_points(
                 obj_test_geo,
                 source_geo,
                 prim_order,
@@ -617,7 +617,7 @@ class Test_copy_packed_prims_to_points(object):
         prim_order = [2, 0, 1]
 
         with pytest.raises(ValueError):
-            ht.inline.api.copy_packed_prims_to_points(
+            houdini_toolbox.inline.api.copy_packed_prims_to_points(
                 obj_test_geo_copy,
                 source_geo,
                 prim_order,
@@ -630,7 +630,7 @@ class Test_copy_packed_prims_to_points(object):
 
         prim_order = [2, 0, 1]
 
-        ht.inline.api.copy_packed_prims_to_points(
+        houdini_toolbox.inline.api.copy_packed_prims_to_points(
             obj_test_geo_copy,
             source_geo,
             prim_order,
@@ -663,7 +663,7 @@ class Test_copy_packed_prims_to_points(object):
 
         prim_order = [2, 0, 1]
 
-        ht.inline.api.copy_packed_prims_to_points(
+        houdini_toolbox.inline.api.copy_packed_prims_to_points(
             obj_test_geo_copy,
             source_geo,
             prim_order,
@@ -697,7 +697,7 @@ class Test_copy_packed_prims_to_points(object):
 
         prim_order = [2, 0, 1]
 
-        ht.inline.api.copy_packed_prims_to_points(
+        houdini_toolbox.inline.api.copy_packed_prims_to_points(
             obj_test_geo_copy,
             source_geo,
             prim_order,
@@ -734,7 +734,7 @@ class Test_copy_packed_prims_to_points(object):
 
 
 class Test_copy_attribute_values(object):
-    """Test ht.inline.api.copy_attribute_values."""
+    """Test houdini_toolbox.inline.api.copy_attribute_values."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
@@ -742,7 +742,7 @@ class Test_copy_attribute_values(object):
         attribs = obj_test_geo.globalAttribs()
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.copy_attribute_values(obj_test_geo, attribs, geo)
+            houdini_toolbox.inline.api.copy_attribute_values(obj_test_geo, attribs, geo)
 
     def test_points(self, obj_test_geo):
         """Test copying attribute values between two points."""
@@ -753,8 +753,8 @@ class Test_copy_attribute_values(object):
         pt1 = geo.createPoint()
         pt2 = geo.createPoint()
 
-        ht.inline.api.copy_attribute_values(obj_test_geo.iterPoints()[2], attribs, pt1)
-        ht.inline.api.copy_attribute_values(obj_test_geo.iterPoints()[6], attribs, pt2)
+        houdini_toolbox.inline.api.copy_attribute_values(obj_test_geo.iterPoints()[2], attribs, pt1)
+        houdini_toolbox.inline.api.copy_attribute_values(obj_test_geo.iterPoints()[6], attribs, pt2)
 
         # Ensure all the attributes got copied right.
         assert len(geo.pointAttribs()) == len(attribs)
@@ -772,8 +772,8 @@ class Test_copy_attribute_values(object):
         pr1 = geo.createPolygon()
         pr2 = geo.createPolygon()
 
-        ht.inline.api.copy_attribute_values(obj_test_geo.iterPrims()[1], attribs, pr1)
-        ht.inline.api.copy_attribute_values(obj_test_geo.iterPrims()[4], attribs, pr2)
+        houdini_toolbox.inline.api.copy_attribute_values(obj_test_geo.iterPrims()[1], attribs, pr1)
+        houdini_toolbox.inline.api.copy_attribute_values(obj_test_geo.iterPrims()[4], attribs, pr2)
 
         # Ensure all the attributes got copied right.
         assert len(geo.primAttribs()) == len(attribs)
@@ -791,7 +791,7 @@ class Test_copy_attribute_values(object):
 
         pr1 = obj_test_geo.prims()[1]
 
-        ht.inline.api.copy_attribute_values(pr1.vertex(2), attribs, pt1)
+        houdini_toolbox.inline.api.copy_attribute_values(pr1.vertex(2), attribs, pt1)
         assert pt1.attribValue("id") == 6
         assert pt1.attribValue("random_vtx") == 0.031702518463134766
 
@@ -800,7 +800,7 @@ class Test_copy_attribute_values(object):
         attribs = obj_test_geo.pointAttribs()
         geo = hou.Geometry()
 
-        ht.inline.api.copy_attribute_values(obj_test_geo.iterPoints()[2], attribs, geo)
+        houdini_toolbox.inline.api.copy_attribute_values(obj_test_geo.iterPoints()[2], attribs, geo)
 
         # Ensure all the attributes got copied right.
         assert len(geo.globalAttribs()) == len(attribs)
@@ -815,7 +815,7 @@ class Test_copy_attribute_values(object):
         attribs = obj_test_geo.globalAttribs()
         pt1 = geo.createPoint()
 
-        ht.inline.api.copy_attribute_values(obj_test_geo, attribs, pt1)
+        houdini_toolbox.inline.api.copy_attribute_values(obj_test_geo, attribs, pt1)
 
         assert pt1.attribValue("barbles") == 33
         assert pt1.attribValue("foobles") == (1.0, 2.0)
@@ -825,7 +825,7 @@ class Test_copy_attribute_values(object):
         geo = hou.Geometry()
         attribs = obj_test_geo.globalAttribs()
 
-        ht.inline.api.copy_attribute_values(obj_test_geo, attribs, geo)
+        houdini_toolbox.inline.api.copy_attribute_values(obj_test_geo, attribs, geo)
         assert geo.attribValue("barbles") == 33
         assert geo.attribValue("foobles") == (1.0, 2.0)
 
@@ -840,13 +840,13 @@ class Test_copy_attribute_values(object):
         pr1.addVertex(pt1)
         vtx1 = pr1.vertex(0)
 
-        ht.inline.api.copy_attribute_values(obj_test_geo, attribs, vtx1)
+        houdini_toolbox.inline.api.copy_attribute_values(obj_test_geo, attribs, vtx1)
         assert vtx1.attribValue("barbles") == 33
         assert vtx1.attribValue("foobles") == (1.0, 2)
 
 
 class Test_batch_copy_attributes_by_indices(object):
-    """Test ht.inline.api.batch_copy_attributes_by_indices"""
+    """Test houdini_toolbox.inline.api.batch_copy_attributes_by_indices"""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
@@ -860,7 +860,7 @@ class Test_batch_copy_attributes_by_indices(object):
         geo = geo.freeze(True)
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.batch_copy_attributes_by_indices(
+            houdini_toolbox.inline.api.batch_copy_attributes_by_indices(
                 obj_test_geo, hou.Point, [2, 6], attribs, geo, hou.Point, [0, 1]
             )
 
@@ -874,7 +874,7 @@ class Test_batch_copy_attributes_by_indices(object):
         geo.createPoint()
 
         with pytest.raises(ValueError):
-            ht.inline.api.batch_copy_attributes_by_indices(
+            houdini_toolbox.inline.api.batch_copy_attributes_by_indices(
                 obj_test_geo, hou.Point, [2], attribs, geo, hou.Point, [0, 1]
             )
 
@@ -887,7 +887,7 @@ class Test_batch_copy_attributes_by_indices(object):
         pt1 = geo.createPoint()
         pt2 = geo.createPoint()
 
-        ht.inline.api.batch_copy_attributes_by_indices(
+        houdini_toolbox.inline.api.batch_copy_attributes_by_indices(
             obj_test_geo, hou.Point, [2, 6], attribs, geo, hou.Point, [0, 1]
         )
 
@@ -907,7 +907,7 @@ class Test_batch_copy_attributes_by_indices(object):
         pr1 = geo.createPolygon()
         pr2 = geo.createPolygon()
 
-        ht.inline.api.batch_copy_attributes_by_indices(
+        houdini_toolbox.inline.api.batch_copy_attributes_by_indices(
             obj_test_geo, hou.Prim, [1, 4], attribs, geo, hou.Prim, [0, 1]
         )
 
@@ -928,7 +928,7 @@ class Test_batch_copy_attributes_by_indices(object):
 
         pr1 = obj_test_geo.prims()[1]
 
-        ht.inline.api.batch_copy_attributes_by_indices(
+        houdini_toolbox.inline.api.batch_copy_attributes_by_indices(
             obj_test_geo,
             hou.Vertex,
             [pr1.vertex(2).linearNumber()],
@@ -946,7 +946,7 @@ class Test_batch_copy_attributes_by_indices(object):
         attribs = obj_test_geo.pointAttribs()
         geo = hou.Geometry()
 
-        ht.inline.api.batch_copy_attributes_by_indices(
+        houdini_toolbox.inline.api.batch_copy_attributes_by_indices(
             obj_test_geo, hou.Point, [2], attribs, geo, hou.Geometry, [0]
         )
 
@@ -963,7 +963,7 @@ class Test_batch_copy_attributes_by_indices(object):
         attribs = obj_test_geo.globalAttribs()
         pt1 = geo.createPoint()
 
-        ht.inline.api.batch_copy_attributes_by_indices(
+        houdini_toolbox.inline.api.batch_copy_attributes_by_indices(
             obj_test_geo, hou.Geometry, [0], attribs, geo, hou.Point, [0]
         )
 
@@ -975,7 +975,7 @@ class Test_batch_copy_attributes_by_indices(object):
         geo = hou.Geometry()
         attribs = obj_test_geo.globalAttribs()
 
-        ht.inline.api.batch_copy_attributes_by_indices(
+        houdini_toolbox.inline.api.batch_copy_attributes_by_indices(
             obj_test_geo, hou.Geometry, [0], attribs, geo, hou.Geometry, [0]
         )
         assert geo.attribValue("barbles") == 33
@@ -992,7 +992,7 @@ class Test_batch_copy_attributes_by_indices(object):
         pr1.addVertex(pt1)
         vtx1 = pr1.vertex(0)
 
-        ht.inline.api.batch_copy_attributes_by_indices(
+        houdini_toolbox.inline.api.batch_copy_attributes_by_indices(
             obj_test_geo,
             hou.Geometry,
             [0],
@@ -1006,7 +1006,7 @@ class Test_batch_copy_attributes_by_indices(object):
 
 
 class Test_batch_copy_attrib_values(object):
-    """Test ht.inline.api.batch_copy_attrib_values"""
+    """Test houdini_toolbox.inline.api.batch_copy_attrib_values"""
 
     def test_size_mismatch(self, obj_test_geo):
         """Test when there is a size mismatch the the number of elements passed."""
@@ -1020,7 +1020,7 @@ class Test_batch_copy_attrib_values(object):
         geo.freeze(True)
 
         with pytest.raises(ValueError):
-            ht.inline.api.batch_copy_attrib_values(
+            houdini_toolbox.inline.api.batch_copy_attrib_values(
                 [obj_test_geo.iterPoints()[2]], attribs, [pt1, pt2]
             )
 
@@ -1038,7 +1038,7 @@ class Test_batch_copy_attrib_values(object):
         pt2 = geo.iterPoints()[1]
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.batch_copy_attrib_values(
+            houdini_toolbox.inline.api.batch_copy_attrib_values(
                 [obj_test_geo.iterPoints()[2], obj_test_geo.iterPoints()[6]],
                 attribs,
                 [pt1, pt2],
@@ -1053,7 +1053,7 @@ class Test_batch_copy_attrib_values(object):
         pt1 = geo.createPoint()
         pt2 = geo.createPoint()
 
-        ht.inline.api.batch_copy_attrib_values(
+        houdini_toolbox.inline.api.batch_copy_attrib_values(
             [obj_test_geo.iterPoints()[2], obj_test_geo.iterPoints()[6]],
             attribs,
             [pt1, pt2],
@@ -1075,7 +1075,7 @@ class Test_batch_copy_attrib_values(object):
         pr1 = geo.createPolygon()
         pr2 = geo.createPolygon()
 
-        ht.inline.api.batch_copy_attrib_values(
+        houdini_toolbox.inline.api.batch_copy_attrib_values(
             [obj_test_geo.iterPrims()[1], obj_test_geo.iterPrims()[4]],
             attribs,
             [pr1, pr2],
@@ -1098,7 +1098,7 @@ class Test_batch_copy_attrib_values(object):
 
         pr1 = obj_test_geo.prims()[1]
 
-        ht.inline.api.batch_copy_attrib_values([pr1.vertex(2)], attribs, [pt1])
+        houdini_toolbox.inline.api.batch_copy_attrib_values([pr1.vertex(2)], attribs, [pt1])
         assert pt1.attribValue("id") == 6
         assert pt1.attribValue("random_vtx") == 0.031702518463134766
 
@@ -1107,7 +1107,7 @@ class Test_batch_copy_attrib_values(object):
         attribs = obj_test_geo.pointAttribs()
         geo = hou.Geometry()
 
-        ht.inline.api.batch_copy_attrib_values(
+        houdini_toolbox.inline.api.batch_copy_attrib_values(
             [obj_test_geo.iterPoints()[2]], attribs, [geo]
         )
 
@@ -1124,7 +1124,7 @@ class Test_batch_copy_attrib_values(object):
         attribs = obj_test_geo.globalAttribs()
         pt1 = geo.createPoint()
 
-        ht.inline.api.batch_copy_attrib_values([obj_test_geo], attribs, [pt1])
+        houdini_toolbox.inline.api.batch_copy_attrib_values([obj_test_geo], attribs, [pt1])
 
         assert pt1.attribValue("barbles") == 33
         assert pt1.attribValue("foobles") == (1.0, 2.0)
@@ -1134,7 +1134,7 @@ class Test_batch_copy_attrib_values(object):
         geo = hou.Geometry()
         attribs = obj_test_geo.globalAttribs()
 
-        ht.inline.api.batch_copy_attrib_values([obj_test_geo], attribs, [geo])
+        houdini_toolbox.inline.api.batch_copy_attrib_values([obj_test_geo], attribs, [geo])
         assert geo.attribValue("barbles") == 33
         assert geo.attribValue("foobles") == (1.0, 2.0)
 
@@ -1149,13 +1149,13 @@ class Test_batch_copy_attrib_values(object):
         pr1.addVertex(pt1)
         vtx1 = pr1.vertex(0)
 
-        ht.inline.api.batch_copy_attrib_values([obj_test_geo], attribs, [vtx1])
+        houdini_toolbox.inline.api.batch_copy_attrib_values([obj_test_geo], attribs, [vtx1])
         assert vtx1.attribValue("barbles") == 33
         assert vtx1.attribValue("foobles") == (1.0, 2)
 
 
 class Test_copy_group_membership(object):
-    """Test ht.inline.api.copy_group_membership."""
+    """Test houdini_toolbox.inline.api.copy_group_membership."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
@@ -1163,7 +1163,7 @@ class Test_copy_group_membership(object):
         groups = obj_test_geo.pointGroups()
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.copy_group_membership(obj_test_geo, groups, geo)
+            houdini_toolbox.inline.api.copy_group_membership(obj_test_geo, groups, geo)
 
     def test_points(self, obj_test_geo):
         """Test copying group membership between points."""
@@ -1175,9 +1175,9 @@ class Test_copy_group_membership(object):
         pt2 = geo.createPoint()
         pt3 = geo.createPoint()
 
-        ht.inline.api.copy_group_membership(obj_test_geo.iterPoints()[2], groups, pt1)
-        ht.inline.api.copy_group_membership(obj_test_geo.iterPoints()[8], groups, pt2)
-        ht.inline.api.copy_group_membership(obj_test_geo.iterPoints()[10], groups, pt3)
+        houdini_toolbox.inline.api.copy_group_membership(obj_test_geo.iterPoints()[2], groups, pt1)
+        houdini_toolbox.inline.api.copy_group_membership(obj_test_geo.iterPoints()[8], groups, pt2)
+        houdini_toolbox.inline.api.copy_group_membership(obj_test_geo.iterPoints()[10], groups, pt3)
 
         # Ensure all the groups got copied right.
         assert len(geo.pointGroups()) == len(groups)
@@ -1204,9 +1204,9 @@ class Test_copy_group_membership(object):
         pr2 = geo.createPolygon()
         pr3 = geo.createPolygon()
 
-        ht.inline.api.copy_group_membership(obj_test_geo.iterPrims()[1], groups, pr1)
-        ht.inline.api.copy_group_membership(obj_test_geo.iterPrims()[4], groups, pr2)
-        ht.inline.api.copy_group_membership(obj_test_geo.iterPrims()[5], groups, pr3)
+        houdini_toolbox.inline.api.copy_group_membership(obj_test_geo.iterPrims()[1], groups, pr1)
+        houdini_toolbox.inline.api.copy_group_membership(obj_test_geo.iterPrims()[4], groups, pr2)
+        houdini_toolbox.inline.api.copy_group_membership(obj_test_geo.iterPrims()[5], groups, pr3)
 
         # Ensure all the attributes got copied right.
         assert len(geo.primGroups()) == len(groups)
@@ -1225,7 +1225,7 @@ class Test_copy_group_membership(object):
 
 
 class Test_batch_copy_group_membership_by_indices(object):
-    """Test ht.inline.api.batch_copy_group_membership_by_indices."""
+    """Test houdini_toolbox.inline.api.batch_copy_group_membership_by_indices."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
@@ -1233,7 +1233,7 @@ class Test_batch_copy_group_membership_by_indices(object):
         groups = obj_test_geo.pointGroups()
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.batch_copy_group_membership_by_indices(
+            houdini_toolbox.inline.api.batch_copy_group_membership_by_indices(
                 obj_test_geo, hou.Point, [0], groups, geo, hou.Point, [0]
             )
 
@@ -1248,7 +1248,7 @@ class Test_batch_copy_group_membership_by_indices(object):
         geo.createPoint()
 
         with pytest.raises(ValueError):
-            ht.inline.api.batch_copy_group_membership_by_indices(
+            houdini_toolbox.inline.api.batch_copy_group_membership_by_indices(
                 obj_test_geo, hou.Point, [2, 8], groups, geo, hou.Point, [0, 2, 1]
             )
 
@@ -1262,7 +1262,7 @@ class Test_batch_copy_group_membership_by_indices(object):
         pt2 = geo.createPoint()
         pt3 = geo.createPoint()
 
-        ht.inline.api.batch_copy_group_membership_by_indices(
+        houdini_toolbox.inline.api.batch_copy_group_membership_by_indices(
             obj_test_geo, hou.Point, [2, 8, 10], groups, geo, hou.Point, [0, 2, 1]
         )
 
@@ -1291,7 +1291,7 @@ class Test_batch_copy_group_membership_by_indices(object):
         pr2 = geo.createPolygon()
         pr3 = geo.createPolygon()
 
-        ht.inline.api.batch_copy_group_membership_by_indices(
+        houdini_toolbox.inline.api.batch_copy_group_membership_by_indices(
             obj_test_geo, hou.Prim, [1, 4, 5], groups, geo, hou.Prim, [0, 1, 2]
         )
 
@@ -1312,7 +1312,7 @@ class Test_batch_copy_group_membership_by_indices(object):
 
 
 class Test_batch_copy_group_membership(object):
-    """Test ht.inline.api.batch_copy_group_membership."""
+    """Test houdini_toolbox.inline.api.batch_copy_group_membership."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
@@ -1324,7 +1324,7 @@ class Test_batch_copy_group_membership(object):
         groups = obj_test_geo.pointGroups()
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.batch_copy_group_membership(
+            houdini_toolbox.inline.api.batch_copy_group_membership(
                 [obj_test_geo.points()[0]], groups, [geo.points()[0]]
             )
 
@@ -1339,7 +1339,7 @@ class Test_batch_copy_group_membership(object):
         geo.createPoint()
 
         with pytest.raises(ValueError):
-            ht.inline.api.batch_copy_group_membership(
+            houdini_toolbox.inline.api.batch_copy_group_membership(
                 [obj_test_geo.points()[0], obj_test_geo.points()[8]],
                 groups,
                 [geo.points()[0]],
@@ -1355,7 +1355,7 @@ class Test_batch_copy_group_membership(object):
         pt2 = geo.createPoint()
         pt3 = geo.createPoint()
 
-        ht.inline.api.batch_copy_group_membership(
+        houdini_toolbox.inline.api.batch_copy_group_membership(
             obj_test_geo.globPoints("2 8 10"), groups, geo.points()
         )
 
@@ -1384,7 +1384,7 @@ class Test_batch_copy_group_membership(object):
         pr2 = geo.createPolygon()
         pr3 = geo.createPolygon()
 
-        ht.inline.api.batch_copy_group_membership(
+        houdini_toolbox.inline.api.batch_copy_group_membership(
             obj_test_geo.globPrims("1 4 5"), groups, geo.prims()
         )
 
@@ -1405,59 +1405,59 @@ class Test_batch_copy_group_membership(object):
 
 
 def test_point_adjacent_polygons(obj_test_geo):
-    """Test ht.inline.api.point_adjacent_polygons."""
+    """Test houdini_toolbox.inline.api.point_adjacent_polygons."""
     target = obj_test_geo.globPrims("1 2")
 
-    prims = ht.inline.api.point_adjacent_polygons(obj_test_geo.iterPrims()[0])
+    prims = houdini_toolbox.inline.api.point_adjacent_polygons(obj_test_geo.iterPrims()[0])
 
     assert prims == target
 
 
 def test_edge_adjacent_polygons(obj_test_geo):
-    """Test ht.inline.api.edge_adjacent_polygons."""
+    """Test houdini_toolbox.inline.api.edge_adjacent_polygons."""
     target = obj_test_geo.globPrims("2")
 
-    prims = ht.inline.api.edge_adjacent_polygons(obj_test_geo.iterPrims()[0])
+    prims = houdini_toolbox.inline.api.edge_adjacent_polygons(obj_test_geo.iterPrims()[0])
 
     assert prims == target
 
 
 def test_connected_points(obj_test_geo):
-    """Test ht.inline.api.connected_points."""
+    """Test houdini_toolbox.inline.api.connected_points."""
     target = obj_test_geo.globPoints("1 3 5 7")
 
-    points = ht.inline.api.connected_points(obj_test_geo.iterPoints()[4])
+    points = houdini_toolbox.inline.api.connected_points(obj_test_geo.iterPoints()[4])
 
     assert points == target
 
 
 def test_prims_connected_to_point(obj_test_geo):
-    """Test ht.inline.api.connected_prims."""
+    """Test houdini_toolbox.inline.api.connected_prims."""
     target = obj_test_geo.prims()
 
-    prims = ht.inline.api.prims_connected_to_point(obj_test_geo.iterPoints()[4])
+    prims = houdini_toolbox.inline.api.prims_connected_to_point(obj_test_geo.iterPoints()[4])
 
     assert prims == target
 
 
 def test_referencing_vertices(obj_test_geo):
-    """Test ht.inline.api.referencing_vertices."""
+    """Test houdini_toolbox.inline.api.referencing_vertices."""
     target = obj_test_geo.globVertices("0v2 1v3 2v1 3v0")
 
-    vertices = ht.inline.api.referencing_vertices(obj_test_geo.iterPoints()[4])
+    vertices = houdini_toolbox.inline.api.referencing_vertices(obj_test_geo.iterPoints()[4])
 
     assert vertices == target
 
 
 class Test_string_table_indices(object):
-    """Test ht.inline.api.string_table_indices."""
+    """Test houdini_toolbox.inline.api.string_table_indices."""
 
     def test_not_string_attrib(self, obj_test_geo):
         """Test when the attribute is not a string attribute."""
         attr = obj_test_geo.findPointAttrib("not_string")
 
         with pytest.raises(ValueError):
-            ht.inline.api.string_table_indices(attr)
+            houdini_toolbox.inline.api.string_table_indices(attr)
 
     def test_point_attrib(self, obj_test_geo):
         """Test getting the indices of a point attribute."""
@@ -1465,7 +1465,7 @@ class Test_string_table_indices(object):
 
         attr = obj_test_geo.findPointAttrib("test")
 
-        assert ht.inline.api.string_table_indices(attr) == target
+        assert houdini_toolbox.inline.api.string_table_indices(attr) == target
 
     def test_prim_attrib(self, obj_test_geo):
         """Test getting the indices of a prim attribute."""
@@ -1473,16 +1473,16 @@ class Test_string_table_indices(object):
 
         attr = obj_test_geo.findPrimAttrib("test")
 
-        assert ht.inline.api.string_table_indices(attr) == target
+        assert houdini_toolbox.inline.api.string_table_indices(attr) == target
 
 
 def test_vertex_string_attrib_values(obj_test_geo):
-    """Test ht.inline.api.vertex_string_attrib_values."""
+    """Test houdini_toolbox.inline.api.vertex_string_attrib_values."""
     with pytest.raises(hou.OperationFailed):
-        assert ht.inline.api.vertex_string_attrib_values(obj_test_geo, "foo")
+        assert houdini_toolbox.inline.api.vertex_string_attrib_values(obj_test_geo, "foo")
 
     with pytest.raises(ValueError):
-        assert ht.inline.api.vertex_string_attrib_values(obj_test_geo, "not_string")
+        assert houdini_toolbox.inline.api.vertex_string_attrib_values(obj_test_geo, "not_string")
 
     target = (
         "vertex0",
@@ -1495,16 +1495,16 @@ def test_vertex_string_attrib_values(obj_test_geo):
         "vertex7",
     )
 
-    assert ht.inline.api.vertex_string_attrib_values(obj_test_geo, "test") == target
+    assert houdini_toolbox.inline.api.vertex_string_attrib_values(obj_test_geo, "test") == target
 
 
 class Test_set_vertex_string_attrib_values(object):
-    """Test ht.inline.api.set_vertex_string_attrib_values."""
+    """Test houdini_toolbox.inline.api.set_vertex_string_attrib_values."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.set_vertex_string_attrib_values(obj_test_geo, "test", tuple())
+            houdini_toolbox.inline.api.set_vertex_string_attrib_values(obj_test_geo, "test", tuple())
 
     def test(self, obj_test_geo_copy):
         """Test setting the values from a list."""
@@ -1512,7 +1512,7 @@ class Test_set_vertex_string_attrib_values(object):
 
         attr = obj_test_geo_copy.findVertexAttrib("test")
 
-        ht.inline.api.set_vertex_string_attrib_values(obj_test_geo_copy, "test", target)
+        houdini_toolbox.inline.api.set_vertex_string_attrib_values(obj_test_geo_copy, "test", target)
 
         values = []
 
@@ -1524,14 +1524,14 @@ class Test_set_vertex_string_attrib_values(object):
     def test_no_attribute(self, obj_test_geo_copy):
         """Test when the attribute does not exist."""
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.set_vertex_string_attrib_values(
+            houdini_toolbox.inline.api.set_vertex_string_attrib_values(
                 obj_test_geo_copy, "thing", tuple()
             )
 
     def test_not_string_attribute(self, obj_test_geo_copy):
         """Test when the attribute is not a string attribute."""
         with pytest.raises(ValueError):
-            ht.inline.api.set_vertex_string_attrib_values(
+            houdini_toolbox.inline.api.set_vertex_string_attrib_values(
                 obj_test_geo_copy, "notstring", tuple()
             )
 
@@ -1540,23 +1540,23 @@ class Test_set_vertex_string_attrib_values(object):
         target = ("vertex0", "vertex1", "vertex2", "vertex3")
 
         with pytest.raises(ValueError):
-            ht.inline.api.set_vertex_string_attrib_values(
+            houdini_toolbox.inline.api.set_vertex_string_attrib_values(
                 obj_test_geo_copy, "test", target
             )
 
 
 class Test_set_shared_point_string_attrib(object):
-    """Test ht.inline.api.set_shared_point_string_attrib."""
+    """Test houdini_toolbox.inline.api.set_shared_point_string_attrib."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.set_shared_point_string_attrib(obj_test_geo, "foo", "point0")
+            houdini_toolbox.inline.api.set_shared_point_string_attrib(obj_test_geo, "foo", "point0")
 
     def test_no_attribute(self, obj_test_geo_copy):
         """Test when the attribute does not exist."""
         with pytest.raises(ValueError):
-            ht.inline.api.set_shared_point_string_attrib(
+            houdini_toolbox.inline.api.set_shared_point_string_attrib(
                 obj_test_geo_copy, "foo", "point0"
             )
 
@@ -1565,7 +1565,7 @@ class Test_set_shared_point_string_attrib(object):
         obj_test_geo_copy.addAttrib(hou.attribType.Point, "not_string", 0)
 
         with pytest.raises(ValueError):
-            ht.inline.api.set_shared_point_string_attrib(
+            houdini_toolbox.inline.api.set_shared_point_string_attrib(
                 obj_test_geo_copy, "not_string", "point0"
             )
 
@@ -1573,7 +1573,7 @@ class Test_set_shared_point_string_attrib(object):
         """Test setting the values."""
         target = ["point0"] * 10
 
-        ht.inline.api.set_shared_point_string_attrib(
+        houdini_toolbox.inline.api.set_shared_point_string_attrib(
             obj_test_geo_copy, "test", "point0"
         )
 
@@ -1585,7 +1585,7 @@ class Test_set_shared_point_string_attrib(object):
 
         group = obj_test_geo_copy.pointGroups()[0]
 
-        ht.inline.api.set_shared_point_string_attrib(
+        houdini_toolbox.inline.api.set_shared_point_string_attrib(
             obj_test_geo_copy, "test", "point0", group
         )
 
@@ -1593,17 +1593,17 @@ class Test_set_shared_point_string_attrib(object):
 
 
 class Test_set_shared_prim_string_attrib(object):
-    """Test ht.inline.api.set_shared_prim_string_attrib."""
+    """Test houdini_toolbox.inline.api.set_shared_prim_string_attrib."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.set_shared_prim_string_attrib(obj_test_geo, "test", "prim0")
+            houdini_toolbox.inline.api.set_shared_prim_string_attrib(obj_test_geo, "test", "prim0")
 
     def test_no_attribute(self, obj_test_geo_copy):
         """Test when the attribute does not exist."""
         with pytest.raises(ValueError):
-            ht.inline.api.set_shared_prim_string_attrib(
+            houdini_toolbox.inline.api.set_shared_prim_string_attrib(
                 obj_test_geo_copy, "foo", "prim0"
             )
 
@@ -1612,7 +1612,7 @@ class Test_set_shared_prim_string_attrib(object):
         obj_test_geo_copy.addAttrib(hou.attribType.Prim, "not_string", 0)
 
         with pytest.raises(ValueError):
-            ht.inline.api.set_shared_prim_string_attrib(
+            houdini_toolbox.inline.api.set_shared_prim_string_attrib(
                 obj_test_geo_copy, "not_string", "value"
             )
 
@@ -1622,7 +1622,7 @@ class Test_set_shared_prim_string_attrib(object):
 
         attr = obj_test_geo_copy.findPrimAttrib("test")
 
-        ht.inline.api.set_shared_prim_string_attrib(
+        houdini_toolbox.inline.api.set_shared_prim_string_attrib(
             obj_test_geo_copy, attr.name(), "value"
         )
 
@@ -1636,7 +1636,7 @@ class Test_set_shared_prim_string_attrib(object):
 
         group = obj_test_geo_copy.findPrimGroup("group1")
 
-        ht.inline.api.set_shared_prim_string_attrib(
+        houdini_toolbox.inline.api.set_shared_prim_string_attrib(
             obj_test_geo_copy, attr.name(), "value", group
         )
 
@@ -1644,14 +1644,14 @@ class Test_set_shared_prim_string_attrib(object):
 
 
 class Test_attribute_has_uninitialized_string_values(object):
-    """Test ht.inline.api.attribute_has_uninitialized_string_values."""
+    """Test houdini_toolbox.inline.api.attribute_has_uninitialized_string_values."""
 
     def test_not_string_attribute(self, obj_test_geo):
         """Test when the attribute is not a string attribute."""
         attrib = obj_test_geo.findPointAttrib("not_string_attrib")
 
         with pytest.raises(ValueError):
-            ht.inline.api.attribute_has_uninitialized_string_values(attrib)
+            houdini_toolbox.inline.api.attribute_has_uninitialized_string_values(attrib)
 
     @pytest.mark.parametrize(
         "name, expected",
@@ -1665,7 +1665,7 @@ class Test_attribute_has_uninitialized_string_values(object):
         """Test point attributes."""
         attrib = obj_test_geo.findPointAttrib(name)
 
-        result = ht.inline.api.attribute_has_uninitialized_string_values(attrib)
+        result = houdini_toolbox.inline.api.attribute_has_uninitialized_string_values(attrib)
 
         assert result == expected
 
@@ -1681,7 +1681,7 @@ class Test_attribute_has_uninitialized_string_values(object):
         """Test prim attributes."""
         attrib = obj_test_geo.findPrimAttrib(name)
 
-        result = ht.inline.api.attribute_has_uninitialized_string_values(attrib)
+        result = houdini_toolbox.inline.api.attribute_has_uninitialized_string_values(attrib)
 
         assert result == expected
 
@@ -1697,7 +1697,7 @@ class Test_attribute_has_uninitialized_string_values(object):
         """Test vertex attributes."""
         attrib = obj_test_geo.findVertexAttrib(name)
 
-        result = ht.inline.api.attribute_has_uninitialized_string_values(attrib)
+        result = houdini_toolbox.inline.api.attribute_has_uninitialized_string_values(attrib)
 
         assert result == expected
 
@@ -1712,19 +1712,19 @@ class Test_attribute_has_uninitialized_string_values(object):
         """Test detail attributes."""
         attrib = obj_test_geo.findGlobalAttrib(name)
 
-        result = ht.inline.api.attribute_has_uninitialized_string_values(attrib)
+        result = houdini_toolbox.inline.api.attribute_has_uninitialized_string_values(attrib)
 
         assert result == expected
 
 
 def test_face_has_edge(obj_test_geo):
-    """Test ht.inline.api.face_has_edge."""
+    """Test houdini_toolbox.inline.api.face_has_edge."""
     face = obj_test_geo.iterPrims()[0]
 
     pt0 = obj_test_geo.iterPoints()[0]
     pt1 = obj_test_geo.iterPoints()[1]
 
-    assert ht.inline.api.face_has_edge(face, pt0, pt1)
+    assert houdini_toolbox.inline.api.face_has_edge(face, pt0, pt1)
 
     # False
     face = obj_test_geo.iterPrims()[0]
@@ -1732,14 +1732,14 @@ def test_face_has_edge(obj_test_geo):
     pt0 = obj_test_geo.iterPoints()[0]
     pt2 = obj_test_geo.iterPoints()[2]
 
-    assert ht.inline.api.face_has_edge(face, pt0, pt2)
+    assert houdini_toolbox.inline.api.face_has_edge(face, pt0, pt2)
 
 
 def test_shared_edges(obj_test_geo):
-    """Test ht.inline.api.shared_edges."""
+    """Test houdini_toolbox.inline.api.shared_edges."""
     pr0, pr1 = obj_test_geo.prims()
 
-    edges = ht.inline.api.shared_edges(pr0, pr1)
+    edges = houdini_toolbox.inline.api.shared_edges(pr0, pr1)
 
     pt2 = obj_test_geo.iterPoints()[2]
     pt3 = obj_test_geo.iterPoints()[3]
@@ -1750,7 +1750,7 @@ def test_shared_edges(obj_test_geo):
 
 
 class Test_insert_vertex(object):
-    """Test ht.inline.api.insert_vertex."""
+    """Test houdini_toolbox.inline.api.insert_vertex."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
@@ -1759,213 +1759,213 @@ class Test_insert_vertex(object):
         pt0 = obj_test_geo.points()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.insert_vertex(face, pt0, 2)
+            houdini_toolbox.inline.api.insert_vertex(face, pt0, 2)
 
     def test_negative_index(self, obj_test_geo_copy):
         """Test when the index to insert at is negative."""
         face = obj_test_geo_copy.iterPrims()[0]
 
-        new_point = ht.inline.api.create_point_at_position(
+        new_point = houdini_toolbox.inline.api.create_point_at_position(
             obj_test_geo_copy, hou.Vector3(0.5, 0, 0.5)
         )
 
         with pytest.raises(IndexError):
-            ht.inline.api.insert_vertex(face, new_point, -1)
+            houdini_toolbox.inline.api.insert_vertex(face, new_point, -1)
 
     def test_invalid_index(self, obj_test_geo_copy):
         """Test when the index is greater than or equal to the number of vertices"""
         face = obj_test_geo_copy.iterPrims()[0]
 
-        new_point = ht.inline.api.create_point_at_position(
+        new_point = houdini_toolbox.inline.api.create_point_at_position(
             obj_test_geo_copy, hou.Vector3(0.5, 0, 0.5)
         )
 
         with pytest.raises(IndexError):
-            ht.inline.api.insert_vertex(face, new_point, 10)
+            houdini_toolbox.inline.api.insert_vertex(face, new_point, 10)
 
     def test(self, obj_test_geo_copy):
         """Test inserting a vertex."""
         face = obj_test_geo_copy.iterPrims()[0]
 
-        new_point = ht.inline.api.create_point_at_position(
+        new_point = houdini_toolbox.inline.api.create_point_at_position(
             obj_test_geo_copy, hou.Vector3(0.5, 0, 0.5)
         )
 
-        ht.inline.api.insert_vertex(face, new_point, 2)
+        houdini_toolbox.inline.api.insert_vertex(face, new_point, 2)
 
         assert face.vertex(2).point() == new_point
 
 
 class Test_delete_vertex(object):
-    """Test ht.inline.api.delete_vertex_from_face."""
+    """Test houdini_toolbox.inline.api.delete_vertex_from_face."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
         face = obj_test_geo.iterPrims()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.delete_vertex_from_face(face, 3)
+            houdini_toolbox.inline.api.delete_vertex_from_face(face, 3)
 
     def test_negative_index(self, obj_test_geo_copy):
         """Test when the index to delete is negative."""
         face = obj_test_geo_copy.iterPrims()[0]
 
         with pytest.raises(IndexError):
-            ht.inline.api.delete_vertex_from_face(face, -1)
+            houdini_toolbox.inline.api.delete_vertex_from_face(face, -1)
 
     def test_invalid_index(self, obj_test_geo_copy):
         """Test when the index is greater than or equal to the number of vertices"""
         face = obj_test_geo_copy.iterPrims()[0]
 
         with pytest.raises(IndexError):
-            ht.inline.api.delete_vertex_from_face(face, 10)
+            houdini_toolbox.inline.api.delete_vertex_from_face(face, 10)
 
     def test(self, obj_test_geo_copy):
         """Test deleting a vertex."""
         face = obj_test_geo_copy.iterPrims()[0]
 
-        ht.inline.api.delete_vertex_from_face(face, 3)
+        houdini_toolbox.inline.api.delete_vertex_from_face(face, 3)
 
         assert len(face.vertices()) == 3
 
 
 def test_set_face_vertex_point(obj_test_geo, obj_test_geo_copy):
-    """Test ht.inline.api.set_face_vertex_point."""
+    """Test houdini_toolbox.inline.api.set_face_vertex_point."""
     face = obj_test_geo.iterPrims()[0]
     pt4 = obj_test_geo.iterPoints()[4]
 
     with pytest.raises(hou.GeometryPermissionError):
-        ht.inline.api.set_face_vertex_point(face, 3, pt4)
+        houdini_toolbox.inline.api.set_face_vertex_point(face, 3, pt4)
 
     face = obj_test_geo_copy.iterPrims()[0]
     pt4 = obj_test_geo_copy.iterPoints()[4]
 
-    ht.inline.api.set_face_vertex_point(face, 3, pt4)
+    houdini_toolbox.inline.api.set_face_vertex_point(face, 3, pt4)
 
     assert face.vertex(3).point().number() == 4
 
     # Negative index.
     with pytest.raises(IndexError):
-        ht.inline.api.set_face_vertex_point(face, -1, pt4)
+        houdini_toolbox.inline.api.set_face_vertex_point(face, -1, pt4)
 
     # Invalid index.
     with pytest.raises(IndexError):
-        ht.inline.api.set_face_vertex_point(face, 10, pt4)
+        houdini_toolbox.inline.api.set_face_vertex_point(face, 10, pt4)
 
 
 def test_primitive_bary_center(obj_test_geo):
-    """Test ht.inline.api.primitive_bary_center."""
+    """Test houdini_toolbox.inline.api.primitive_bary_center."""
     target = hou.Vector3(1.5, 1, -1)
 
     prim = obj_test_geo.iterPrims()[0]
 
-    assert ht.inline.api.primitive_bary_center(prim) == target
+    assert houdini_toolbox.inline.api.primitive_bary_center(prim) == target
 
 
 def test_primitive_area(obj_test_geo):
-    """Test ht.inline.api.primitive_area."""
+    """Test houdini_toolbox.inline.api.primitive_area."""
     target = 4.375
     prim = obj_test_geo.iterPrims()[0]
 
-    assert ht.inline.api.primitive_area(prim) == target
+    assert houdini_toolbox.inline.api.primitive_area(prim) == target
 
 
 def test_primitive_perimeter(obj_test_geo):
-    """Test ht.inline.api.primitive_perimeter."""
+    """Test houdini_toolbox.inline.api.primitive_perimeter."""
     target = 6.5
 
     prim = obj_test_geo.iterPrims()[0]
 
-    assert ht.inline.api.primitive_perimeter(prim) == target
+    assert houdini_toolbox.inline.api.primitive_perimeter(prim) == target
 
 
 def test_primitive_volume(obj_test_geo):
-    """Test ht.inline.api.primitive_volume."""
+    """Test houdini_toolbox.inline.api.primitive_volume."""
     target = 0.1666666716337204
 
     prim = obj_test_geo.iterPrims()[0]
 
-    assert ht.inline.api.primitive_volume(prim) == target
+    assert houdini_toolbox.inline.api.primitive_volume(prim) == target
 
 
 class Test_reverse_prim:
-    """Test ht.inline.api.reverse_prim."""
+    """Test houdini_toolbox.inline.api.reverse_prim."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
         prim = obj_test_geo.iterPrims()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.reverse_prim(prim)
+            houdini_toolbox.inline.api.reverse_prim(prim)
 
     def test(self, obj_test_geo_copy):
         """Test reversing the vertex order."""
         target = hou.Vector3(0, -1, 0)
 
         prim = obj_test_geo_copy.iterPrims()[0]
-        ht.inline.api.reverse_prim(prim)
+        houdini_toolbox.inline.api.reverse_prim(prim)
 
         assert prim.normal() == target
 
 
 def test_check_minimum_polygon_vertex_count(obj_test_geo):
-    """Test ht.inline.api.check_minimum_polygon_vertex_count."""
-    assert ht.inline.api.check_minimum_polygon_vertex_count(obj_test_geo, 3)
+    """Test houdini_toolbox.inline.api.check_minimum_polygon_vertex_count."""
+    assert houdini_toolbox.inline.api.check_minimum_polygon_vertex_count(obj_test_geo, 3)
 
-    assert not ht.inline.api.check_minimum_polygon_vertex_count(
+    assert not houdini_toolbox.inline.api.check_minimum_polygon_vertex_count(
         obj_test_geo, 3, ignore_open=False
     )
 
-    assert not ht.inline.api.check_minimum_polygon_vertex_count(obj_test_geo, 5)
+    assert not houdini_toolbox.inline.api.check_minimum_polygon_vertex_count(obj_test_geo, 5)
 
 
 def test_primitive_bounding_box(obj_test_geo):
-    """Test ht.inline.api.primitive_bounding_box."""
+    """Test houdini_toolbox.inline.api.primitive_bounding_box."""
     target = hou.BoundingBox(-0.75, 0, -0.875, 0.75, 1.5, 0.875)
 
     prim = obj_test_geo.iterPrims()[0]
 
-    assert ht.inline.api.primitive_bounding_box(prim) == target
+    assert houdini_toolbox.inline.api.primitive_bounding_box(prim) == target
 
 
 def test_destroy_empty_groups():
-    """Test ht.inline.api.destroy_empty_groups."""
+    """Test houdini_toolbox.inline.api.destroy_empty_groups."""
     geo = hou.Geometry()
 
     # Read only
     frozen_geo = geo.freeze(True)
 
     with pytest.raises(hou.GeometryPermissionError):
-        ht.inline.api.destroy_empty_groups(frozen_geo, hou.attribType.Point)
+        houdini_toolbox.inline.api.destroy_empty_groups(frozen_geo, hou.attribType.Point)
 
     # Global attribute
     with pytest.raises(ValueError):
-        ht.inline.api.destroy_empty_groups(geo, hou.attribType.Global)
+        houdini_toolbox.inline.api.destroy_empty_groups(geo, hou.attribType.Global)
 
     # Point group
     geo.createPointGroup("empty")
 
-    ht.inline.api.destroy_empty_groups(geo, hou.attribType.Point)
+    houdini_toolbox.inline.api.destroy_empty_groups(geo, hou.attribType.Point)
 
     assert not geo.pointGroups()
 
     # Prim group
     geo.createPrimGroup("empty")
 
-    ht.inline.api.destroy_empty_groups(geo, hou.attribType.Prim)
+    houdini_toolbox.inline.api.destroy_empty_groups(geo, hou.attribType.Prim)
 
     assert not geo.primGroups()
 
 
 class Test_rename_group(object):
-    """Test ht.inline.api.rename_group."""
+    """Test houdini_toolbox.inline.api.rename_group."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
         group = obj_test_geo.pointGroups()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.rename_group(group, "test_group")
+            houdini_toolbox.inline.api.rename_group(group, "test_group")
 
     def test_existing_group(self):
         """Test when the target group already exists."""
@@ -1974,14 +1974,14 @@ class Test_rename_group(object):
         geo.createPointGroup("foo")
         bar_group = geo.createPointGroup("bar")
 
-        result = ht.inline.api.rename_group(bar_group, "foo")
+        result = houdini_toolbox.inline.api.rename_group(bar_group, "foo")
         assert result is None
 
     def test_point_group(self, obj_test_geo_copy):
         """Test renaming a point group."""
         group = obj_test_geo_copy.pointGroups()[0]
 
-        result = ht.inline.api.rename_group(group, "test_group")
+        result = houdini_toolbox.inline.api.rename_group(group, "test_group")
 
         assert result is not None
         assert result.name() == "test_group"
@@ -1991,13 +1991,13 @@ class Test_rename_group(object):
         name = group.name()
 
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.rename_group(group, name)
+            houdini_toolbox.inline.api.rename_group(group, name)
 
     def test_prim_group(self, obj_test_geo_copy):
         """Test renaming a prim group."""
         group = obj_test_geo_copy.primGroups()[0]
 
-        result = ht.inline.api.rename_group(group, "test_group")
+        result = houdini_toolbox.inline.api.rename_group(group, "test_group")
 
         assert result is not None
         assert result.name() == "test_group"
@@ -2007,13 +2007,13 @@ class Test_rename_group(object):
         name = group.name()
 
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.rename_group(group, name)
+            houdini_toolbox.inline.api.rename_group(group, name)
 
     def test_edge_group(self, obj_test_geo_copy):
         """Test renaming an edge group."""
         group = obj_test_geo_copy.edgeGroups()[0]
 
-        result = ht.inline.api.rename_group(group, "test_group")
+        result = houdini_toolbox.inline.api.rename_group(group, "test_group")
 
         assert result is not None
         assert result.name() == "test_group"
@@ -2023,18 +2023,18 @@ class Test_rename_group(object):
         name = group.name()
 
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.rename_group(group, name)
+            houdini_toolbox.inline.api.rename_group(group, name)
 
 
 class Test_group_bounding_box(object):
-    """Test ht.inline.api.group_bounding_box."""
+    """Test houdini_toolbox.inline.api.group_bounding_box."""
 
     def test_point_group(self, obj_test_geo):
         """Test getting the bounding box from a point group."""
         target = hou.BoundingBox(-4, 0, -1, -2, 0, 2)
 
         group = obj_test_geo.pointGroups()[0]
-        bbox = ht.inline.api.group_bounding_box(group)
+        bbox = houdini_toolbox.inline.api.group_bounding_box(group)
 
         assert bbox == target
 
@@ -2043,7 +2043,7 @@ class Test_group_bounding_box(object):
         target = hou.BoundingBox(-5, 0, -4, 4, 0, 5)
 
         group = obj_test_geo.primGroups()[0]
-        bbox = ht.inline.api.group_bounding_box(group)
+        bbox = houdini_toolbox.inline.api.group_bounding_box(group)
 
         assert bbox == target
 
@@ -2052,42 +2052,42 @@ class Test_group_bounding_box(object):
         target = hou.BoundingBox(-5, 0, -5, 4, 0, 5)
 
         group = obj_test_geo.edgeGroups()[0]
-        bbox = ht.inline.api.group_bounding_box(group)
+        bbox = houdini_toolbox.inline.api.group_bounding_box(group)
 
         assert bbox == target
 
 
 class Test_group_size(object):
-    """Test ht.inline.api.group_size."""
+    """Test houdini_toolbox.inline.api.group_size."""
 
     def test_point_group(self, obj_test_geo):
         """Test getting the size of a point group."""
         group = obj_test_geo.pointGroups()[0]
 
-        assert ht.inline.api.group_size(group) == 12
+        assert houdini_toolbox.inline.api.group_size(group) == 12
 
     def test_prim_group(self, obj_test_geo):
         """Test getting the size of a prim group."""
         group = obj_test_geo.primGroups()[0]
 
-        assert ht.inline.api.group_size(group) == 39
+        assert houdini_toolbox.inline.api.group_size(group) == 39
 
     def test_edge_group(self, obj_test_geo):
         """Test getting the size of an edge group."""
         group = obj_test_geo.edgeGroups()[0]
 
-        assert ht.inline.api.group_size(group) == 52
+        assert houdini_toolbox.inline.api.group_size(group) == 52
 
 
 class Test_toggle_group_entries(object):
-    """Test ht.inline.api.toggle_group_entries."""
+    """Test houdini_toolbox.inline.api.toggle_group_entries."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
         group = obj_test_geo.pointGroups()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.toggle_group_entries(group)
+            houdini_toolbox.inline.api.toggle_group_entries(group)
 
     def test_point_group(self, obj_test_geo_copy):
         """Test toggling point group entries."""
@@ -2096,7 +2096,7 @@ class Test_toggle_group_entries(object):
         )
 
         group = obj_test_geo_copy.pointGroups()[0]
-        ht.inline.api.toggle_group_entries(group)
+        houdini_toolbox.inline.api.toggle_group_entries(group)
 
         assert group.points() == values
 
@@ -2107,33 +2107,33 @@ class Test_toggle_group_entries(object):
         )
 
         group = obj_test_geo_copy.primGroups()[0]
-        ht.inline.api.toggle_group_entries(group)
+        houdini_toolbox.inline.api.toggle_group_entries(group)
 
         assert group.prims() == values
 
     def test_edge_group(self, obj_test_geo_copy):
         """Test toggling edge group entries."""
         group = obj_test_geo_copy.edgeGroups()[0]
-        ht.inline.api.toggle_group_entries(group)
+        houdini_toolbox.inline.api.toggle_group_entries(group)
 
         assert len(group.edges()) == 20
 
 
 class Test_copy_group(object):
-    """Test ht.inline.api.copy_group."""
+    """Test houdini_toolbox.inline.api.copy_group."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
         group = obj_test_geo.pointGroups()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.copy_group(group, "new_group")
+            houdini_toolbox.inline.api.copy_group(group, "new_group")
 
     def test_point_group(self, obj_test_geo_copy):
         """Test copying a point group."""
         group = obj_test_geo_copy.pointGroups()[0]
 
-        new_group = ht.inline.api.copy_group(group, "new_group")
+        new_group = houdini_toolbox.inline.api.copy_group(group, "new_group")
 
         assert group.points() == new_group.points()
 
@@ -2142,7 +2142,7 @@ class Test_copy_group(object):
         group = obj_test_geo_copy.pointGroups()[0]
 
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.copy_group(group, group.name())
+            houdini_toolbox.inline.api.copy_group(group, group.name())
 
     def test_point_group__exists(self, obj_test_geo_copy):
         """Test copying a point group to a group name which already exists."""
@@ -2151,13 +2151,13 @@ class Test_copy_group(object):
         other_group = obj_test_geo_copy.pointGroups()[0]
 
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.copy_group(group, other_group.name())
+            houdini_toolbox.inline.api.copy_group(group, other_group.name())
 
     def test_prim_group(self, obj_test_geo_copy):
         """Test copying a prim group."""
         group = obj_test_geo_copy.primGroups()[0]
 
-        new_group = ht.inline.api.copy_group(group, "new_group")
+        new_group = houdini_toolbox.inline.api.copy_group(group, "new_group")
 
         assert group.prims() == new_group.prims()
 
@@ -2166,7 +2166,7 @@ class Test_copy_group(object):
         group = obj_test_geo_copy.primGroups()[0]
 
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.copy_group(group, group.name())
+            houdini_toolbox.inline.api.copy_group(group, group.name())
 
     def test_prim_group__exists(self, obj_test_geo_copy):
         """Test copying a prim group to a group name which already exists."""
@@ -2175,11 +2175,11 @@ class Test_copy_group(object):
         other_group = obj_test_geo_copy.primGroups()[0]
 
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.copy_group(group, other_group.name())
+            houdini_toolbox.inline.api.copy_group(group, other_group.name())
 
 
 class Test_set_group_string_attribute(object):
-    """Test ht.inline.api.set_group_string_attribute."""
+    """Test houdini_toolbox.inline.api.set_group_string_attribute."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
@@ -2187,7 +2187,7 @@ class Test_set_group_string_attribute(object):
         attribute = obj_test_geo.findPointAttrib("point_not_string")
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.set_group_string_attribute(group, attribute, "value")
+            houdini_toolbox.inline.api.set_group_string_attribute(group, attribute, "value")
 
     def test_not_string_attribute(self, obj_test_geo_copy):
         """Test trying to set a non-string attribute."""
@@ -2195,14 +2195,14 @@ class Test_set_group_string_attribute(object):
         attribute = obj_test_geo_copy.findPointAttrib("point_not_string")
 
         with pytest.raises(ValueError):
-            ht.inline.api.set_group_string_attribute(group, attribute, "value")
+            houdini_toolbox.inline.api.set_group_string_attribute(group, attribute, "value")
 
     def test_point_group(self, obj_test_geo_copy):
         """Test setting a point group string attribute."""
         group = obj_test_geo_copy.pointGroups()[0]
         attribute = obj_test_geo_copy.findPointAttrib("point_attrib")
 
-        ht.inline.api.set_group_string_attribute(group, attribute, "value")
+        houdini_toolbox.inline.api.set_group_string_attribute(group, attribute, "value")
 
         expected = tuple(["value"] * 6 + ["default"] * 3)
 
@@ -2213,7 +2213,7 @@ class Test_set_group_string_attribute(object):
         group = obj_test_geo_copy.primGroups()[0]
         attribute = obj_test_geo_copy.findPrimAttrib("prim_attrib")
 
-        ht.inline.api.set_group_string_attribute(group, attribute, "value")
+        houdini_toolbox.inline.api.set_group_string_attribute(group, attribute, "value")
 
         expected = tuple(["value"] * 3 + ["default"])
 
@@ -2221,7 +2221,7 @@ class Test_set_group_string_attribute(object):
 
 
 class Test_groups_share_elements(object):
-    """Test ht.inline.api.groups_share_elements."""
+    """Test houdini_toolbox.inline.api.groups_share_elements."""
 
     def test_different_details(self, obj_test_geo):
         """Test when two groups are in different details."""
@@ -2231,7 +2231,7 @@ class Test_groups_share_elements(object):
         group2 = temp_geo.createPointGroup("temp")
 
         with pytest.raises(ValueError):
-            ht.inline.api.groups_share_elements(group1, group2)
+            houdini_toolbox.inline.api.groups_share_elements(group1, group2)
 
     def test_different_types(self, obj_test_geo):
         """Test when two groups are different element types."""
@@ -2239,46 +2239,46 @@ class Test_groups_share_elements(object):
         group2 = obj_test_geo.primGroups()[0]
 
         with pytest.raises(TypeError):
-            ht.inline.api.groups_share_elements(group1, group2)
+            houdini_toolbox.inline.api.groups_share_elements(group1, group2)
 
     def test_point_groups_share_elements(self, obj_test_geo):
         """Test when two point groups share elements."""
         group1 = obj_test_geo.findPointGroup("point_group_every_other")
         group2 = obj_test_geo.findPointGroup("point_group_all")
 
-        assert ht.inline.api.groups_share_elements(group1, group2)
+        assert houdini_toolbox.inline.api.groups_share_elements(group1, group2)
 
     def test_point_groups_no_shared_elements(self, obj_test_geo):
         """Test when two point groups do not share elements."""
         group1 = obj_test_geo.findPointGroup("point_group_every_other")
         group2 = obj_test_geo.findPointGroup("point_group_empty")
 
-        assert not ht.inline.api.groups_share_elements(group1, group2)
+        assert not houdini_toolbox.inline.api.groups_share_elements(group1, group2)
 
     def test_prim_groups_share_elements(self, obj_test_geo):
         """Test when two prim groups share elements."""
         group1 = obj_test_geo.findPrimGroup("prim_group_every_other")
         group2 = obj_test_geo.findPrimGroup("prim_group_all")
 
-        assert ht.inline.api.groups_share_elements(group1, group2)
+        assert houdini_toolbox.inline.api.groups_share_elements(group1, group2)
 
     def test_prim_groups_no_shared_elements(self, obj_test_geo):
         """Test when two prim groups do not share elements."""
         group1 = obj_test_geo.findPrimGroup("prim_group_every_other")
         group2 = obj_test_geo.findPrimGroup("prim_group_empty")
 
-        assert not ht.inline.api.groups_share_elements(group1, group2)
+        assert not houdini_toolbox.inline.api.groups_share_elements(group1, group2)
 
 
 class Test_convert_prim_to_point_group(object):
-    """Test ht.inline.api.convert_prim_to_point_group."""
+    """Test houdini_toolbox.inline.api.convert_prim_to_point_group."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
         group = obj_test_geo.primGroups()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.convert_prim_to_point_group(group)
+            houdini_toolbox.inline.api.convert_prim_to_point_group(group)
 
     def test_same_name(self, obj_test_geo_copy):
         """Test converting to a group with the same name as the source and
@@ -2287,7 +2287,7 @@ class Test_convert_prim_to_point_group(object):
         """
         group = obj_test_geo_copy.primGroups()[0]
 
-        new_group = ht.inline.api.convert_prim_to_point_group(group)
+        new_group = houdini_toolbox.inline.api.convert_prim_to_point_group(group)
 
         assert len(new_group.iterPoints()) == 12
 
@@ -2301,7 +2301,7 @@ class Test_convert_prim_to_point_group(object):
         """
         group = obj_test_geo_copy.primGroups()[0]
 
-        new_group = ht.inline.api.convert_prim_to_point_group(group, "new_group")
+        new_group = houdini_toolbox.inline.api.convert_prim_to_point_group(group, "new_group")
 
         assert new_group.name() == "new_group"
 
@@ -2315,7 +2315,7 @@ class Test_convert_prim_to_point_group(object):
         """
         group = obj_test_geo_copy.primGroups()[0]
 
-        ht.inline.api.convert_prim_to_point_group(group, destroy=False)
+        houdini_toolbox.inline.api.convert_prim_to_point_group(group, destroy=False)
 
         # Check source group wasn't deleted.
         assert len(obj_test_geo_copy.primGroups()) == 1
@@ -2327,18 +2327,18 @@ class Test_convert_prim_to_point_group(object):
         obj_test_geo_copy.createPointGroup(group.name())
 
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.convert_prim_to_point_group(group, group.name())
+            houdini_toolbox.inline.api.convert_prim_to_point_group(group, group.name())
 
 
 class Test_convert_point_to_prim_group(object):
-    """Test ht.inline.api.convert_point_to_prim_group."""
+    """Test houdini_toolbox.inline.api.convert_point_to_prim_group."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
         group = obj_test_geo.pointGroups()[0]
 
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.convert_point_to_prim_group(group)
+            houdini_toolbox.inline.api.convert_point_to_prim_group(group)
 
     def test_same_name(self, obj_test_geo_copy):
         """Test converting to a group with the same name as the source and
@@ -2347,7 +2347,7 @@ class Test_convert_point_to_prim_group(object):
         """
         group = obj_test_geo_copy.pointGroups()[0]
 
-        new_group = ht.inline.api.convert_point_to_prim_group(group)
+        new_group = houdini_toolbox.inline.api.convert_point_to_prim_group(group)
 
         assert len(new_group.iterPrims()) == 5
 
@@ -2361,7 +2361,7 @@ class Test_convert_point_to_prim_group(object):
         """
         group = obj_test_geo_copy.pointGroups()[0]
 
-        new_group = ht.inline.api.convert_point_to_prim_group(group, "new_group")
+        new_group = houdini_toolbox.inline.api.convert_point_to_prim_group(group, "new_group")
 
         assert new_group.name() == "new_group"
 
@@ -2372,7 +2372,7 @@ class Test_convert_point_to_prim_group(object):
         """
         group = obj_test_geo_copy.pointGroups()[0]
 
-        ht.inline.api.convert_point_to_prim_group(group, destroy=False)
+        houdini_toolbox.inline.api.convert_point_to_prim_group(group, destroy=False)
 
         # Check source group wasn't deleted.
         assert len(obj_test_geo_copy.pointGroups()) == 1
@@ -2384,7 +2384,7 @@ class Test_convert_point_to_prim_group(object):
         obj_test_geo_copy.createPrimGroup(group.name())
 
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.convert_point_to_prim_group(group, group.name())
+            houdini_toolbox.inline.api.convert_point_to_prim_group(group, group.name())
 
 
 # =========================================================================
@@ -2393,47 +2393,47 @@ class Test_convert_point_to_prim_group(object):
 
 
 class Test_geometry_has_ungrouped_points(object):
-    """Test ht.inline.api.geometry_has_ungrouped_points."""
+    """Test houdini_toolbox.inline.api.geometry_has_ungrouped_points."""
 
     def test_has_ungrouped(self):
         """Test geometry which has ungrouped points."""
         geo = hou.Geometry()
         geo.createPoint()
 
-        assert ht.inline.api.geometry_has_ungrouped_points(geo)
+        assert houdini_toolbox.inline.api.geometry_has_ungrouped_points(geo)
 
     def test_no_ungrouped(self, obj_test_geo):
         """Test geometry which does not have ungrouped points."""
-        assert not ht.inline.api.geometry_has_ungrouped_points(obj_test_geo)
+        assert not houdini_toolbox.inline.api.geometry_has_ungrouped_points(obj_test_geo)
 
 
 class Test_group_ungrouped_points(object):
-    """Test ht.inline.api.group_ungrouped_points."""
+    """Test houdini_toolbox.inline.api.group_ungrouped_points."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.group_ungrouped_points(obj_test_geo, "ungrouped")
+            houdini_toolbox.inline.api.group_ungrouped_points(obj_test_geo, "ungrouped")
 
     def test_empty_name(self, obj_test_geo_copy):
         """Test when the target group name is empty."""
         with pytest.raises(ValueError):
-            ht.inline.api.group_ungrouped_points(obj_test_geo_copy, "")
+            houdini_toolbox.inline.api.group_ungrouped_points(obj_test_geo_copy, "")
 
     def test_existing_name(self, obj_test_geo_copy):
         """Test when the target group name already exists."""
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.group_ungrouped_points(obj_test_geo_copy, "group1")
+            houdini_toolbox.inline.api.group_ungrouped_points(obj_test_geo_copy, "group1")
 
     def test_ungrouped(self, obj_test_geo_copy):
         """Test when there are ungrouped points to group."""
-        group = ht.inline.api.group_ungrouped_points(obj_test_geo_copy, "ungrouped")
+        group = houdini_toolbox.inline.api.group_ungrouped_points(obj_test_geo_copy, "ungrouped")
 
         assert len(group.points()) == 10
 
     def test_no_ungrouped(self, obj_test_geo_copy):
         """Test when there are no ungrouped points to group."""
-        group = ht.inline.api.group_ungrouped_points(obj_test_geo_copy, "ungrouped")
+        group = houdini_toolbox.inline.api.group_ungrouped_points(obj_test_geo_copy, "ungrouped")
 
         assert group is None
 
@@ -2444,47 +2444,47 @@ class Test_group_ungrouped_points(object):
 
 
 class Test_has_ungrouped_prims(object):
-    """Test ht.inline.api.geometry_has_ungrouped_prims."""
+    """Test houdini_toolbox.inline.api.geometry_has_ungrouped_prims."""
 
     def test_has_ungrouped(self):
         """Test geometry which has ungrouped prims."""
         geo = hou.Geometry()
         geo.createPolygon()
 
-        assert ht.inline.api.geometry_has_ungrouped_prims(geo)
+        assert houdini_toolbox.inline.api.geometry_has_ungrouped_prims(geo)
 
     def test_no_ungrouped(self, obj_test_geo):
         """Test geometry which does not have ungrouped prims."""
-        assert not ht.inline.api.geometry_has_ungrouped_prims(obj_test_geo)
+        assert not houdini_toolbox.inline.api.geometry_has_ungrouped_prims(obj_test_geo)
 
 
 class Test_group_ungrouped_prims(object):
-    """Test ht.inline.api.group_ungrouped_prims."""
+    """Test houdini_toolbox.inline.api.group_ungrouped_prims."""
 
     def test_read_only(self, obj_test_geo):
         """Test when the geometry is read only."""
         with pytest.raises(hou.GeometryPermissionError):
-            ht.inline.api.group_ungrouped_prims(obj_test_geo, "ungrouped")
+            houdini_toolbox.inline.api.group_ungrouped_prims(obj_test_geo, "ungrouped")
 
     def test_empty_name(self, obj_test_geo_copy):
         """Test when the target group name is empty."""
         with pytest.raises(ValueError):
-            ht.inline.api.group_ungrouped_prims(obj_test_geo_copy, "")
+            houdini_toolbox.inline.api.group_ungrouped_prims(obj_test_geo_copy, "")
 
     def test_existing_name(self, obj_test_geo_copy):
         """Test when the target group name already exists."""
         with pytest.raises(hou.OperationFailed):
-            ht.inline.api.group_ungrouped_prims(obj_test_geo_copy, "group1")
+            houdini_toolbox.inline.api.group_ungrouped_prims(obj_test_geo_copy, "group1")
 
     def test_ungrouped(self, obj_test_geo_copy):
         """Test when there are ungrouped prims to group."""
-        group = ht.inline.api.group_ungrouped_prims(obj_test_geo_copy, "ungrouped")
+        group = houdini_toolbox.inline.api.group_ungrouped_prims(obj_test_geo_copy, "ungrouped")
 
         assert len(group.iterPrims()) == 3
 
     def test_no_ungrouped(self, obj_test_geo_copy):
         """Test when there are not ungrouped prims to group."""
-        group = ht.inline.api.group_ungrouped_prims(obj_test_geo_copy, "ungrouped")
+        group = houdini_toolbox.inline.api.group_ungrouped_prims(obj_test_geo_copy, "ungrouped")
 
         assert group is None
 
@@ -2497,10 +2497,10 @@ class Test_group_ungrouped_prims(object):
     ],
 )
 def test_bounding_box_is_inside(bbox, expected):
-    """Test ht.inline.api.bounding_box_is_inside."""
+    """Test houdini_toolbox.inline.api.bounding_box_is_inside."""
     test_bbox = hou.BoundingBox(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5)
 
-    assert ht.inline.api.bounding_box_is_inside(test_bbox, bbox) == expected
+    assert houdini_toolbox.inline.api.bounding_box_is_inside(test_bbox, bbox) == expected
 
 
 @pytest.mark.parametrize(
@@ -2514,18 +2514,18 @@ def test_bounding_box_is_inside(bbox, expected):
     ],
 )
 def test_bounding_boxes_intersect(bbox, expected):
-    """Test ht.inline.api.bounding_boxes_intersect."""
+    """Test houdini_toolbox.inline.api.bounding_boxes_intersect."""
     test_bbox = hou.BoundingBox(0, 0, 0, 0.5, 0.5, 0.5)
 
-    assert ht.inline.api.bounding_boxes_intersect(test_bbox, bbox) == expected
+    assert houdini_toolbox.inline.api.bounding_boxes_intersect(test_bbox, bbox) == expected
 
 
 def test_compute_bounding_box_intersection():
-    """Test ht.inline.api.compute_bounding_box_intersection."""
+    """Test houdini_toolbox.inline.api.compute_bounding_box_intersection."""
     bbox1 = hou.BoundingBox(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5)
     bbox2 = hou.BoundingBox(0, 0, 0, 0.5, 0.5, 0.5)
 
-    assert ht.inline.api.compute_bounding_box_intersection(bbox1, bbox2)
+    assert houdini_toolbox.inline.api.compute_bounding_box_intersection(bbox1, bbox2)
 
     assert bbox1.minvec() == hou.Vector3()
     assert bbox1.maxvec() == hou.Vector3(0.5, 0.5, 0.5)
@@ -2533,46 +2533,46 @@ def test_compute_bounding_box_intersection():
     # Unable to compute interaction.
     bbox3 = hou.BoundingBox(-0.5, -0.5, -0.5, -0.1, -0.1, -0.1)
 
-    assert not ht.inline.api.compute_bounding_box_intersection(bbox3, bbox2)
+    assert not houdini_toolbox.inline.api.compute_bounding_box_intersection(bbox3, bbox2)
 
 
 def test_expand_bounding_box():
-    """Test ht.inline.api.expand_bounding_box."""
+    """Test houdini_toolbox.inline.api.expand_bounding_box."""
     bbox = hou.BoundingBox(-1, -1.75, -3, 1, 1.75, 3)
-    ht.inline.api.expand_bounding_box(bbox, 1, 1, 1)
+    houdini_toolbox.inline.api.expand_bounding_box(bbox, 1, 1, 1)
 
     assert bbox.minvec() == hou.Vector3(-2, -2.75, -4)
     assert bbox.maxvec() == hou.Vector3(2, 2.75, 4)
 
 
 def test_add_to_bounding_box_min():
-    """Test ht.inline.api.add_to_bounding_box_min."""
+    """Test houdini_toolbox.inline.api.add_to_bounding_box_min."""
     bbox = hou.BoundingBox(-1, -1.75, -3, 1, 1.75, 3)
-    ht.inline.api.add_to_bounding_box_min(bbox, hou.Vector3(1, 0.25, 1))
+    houdini_toolbox.inline.api.add_to_bounding_box_min(bbox, hou.Vector3(1, 0.25, 1))
 
     assert bbox.minvec() == hou.Vector3(0, -1.5, -2)
 
 
 def test_add_to_bounding_box_max():
-    """Test ht.inline.api.add_to_bounding_box_max."""
+    """Test houdini_toolbox.inline.api.add_to_bounding_box_max."""
     bbox = hou.BoundingBox(-1, -1.75, -3, 1, 1.75, 3)
-    ht.inline.api.add_to_bounding_box_max(bbox, hou.Vector3(2, 0.25, 1))
+    houdini_toolbox.inline.api.add_to_bounding_box_max(bbox, hou.Vector3(2, 0.25, 1))
 
     assert bbox.maxvec() == hou.Vector3(3, 2, 4)
 
 
 def test_bounding_box_area():
-    """Test ht.inline.api.bounding_box_area."""
+    """Test houdini_toolbox.inline.api.bounding_box_area."""
     bbox = hou.BoundingBox(-1, -1.75, -3, 1, 1.75, 3)
 
-    assert ht.inline.api.bounding_box_area(bbox) == 80
+    assert houdini_toolbox.inline.api.bounding_box_area(bbox) == 80
 
 
 def test_bounding_box_volume():
-    """Test ht.inline.api.bounding_box_volume."""
+    """Test houdini_toolbox.inline.api.bounding_box_volume."""
     bbox = hou.BoundingBox(-1, -1.75, -3, 1, 1.75, 3)
 
-    assert ht.inline.api.bounding_box_volume(bbox) == 42
+    assert houdini_toolbox.inline.api.bounding_box_volume(bbox) == 42
 
 
 # =========================================================================
@@ -2581,104 +2581,104 @@ def test_bounding_box_volume():
 
 
 def test_is_parm_tuple_vector():
-    """Test ht.inline.api.is_parm_tuple_vector."""
+    """Test houdini_toolbox.inline.api.is_parm_tuple_vector."""
     node = OBJ.node("test_is_vector/node")
     parm = node.parmTuple("vec")
 
-    assert ht.inline.api.is_parm_tuple_vector(parm)
+    assert houdini_toolbox.inline.api.is_parm_tuple_vector(parm)
 
     # Not a vector parameter.
     parm = node.parmTuple("not_vec")
 
-    assert not ht.inline.api.is_parm_tuple_vector(parm)
+    assert not houdini_toolbox.inline.api.is_parm_tuple_vector(parm)
 
 
 def test_eval_parm_tuple_as_vector():
-    """Test ht.inline.api.eval_parm_tuple_as_vector."""
+    """Test houdini_toolbox.inline.api.eval_parm_tuple_as_vector."""
     node = OBJ.node("test_eval_as_vector/node")
     parm = node.parmTuple("vec2")
 
-    assert ht.inline.api.eval_parm_tuple_as_vector(parm) == hou.Vector2(1, 2)
+    assert houdini_toolbox.inline.api.eval_parm_tuple_as_vector(parm) == hou.Vector2(1, 2)
 
     parm = node.parmTuple("vec3")
 
-    assert ht.inline.api.eval_parm_tuple_as_vector(parm) == hou.Vector3(3, 4, 5)
+    assert houdini_toolbox.inline.api.eval_parm_tuple_as_vector(parm) == hou.Vector3(3, 4, 5)
 
     parm = node.parmTuple("vec4")
 
-    assert ht.inline.api.eval_parm_tuple_as_vector(parm) == hou.Vector4(6, 7, 8, 9)
+    assert houdini_toolbox.inline.api.eval_parm_tuple_as_vector(parm) == hou.Vector4(6, 7, 8, 9)
 
     parm = node.parmTuple("not_vec")
 
     with pytest.raises(ValueError):
-        ht.inline.api.eval_parm_tuple_as_vector(parm)
+        houdini_toolbox.inline.api.eval_parm_tuple_as_vector(parm)
 
 
 def test_is_parm_tuple_color():
-    """Test ht.inline.api.is_parm_tuple_color."""
+    """Test houdini_toolbox.inline.api.is_parm_tuple_color."""
     node = OBJ.node("test_is_color/node")
     parm = node.parmTuple("color")
 
-    assert ht.inline.api.is_parm_tuple_color(parm)
+    assert houdini_toolbox.inline.api.is_parm_tuple_color(parm)
 
     # Not a color.
     parm = node.parmTuple("not_color")
 
-    assert not ht.inline.api.is_parm_tuple_color(parm)
+    assert not houdini_toolbox.inline.api.is_parm_tuple_color(parm)
 
 
 def test_eval_parm_tuple_as_color():
-    """Test ht.inline.api.eval_parm_tuple_as_color."""
+    """Test houdini_toolbox.inline.api.eval_parm_tuple_as_color."""
     node = OBJ.node("test_eval_as_color/node")
     parm = node.parmTuple("color")
 
-    assert ht.inline.api.eval_parm_tuple_as_color(parm) == hou.Color(0, 0.5, 0.5)
+    assert houdini_toolbox.inline.api.eval_parm_tuple_as_color(parm) == hou.Color(0, 0.5, 0.5)
 
     # Not a color.
     parm = node.parmTuple("not_color")
 
     with pytest.raises(ValueError):
-        ht.inline.api.eval_parm_tuple_as_color(parm)
+        houdini_toolbox.inline.api.eval_parm_tuple_as_color(parm)
 
 
 def test_eval_parm_as_strip():
-    """Test ht.inline.api.eval_parm_as_strip."""
+    """Test houdini_toolbox.inline.api.eval_parm_as_strip."""
     node = OBJ.node("test_eval_as_strip/node")
 
     parm = node.parm("cacheinput")
 
     with pytest.raises(TypeError):
-        ht.inline.api.eval_parm_as_strip(parm)
+        houdini_toolbox.inline.api.eval_parm_as_strip(parm)
 
     parm = node.parm("strip_normal")
 
     target = (False, True, False, False)
 
-    assert ht.inline.api.eval_parm_as_strip(parm) == target
+    assert houdini_toolbox.inline.api.eval_parm_as_strip(parm) == target
 
     # Toggle strip
     parm = node.parm("strip_toggle")
 
     target = (True, False, True, True)
 
-    assert ht.inline.api.eval_parm_as_strip(parm) == target
+    assert houdini_toolbox.inline.api.eval_parm_as_strip(parm) == target
 
 
 def test_eval_parm_strip_as_string():
-    """Test ht.inline.api.eval_parm_strip_as_string."""
+    """Test houdini_toolbox.inline.api.eval_parm_strip_as_string."""
     node = OBJ.node("test_eval_as_strip/node")
     parm = node.parm("strip_normal")
 
     target = ("bar",)
 
-    assert ht.inline.api.eval_parm_strip_as_string(parm) == target
+    assert houdini_toolbox.inline.api.eval_parm_strip_as_string(parm) == target
 
     # Toggle strip.
     parm = node.parm("strip_toggle")
 
     target = ("foo", "hello", "world")
 
-    assert ht.inline.api.eval_parm_strip_as_string(parm) == target
+    assert houdini_toolbox.inline.api.eval_parm_strip_as_string(parm) == target
 
 
 # =========================================================================
@@ -2687,20 +2687,20 @@ def test_eval_parm_strip_as_string():
 
 
 def test_is_parm_multiparm():
-    """Test ht.inline.api.is_parm_multiparm."""
+    """Test houdini_toolbox.inline.api.is_parm_multiparm."""
     node = OBJ.node("test_is_multiparm/object_merge")
     parm = node.parm("numobj")
 
-    assert ht.inline.api.is_parm_multiparm(parm)
+    assert houdini_toolbox.inline.api.is_parm_multiparm(parm)
 
     parm_tuple = node.parmTuple("numobj")
-    assert ht.inline.api.is_parm_multiparm(parm_tuple)
+    assert houdini_toolbox.inline.api.is_parm_multiparm(parm_tuple)
 
     parm = node.parm("objpath1")
-    assert not ht.inline.api.is_parm_multiparm(parm)
+    assert not houdini_toolbox.inline.api.is_parm_multiparm(parm)
 
     parm_tuple = node.parmTuple("objpath1")
-    assert not ht.inline.api.is_parm_multiparm(parm_tuple)
+    assert not houdini_toolbox.inline.api.is_parm_multiparm(parm_tuple)
 
     # Check against all different FolderSet type folders.
     for folder_name in (
@@ -2710,62 +2710,62 @@ def test_is_parm_multiparm():
         "folder_radio",
     ):
         parm = node.parm(folder_name)
-        assert not ht.inline.api.is_parm_multiparm(parm)
+        assert not houdini_toolbox.inline.api.is_parm_multiparm(parm)
 
     # Check against additional multiparm types.
     for folder_name in ("multi_scroll", "multi_tab"):
         parm = node.parm(folder_name)
-        assert ht.inline.api.is_parm_multiparm(parm)
+        assert houdini_toolbox.inline.api.is_parm_multiparm(parm)
 
         parm_tuple = node.parmTuple(folder_name)
-        assert ht.inline.api.is_parm_multiparm(parm_tuple)
+        assert houdini_toolbox.inline.api.is_parm_multiparm(parm_tuple)
 
 
 def test_get_multiparm_instance_indices():
-    """Test ht.inline.api.get_multiparm_instance_index."""
+    """Test houdini_toolbox.inline.api.get_multiparm_instance_index."""
     node = OBJ.node("test_get_multiparm_instance_indices/null")
     parm = node.parm("vecparm0x")
 
-    assert ht.inline.api.get_multiparm_instance_indices(parm) == (0,)
+    assert houdini_toolbox.inline.api.get_multiparm_instance_indices(parm) == (0,)
 
     parm_tuple = node.parmTuple("vecparm0")
 
-    assert ht.inline.api.get_multiparm_instance_indices(parm_tuple) == (0,)
+    assert houdini_toolbox.inline.api.get_multiparm_instance_indices(parm_tuple) == (0,)
 
     parm_tuple = node.parmTuple("vecparm1")
-    assert ht.inline.api.get_multiparm_instance_indices(parm_tuple) == (1,)
+    assert houdini_toolbox.inline.api.get_multiparm_instance_indices(parm_tuple) == (1,)
 
     parm_tuple = node.parmTuple("inner0")
 
-    assert ht.inline.api.get_multiparm_instance_indices(parm_tuple) == (0,)
+    assert houdini_toolbox.inline.api.get_multiparm_instance_indices(parm_tuple) == (0,)
 
     parm = node.parm("leaf0_1")
 
-    assert ht.inline.api.get_multiparm_instance_indices(parm) == (0, 1)
-    assert ht.inline.api.get_multiparm_instance_indices(parm, True) == (0, 0)
+    assert houdini_toolbox.inline.api.get_multiparm_instance_indices(parm) == (0, 1)
+    assert houdini_toolbox.inline.api.get_multiparm_instance_indices(parm, True) == (0, 0)
 
     parm = node.parm("leaf1_5")
 
-    assert ht.inline.api.get_multiparm_instance_indices(parm) == (1, 5)
-    assert ht.inline.api.get_multiparm_instance_indices(parm, True) == (1, 4)
+    assert houdini_toolbox.inline.api.get_multiparm_instance_indices(parm) == (1, 5)
+    assert houdini_toolbox.inline.api.get_multiparm_instance_indices(parm, True) == (1, 4)
 
     parm = node.parm("base")
 
     with pytest.raises(ValueError):
-        ht.inline.api.get_multiparm_instance_indices(parm)
+        houdini_toolbox.inline.api.get_multiparm_instance_indices(parm)
 
     parm_tuple = node.parmTuple("base")
 
     with pytest.raises(ValueError):
-        ht.inline.api.get_multiparm_instance_indices(parm_tuple)
+        houdini_toolbox.inline.api.get_multiparm_instance_indices(parm_tuple)
 
 
 def test_get_multiparm_siblings():
-    """Test ht.inline.api.get_multiparm_siblings."""
+    """Test houdini_toolbox.inline.api.get_multiparm_siblings."""
     node = OBJ.node("test_get_multiparm_siblings/null")
 
     with pytest.raises(ValueError):
-        ht.inline.api.get_multiparm_siblings(node.parm("base"))
+        houdini_toolbox.inline.api.get_multiparm_siblings(node.parm("base"))
 
     parm = node.parm("stringparm0")
 
@@ -2778,7 +2778,7 @@ def test_get_multiparm_siblings():
         "tab_intparm2#": node.parm("tab_intparm20"),
     }
 
-    assert ht.inline.api.get_multiparm_siblings(parm) == expected
+    assert houdini_toolbox.inline.api.get_multiparm_siblings(parm) == expected
 
     parm_tuple = node.parmTuple("vecparm0")
 
@@ -2791,27 +2791,27 @@ def test_get_multiparm_siblings():
         "tab_intparm2#": node.parm("tab_intparm20"),
     }
 
-    assert ht.inline.api.get_multiparm_siblings(parm_tuple) == expected
+    assert houdini_toolbox.inline.api.get_multiparm_siblings(parm_tuple) == expected
 
 
 def test_resolve_multiparm_tokens():
-    """Test ht.inline.api.resolve_multiparm_tokens."""
-    assert ht.inline.api.resolve_multiparm_tokens("test#", 3) == "test3"
-    assert ht.inline.api.resolve_multiparm_tokens("test#", (4,)) == "test4"
+    """Test houdini_toolbox.inline.api.resolve_multiparm_tokens."""
+    assert houdini_toolbox.inline.api.resolve_multiparm_tokens("test#", 3) == "test3"
+    assert houdini_toolbox.inline.api.resolve_multiparm_tokens("test#", (4,)) == "test4"
     assert (
-        ht.inline.api.resolve_multiparm_tokens(
+            houdini_toolbox.inline.api.resolve_multiparm_tokens(
             "test#",
             [
                 5,
             ],
         )
-        == "test5"
+            == "test5"
     )
 
-    assert ht.inline.api.resolve_multiparm_tokens("test#_#_#", [1, 2, 3]) == "test1_2_3"
+    assert houdini_toolbox.inline.api.resolve_multiparm_tokens("test#_#_#", [1, 2, 3]) == "test1_2_3"
 
     with pytest.raises(ValueError):
-        ht.inline.api.resolve_multiparm_tokens(
+        houdini_toolbox.inline.api.resolve_multiparm_tokens(
             "test#_#",
             [
                 5,
@@ -2820,33 +2820,33 @@ def test_resolve_multiparm_tokens():
 
 
 def test_get_multiparm_template_name():
-    """Test ht.inline.api.get_multiparm_template_name."""
+    """Test houdini_toolbox.inline.api.get_multiparm_template_name."""
     node = OBJ.node("test_get_multiparm_template_name/null")
 
     parm = node.parm("base")
-    assert ht.inline.api.get_multiparm_template_name(parm) is None
+    assert houdini_toolbox.inline.api.get_multiparm_template_name(parm) is None
 
     parm = node.parm("inner0")
-    assert ht.inline.api.get_multiparm_template_name(parm) == "inner#"
+    assert houdini_toolbox.inline.api.get_multiparm_template_name(parm) == "inner#"
 
     parm_tuple = node.parmTuple("vecparm0")
-    assert ht.inline.api.get_multiparm_template_name(parm_tuple) == "vecparm#"
+    assert houdini_toolbox.inline.api.get_multiparm_template_name(parm_tuple) == "vecparm#"
 
     parm = node.parm("leaf1_3")
-    assert ht.inline.api.get_multiparm_template_name(parm) == "leaf#_#"
+    assert houdini_toolbox.inline.api.get_multiparm_template_name(parm) == "leaf#_#"
 
 
 def test_eval_multiparm_instance():
-    """Test ht.inline.api.eval_multiparm_instance."""
+    """Test houdini_toolbox.inline.api.eval_multiparm_instance."""
     node = OBJ.node("test_eval_multiparm_instance/null")
 
     # Test name with no tokens.
     with pytest.raises(ValueError):
-        ht.inline.api.eval_multiparm_instance(node, "base", 0)
+        houdini_toolbox.inline.api.eval_multiparm_instance(node, "base", 0)
 
     # Test name which does not exist.
     with pytest.raises(ValueError):
-        ht.inline.api.eval_multiparm_instance(node, "foo#", 0)
+        houdini_toolbox.inline.api.eval_multiparm_instance(node, "foo#", 0)
 
     expected = [
         (1.1, 2.2, 3.3, 4.4),
@@ -2868,16 +2868,16 @@ def test_eval_multiparm_instance():
 
     for i in range(node.evalParm("base")):
         # Test a float vector parameter.
-        results.append(ht.inline.api.eval_multiparm_instance(node, "vecparm#", i))
+        results.append(houdini_toolbox.inline.api.eval_multiparm_instance(node, "vecparm#", i))
 
         # Test a bunch of nested int parameters.
-        for j in range(ht.inline.api.eval_multiparm_instance(node, "inner#", i)):
+        for j in range(houdini_toolbox.inline.api.eval_multiparm_instance(node, "inner#", i)):
             results.append(
-                ht.inline.api.eval_multiparm_instance(node, "leaf#_#", [i, j])
+                houdini_toolbox.inline.api.eval_multiparm_instance(node, "leaf#_#", [i, j])
             )
 
         # Test a string parameter which will be expanded.
-        results.append(ht.inline.api.eval_multiparm_instance(node, "string#", i))
+        results.append(houdini_toolbox.inline.api.eval_multiparm_instance(node, "string#", i))
 
     assert results == expected
 
@@ -2886,40 +2886,40 @@ def test_eval_multiparm_instance():
     # Run the same test again but passing True for raw_indices.
     for i in range(node.evalParm("base")):
         # Test a float vector parameter.
-        results.append(ht.inline.api.eval_multiparm_instance(node, "vecparm#", i, True))
+        results.append(houdini_toolbox.inline.api.eval_multiparm_instance(node, "vecparm#", i, True))
 
         # Test a bunch of nested int parameters.
         for j in range(
-            1, ht.inline.api.eval_multiparm_instance(node, "inner#", i, True) + 1
+            1, houdini_toolbox.inline.api.eval_multiparm_instance(node, "inner#", i, True) + 1
         ):
             results.append(
-                ht.inline.api.eval_multiparm_instance(node, "leaf#_#", [i, j], True)
+                houdini_toolbox.inline.api.eval_multiparm_instance(node, "leaf#_#", [i, j], True)
             )
 
         # Test a string parameter which will be expanded.
-        results.append(ht.inline.api.eval_multiparm_instance(node, "string#", i, True))
+        results.append(houdini_toolbox.inline.api.eval_multiparm_instance(node, "string#", i, True))
 
     assert results == expected
 
     with pytest.raises(IndexError):
-        ht.inline.api.eval_multiparm_instance(node, "vecparm#", 10)
+        houdini_toolbox.inline.api.eval_multiparm_instance(node, "vecparm#", 10)
 
 
 def test_unexpanded_string_multiparm_instance():
-    """Test ht.inline.api.unexpanded_string_multiparm_instance."""
+    """Test houdini_toolbox.inline.api.unexpanded_string_multiparm_instance."""
     node = OBJ.node("test_unexpanded_string_multiparm_instance/null")
 
     # Test name with no tokens.
     with pytest.raises(ValueError):
-        ht.inline.api.unexpanded_string_multiparm_instance(node, "base", 0)
+        houdini_toolbox.inline.api.unexpanded_string_multiparm_instance(node, "base", 0)
 
     # Test name which does not exist.
     with pytest.raises(ValueError):
-        ht.inline.api.unexpanded_string_multiparm_instance(node, "foo#", 0)
+        houdini_toolbox.inline.api.unexpanded_string_multiparm_instance(node, "foo#", 0)
 
     # Test a non-string parm
     with pytest.raises(TypeError):
-        ht.inline.api.unexpanded_string_multiparm_instance(node, "float#", 0)
+        houdini_toolbox.inline.api.unexpanded_string_multiparm_instance(node, "float#", 0)
 
     expected = [
         "$F",
@@ -2934,12 +2934,12 @@ def test_unexpanded_string_multiparm_instance():
 
     for i in range(node.evalParm("base")):
         results.append(
-            ht.inline.api.unexpanded_string_multiparm_instance(node, "string#", i)
+            houdini_toolbox.inline.api.unexpanded_string_multiparm_instance(node, "string#", i)
         )
 
-        for j in range(ht.inline.api.eval_multiparm_instance(node, "inner#", i)):
+        for j in range(houdini_toolbox.inline.api.eval_multiparm_instance(node, "inner#", i)):
             results.append(
-                ht.inline.api.unexpanded_string_multiparm_instance(
+                houdini_toolbox.inline.api.unexpanded_string_multiparm_instance(
                     node, "nested_string#_#", [i, j]
                 )
             )
@@ -2952,15 +2952,15 @@ def test_unexpanded_string_multiparm_instance():
     for i in range(node.evalParm("base")):
         # Test a float vector parameter.
         results.append(
-            ht.inline.api.unexpanded_string_multiparm_instance(node, "string#", i, True)
+            houdini_toolbox.inline.api.unexpanded_string_multiparm_instance(node, "string#", i, True)
         )
 
         # Test a bunch of nested int parameters.
         for j in range(
-            1, ht.inline.api.eval_multiparm_instance(node, "inner#", i, True) + 1
+            1, houdini_toolbox.inline.api.eval_multiparm_instance(node, "inner#", i, True) + 1
         ):
             results.append(
-                ht.inline.api.unexpanded_string_multiparm_instance(
+                houdini_toolbox.inline.api.unexpanded_string_multiparm_instance(
                     node, "nested_string#_#", [i, j], True
                 )
             )
@@ -2968,7 +2968,7 @@ def test_unexpanded_string_multiparm_instance():
     assert results == expected
 
     with pytest.raises(IndexError):
-        ht.inline.api.unexpanded_string_multiparm_instance(node, "string#", 10)
+        houdini_toolbox.inline.api.unexpanded_string_multiparm_instance(node, "string#", 10)
 
 
 # =========================================================================
@@ -2977,58 +2977,58 @@ def test_unexpanded_string_multiparm_instance():
 
 
 def test_disconnect_all_outputs():
-    """Test ht.inline.api.disconnect_all_inputs."""
+    """Test houdini_toolbox.inline.api.disconnect_all_inputs."""
     node = OBJ.node("test_disconnect_all_outputs/file")
 
-    ht.inline.api.disconnect_all_outputs(node)
+    houdini_toolbox.inline.api.disconnect_all_outputs(node)
 
     assert not node.outputs()
 
 
 def test_disconnect_all_inputs():
-    """Test ht.inline.api.disconnect_all_outputs."""
+    """Test houdini_toolbox.inline.api.disconnect_all_outputs."""
     node = OBJ.node("test_disconnect_all_inputs/merge")
 
-    ht.inline.api.disconnect_all_inputs(node)
+    houdini_toolbox.inline.api.disconnect_all_inputs(node)
 
     assert not node.inputs()
 
 
 def test_node_is_contained_by():
-    """Test ht.inline.api.node_is_contained_by."""
+    """Test houdini_toolbox.inline.api.node_is_contained_by."""
     node = OBJ.node("test_is_contained_by")
 
     box = node.node("subnet/box")
 
-    assert ht.inline.api.node_is_contained_by(box, node)
-    assert not ht.inline.api.node_is_contained_by(node, hou.node("/shop"))
+    assert houdini_toolbox.inline.api.node_is_contained_by(box, node)
+    assert not houdini_toolbox.inline.api.node_is_contained_by(node, hou.node("/shop"))
 
 
 def test_author_name():
-    """Test ht.inline.api.node_author_name."""
+    """Test houdini_toolbox.inline.api.node_author_name."""
     node = OBJ.node("test_author_name")
 
-    assert ht.inline.api.node_author_name(node) == "grahamt"
+    assert houdini_toolbox.inline.api.node_author_name(node) == "grahamt"
 
 
 def test_is_node_type_python():
-    """Test ht.inline.api.is_node_type_python."""
+    """Test houdini_toolbox.inline.api.is_node_type_python."""
     node_type = hou.nodeType(hou.sopNodeTypeCategory(), "tableimport")
-    assert ht.inline.api.is_node_type_python(node_type)
+    assert houdini_toolbox.inline.api.is_node_type_python(node_type)
 
     # Not python
     node_type = hou.nodeType(hou.sopNodeTypeCategory(), "file")
-    assert not ht.inline.api.is_node_type_python(node_type)
+    assert not houdini_toolbox.inline.api.is_node_type_python(node_type)
 
 
 def test_is_node_type_subnet():
-    """Test ht.inline.api.is_node_type_subnet."""
+    """Test houdini_toolbox.inline.api.is_node_type_subnet."""
     node_type = hou.nodeType(hou.objNodeTypeCategory(), "subnet")
-    assert ht.inline.api.is_node_type_subnet(node_type)
+    assert houdini_toolbox.inline.api.is_node_type_subnet(node_type)
 
     # Not a subnet.
     node_type = hou.nodeType(hou.objNodeTypeCategory(), "geo")
-    assert not ht.inline.api.is_node_type_subnet(node_type)
+    assert not houdini_toolbox.inline.api.is_node_type_subnet(node_type)
 
 
 # =========================================================================
@@ -3037,21 +3037,21 @@ def test_is_node_type_subnet():
 
 
 def test_vector_component_along():
-    """Test ht.inline.api.vector_component_along."""
+    """Test houdini_toolbox.inline.api.vector_component_along."""
     vec = hou.Vector3(1, 2, 3)
 
-    assert ht.inline.api.vector_component_along(vec, hou.Vector3(0, 0, 15)) == 3.0
+    assert houdini_toolbox.inline.api.vector_component_along(vec, hou.Vector3(0, 0, 15)) == 3.0
 
 
 def test_vector_project_along():
-    """Test ht.inline.api.vector_project_along."""
+    """Test houdini_toolbox.inline.api.vector_project_along."""
     vec = hou.Vector3(-1.3, 0.5, 7.6)
 
     # Test zero-length vector
     with pytest.raises(ValueError):
-        ht.inline.api.vector_project_along(vec, hou.Vector3())
+        houdini_toolbox.inline.api.vector_project_along(vec, hou.Vector3())
 
-    projection = ht.inline.api.vector_project_along(vec, hou.Vector3(2.87, 3.1, -0.5))
+    projection = houdini_toolbox.inline.api.vector_project_along(vec, hou.Vector3(2.87, 3.1, -0.5))
 
     result = hou.Vector3(-0.948531, -1.02455, 0.165249)
 
@@ -3069,55 +3069,55 @@ def test_vector_project_along():
     ],
 )
 def test_vector_contains_nans(vec, expected):
-    """Test ht.inline.api.vector_contains_nans."""
-    result = ht.inline.api.vector_contains_nans(vec)
+    """Test houdini_toolbox.inline.api.vector_contains_nans."""
+    result = houdini_toolbox.inline.api.vector_contains_nans(vec)
     assert result == expected
 
 
 def test_vector_compute_dual():
-    """Test ht.inline.api.vector_compute_dual."""
+    """Test houdini_toolbox.inline.api.vector_compute_dual."""
     target = hou.Matrix3()
     target.setTo(((0, -3, 2), (3, 0, -1), (-2, 1, 0)))
 
     vec = hou.Vector3(1, 2, 3)
 
-    assert ht.inline.api.vector_compute_dual(vec) == target
+    assert houdini_toolbox.inline.api.vector_compute_dual(vec) == target
 
 
 def test_matrix_is_identity():
-    """Test ht.inline.api.matrix_is_identity."""
+    """Test houdini_toolbox.inline.api.matrix_is_identity."""
     # Matrix 3
     mat3 = hou.Matrix3()
     mat3.setToIdentity()
 
-    assert ht.inline.api.matrix_is_identity(mat3)
+    assert houdini_toolbox.inline.api.matrix_is_identity(mat3)
 
     # Not the identity matrix.
     mat3 = hou.Matrix3()
-    assert not ht.inline.api.matrix_is_identity(mat3)
+    assert not houdini_toolbox.inline.api.matrix_is_identity(mat3)
 
     # Matrix4
     mat4 = hou.Matrix4()
     mat4.setToIdentity()
 
-    assert ht.inline.api.matrix_is_identity(mat4)
+    assert houdini_toolbox.inline.api.matrix_is_identity(mat4)
 
     # Not the identity matrix.
     mat4 = hou.Matrix4()
-    assert not ht.inline.api.matrix_is_identity(mat4)
+    assert not houdini_toolbox.inline.api.matrix_is_identity(mat4)
 
 
 def test_matrix_set_translates():
-    """Test ht.inline.api.matrix_set_translates."""
+    """Test houdini_toolbox.inline.api.matrix_set_translates."""
     translates = hou.Vector3(1, 2, 3)
     identity = hou.hmath.identityTransform()
-    ht.inline.api.matrix_set_translates(identity, translates)
+    houdini_toolbox.inline.api.matrix_set_translates(identity, translates)
 
     assert identity.extractTranslates() == translates
 
 
 def test_build_lookat_matrix():
-    """Test ht.inline.api.build_lookat_matrix."""
+    """Test houdini_toolbox.inline.api.build_lookat_matrix."""
     target = hou.Matrix3()
 
     target.setTo(
@@ -3128,7 +3128,7 @@ def test_build_lookat_matrix():
         )
     )
 
-    mat = ht.inline.api.build_lookat_matrix(
+    mat = houdini_toolbox.inline.api.build_lookat_matrix(
         hou.Vector3(0, 0, 1), hou.Vector3(1, 0, 0), hou.Vector3(0, 1, 0)
     )
 
@@ -3136,13 +3136,13 @@ def test_build_lookat_matrix():
 
 
 def test_get_oriented_point_transform():
-    """Test ht.inline.api.get_oriented_point_transform."""
+    """Test houdini_toolbox.inline.api.get_oriented_point_transform."""
     # Test against a primitive with no transform.
     geo = OBJ.node("test_get_oriented_point_transform/RAW").geometry()
     pt = geo.points()[0]
 
     with pytest.raises(hou.OperationFailed):
-        ht.inline.api.get_oriented_point_transform(pt)
+        houdini_toolbox.inline.api.get_oriented_point_transform(pt)
 
     # Primitive with proper transform.
     target = hou.Matrix4(
@@ -3157,7 +3157,7 @@ def test_get_oriented_point_transform():
     geo = OBJ.node("test_get_oriented_point_transform/XFORMED").geometry()
     pt = geo.points()[0]
 
-    result = ht.inline.api.get_oriented_point_transform(pt)
+    result = houdini_toolbox.inline.api.get_oriented_point_transform(pt)
 
     assert result == target
 
@@ -3175,13 +3175,13 @@ def test_get_oriented_point_transform():
     geo = OBJ.node("test_get_oriented_point_transform/SINGLE_POINT").geometry()
     pt = geo.points()[0]
 
-    result = ht.inline.api.get_oriented_point_transform(pt)
+    result = houdini_toolbox.inline.api.get_oriented_point_transform(pt)
 
     assert result == target
 
 
 def test_point_instance_transform(obj_test_geo):
-    """Test ht.inline.api.point_instance_transform."""
+    """Test houdini_toolbox.inline.api.point_instance_transform."""
     target = hou.Matrix4(
         (
             (-0.42511632340174754, 0.8177546905539287, -0.38801208441803603, 0.0),
@@ -3193,13 +3193,13 @@ def test_point_instance_transform(obj_test_geo):
 
     pt = obj_test_geo.points()[0]
 
-    result = ht.inline.api.point_instance_transform(pt)
+    result = houdini_toolbox.inline.api.point_instance_transform(pt)
 
     assert result == target
 
 
 def test_build_instance_matrix():
-    """Test ht.inline.api.build_instance_matrix."""
+    """Test houdini_toolbox.inline.api.build_instance_matrix."""
     target = hou.Matrix4(
         (
             (1.0606601717798214, -1.0606601717798214, 0.0, 0.0),
@@ -3209,7 +3209,7 @@ def test_build_instance_matrix():
         )
     )
 
-    mat = ht.inline.api.build_instance_matrix(
+    mat = houdini_toolbox.inline.api.build_instance_matrix(
         hou.Vector3(-1, 2, 4),
         hou.Vector3(1, 1, 1),
         pscale=1.5,
@@ -3228,7 +3228,7 @@ def test_build_instance_matrix():
     )
 
     # Test up vector is zero-vector
-    mat = ht.inline.api.build_instance_matrix(
+    mat = houdini_toolbox.inline.api.build_instance_matrix(
         hou.Vector3(-1, 2, 4),
         hou.Vector3(1, 1, 1),
         pscale=1.5,
@@ -3247,7 +3247,7 @@ def test_build_instance_matrix():
         )
     )
 
-    mat = ht.inline.api.build_instance_matrix(
+    mat = houdini_toolbox.inline.api.build_instance_matrix(
         hou.Vector3(-1, 2, 4), orient=hou.Quaternion(0.3, -1.7, -0.9, -2.7)
     )
 
@@ -3268,7 +3268,7 @@ def test_build_instance_matrix():
     ],
 )
 def test_get_node_message_nodes(node_name, expected_node):
-    """Test ht.inline.api.get_node_message_nodes."""
+    """Test houdini_toolbox.inline.api.get_node_message_nodes."""
     node = OBJ.node(f"test_message_nodes/{node_name}")
 
     if expected_node is not None:
@@ -3277,7 +3277,7 @@ def test_get_node_message_nodes(node_name, expected_node):
     else:
         target = ()
 
-    assert ht.inline.api.get_node_message_nodes(node) == target
+    assert houdini_toolbox.inline.api.get_node_message_nodes(node) == target
 
 
 @pytest.mark.parametrize(
@@ -3289,7 +3289,7 @@ def test_get_node_message_nodes(node_name, expected_node):
     ],
 )
 def test_get_node_editable_nodes(node_name, expected_node):
-    """Test ht.inline.api.get_node_editable_nodes."""
+    """Test houdini_toolbox.inline.api.get_node_editable_nodes."""
     node = OBJ.node(f"test_message_nodes/{node_name}")
 
     if expected_node is not None:
@@ -3298,7 +3298,7 @@ def test_get_node_editable_nodes(node_name, expected_node):
     else:
         target = ()
 
-    assert ht.inline.api.get_node_editable_nodes(node) == target
+    assert houdini_toolbox.inline.api.get_node_editable_nodes(node) == target
 
 
 @pytest.mark.parametrize(
@@ -3310,7 +3310,7 @@ def test_get_node_editable_nodes(node_name, expected_node):
     ],
 )
 def test_get_node_dive_target(node_name, expected_node):
-    """Test ht.inline.api.get_node_dive_target."""
+    """Test houdini_toolbox.inline.api.get_node_dive_target."""
     node = OBJ.node(f"test_message_nodes/{node_name}")
 
     if expected_node is not None:
@@ -3319,7 +3319,7 @@ def test_get_node_dive_target(node_name, expected_node):
     else:
         target = None
 
-    assert ht.inline.api.get_node_dive_target(node) == target
+    assert houdini_toolbox.inline.api.get_node_dive_target(node) == target
 
 
 @pytest.mark.parametrize(
@@ -3332,7 +3332,7 @@ def test_get_node_dive_target(node_name, expected_node):
     ],
 )
 def test_get_node_representative_node(node_name, expected_node):
-    """Test ht.inline.api.get_node_representative_node."""
+    """Test houdini_toolbox.inline.api.get_node_representative_node."""
     node = OBJ.node(node_name)
 
     if expected_node is not None:
@@ -3341,7 +3341,7 @@ def test_get_node_representative_node(node_name, expected_node):
     else:
         target = None
 
-    assert ht.inline.api.get_node_representative_node(node) == target
+    assert houdini_toolbox.inline.api.get_node_representative_node(node) == target
 
 
 @pytest.mark.parametrize(
@@ -3352,40 +3352,40 @@ def test_get_node_representative_node(node_name, expected_node):
     ],
 )
 def test_is_node_digital_asset(node_name, expected):
-    """Test ht.inline.api.is_node_digital_asset."""
+    """Test houdini_toolbox.inline.api.is_node_digital_asset."""
     node = OBJ.node(node_name)
 
-    assert ht.inline.api.is_node_digital_asset(node) == expected
+    assert houdini_toolbox.inline.api.is_node_digital_asset(node) == expected
 
 
 def test_asset_file_meta_source():
-    """Test ht.inline.api.asset_file_meta_source."""
+    """Test houdini_toolbox.inline.api.asset_file_meta_source."""
     target = "Scanned Asset Library Directories"
 
     path = hou.text.expandString("$HH/otls/OPlibSop.hda")
 
-    assert ht.inline.api.asset_file_meta_source(path) == target
+    assert houdini_toolbox.inline.api.asset_file_meta_source(path) == target
 
-    assert ht.inline.api.asset_file_meta_source("/some/fake/pat") is None
+    assert houdini_toolbox.inline.api.asset_file_meta_source("/some/fake/pat") is None
 
 
 def test_get_definition_meta_source():
-    """Test ht.inline.api.get_definition_meta_source."""
+    """Test houdini_toolbox.inline.api.get_definition_meta_source."""
     target = "Scanned Asset Library Directories"
 
     node_type = hou.nodeType(hou.sopNodeTypeCategory(), "explodedview")
 
-    assert ht.inline.api.get_definition_meta_source(node_type.definition()) == target
+    assert houdini_toolbox.inline.api.get_definition_meta_source(node_type.definition()) == target
 
 
 def test_libraries_in_meta_source():
-    """Test ht.inline.api.libraries_in_meta_source."""
-    libs = ht.inline.api.libraries_in_meta_source("Scanned Asset Library Directories")
+    """Test houdini_toolbox.inline.api.libraries_in_meta_source."""
+    libs = houdini_toolbox.inline.api.libraries_in_meta_source("Scanned Asset Library Directories")
     assert libs
 
 
 def test_remove_meta_source():
-    """Test ht.inline.api.remove_meta_source."""
+    """Test houdini_toolbox.inline.api.remove_meta_source."""
     subnet = OBJ.createNode("subnet")
     asset = subnet.createDigitalAsset("dummysrcop", "Embedded", "Dummy")
     definition = asset.type().definition()
@@ -3394,14 +3394,14 @@ def test_remove_meta_source():
 
     assert definition.isInstalled()
 
-    result = ht.inline.api.remove_meta_source("Current HIP File")
+    result = houdini_toolbox.inline.api.remove_meta_source("Current HIP File")
     assert result
 
     assert not definition.isInstalled()
 
 
 def test_is_dummy_definition():
-    """Test ht.inline.api.is_dummy_definition."""
+    """Test houdini_toolbox.inline.api.is_dummy_definition."""
     geo = OBJ.createNode("geo")
     subnet = geo.createNode("subnet")
 
@@ -3410,13 +3410,13 @@ def test_is_dummy_definition():
     node_type = asset.type()
 
     # Not a dummy so far.
-    assert not ht.inline.api.is_dummy_definition(node_type.definition())
+    assert not houdini_toolbox.inline.api.is_dummy_definition(node_type.definition())
 
     # Destroy the definition.
     node_type.definition().destroy()
 
     # Now it's a dummy.
-    assert ht.inline.api.is_dummy_definition(node_type.definition())
+    assert houdini_toolbox.inline.api.is_dummy_definition(node_type.definition())
 
     # Destroy the instance.
     asset.destroy()

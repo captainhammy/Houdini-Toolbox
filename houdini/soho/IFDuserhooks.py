@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Houdini Toolbox
-from ht.sohohooks.manager import HOOK_MANAGER
+from houdini_toolbox.sohohooks.manager import HOOK_MANAGER
 
 # =============================================================================
 # FUNCTIONS

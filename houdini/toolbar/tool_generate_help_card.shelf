@@ -13,7 +13,7 @@
 # =============================================================================
 
 # Houdini Toolbox
-from ht.nodes import helpcard
+from houdini_toolbox.nodes import helpcard
 
 # Houdini
 import hou
