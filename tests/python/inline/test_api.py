@@ -346,7 +346,7 @@ def test_expand_range():
     assert values == target
 
 
-class Test_geometry_has_prims_with_shared_vertex_points(object):
+class Test_geometry_has_prims_with_shared_vertex_points:
     """Test houdini_toolbox.inline.api.geometry_has_prims_with_shared_vertex_points."""
 
     def test_true(self, obj_test_geo):
@@ -364,7 +364,7 @@ class Test_geometry_has_prims_with_shared_vertex_points(object):
         )
 
 
-class Test_get_primitives_with_shared_vertex_points(object):
+class Test_get_primitives_with_shared_vertex_points:
     """Test houdini_toolbox.inline.api.get_primitives_with_shared_vertex_points."""
 
     def test_shared(self, obj_test_geo):
@@ -392,7 +392,7 @@ def test_num_prims(obj_test_geo):
     assert houdini_toolbox.inline.api.num_prims(obj_test_geo) == 12
 
 
-class Test_sort_geometry_by_values(object):
+class Test_sort_geometry_by_values:
     """Test houdini_toolbox.inline.api.sort_geometry_by_values."""
 
     def test_read_only(self, obj_test_geo):
@@ -568,7 +568,7 @@ def test_merge_prims(obj_test_geo):
     assert len(geo.iterPrims()) == len(prims)
 
 
-class Test_copy_packed_prims_to_points(object):
+class Test_copy_packed_prims_to_points:
     """Test houdini_toolbox.inline.api.copy_packed_prims_to_points."""
 
     @staticmethod
@@ -749,7 +749,7 @@ class Test_copy_packed_prims_to_points(object):
                 assert prim not in group.prims()
 
 
-class Test_copy_attribute_values(object):
+class Test_copy_attribute_values:
     """Test houdini_toolbox.inline.api.copy_attribute_values."""
 
     def test_read_only(self, obj_test_geo):
@@ -871,7 +871,7 @@ class Test_copy_attribute_values(object):
         assert vtx1.attribValue("foobles") == (1.0, 2)
 
 
-class Test_batch_copy_attributes_by_indices(object):
+class Test_batch_copy_attributes_by_indices:
     """Test houdini_toolbox.inline.api.batch_copy_attributes_by_indices"""
 
     def test_read_only(self, obj_test_geo):
@@ -1031,7 +1031,7 @@ class Test_batch_copy_attributes_by_indices(object):
         assert vtx1.attribValue("foobles") == (1.0, 2)
 
 
-class Test_batch_copy_attrib_values(object):
+class Test_batch_copy_attrib_values:
     """Test houdini_toolbox.inline.api.batch_copy_attrib_values"""
 
     def test_size_mismatch(self, obj_test_geo):
@@ -1188,7 +1188,7 @@ class Test_batch_copy_attrib_values(object):
         assert vtx1.attribValue("foobles") == (1.0, 2)
 
 
-class Test_copy_group_membership(object):
+class Test_copy_group_membership:
     """Test houdini_toolbox.inline.api.copy_group_membership."""
 
     def test_read_only(self, obj_test_geo):
@@ -1270,7 +1270,7 @@ class Test_copy_group_membership(object):
         assert pr3 not in group1.prims()
 
 
-class Test_batch_copy_group_membership_by_indices(object):
+class Test_batch_copy_group_membership_by_indices:
     """Test houdini_toolbox.inline.api.batch_copy_group_membership_by_indices."""
 
     def test_read_only(self, obj_test_geo):
@@ -1357,7 +1357,7 @@ class Test_batch_copy_group_membership_by_indices(object):
         assert pr3 not in group1.prims()
 
 
-class Test_batch_copy_group_membership(object):
+class Test_batch_copy_group_membership:
     """Test houdini_toolbox.inline.api.batch_copy_group_membership."""
 
     def test_read_only(self, obj_test_geo):
@@ -1503,7 +1503,7 @@ def test_referencing_vertices(obj_test_geo):
     assert vertices == target
 
 
-class Test_string_table_indices(object):
+class Test_string_table_indices:
     """Test houdini_toolbox.inline.api.string_table_indices."""
 
     def test_not_string_attrib(self, obj_test_geo):
@@ -1559,7 +1559,7 @@ def test_vertex_string_attrib_values(obj_test_geo):
     )
 
 
-class Test_set_vertex_string_attrib_values(object):
+class Test_set_vertex_string_attrib_values:
     """Test houdini_toolbox.inline.api.set_vertex_string_attrib_values."""
 
     def test_read_only(self, obj_test_geo):
@@ -1610,7 +1610,7 @@ class Test_set_vertex_string_attrib_values(object):
             )
 
 
-class Test_set_shared_point_string_attrib(object):
+class Test_set_shared_point_string_attrib:
     """Test houdini_toolbox.inline.api.set_shared_point_string_attrib."""
 
     def test_read_only(self, obj_test_geo):
@@ -1659,7 +1659,7 @@ class Test_set_shared_point_string_attrib(object):
         assert list(obj_test_geo_copy.pointStringAttribValues("test")) == target
 
 
-class Test_set_shared_prim_string_attrib(object):
+class Test_set_shared_prim_string_attrib:
     """Test houdini_toolbox.inline.api.set_shared_prim_string_attrib."""
 
     def test_read_only(self, obj_test_geo):
@@ -1712,7 +1712,7 @@ class Test_set_shared_prim_string_attrib(object):
         assert list(obj_test_geo_copy.primStringAttribValues("test")) == target
 
 
-class Test_attribute_has_uninitialized_string_values(object):
+class Test_attribute_has_uninitialized_string_values:
     """Test houdini_toolbox.inline.api.attribute_has_uninitialized_string_values."""
 
     def test_not_string_attribute(self, obj_test_geo):
@@ -1826,7 +1826,7 @@ def test_shared_edges(obj_test_geo):
     assert edges == (edge,)
 
 
-class Test_insert_vertex(object):
+class Test_insert_vertex:
     """Test houdini_toolbox.inline.api.insert_vertex."""
 
     def test_read_only(self, obj_test_geo):
@@ -1873,7 +1873,7 @@ class Test_insert_vertex(object):
         assert face.vertex(2).point() == new_point
 
 
-class Test_delete_vertex(object):
+class Test_delete_vertex:
     """Test houdini_toolbox.inline.api.delete_vertex_from_face."""
 
     def test_read_only(self, obj_test_geo):
@@ -2040,7 +2040,7 @@ def test_destroy_empty_groups():
     assert not geo.primGroups()
 
 
-class Test_rename_group(object):
+class Test_rename_group:
     """Test houdini_toolbox.inline.api.rename_group."""
 
     def test_read_only(self, obj_test_geo):
@@ -2109,7 +2109,7 @@ class Test_rename_group(object):
             houdini_toolbox.inline.api.rename_group(group, name)
 
 
-class Test_group_bounding_box(object):
+class Test_group_bounding_box:
     """Test houdini_toolbox.inline.api.group_bounding_box."""
 
     def test_point_group(self, obj_test_geo):
@@ -2140,7 +2140,7 @@ class Test_group_bounding_box(object):
         assert bbox == target
 
 
-class Test_group_size(object):
+class Test_group_size:
     """Test houdini_toolbox.inline.api.group_size."""
 
     def test_point_group(self, obj_test_geo):
@@ -2162,7 +2162,7 @@ class Test_group_size(object):
         assert houdini_toolbox.inline.api.group_size(group) == 52
 
 
-class Test_toggle_group_entries(object):
+class Test_toggle_group_entries:
     """Test houdini_toolbox.inline.api.toggle_group_entries."""
 
     def test_read_only(self, obj_test_geo):
@@ -2202,7 +2202,7 @@ class Test_toggle_group_entries(object):
         assert len(group.edges()) == 20
 
 
-class Test_copy_group(object):
+class Test_copy_group:
     """Test houdini_toolbox.inline.api.copy_group."""
 
     def test_read_only(self, obj_test_geo):
@@ -2261,7 +2261,7 @@ class Test_copy_group(object):
             houdini_toolbox.inline.api.copy_group(group, other_group.name())
 
 
-class Test_set_group_string_attribute(object):
+class Test_set_group_string_attribute:
     """Test houdini_toolbox.inline.api.set_group_string_attribute."""
 
     def test_read_only(self, obj_test_geo):
@@ -2307,7 +2307,7 @@ class Test_set_group_string_attribute(object):
         assert obj_test_geo_copy.primStringAttribValues("prim_attrib") == expected
 
 
-class Test_groups_share_elements(object):
+class Test_groups_share_elements:
     """Test houdini_toolbox.inline.api.groups_share_elements."""
 
     def test_different_details(self, obj_test_geo):
@@ -2357,7 +2357,7 @@ class Test_groups_share_elements(object):
         assert not houdini_toolbox.inline.api.groups_share_elements(group1, group2)
 
 
-class Test_convert_prim_to_point_group(object):
+class Test_convert_prim_to_point_group:
     """Test houdini_toolbox.inline.api.convert_prim_to_point_group."""
 
     def test_read_only(self, obj_test_geo):
@@ -2419,7 +2419,7 @@ class Test_convert_prim_to_point_group(object):
             houdini_toolbox.inline.api.convert_prim_to_point_group(group, group.name())
 
 
-class Test_convert_point_to_prim_group(object):
+class Test_convert_point_to_prim_group:
     """Test houdini_toolbox.inline.api.convert_point_to_prim_group."""
 
     def test_read_only(self, obj_test_geo):
@@ -2483,7 +2483,7 @@ class Test_convert_point_to_prim_group(object):
 # =========================================================================
 
 
-class Test_geometry_has_ungrouped_points(object):
+class Test_geometry_has_ungrouped_points:
     """Test houdini_toolbox.inline.api.geometry_has_ungrouped_points."""
 
     def test_has_ungrouped(self):
@@ -2500,7 +2500,7 @@ class Test_geometry_has_ungrouped_points(object):
         )
 
 
-class Test_group_ungrouped_points(object):
+class Test_group_ungrouped_points:
     """Test houdini_toolbox.inline.api.group_ungrouped_points."""
 
     def test_read_only(self, obj_test_geo):
@@ -2542,7 +2542,7 @@ class Test_group_ungrouped_points(object):
 # =========================================================================
 
 
-class Test_has_ungrouped_prims(object):
+class Test_has_ungrouped_prims:
     """Test houdini_toolbox.inline.api.geometry_has_ungrouped_prims."""
 
     def test_has_ungrouped(self):
@@ -2557,7 +2557,7 @@ class Test_has_ungrouped_prims(object):
         assert not houdini_toolbox.inline.api.geometry_has_ungrouped_prims(obj_test_geo)
 
 
-class Test_group_ungrouped_prims(object):
+class Test_group_ungrouped_prims:
     """Test houdini_toolbox.inline.api.group_ungrouped_prims."""
 
     def test_read_only(self, obj_test_geo):

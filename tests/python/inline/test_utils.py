@@ -178,7 +178,7 @@ def test_get_attrib_owner(value, expected):
             utils.get_attrib_owner(value)
 
 
-class Test_get_attrib_owner_from_geometry_entity_type(object):
+class Test_get_attrib_owner_from_geometry_entity_type:
     """Test houdini_toolbox.inline.utils.get_attrib_owner_from_geometry_entity_type."""
 
     def test_in_map(self):
@@ -251,7 +251,7 @@ def test_get_attrib_storage(data_type, expected):
             utils.get_attrib_storage(data_type)
 
 
-class Test_get_entity_data(object):
+class Test_get_entity_data:
     """Test houdini_toolbox.inline.utils.get_entity_data."""
 
     def test_vertex(self):
@@ -286,7 +286,7 @@ class Test_get_entity_data(object):
         assert result == (hou.Geometry, geometry, 0)
 
 
-class Test_get_entity_data_from_list(object):
+class Test_get_entity_data_from_list:
     """Test houdini_toolbox.inline.utils.get_entity_data_from_list."""
 
     def test_vertex(self):
@@ -325,7 +325,7 @@ class Test_get_entity_data_from_list(object):
         assert result == (hou.Geometry, geometry, [0])
 
 
-class Test_get_group_attrib_owner(object):
+class Test_get_group_attrib_owner:
     """Test houdini_toolbox.inline.utils.get_group_attrib_owner."""
 
     def test_point_group(self):
@@ -354,7 +354,7 @@ class Test_get_group_attrib_owner(object):
             utils.get_group_attrib_owner(None)
 
 
-class Test_get_group_type(object):
+class Test_get_group_type:
     """Test houdini_toolbox.inline.utils.get_group_type."""
 
     def test_point_group(self):
@@ -480,7 +480,7 @@ def test_get_nodes_from_paths():
     assert result == expected
 
 
-class Test_get_points_from_list(object):
+class Test_get_points_from_list:
     """Test houdini_toolbox.inline.utils.get_points_from_list."""
 
     def test_empty(self):
@@ -503,7 +503,7 @@ class Test_get_points_from_list(object):
         assert result == expected
 
 
-class Test_get_prims_from_list(object):
+class Test_get_prims_from_list:
     """Test houdini_toolbox.inline.utils.get_prims_from_list."""
 
     def test_empty_list(self):
