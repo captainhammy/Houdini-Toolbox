@@ -60,6 +60,6 @@ def exec_tool_script():
         with open(temp_path, "w", encoding="utf-8") as handle:
             handle.writelines(contents)
 
-        exec(contents, {"kwargs": kwargs})
+        exec(contents, {"kwargs": kwargs})  # pylint: disable=exec-used
 
     return _exec

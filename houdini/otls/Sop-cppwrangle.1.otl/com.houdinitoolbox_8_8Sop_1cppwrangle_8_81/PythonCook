@@ -49,4 +49,4 @@ if not node.evalParm("pause_compiling"):
 
 # Get and execute the Python code.
 code = node.parm("code").unexpandedString()
-exec(code)
+exec(code)  # pylint: disable=exec-used
