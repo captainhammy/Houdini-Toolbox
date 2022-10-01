@@ -684,7 +684,26 @@ class HoudiniInstallFile(HoudiniBase):
         # Open the tar file that this object represents and extract
         # everything to our temp directory, closing the file afterwards.
         with tarfile.open(self.path, "r:gz") as handle:
-            handle.extractall(temp_path)
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner) 
+                
+            
+            safe_extract(handle, temp_path)
 
         # Store the archive file name, minus the file extensions.
         archive_name = os.path.basename(self.path).replace(".tar.gz", "")
