@@ -7,8 +7,8 @@
 # Standard Library
 import collections.abc
 import io
-import os
 import re
+from importlib import resources
 from typing import List, OrderedDict, Tuple, Union
 
 # Third Party
@@ -22,11 +22,7 @@ import hou
 # GLOBALS
 # =============================================================================
 
-_PATH = os.path.join(
-    os.path.expandvars("$HOUDINI_TOOLBOX_DIR"), "resources", "help_template.yaml"
-)
-
-with open(_PATH, encoding="utf-8") as handle:
+with resources.files("houdini_toolbox.nodes").joinpath("resources/help_template.yaml").open(encoding="utf-8") as handle:
     _TEMPLATES = yaml.safe_load(handle)
 
 # Parameter templates which are multiparms.
