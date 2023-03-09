@@ -1,16 +1,3 @@
-/*
- * Produced by:
- *      Graham Thompson
- *      captainhammy@gmail.com
- *      www.captainhammy.com
- *
- * Description:
- *      Generate points based on DOP obects Impact record data.
- *
- * Name: SOP_DopImpactPoints.h
- *
-*/
-
 #ifndef __SOP_DopImpactPoints_h__
 #define __SOP_DopImpactPoints_h__
 

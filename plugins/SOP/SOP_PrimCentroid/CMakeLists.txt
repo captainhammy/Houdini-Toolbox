@@ -1,30 +1,28 @@
 
 project( SOP_PrimCentroid )
 
-set( op_context sop )
-set( op_name primcentroid )
-set( op_namespace com.houdinitoolbox )
-set( op_version 1 )
+set( OP_CONTEXT sop )
+set( OP_NAME primcentroid )
+set( OP_VERSION 1 )
+set( OP_LABEL "${HT_LABEL_PREFIX} Primitive Centroid" )
 
 set( library_name SOP_PrimCentroid )
 
+conifgure_operator_files( SHELF 1 ICON svg HELP 1 )
+
+# Copy files so we can use cmake to replace naming bits.
+configure_file( SOP_PrimCentroid.C.in SOP_PrimCentroid.C )
+configure_file( SOP_PrimCentroid.h SOP_PrimCentroid.h COPYONLY )
+
 # Add a library and its source files.
 add_library( ${library_name} SHARED
-    SOP_PrimCentroid.C
-    SOP_PrimCentroid.h
+    "${PROJECT_BINARY_DIR}/SOP_PrimCentroid.C"
+    "${PROJECT_BINARY_DIR}/SOP_PrimCentroid.h"
 )
 
 # Link against the Houdini libraries, and add required include directories and
 # compile definitions.
 target_link_libraries( ${library_name} Houdini )
 
-# Include ${CMAKE_CURRENT_BINARY_DIR} for the generated header.
-target_include_directories( ${library_name} PRIVATE
-    ${CMAKE_CURRENT_BINARY_DIR}
-)
-
 # Sets several common target properties, such as the library's output directory.
-houdini_configure_target( ${library_name} INSTDIR "${HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR}/dso" )
-
-add_secondary_files( SHELF 1 ICON svg HELP 1 )
-
+houdini_configure_target( ${library_name} INSTDIR ${HOUDINI_DSO_BUILD_PATH} )

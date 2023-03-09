@@ -1,22 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <shelfDocument>
-  <!-- This file contains definitions of shelves, toolbars, and tools.
- It should not be hand-edited when it is being used by the application.
- Note, that two definitions of the same element are not allowed in
- a single file. -->
-
-  <tool name="com.houdinitoolbox::sop_primgroupcentroid::1" label="HT Primitive Group Centroid" icon="{ICON_INSTALL_NAME}">
-    <helpURL>operator:com.houdinitoolbox::Sop/primgroupcentroid::1</helpURL>
+  <tool name="@TOOL_NAME@" label="@OP_LABEL@" icon="@SHELF_TOOL_ICON_NAME@">
+    <helpURL>@TOOL_HELP_URL@</helpURL>
     <toolMenuContext name="viewer">
       <contextNetType>SOP</contextNetType>
     </toolMenuContext>
     <toolMenuContext name="network">
-      <contextOpType>com.houdinitoolbox::Sop/primgroupcentroid::1</contextOpType>
+      <contextOpType>@NODE_TYPE_NAME_WITH_CATEGORY@</contextOpType>
     </toolMenuContext>
+    <toolSubmenu>@HT_TAB_MENU_FOLDER@</toolSubmenu>
     <toolSubmenu>Utility</toolSubmenu>
-    <toolSubmenu>Houdini Toolbox</toolSubmenu>
     <script scriptType="python"><![CDATA[import soptoolutils
 
-soptoolutils.genericTool(kwargs, 'com.houdinitoolbox::primgroupcentroid::1', allow_obj_sel=False)]]></script>
+soptoolutils.genericTool(kwargs, '@NODE_TYPE_NAME@', allow_obj_sel=False)]]></script>
   </tool>
 </shelfDocument>

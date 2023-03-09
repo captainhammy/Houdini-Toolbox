@@ -1,18 +1,3 @@
-/*
- * Produced by:
- *      Graham Thompson
- *      captainhammy@gmail.com
- *      www.captainhammy.com
- *
- * Description:
- *      Create points at the centroids of primitive groups, named primitives
- *      of classes.  If the second input is connected, use those points to
- *      transform the geometry.
- *
- * Name: SOP_PrimGroupCentroid.h
- *
-*/
-
 #ifndef __SOP_PrimGroupCentroid_h__
 #define __SOP_PrimGroupCentroid_h__
 

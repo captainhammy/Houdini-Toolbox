@@ -1,16 +1,3 @@
-/*
- * Produced by:
- *      Graham Thompson
- *      captainhammy@gmail.com
- *      www.captainhammy.com
- *
- * Description:
- *      Create a point at the center of each voxel.
- *
- * Name: SOP_PointsFromVoxels.h
- *
-*/
-
 #ifndef __SOP_PointsFromVoxels_h__
 #define __SOP_PointsFromVoxels_h__
 

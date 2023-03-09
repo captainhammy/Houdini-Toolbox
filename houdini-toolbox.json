@@ -1,19 +1,15 @@
 {
-    "path" : ["${HOUDINI_PACKAGE_PATH}/houdini", "${TOOLBOX_HOUDINI_PLUGIN_DIR}"],
-    "env": [
-        {
-            "HOUDINI_TOOLBOX_DIR": "${HOUDINI_PACKAGE_PATH}"
-        },
-	{
-	    "TOOLBOX_HOUDINI_PLUGIN_DIR": "${TOOLBOX_PLUGIN_INSTALL_DIR-${HOUDINI_PACKAGE_PATH}}/${HOUDINI_VERSION}"
-	},
-	{
-	    "PYTHONPATH":
-	    [
-		"${HOUDINI_PACKAGE_PATH}/python", {
-		    "method": "prepend"
+	"hpath": [
+		"${HOUDINI_PACKAGE_PATH}/houdini"
+	],
+	"env": [
+		{
+			"PYTHONPATH": [
+				"${HOUDINI_PACKAGE_PATH}/python",
+				{
+					"method": "prepend"
+				}
+			]
 		}
-	    ]
-	}
-    ]
+	]
 }

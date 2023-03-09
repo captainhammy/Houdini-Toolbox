@@ -1,18 +1,18 @@
 #type: node
-#context: sop
-#internal: com.houdinitoolbox::dopimpactpoints::1
-#icon: POP/hitinfo
+#context: @OP_HELP_CONTEXT@
+#internal: @NODE_TYPE_NAME@
+#icon: @help_icon_name@
 
-= DOP Impact Points =
+= @OP_LABEL@ =
 
 """Generates points based on Impact record data from DOP objects."""
 
 This operation creates points at the location of impacts of DOP objects.  These points can contain
 useful data about the collision as well as be filtered based on object ids and collision impulse.
 
-== Using Dop Impact Points ==
+== Using @OP_LABEL@ ==
 
-    # Invoke the [Icon:POP/hitinfo][Dop Impact Points|Node:sop/dopimpactpoints] tool from the __tab__ menu.
+    # Invoke the [Icon:@help_icon_name@][@OP_LABEL@|Node:@OP_HELP_CONTEXT@/@HELP_NAME@] tool from the __tab__ menu.
 
     # Select the Dop object(s) to create impact data for and press ((Enter)) to complete.
 

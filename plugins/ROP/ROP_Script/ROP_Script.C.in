@@ -1,16 +1,3 @@
-/*
- * Produced by:
- *      Graham Thompson
- *      captainhammy@gmail.com
- *      www.captainhammy.com
- *
- * Description:
- * 	Run a script on render.
- *
- * Name: ROP_Script.C
- *
-*/
-
 #include "ROP_Script.h"
 
 #include <OP/OP_Director.h>
@@ -26,8 +13,8 @@ void
 newDriverOperator(OP_OperatorTable *table)
 {
     table->addOperator(
-        new OP_Operator("com.houdinitoolbox::script::1",
-			"HT Script",
+        new OP_Operator("@NODE_TYPE_NAME@",
+			"@OP_LABEL@",
 			ROP_Script::myConstructor,
 			ROP_Script::getTemplatePair(),
 			0,
@@ -166,8 +153,6 @@ ROP_Script::langChangeCallback(void *data, int index, fpreal time, const PRM_Tem
 
     me = (ROP_Script *) data;
     me->evalString(language, "language", 0, time);
-
-//    std::cout << "Setting language to " << language << std::endl;
 
     command_parm = me->getParmPtr("command");
     command_template = command_parm->getTemplatePtr();

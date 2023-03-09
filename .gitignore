@@ -57,6 +57,7 @@ plugins/build
 *.ifd
 */backup/*
 houdini/otls/backup
+build
 
 # Local stuff
 *.code-workspace

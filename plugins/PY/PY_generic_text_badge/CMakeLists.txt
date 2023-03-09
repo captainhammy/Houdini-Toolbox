@@ -12,13 +12,8 @@ add_library( ${library_name} SHARED
 # compile definitions.
 target_link_libraries( ${library_name} Houdini )
 
-# Include ${CMAKE_CURRENT_BINARY_DIR} for the generated header.
-target_include_directories( ${library_name} PRIVATE
-    ${CMAKE_CURRENT_BINARY_DIR}
-)
-
 # Sets several common target properties, such as the library's output directory.
-houdini_configure_target( ${library_name} INSTDIR "${HOUDINI_TOOLBOX_PLUGIN_BUILD_DIR}/python${_houdini_python_version}libs" )
+houdini_configure_target( ${library_name} INSTDIR "${HOUDINI_PYTHON_BUILD_PATH}/houdini_toolbox/nodes" )
 
+# Include the relevant OPUI source dir so we can find the necessary header.
 target_include_directories( ${library_name} PRIVATE ${OPUI_GenericTextBadge_SOURCE_DIR} )
-

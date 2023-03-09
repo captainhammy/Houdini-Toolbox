@@ -1,5 +1,5 @@
 <!DOCTYPE RCC><RCC version="1.0">
-    <qresource prefix="/ht/rsc/">
+    <qresource prefix="/houdini_toolbox/rsc/">
         <file>icons/aovs/button_down.png</file>
         <file>icons/aovs/button_up.png</file>
         <file>icons/aovs/create_aov.png</file>

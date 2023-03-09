@@ -1,26 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <shelfDocument>
-  <!-- This file contains definitions of shelves, toolbars, and tools.
- It should not be hand-edited when it is being used by the application.
- Note, that two definitions of the same element are not allowed in
- a single file. -->
-
-  <tool name="com.houdinitoolbox::dopimpactpoints::1" label="HT DOP Impact Points" icon="POP_hitinfo">
-    <helpURL>operator:com.houdinitoolbox::Sop/dopimpactpoints::1</helpURL>
+  <tool name="@TOOL_NAME@" label="@OP_LABEL@" icon="@icon_name@">
+    <helpURL>@TOOL_HELP_URL@</helpURL>
     <toolMenuContext name="viewer">
       <contextNetType>SOP</contextNetType>
     </toolMenuContext>
     <toolMenuContext name="network">
-      <contextOpType>com.houdinitoolbox::Sop/dopimpactpoints::1</contextOpType>
+        <contextOpType>@NODE_TYPE_NAME_WITH_CATEGORY@</contextOpType>
     </toolMenuContext>
+    <toolSubmenu>@HT_TAB_MENU_FOLDER@</toolSubmenu>
     <toolSubmenu>Sourcing</toolSubmenu>
-    <toolSubmenu>Houdini Toolbox</toolSubmenu>
     <script scriptType="python"><![CDATA[
 # =============================================================================
 # IMPORTS
 # =============================================================================
 
-# Houdini Impocts
+# Houdini Imports
 import doptoolutils
 import soptoolutils
 import toolutils
@@ -52,9 +47,9 @@ if isinstance(activepane, hou.SceneViewer):
         # overriding the Ctrl and Cmd click options.
         kwargs["ctrlclick"] = True
         kwargs["cmdclick"] = True
-    
+
         # Create an instance of this asset.
-        sopnode = soptoolutils.genericTool(kwargs, 'dopimpactpoints')
+        sopnode = soptoolutils.genericTool(kwargs, '@NODE_TYPE_NAME@')
 
         # Set the DOP Network path.
         sopnode.parm("doppath").set(dopnet.path())
@@ -71,6 +66,6 @@ if isinstance(activepane, hou.SceneViewer):
         sopnode.setCurrent(True, True)
 
 else:
-    soptoolutils.genericTool(kwargs, 'com.houdinitoolbox::dopimpactpoints::1')]]></script>
+    soptoolutils.genericTool(kwargs, '@NODE_TYPE_NAME@')]]></script>
   </tool>
 </shelfDocument>

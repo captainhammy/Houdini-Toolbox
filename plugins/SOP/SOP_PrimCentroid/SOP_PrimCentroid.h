@@ -1,16 +1,3 @@
-/*
- * Produced by:
- *      Graham Thompson
- *      captainhammy@gmail.com
- *      www.captainhammy.com
- *
- * Description:
- *      Create points at the centroid of primitives.
- *
- * Name: SOP_PrimCentroid.h
- *
-*/
-
 #ifndef __SOP_PrimCentroid_h__
 #define __SOP_PrimCentroid_h__
 

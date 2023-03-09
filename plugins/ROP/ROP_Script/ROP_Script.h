@@ -1,16 +1,3 @@
-/*
- * Produced by:
- *      Graham Thompson
- *      captainhammy@gmail.com
- *      www.captainhammy.com
- *
- * Description:
- * 	Run a script on render.
- *
- * Name: ROP_Script.h
- *
-*/
-
 #ifndef __ROP_Script_h__
 #define __ROP_Script_h__
 

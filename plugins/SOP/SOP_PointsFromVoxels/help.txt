@@ -1,22 +1,22 @@
 #type: node
-#context: sop
-#internal: com.houdinitoolbox::pointsfromvoxels::1
-#icon: /nodes/sop/{ICON_INSTALL_PATH}
+#context: @OP_HELP_CONTEXT@
+#internal: @NODE_TYPE_NAME@
+#icon: /nodes/@OP_HELP_CONTEXT@/@CUSTOM_HELP_ICON_NAME@
 
-= HT Points From Voxels = 
+= @OP_LABEL@ =
 
 """Create points at the center of each voxel of a fog volume."""
 
-This node will create a point at the center of each voxel of the specified 
-primitive in a fog volume. 
+This node will create a point at the center of each voxel of the specified
+primitive in a fog volume.
 
 @parameters
     Primitive Number:
         The primitive number of the volume to use.
     Cull Empty:
-	Only create a point if the voxel has a non-zero value.
+	    Only create a point if the voxel has a non-zero value.
     Store Voxel Values:
-	Store the voxel values on each representative point.  If a *name*
-	attribute exists, the attribute will be named using the selected
-	primitive's name.  If not, the attribute will be called *value*.
+	    Store the voxel values on each representative point.  If a *name*
+	    attribute exists, the attribute will be named using the selected
+	    primitive's name.  If not, the attribute will be called *value*.
 

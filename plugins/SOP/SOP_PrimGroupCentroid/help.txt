@@ -1,9 +1,9 @@
 #type: node
-#context: sop
-#internal: com.houdinitoolbox::primgroupcentroid::1
-#icon: /nodes/sop/{ICON_INSTALL_PATH}
+#context: @OP_HELP_CONTEXT@
+#internal: @NODE_TYPE_NAME@
+#icon: /nodes/@OP_HELP_CONTEXT@/@CUSTOM_HELP_ICON_NAME@
 
-= HT Primitive Group Centroid =
+= @OP_LABEL@ =
 
 """Create points at the centers of primitive groups."""
 

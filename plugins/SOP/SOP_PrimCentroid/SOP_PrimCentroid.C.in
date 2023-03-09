@@ -1,16 +1,3 @@
-/*
- * Produced by:
- *      Graham Thompson
- *      captainhammy@gmail.com
- *      www.captainhammy.com
- *
- * Description:
- *      Create points at the centroid of primitives.
- *
- * Name: SOP_PrimCentroid.C
- *
-*/
-
 #include "SOP_PrimCentroid.h"
 
 #include <CH/CH_Manager.h>
@@ -25,8 +12,8 @@ void
 newSopOperator(OP_OperatorTable *table)
 {
     table->addOperator(
-        new OP_Operator("com.houdinitoolbox::primcentroid::1",
-                        "HT Primitive Centroid",
+        new OP_Operator("@NODE_TYPE_NAME@",
+                        "@OP_LABEL@",
                         SOP_PrimCentroid::myConstructor,
                         SOP_PrimCentroid::myTemplateList,
                         1,
