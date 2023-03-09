@@ -8,8 +8,6 @@ ignore-patterns=icons.py
 
 persistent=no
 
-load-plugins=
-
 suggestion-mode=yes
 
 unsafe-load-any-extension=no
@@ -20,14 +18,10 @@ unsafe-load-any-extension=no
 disable=import-error,
 	c-extension-no-member,
 	line-too-long,
-	no-absolute-import,
 	duplicate-code,
 	fixme,
 	too-many-lines,
-	bad-continuation,
-	import-outside-toplevel,
-	useless-object-inheritance,
-	exec-used
+	import-outside-toplevel
 
 enable=no-else-return
 
@@ -104,7 +98,7 @@ max-module-lines=1000
 single-line-if-stmt=no
 
 # List of optional constructs for which whitespace checking is disabled
-no-space-check=trailing-comma,dict-separator
+# no-space-check=trailing-comma,dict-separator
 
 
 [SIMILARITIES]
@@ -253,7 +247,7 @@ property-classes=abc.abstractproperty
 variable-naming-style=snake_case
 
 # List of builtins function names that should not be used, separated by a comma
-bad-functions=apply,input
+#bad-functions=apply,input
 
 
 [DESIGN]

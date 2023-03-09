@@ -1,9 +1,7 @@
 [flake8]
-exclude = 
+exclude =
     docs/*
     icons/*
-    python/ht/machinery/argparser.py
-    python/ht/ui/icons.py
 
 builtins = unicode
 
@@ -11,7 +9,7 @@ max-line-length = 120
 
 per-file-ignores =
     houdini/pyfilter/ht-pyfilter.py:E402
-    houdini/python2.7libs/pythonrc.py:E402
+    houdini/python*libs/pythonrc.py:E402
     houdini/scripts/*scenesave.py:F821
     houdini/scripts/On*.py:F821
     houdini/scripts/PreFirstCreate.py:F821
