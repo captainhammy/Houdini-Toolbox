@@ -7,9 +7,9 @@
 # Standard Library
 from typing import Optional
 
-# Third Party
-import _ht_generic_image_badge
-import _ht_generic_text_badge
+# Houdini Toolbox
+from . import _ht_generic_image_badge
+from . import _ht_generic_text_badge
 
 # Houdini
 import hou
