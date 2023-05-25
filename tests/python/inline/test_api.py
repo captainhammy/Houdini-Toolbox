@@ -16,7 +16,6 @@ import houdini_toolbox.inline.api
 # Houdini
 import hou
 
-
 pytestmark = pytest.mark.usefixtures("load_module_test_file")
 
 
@@ -1962,7 +1961,7 @@ def test_primitive_volume(obj_test_geo):
 
     prim = obj_test_geo.iterPrims()[0]
 
-    assert houdini_toolbox.inline.api.primitive_volume(prim) == target
+    assert hou.almostEqual(houdini_toolbox.inline.api.primitive_volume(prim), target)
 
 
 class Test_reverse_prim:
