@@ -6,9 +6,7 @@
 
 # Standard Library
 import sys
-
-# Third Party
-import mock
+from unittest import mock
 
 # =============================================================================
 

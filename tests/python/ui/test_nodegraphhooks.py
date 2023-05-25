@@ -8,7 +8,7 @@
 import importlib.util
 
 spec = importlib.util.spec_from_file_location(
-    "nodegraphhooks", "houdini/python3.7libs/nodegraphhooks.py"
+    "nodegraphhooks", "houdini/python3.9libs/nodegraphhooks.py"
 )
 nodegraphhooks = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(nodegraphhooks)
@@ -35,7 +35,9 @@ class Test_createEventHandler:
         mock_is = mocker.patch(
             "houdini_toolbox.ui.nodegraph.is_houdini_paste_event", return_value=True
         )
-        mock_handle = mocker.patch("houdini_toolbox.ui.nodegraph.handle_houdini_paste_event")
+        mock_handle = mocker.patch(
+            "houdini_toolbox.ui.nodegraph.handle_houdini_paste_event"
+        )
 
         mock_event = mocker.MagicMock(spec=KeyboardEvent)
         mock_event.eventtype = "keyhit"
