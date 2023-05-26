@@ -5,9 +5,9 @@
 # =============================================================================
 
 # Standard Library
+import importlib.resources
 import json
 import logging.config
-import os
 
 # =============================================================================
 # FUNCTIONS
@@ -20,9 +20,6 @@ def init_config():
     :return:
 
     """
-    config_path = os.path.join(os.path.dirname(__file__), "config.json")
-
-    if os.path.exists(config_path):
-        with open(config_path, "r", encoding="utf-8") as handle:
-            config = json.load(handle)
-            logging.config.dictConfig(config)
+    config_file = importlib.resources.open_text("houdini_toolbox.logging", "config.json")
+    config = json.load(config_file)
+    logging.config.dictConfig(config)

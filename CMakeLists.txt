@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.6)
 
 include(RezBuild)
 
-file(GLOB_RECURSE py_files "python/*.py" "python/*.yaml")
+file(GLOB_RECURSE py_files "python/*.py" "python/*.yaml" "python/*.json")
 
 rez_install_files(
     FILES ${py_files}

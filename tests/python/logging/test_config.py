@@ -5,7 +5,7 @@
 # =============================================================================
 
 # Standard Library
-import os
+import logging
 
 # Houdini Toolbox
 import houdini_toolbox.logging.config
@@ -15,46 +15,12 @@ import houdini_toolbox.logging.config
 # =============================================================================
 
 
-class Test_init_config:
-    """Test houdini_toolbox.logging.config.init_config."""
+def test_init_config():
+    """Test houdini_toolbox.logging.config.init_config()."""
+    # Initialize our logging config.
+    houdini_toolbox.logging.config.init_config()
 
-    def test_config_exists(self, mocker):
-        """Test when a config file exists."""
-        fake_path = "/path/to/file.py"
+    logger = logging.getLogger("houdini_toolbox")
 
-        mocker.patch("houdini_toolbox.logging.config.__file__", fake_path)
-
-        mock_exists = mocker.patch("os.path.exists", return_value=True)
-        mock_load = mocker.patch("json.load")
-        mock_config = mocker.patch("logging.config.dictConfig")
-
-        mock_handle = mocker.mock_open()
-
-        mocker.patch("builtins.open", mock_handle)
-
-        houdini_toolbox.logging.config.init_config()
-
-        mock_exists.assert_called_with(
-            os.path.join(os.path.dirname(fake_path), "config.json")
-        )
-        mock_load.assert_called_with(mock_handle.return_value)
-        mock_config.assert_called_with(mock_load.return_value)
-
-    def test_no_config(self, mocker):
-        """Test when a config file does not exist."""
-        fake_path = "/path/to/file.py"
-
-        mocker.patch("houdini_toolbox.logging.config.__file__", fake_path)
-
-        mock_exists = mocker.patch("os.path.exists", return_value=False)
-
-        mock_handle = mocker.mock_open()
-
-        mocker.patch("builtins.open", mock_handle)
-
-        houdini_toolbox.logging.config.init_config()
-
-        mock_exists.assert_called_with(
-            os.path.join(os.path.dirname(fake_path), "config.json")
-        )
-        mock_handle.assert_not_called()
+    # Verify that the 'houdini_toolbox' parent logger has our expected handlers attached.
+    assert [handler.name for handler in logger.handlers] == ["console", "houdini_python_shell"]
