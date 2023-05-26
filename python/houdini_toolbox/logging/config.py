@@ -20,6 +20,8 @@ def init_config():
     :return:
 
     """
-    config_file = importlib.resources.open_text("houdini_toolbox.logging", "config.json")
-    config = json.load(config_file)
-    logging.config.dictConfig(config)
+    config_file = importlib.resources.files("houdini_toolbox.logging").joinpath("config.json")
+
+    with config_file.open() as handle:
+        config = json.load(handle)
+        logging.config.dictConfig(config)
