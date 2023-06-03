@@ -4,21 +4,41 @@
 # IMPORTS
 # ==============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
 import logging
-from contextlib import contextmanager
-from typing import Any, Optional, Tuple
-
-# Third Party
-# NOTE: Must use logquacious until in Python 3.8 as that is the version that adds
-# the stacklevel arg.  I think we can also go back to using __new__ to wrap the
-# function names when doing that too?
-from logquacious.backport_configurable_stacklevel import patch_logger
+from functools import wraps
+from typing import Any, Callable, Optional, Tuple, Type
 
 # Houdini
 import hou
+
+
+# ==============================================================================
+# GLOBALS
+# ==============================================================================
+
+# Call kwargs that should be moved into the extra data passed to process().
+_KWARGS_TO_EXTRA_KEYS = (
+    "node",
+    "dialog",
+    "status_bar",
+    "title",
+)
+
+# Logging functions to wrap, and a corresponding severity for popup
+# messages.
+_TO_WRAP = {
+    "critical": hou.severityType.Error,
+    "debug": hou.severityType.Message,
+    "error": hou.severityType.Error,
+    "exception": hou.severityType.Error,
+    "info": hou.severityType.ImportantMessage,
+    "warning": hou.severityType.Warning,
+}
+
 
 # ==============================================================================
 # CLASSES
@@ -31,24 +51,45 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
     automated notification.
 
     :param base_logger: The base package logger.
-    :param dialog: Whether to always utilize the dialog option.
     :param node: Optional node for prefixing messages with the path.
+    :param dialog: Whether to always utilize the dialog option.
     :param status_bar: Whether to always utilize the dialog option.
-
+    :param extra: Extra args to use to generate log messages.
     """
 
     def __init__(
         self,
         base_logger: logging.Logger,
-        dialog: bool = False,
         node: hou.Node = None,
+        dialog: bool = False,
         status_bar: bool = False,
+        extra: Optional[dict] = None,
     ) -> None:
-        super().__init__(base_logger, {})
+        extra = extra if extra else {}
+
+        super().__init__(base_logger, extra)
 
         self._dialog = dialog
         self._node = node
         self._status_bar = status_bar
+
+    def __new__(
+        cls: Type[HoudiniLoggerAdapter], *args: Any, **kwargs: Any  # pylint: disable=unused-argument
+    ) -> HoudiniLoggerAdapter:  # pragma: no cover
+        """Overridden __new__ that will wrap logging methods with custom function."""
+        inst = super(HoudiniLoggerAdapter, cls).__new__(cls)
+
+        # We want to wrap various log calls to process args and set severities.
+        for key, severity in _TO_WRAP.items():
+            if hasattr(inst, key):
+                attr = getattr(inst, key)
+
+                if callable(attr):
+                    wrapped = _wrap_logger(attr, severity)
+
+                    setattr(inst, key, wrapped)
+
+        return inst
 
     # --------------------------------------------------------------------------
     # CLASS METHODS
@@ -58,9 +99,10 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
     def from_name(
         cls,
         name: str,
-        dialog: bool = False,
         node: hou.Node = None,
+        dialog: bool = False,
         status_bar: bool = False,
+        extra: Optional[dict] = None,
     ) -> HoudiniLoggerAdapter:
         """Create a new HoudiniLoggerAdapter from a name.
 
@@ -73,13 +115,14 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         :param dialog: Whether to always utilize the dialog option.
         :param node: Optional node for prefixing messages with the path.
         :param status_bar: Whether to always utilize the dialog option.
+        :param extra: Extra args to use to generate log messages.
         :return: An adapter wrapping a logger of the passed name.
 
         """
         # Create a base logger
         base_logger = logging.getLogger(name)
 
-        return cls(base_logger, dialog=dialog, node=node, status_bar=status_bar)
+        return cls(base_logger, node=node, dialog=dialog, status_bar=status_bar, extra=extra)
 
     # --------------------------------------------------------------------------
     # PROPERTIES
@@ -87,11 +130,11 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 
     @property
     def dialog(self) -> bool:
-        """Whether or not the dialog will be displayed."""
+        """Whether the dialog will be displayed."""
         return self._dialog
 
     @dialog.setter
-    def dialog(self, dialog):
+    def dialog(self, dialog: bool) -> None:
         self._dialog = dialog
 
     # --------------------------------------------------------------------------
@@ -102,18 +145,18 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         return self._node
 
     @node.setter
-    def node(self, node):
+    def node(self, node: Optional[hou.Node]) -> None:
         self._node = node
 
     # --------------------------------------------------------------------------
 
     @property
     def status_bar(self) -> bool:
-        """Whether or not the message will be logged to the status bar."""
+        """Whether the message will be logged to the status bar."""
         return self._status_bar
 
     @status_bar.setter
-    def status_bar(self, status_bar):
+    def status_bar(self, status_bar: bool) -> None:
         self._status_bar = status_bar
 
     # --------------------------------------------------------------------------
@@ -130,20 +173,19 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         :return: The message and updated kwargs.
 
         """
+        extra: dict = self.extra  # type: ignore
+
         if "extra" in kwargs:
-            extra = kwargs["extra"]
+            extra.update(kwargs["extra"])
 
             node = extra.pop("node", self.node)
 
             # Prepend the message with the node path.
             if node is not None:
-                path = node.path()
-                msg = f"{path} - {msg}"
+                msg = f"{node.path()} - {msg}"
 
             dialog = extra.pop("dialog", self.dialog)
             status_bar = extra.pop("status_bar", self.status_bar)
-
-            severity = hou.severityType.Message
 
             if hou.isUIAvailable():
                 # Copy of the message for our display.
@@ -153,7 +195,7 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
                 if "message_args" in extra:
                     houdini_message = houdini_message % extra["message_args"]
 
-                severity = extra.pop("severity", severity)
+                severity = extra.pop("severity", hou.severityType.Message)
 
                 # Display the message as a popup.
                 if dialog:
@@ -166,75 +208,9 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
                 if status_bar:
                     hou.ui.setStatusMessage(houdini_message, severity=severity)
 
+        kwargs["extra"] = extra
+
         return msg, kwargs
-
-    def critical(self, msg: str, *args: Any, **kwargs: Any):
-        """Delegate an info call to the underlying logger, after adding
-        contextual information from this adapter instance.
-
-        """
-        _pre_process_args(hou.severityType.Error, args, kwargs)
-        msg, kwargs = self.process(msg, kwargs)
-
-        with _patch_logger(self.logger):
-            self.logger.critical(msg, *args, **kwargs)
-
-    def debug(self, msg: str, *args: Any, **kwargs: Any):
-        """Delegate an info call to the underlying logger, after adding
-        contextual information from this adapter instance.
-
-        """
-        _pre_process_args(hou.severityType.Message, args, kwargs)
-        msg, kwargs = self.process(msg, kwargs)
-
-        with _patch_logger(self.logger):
-            self.logger.debug(msg, *args, **kwargs)
-
-    def error(self, msg: str, *args: Any, **kwargs: Any):
-        """Delegate an info call to the underlying logger, after adding
-        contextual information from this adapter instance.
-
-        """
-        _pre_process_args(hou.severityType.Error, args, kwargs)
-        msg, kwargs = self.process(msg, kwargs)
-
-        with _patch_logger(self.logger):
-            self.logger.error(msg, *args, **kwargs)
-
-    def exception(self, msg: str, *args: Any, **kwargs: Any):
-        """Delegate an info call to the underlying logger, after adding
-        contextual information from this adapter instance.
-
-        """
-        _pre_process_args(hou.severityType.Error, args, kwargs)
-        msg, kwargs = self.process(msg, kwargs)
-
-        kwargs["exc_info"] = 1
-
-        with _patch_logger(self.logger):
-            self.logger.exception(msg, *args, **kwargs)
-
-    def info(self, msg: str, *args: Any, **kwargs: Any):
-        """Delegate an info call to the underlying logger, after adding
-        contextual information from this adapter instance.
-
-        """
-        _pre_process_args(hou.severityType.ImportantMessage, args, kwargs)
-        msg, kwargs = self.process(msg, kwargs)
-
-        with _patch_logger(self.logger):
-            self.logger.info(msg, *args, **kwargs)
-
-    def warning(self, msg: str, *args: Any, **kwargs: Any):
-        """Delegate an info call to the underlying logger, after adding
-        contextual information from this adapter instance.
-
-        """
-        _pre_process_args(hou.severityType.Warning, args, kwargs)
-        msg, kwargs = self.process(msg, kwargs)
-
-        with _patch_logger(self.logger):
-            self.logger.warning(msg, *args, **kwargs)
 
 
 # ==============================================================================
@@ -242,71 +218,32 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 # ==============================================================================
 
 
-@contextmanager
-def _patch_logger(logger: logging.Logger):
-    """Patch the __class__ of the logger for the duration so we can utilize the
-    'stacklevel' arg.
 
-    :param logger: The logger to patch.
-    :return:
+def _wrap_logger(func: Callable, severity: hou.severityType) -> Callable:
+    """Function which wraps a logger method with custom code."""
 
-    """
-    original_logger_class = logger.__class__
+    @wraps(func)
+    def func_wrapper(*args: Any, **kwargs: Any) -> Any:  # pylint: disable=missing-docstring
+        # Get the extra dictionary or an empty one if it doesn't exist.
+        extra = kwargs.setdefault("extra", {})
 
-    logger.__class__ = patch_logger(  # pylint: disable=invalid-class-object
-        logger.__class__
-    )
+        # Set the severity to our passed in value.
+        extra["severity"] = severity
 
-    try:
-        yield
+        for key in _KWARGS_TO_EXTRA_KEYS:
+            if key in kwargs:
+                extra[key] = kwargs.pop(key)
 
-    finally:
-        logger.__class__ = original_logger_class
+        # If there is more than one arg we want to pass them as extra data so that
+        # we can use it to format the message for extra outputs.
+        if len(args) > 1:
+            extra["message_args"] = args[1:]
 
+        if "stacklevel" not in kwargs:
+            # Set stacklevel=4 so that the module/file/line reporting will represent
+            # the calling point and not the function call inside the adapter.
+            kwargs["stacklevel"] = 4
 
-def _pre_process_args(severity: hou.severityType, args: Any, kwargs: Any):
-    """Pre-process args.
+        return func(*args, **kwargs)
 
-    :param severity: The message severity.
-    :param args: The list of message args.
-    :param kwargs: The kwargs dict.
-    :return:
-
-    """
-    extra = kwargs.setdefault("extra", {})
-
-    # Set the severity to our passed in value.
-    extra["severity"] = severity
-
-    # Check if notify is set.
-    if "notify_send" in kwargs:
-        extra["notify_send"] = kwargs.pop("notify_send")
-
-    # If a 'node' arg was passed to the call, remove it and store the
-    # node.
-    if "node" in kwargs:
-        extra["node"] = kwargs.pop("node")
-
-    # If a 'dialog' arg was passed to the call, remove it and store the
-    # value.
-    if "dialog" in kwargs:
-        extra["dialog"] = kwargs.pop("dialog")
-
-    # If a 'status_bar' arg was passed to the call, remove it and store the
-    # value.
-    if "status_bar" in kwargs:
-        extra["status_bar"] = kwargs.pop("status_bar")
-
-    # If a 'title' arg was passed to the call, remove it and store the
-    # value.
-    if "title" in kwargs:
-        extra["title"] = kwargs.pop("title")
-
-    # Stash any log format args so we can pass them along to process().
-    if args:
-        extra["message_args"] = args
-
-    if "stacklevel" not in kwargs:
-        # Set stacklevel=2 so that the module/file/line reporting will represent
-        # the calling point and not the function call inside the adapter..
-        kwargs["stacklevel"] = 2
+    return func_wrapper

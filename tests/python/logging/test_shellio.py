@@ -25,7 +25,9 @@ import hou
 def init_handler(mocker):
     """Fixture to initialize a handler."""
     mocker.patch.object(
-        houdini_toolbox.logging.shellio.PythonShellHandler, "__init__", lambda x, y: None
+        houdini_toolbox.logging.shellio.PythonShellHandler,
+        "__init__",
+        lambda x, y: None,
     )
 
     def _create():

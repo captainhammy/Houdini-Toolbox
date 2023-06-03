@@ -1,8 +1,3 @@
-humanfriendly
 Jinja2
-logquacious
 numpy
-requests
 scipy
-termcolor
-tqdm
