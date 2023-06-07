@@ -18,7 +18,11 @@ list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" )
 include( HoudiniToolboxPlugins )
 
 # Set useful paths for building Houdini items under.
-set( HOUDINI_BUILD_PATH "$ENV{REZ_BUILD_PATH}/houdini" )
+# We want to build things under 'plugins/houdini' (instead of just 'houdini')
+# so that we can blanket install that directory and not have to worry about
+# installing any other build files that might be generated in the base 'houdini'
+# directory.
+set( HOUDINI_BUILD_PATH "$ENV{REZ_BUILD_PATH}/plugins/houdini" )
 set( HOUDINI_DSO_BUILD_PATH "${HOUDINI_BUILD_PATH}/dso" )
 set( HOUDINI_OPUI_BUILD_PATH "${HOUDINI_BUILD_PATH}/dso/opui" )
 
