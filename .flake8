@@ -1,9 +1,10 @@
 [flake8]
 exclude =
+    build/*
     docs/*
+    houdini/otls/backup/*
     icons/*
-
-builtins = unicode
+    package.py
 
 max-line-length = 120
 
@@ -15,8 +16,5 @@ per-file-ignores =
     houdini/scripts/PreFirstCreate.py:F821
     houdini/scripts/PostLastDelete.py:F821
     houdini/scripts/SyncNodeVersion.py:F821
-    python/ht/events/__init__.py:F401
-    python/ht/logging/__init__.py:F401
-    python/ht/inline/lib.py:E122
-    python/ht/nodes/styles/__init__.py:F401
+    python/houdini_toolbox/ui/aovs/utils.py:E501
     tests/*:E501

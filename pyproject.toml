@@ -1,0 +1,178 @@
+[tool.pytest.ini_options]
+    addopts = "--cov --cov-report=html --color=yes"
+
+[tool.isort]
+    profile = "black"
+    src_paths = ["bin", "python"]
+    known_houdini = ["EC2", "alignutils", "assetauthortools", "assetdownload", "autorig", "autorigs", "bakeanimation", "baseinfowindow", "bookish", "bvhviewer", "canvaseventtypes", "channelwranglesnippet", "charactertoolutils", "charpicker", "chopnettoolutils", "choptoolutils", "cloud", "cloudEULA", "cloudsubmit", "cloudtoolutils", "colorschemeutils", "contextoptions", "cop2toolutils", "copnettoolutils", "crowds", "crowdstoolutils", "dbg", "defaultstatetools", "defaulttoolmenus", "defaulttools", "digitalassetsupport", "displaymessage", "dopclothproxy", "dopclothtoolutils", "dopfemtoolutils", "dopgeofiltertoolutils", "dopinstance", "dopparticlefluidtoolutils", "doppoptoolutils", "doppyrotoolutils", "doprbdtoolutils", "dopreltoolutils", "dopsbdtoolutils", "dopsmoketoolutils", "dopsparsepyrotools", "dopstatictoolutils", "doptoolutils", "dopwiretoolutils", "dragdroputils", "drivertoolutils", "expression_functions", "expressionmenu", "fileutils", "furtoolutils", "furutils", "gasresizedynamic", "generateHDAToolsForOTL", "generate_proto", "handleutils", "hapi", "hdefereval", "hjson", "hjsonrpc", "hotkeys", "hou", "houdiniInterpreter", "houdiniengineutils", "houdinihelp", "houdiniinternals", "houpythonportion", "houxmlrpc", "hqrop", "hqueue", "hrpyc", "hscp", "husd", "husdoutputprocessors", "husdshadertranslators", "husdui", "husktrace", "hutil", "hwebserver", "images2gif", "inlinecpp", "insertionpointutils", "introspect", "lightlinker", "lightmixer", "lightstate", "loadHelpcardOTLExample", "lopcamutils", "lopedit", "loplightandcamutils", "lopshaderutils", "loptoolutils", "loputils", "mantra", "materiallinker", "metaexpr", "modelview", "mssbuild", "muscletoolutils", "mvexportutils", "nodegraph", "nodegraphalign", "nodegraphautoscroll", "nodegraphbase", "nodegraphconnect", "nodegraphdisplay", "nodegraphdispopts", "nodegraphedittext", "nodegraphfastfind", "nodegraphflags", "nodegraphfurutils", "nodegraphgestures", "nodegraphhooks", "nodegraphhotkeys", "nodegraphinfo", "nodegraphlayout", "nodegraphpalettes", "nodegraphpopupmenus", "nodegraphprefs", "nodegraphquicknav", "nodegraphrename", "nodegraphselectpos", "nodegraphselectposhooks", "nodegraphsnap", "nodegraphstates", "nodegraphtitle", "nodegraphtopui", "nodegraphui", "nodegraphutils", "nodegraphvellumutils", "nodegraphview", "nodepresets", "nodesearch", "nodeselectionutil", "nodethemes", "nodeutils", "objecttoolutils", "opnode_sum", "optixdownload", "paginate", "parmutils", "parsepeakuserlog", "particletoolutils", "pdg", "pdgd", "pdgdatalayer", "pdgjob", "pdgpathmap", "pdgservicepanel", "pdgstateserver", "pdgutils", "perfmon_sum", "pluginutils", "poselib", "posespacedeform", "poster", "pygmentshighlighter", "pyro2", "pythonscriptmenu", "quickplanes", "radialmenu", "rendertracker", "resourceutils", "rigtoolutils", "rmands", "roptoolutils", "sas", "scenegraphdetails", "scenegraphlayers", "shadingutils", "shelfutils", "shopclerks", "shoptoolutils", "sidefxlabs", "simtracker", "skytoolutils", "snippetmenu", "soptoolutils", "soputils", "stagemanager", "stateutils", "stroketoolutils", "taskgraphtable", "taskgraphtablepanel", "terraintoolutils", "toolprompts", "toolutils", "top", "topnettoolutils", "toptoolutils", "uiutils", "usdinlinelayermenu", "usdprimicons", "usdrenderers", "usdroputils", "vexpressionmenu", "viewerhandle", "viewerstate", "volumetoolutils", "vopcallbacks", "vopfxmenu", "vopnettoolutils", "voptoolutils", "webapiclient", "Alfred", "AlfredRun", "HQrender", "HQsim", "IFD", "IFDapi", "IFDarchive", "IFDframe", "IFDgeo", "IFDhooks", "IFDmantra", "IFDmisc", "IFDsettings", "OGL", "RIB", "RIBapi", "RIBapiprman", "RIBapiprmantext", "RIBapisoho", "RIBarchive", "RIBframe", "RIBgeo", "RIBhooks", "RIBmisc", "RIBparm", "RIBprman21.0", "RIBptinst", "RIBsettings", "RIBsohogeo", "SOHOcommon", "debug", "dsmmerge", "hbrickmap", "soho", "sohog", "sohoglue", "wranglers", "wren"]
+    sections = "FUTURE,STDLIB,THIRDPARTY,FIRSTPARTY,LOCALFOLDER,HOUDINI"
+    import_heading_future = "Future"
+    import_heading_stdlib = "Standard Library"
+    import_heading_thirdparty = "Third Party"
+    import_heading_firstparty = "Houdini Toolbox"
+    import_heading_houdini = "Houdini"
+    dedup_headings = true
+    skip_glob = "*icons.py"
+    indented_import_headings = false
+
+[tool.coverage]
+
+    [tool.coverage.run]
+        branch = true
+        source =  [
+            "houdini_toolbox",
+            "houdini/python3.9libs/nodegraphhooks.py",
+        ]
+        omit = [
+            "*tests*",
+            "*/constants.py",
+            "*/python/houdini_toolbox/events/types.py",
+            "*/python/houdini_toolbox/inline/lib.py",
+            "*/python/houdini_toolbox/nodes/helpcard.py",
+            "*/python/houdini_toolbox/ui/aovs/*",
+            "*/python/houdini_toolbox/ui/icons.py",
+            "*/python/houdini_toolbox/ui/paste/*",
+        ]
+        disable_warnings = [
+            "module-not-imported",
+            "module-not-measured",
+        ]
+    [tool.coverage.report]
+        exclude_lines = [
+            # Have to re-enable the standard pragma
+            "pragma: no cover",
+
+            # Don't complain about missing debug-only code:
+            "def __repr__",
+            "if self.debug",
+            "if TYPE_CHECKING",
+
+            # Don't complain if tests don't hit defensive assertion code:
+            "raise AssertionError",
+            "raise NotImplementedError",
+
+            # Don't complain if non-runnable code isn't run:
+            "if 0:",
+            "if __name__ == .__main__.:",
+        ]
+        ignore_errors = true
+        skip_empty = true
+
+    [tool.coverage.html]
+        directory = "coverage_html_report"
+
+[tool.mypy]
+    mypy_path = "python"
+    files = "python"
+    disallow_incomplete_defs = true
+    disallow_untyped_calls = true
+    disallow_untyped_defs = true
+
+    [[tool.mypy.overrides]]
+        module = "hou.*"
+        ignore_missing_imports = true
+
+    [[tool.mypy.overrides]]
+        module = "hdefereval.*"
+        ignore_missing_imports = true
+
+    [[tool.mypy.overrides]]
+        module = "inlinecpp.*"
+        ignore_missing_imports = true
+
+    [[tool.mypy.overrides]]
+        module = "IFDapi.*"
+        ignore_missing_imports = true
+
+[tool.pylint]
+
+    [tool.pylint.master]
+        extension-pkg-whitelist = ['PySide2']
+        ignore=['CVS']
+        ignore-patterns=["icons.py"]
+        ignored-modules=["houdini_toolbox.nodes._ht_generic_image_badge,_ht_generic_image_badge"]
+        persistent = ['no']
+        suggestion-mode = ['yes']
+        unsafe-load-any-extension = ['no']
+
+    [tool.pylint.'MESSAGES CONTROL']
+        disable = [
+            'import-error,c-extension-no-member,line-too-long,duplicate-code,fixme,too-many-lines,import-outside-toplevel'
+            ]
+        enable = ['no-else-return']
+
+    [tool.pylint.'REPORTS']
+        reports = ['no']
+        score = ['no']
+
+    [tool.pylint.'LOGGING']
+      logging-modules = ['logging']
+
+    [tool.pylint.'VARIABLES']
+        allow-global-unused-variables = ['yes']
+        dummy-variables-rgx = ['_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_']
+        ignored-argument-names = ['_.*|^ignored_|^unused_']
+        init-import = ['no']
+
+    [tool.pylint.'FORMAT']
+        ignore-long-lines = ['^\s*(# )?<?https?://\S+>?$']
+        indent-after-paren = 4
+        indent-string = '    '
+        max-line-length = 100
+        max-module-lines = 1000
+        single-line-class-stmt = ['no']
+        single-line-if-stmt = ['no']
+
+    [tool.pylint.'TYPECHECK']
+        contextmanager-decorators = ['contextlib.contextmanager']
+        ignore-mixin-members = ['yes']
+        ignore-on-opaque-inference = ['yes']
+        ignored-classes = ['optparse.Values,thread._local,_thread._local,Signal']
+        ignored-modules = ['PySide2,shiboken2,houdini_toolbox.ui.icons']
+        missing-member-hint = ['yes']
+        missing-member-hint-distance = 1
+
+    [tool.pylint.'MISCELLANEOUS']
+        notes = ['FIXME,XXX,TODO,BUG']
+
+    [tool.pylint.'BASIC']
+        argument-naming-style=['snake_case']
+        attr-naming-style=['snake_case']
+        bad-names=['foo,bar,foobar,baz']
+        class-attribute-naming-style='any'
+        class-naming-style='PascalCase'
+        const-rgx=['(([a-zA-Z_][a-zA-Z0-9_]*)|(__.*__))$']
+        typevar-rgx=['^[A-Z][a-z]+(?:[A-Z][a-z]+)*$']
+        docstring-min-length = -1
+        function-naming-style='snake_case'
+        good-names=['i,j,k,t,ex,fp,Run,_']  # fp for pytest_subprocess
+        inlinevar-naming-style='any'
+        method-naming-style='snake_case'
+        module-rgx='(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+)|([0-9]+))$'
+        name-group=''
+        no-docstring-rgx='^_'
+        property-classes='abc.abstractproperty'
+        variable-naming-style='snake_case'
+
+    [tool.pylint.'DESIGN']
+        max-args = 8
+        max-attributes = 30
+        max-bool-expr = 5
+        max-branches = 40
+        max-locals = 15
+        max-parents = 7
+        max-public-methods = 20
+        max-returns = 6
+        max-statements = 100
+        min-public-methods = 0
+
+    [tool.pylint.'CLASSES']
+        defining-attr-methods = ['__init__,__new__,setUp']
+        valid-classmethod-first-arg = ['cls']
+        valid-metaclass-classmethod-first-arg = ['mcs']
+
+    [tool.pylint.'IMPORTS']
+      allow-wildcard-with-all = ['no']
+
+    [tool.pylint.'EXCEPTIONS']
+       overgeneral-exceptions = ['Exception,hou.Error']
