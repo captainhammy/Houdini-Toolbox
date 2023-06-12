@@ -6,6 +6,7 @@ actions.
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
@@ -13,7 +14,7 @@ import argparse
 import importlib
 import json
 import logging
-from typing import TYPE_CHECKING, List, Optional, Tuple, Type
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Type
 
 if TYPE_CHECKING:
     from houdini_toolbox.pyfilter.operations.operation import PyFilterOperation
@@ -29,9 +30,9 @@ _logger = logging.getLogger(__name__)
 class PyFilterManager:
     """Manager class for PyFilter operations."""
 
-    def __init__(self):
-        self._data = {}
-        self._operations = []
+    def __init__(self) -> None:
+        self._data: dict = {}
+        self._operations: List[PyFilterOperation] = []
 
         # Populate the list of operations.
         self._register_operations()
@@ -73,7 +74,7 @@ class PyFilterManager:
 
         return filter_args
 
-    def _process_parsed_args(self, filter_args: argparse.Namespace):
+    def _process_parsed_args(self, filter_args: argparse.Namespace) -> None:
         """Allow operations to process any args that were parsed.
 
         :param filter_args: The args passed to the filter command.
@@ -83,7 +84,7 @@ class PyFilterManager:
         for operation in self.operations:
             operation.process_parsed_args(filter_args)
 
-    def _register_operations(self):
+    def _register_operations(self) -> None:
         """Register operations that should be run by the manager.
 
         :return:
@@ -115,7 +116,7 @@ class PyFilterManager:
                 # Add an instance of it to our operations list.
                 self.operations.append(cls(self))
 
-    def _register_parser_args(self, parser: argparse.ArgumentParser):
+    def _register_parser_args(self, parser: argparse.ArgumentParser) -> None:
         """Register any necessary args with our parser.
 
         This allows filter operations to have their necessary args parsed and
@@ -132,7 +133,9 @@ class PyFilterManager:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def run_operations_for_stage(self, stage_name: str, *args, **kwargs) -> bool:
+    def run_operations_for_stage(
+        self, stage_name: str, *args: Any, **kwargs: Any
+    ) -> bool:
         """Run all filter operations for the specified stage.
 
         :param stage_name: The name of the stage to run.

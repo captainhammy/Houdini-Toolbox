@@ -23,4 +23,7 @@ def test_init_config():
     logger = logging.getLogger("houdini_toolbox")
 
     # Verify that the 'houdini_toolbox' parent logger has our expected handlers attached.
-    assert [handler.name for handler in logger.handlers] == ["console", "houdini_python_shell"]
+    assert [handler.name for handler in logger.handlers] == [
+        "console",
+        "houdini_python_shell",
+    ]

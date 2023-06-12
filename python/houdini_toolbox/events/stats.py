@@ -4,6 +4,7 @@
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
@@ -11,7 +12,17 @@ import collections
 import logging
 import time
 from contextlib import contextmanager
-from typing import Callable, Dict, List, Optional, OrderedDict, Tuple, Type, TypeVar
+from typing import (
+    Callable,
+    Dict,
+    Generator,
+    List,
+    Optional,
+    OrderedDict,
+    Tuple,
+    Type,
+    TypeVar,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -37,7 +48,7 @@ class _StatsMeta(type):
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __call__(cls, *args, **kwargs):
+    def __call__(cls, *args, **kwargs):  # type: ignore
         # pylint: disable=protected-access
         # Key off the name.
         key = args[0]
@@ -100,9 +111,9 @@ class HoudiniEventStats(metaclass=_StatsMeta):
         name: Optional[str] = None,
         tags: Optional[List[str]] = None,
         post_report: bool = False,
-    ):
+    ) -> None:
         self._last_run_time = 0
-        self._last_started = 0
+        self._last_started: float = 0
         self._name = name
         self._post_report = post_report
         self._run_count = 0
@@ -117,15 +128,15 @@ class HoudiniEventStats(metaclass=_StatsMeta):
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: {self.name} run_count={self.run_count} total_time={self.total_time:0.3f}>"
 
-    def __enter__(self):
+    def __enter__(self) -> HoudiniEventStats:
         self._last_started = time.time()
 
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb):  # type: ignore
         end = time.time()
 
         self._last_run_time = end - self._last_started
@@ -152,7 +163,7 @@ class HoudiniEventStats(metaclass=_StatsMeta):
 
     @property
     def post_report(self) -> bool:
-        """Whether or not to print the report at exit."""
+        """Whether to print the report at exit."""
         return self._post_report
 
     @property
@@ -174,7 +185,7 @@ class HoudiniEventStats(metaclass=_StatsMeta):
     # METHODS
     # -------------------------------------------------------------------------
 
-    def print_report(self):
+    def print_report(self) -> None:
         """Print (log) a stats report for the last run.
 
         :return:
@@ -184,7 +195,7 @@ class HoudiniEventStats(metaclass=_StatsMeta):
         _logger.info("\tRun Count: %s", self.run_count)
         _logger.info("\tRun Time: %s", self.last_run_time)
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset all counts.
 
         :return:
@@ -210,7 +221,7 @@ class HoudiniEventItemStats(HoudiniEventStats):
         name: Optional[str] = None,
         tags: Optional[List[str]] = None,
         post_report: bool = False,
-    ):
+    ) -> None:
         super().__init__(name, tags=tags, post_report=post_report)
 
         self._item_stats: OrderedDict = collections.OrderedDict()
@@ -228,7 +239,7 @@ class HoudiniEventItemStats(HoudiniEventStats):
     # METHODS
     # -------------------------------------------------------------------------
 
-    def print_report(self):
+    def print_report(self) -> None:
         """Print (log) a stats report for the last run.
 
         :return:
@@ -243,7 +254,7 @@ class HoudiniEventItemStats(HoudiniEventStats):
 
         _logger.info("\tRun Time: %0.4f", self.last_run_time)
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset all counts.
 
         :return:
@@ -254,7 +265,7 @@ class HoudiniEventItemStats(HoudiniEventStats):
         self.item_stats.clear()
 
     @contextmanager
-    def time_function(self, func: Callable):
+    def time_function(self, func: Callable) -> Generator[None, None, None]:
         """Time a function.
 
         :param func: Function.

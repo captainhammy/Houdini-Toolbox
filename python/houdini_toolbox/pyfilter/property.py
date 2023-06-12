@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Standard Library
+import contextlib
 import json
 from collections.abc import Iterable
 from typing import Any, List, Optional, Union
@@ -60,14 +61,10 @@ def _prep_value_to_set(value: Any) -> List:
     else:
         # Check all the values to see if any are dicts.
         if all(isinstance(val, dict) for val in value):
-            # If they are, try to convert them to strings.
-            try:
+            # If they are, try to convert them to strings. # In the event it is not possible we'll just
+            # continue on with the data as-is.
+            with contextlib.suppress(TypeError, ValueError):
                 value = [json.dumps(val) for val in value]
-
-            # In the event it is not possible we'll just continue on with
-            # the data as-is.
-            except (TypeError, ValueError):
-                pass
 
     return value
 
@@ -130,14 +127,14 @@ def get_property(name: str) -> Any:
     :return: The value.
 
     """
-    import mantra
+    import mantra  # type: ignore
 
     values = mantra.property(name)
 
     return _transform_values(values)
 
 
-def set_property(name: str, value: Any):
+def set_property(name: str, value: Any) -> None:
     """Set a property value.
 
     :param name: The property name.
@@ -145,7 +142,7 @@ def set_property(name: str, value: Any):
     :return:
 
     """
-    import mantra
+    import mantra  # type: ignore
 
     value = _prep_value_to_set(value)
 

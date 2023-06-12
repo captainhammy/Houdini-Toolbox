@@ -4,6 +4,7 @@
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
@@ -68,7 +69,7 @@ class HoudiniEventItem:
 
         return True
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.name, self.priority))
 
     def __ne__(self, other: Any) -> bool:
@@ -80,7 +81,7 @@ class HoudiniEventItem:
         """
         return not self.__eq__(other)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"<{self.__class__.__name__} {self.name} ({len(self.callables)} callables)>"
         )
@@ -119,7 +120,7 @@ class HoudiniEventItem:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def run(self, scriptargs: dict):
+    def run(self, scriptargs: dict) -> None:
         """Run the callables with the given args.
 
         :param scriptargs: Arguments passed to the event from the caller
@@ -149,7 +150,7 @@ class ExclusiveHoudiniEventItem(HoudiniEventItem):
     """
 
     # Name to item mapping.
-    _exclusive_map: Dict[Union[str, None], ExclusiveHoudiniEventItem] = {}
+    _exclusive_map: Dict[Optional[str], ExclusiveHoudiniEventItem] = {}
 
     def __init__(
         self,
@@ -157,7 +158,7 @@ class ExclusiveHoudiniEventItem(HoudiniEventItem):
         name: str = None,
         priority: int = 1,
         stat_tags: List[str] = None,
-    ):
+    ) -> None:
         super().__init__(callables, name, priority, stat_tags)
 
         # Get the current entry (or add this item if one isn't set.)
@@ -171,7 +172,7 @@ class ExclusiveHoudiniEventItem(HoudiniEventItem):
     # METHODS
     # -------------------------------------------------------------------------
 
-    def run(self, scriptargs: dict):
+    def run(self, scriptargs: dict) -> None:
         """Run the callables with the given args.
 
         The item is only run if it is the exclusive item.

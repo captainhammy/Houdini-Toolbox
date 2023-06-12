@@ -4,12 +4,13 @@
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
 import logging
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, Dict, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Union
 
 if TYPE_CHECKING:
     import argparse
@@ -31,7 +32,7 @@ class PyFilterOperation:
 
     """
 
-    def __init__(self, manager: PyFilterManager):
+    def __init__(self, manager: PyFilterManager) -> None:
         self._data: Dict = {}
         self._manager = manager
 
@@ -39,7 +40,7 @@ class PyFilterOperation:
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<PyFilterOperation: {self.__class__.__name__}>"
 
     # -------------------------------------------------------------------------
@@ -73,7 +74,7 @@ class PyFilterOperation:
         return ""
 
     @staticmethod
-    def register_parser_args(parser: argparse.ArgumentParser):
+    def register_parser_args(parser: argparse.ArgumentParser) -> None:
         """Register interested parser args for this operation.
 
         :param parser: The argument parser to attach arguments to.
@@ -85,7 +86,7 @@ class PyFilterOperation:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def process_parsed_args(self, filter_args: argparse.Namespace):
+    def process_parsed_args(self, filter_args: argparse.Namespace) -> None:
         """Process any parsed args that the operation may be interested in.
 
         :param filter_args: The argparse namespace containing processed args.
@@ -93,10 +94,10 @@ class PyFilterOperation:
 
         """
 
-    def should_run(self) -> bool:  # pylint: disable=no-self-use
-        """Determine whether or not this filter should be run.
+    def should_run(self) -> bool:
+        """Determine whether this filter should be run.
 
-        :return: Whether or not this operation should run.
+        :return: Whether this operation should run.
 
         """
         return True
@@ -121,16 +122,16 @@ def log_filter_call(method_or_name: Union[Callable, str]) -> Callable:
 
     """
 
-    def decorator(func):  # pylint: disable=missing-docstring
+    def decorator(func: Callable):  # type: ignore # pylint: disable=missing-docstring
         @wraps(func)
-        def wrapper(*args, **kwargs):  # pylint: disable=missing-docstring
+        def wrapper(*args: Any, **kwargs: Any):  # type: ignore # pylint: disable=missing-docstring
             func_name = func.__name__
             class_name = args[0].__class__.__name__
 
             msg = f"{class_name}.{func_name}()"
 
             if isinstance(method_or_name, str):
-                import mantra
+                import mantra  # type: ignore
 
                 msg = f"{msg} ({mantra.property(method_or_name)[0]})"
 

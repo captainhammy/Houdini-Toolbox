@@ -4,6 +4,7 @@
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
@@ -14,7 +15,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from houdini_toolbox.sohohooks.aovs import constants as consts
 
 if TYPE_CHECKING:
-    import soho
+    import soho  # type: ignore
 
 
 # =============================================================================
@@ -65,7 +66,7 @@ class AOV:
 
     """
 
-    def __init__(self, data: dict):
+    def __init__(self, data: dict) -> None:
         self._data = copy.copy(_DEFAULT_AOV_DATA)
 
         self.update_data(data)
@@ -74,46 +75,46 @@ class AOV:
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, AOV):
             return NotImplemented
 
         return self.variable == other.variable
 
-    def __ge__(self, other):
+    def __ge__(self, other: Any) -> bool:
         if not isinstance(other, AOV):
             return NotImplemented
 
         return self.variable >= other.variable
 
-    def __gt__(self, other):
+    def __gt__(self, other: Any) -> bool:
         if not isinstance(other, AOV):
             return NotImplemented
 
         return self.variable > other.variable
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.variable)
 
-    def __le__(self, other):
+    def __le__(self, other: Any) -> bool:
         if not isinstance(other, AOV):
             return NotImplemented
 
         return self.variable <= other.variable
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any) -> bool:
         if not isinstance(other, AOV):
             return NotImplemented
 
         return self.variable < other.variable
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<AOV {self.variable} ({self.vextype})>"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.variable
 
     # -------------------------------------------------------------------------
@@ -122,7 +123,7 @@ class AOV:
 
     def _light_export_planes(
         self, data: dict, wrangler: Any, cam: soho.SohoObject, now: float
-    ):
+    ) -> None:
         """Handle exporting the image planes based on their export settings.
 
         :param data: The data to write.
@@ -160,7 +161,7 @@ class AOV:
             # Write a normal AOV definition.
             _write_data_to_ifd(data, wrangler, cam, now)
 
-    def _verify_internal_data(self):
+    def _verify_internal_data(self) -> None:
         """Verify data to make sure it is valid.
 
         :return:
@@ -182,7 +183,7 @@ class AOV:
         return self._data[consts.CHANNEL_KEY]
 
     @channel.setter
-    def channel(self, channel):
+    def channel(self, channel: str) -> None:
         self._data[consts.CHANNEL_KEY] = channel
 
     # -------------------------------------------------------------------------
@@ -193,18 +194,18 @@ class AOV:
         return self._data[consts.COMMENT_KEY]
 
     @comment.setter
-    def comment(self, comment):
+    def comment(self, comment: str) -> None:
         self._data[consts.COMMENT_KEY] = comment
 
     # -------------------------------------------------------------------------
 
     @property
     def componentexport(self) -> bool:
-        """Whether or not components are being exported."""
+        """Whether components are being exported."""
         return self._data[consts.COMPONENTEXPORT_KEY]
 
     @componentexport.setter
-    def componentexport(self, componentexport):
+    def componentexport(self, componentexport: bool) -> None:
         self._data[consts.COMPONENTEXPORT_KEY] = componentexport
 
     # -------------------------------------------------------------------------
@@ -215,7 +216,7 @@ class AOV:
         return self._data[consts.COMPONENTS_KEY]
 
     @components.setter
-    def components(self, components):
+    def components(self, components: List[str]) -> None:
         self._data[consts.COMPONENTS_KEY] = components
 
     # -------------------------------------------------------------------------
@@ -226,7 +227,7 @@ class AOV:
         return self._data[consts.EXCLUDE_DCM_KEY]
 
     @exclude_from_dcm.setter
-    def exclude_from_dcm(self, exclude):
+    def exclude_from_dcm(self, exclude: bool) -> None:
         self._data[consts.EXCLUDE_DCM_KEY] = exclude
 
     # -------------------------------------------------------------------------
@@ -237,7 +238,7 @@ class AOV:
         return self._data[consts.INTRINSICS_KEY]
 
     @intrinsics.setter
-    def intrinsics(self, intrinsics):
+    def intrinsics(self, intrinsics: List[str]) -> None:
         self._data[consts.INTRINSICS_KEY] = intrinsics
 
     # -------------------------------------------------------------------------
@@ -248,7 +249,7 @@ class AOV:
         return self._data[consts.LIGHTEXPORT_KEY]
 
     @lightexport.setter
-    def lightexport(self, lightexport):
+    def lightexport(self, lightexport: str) -> None:
         self._data[consts.LIGHTEXPORT_KEY] = lightexport
 
     # -------------------------------------------------------------------------
@@ -259,7 +260,7 @@ class AOV:
         return self._data[consts.LIGHTEXPORT_SCOPE_KEY]
 
     @lightexport_scope.setter
-    def lightexport_scope(self, lightexport_scope):
+    def lightexport_scope(self, lightexport_scope: str) -> None:
         self._data[consts.LIGHTEXPORT_SCOPE_KEY] = lightexport_scope
 
     # -------------------------------------------------------------------------
@@ -270,7 +271,7 @@ class AOV:
         return self._data[consts.LIGHTEXPORT_SELECT_KEY]
 
     @lightexport_select.setter
-    def lightexport_select(self, lightexport_select):
+    def lightexport_select(self, lightexport_select: str) -> None:
         self._data[consts.LIGHTEXPORT_SELECT_KEY] = lightexport_select
 
     # -------------------------------------------------------------------------
@@ -281,7 +282,7 @@ class AOV:
         return self._data[consts.PATH_KEY]
 
     @path.setter
-    def path(self, path):
+    def path(self, path: str) -> None:
         self._data[consts.PATH_KEY] = path
 
     # -------------------------------------------------------------------------
@@ -292,7 +293,7 @@ class AOV:
         return self._data[consts.PFILTER_KEY]
 
     @pfilter.setter
-    def pfilter(self, pfilter):
+    def pfilter(self, pfilter: str) -> None:
         self._data[consts.PFILTER_KEY] = pfilter
 
     # -------------------------------------------------------------------------
@@ -303,7 +304,7 @@ class AOV:
         return self._data[consts.PLANEFILE_KEY]
 
     @planefile.setter
-    def planefile(self, planefile):
+    def planefile(self, planefile: str) -> None:
         self._data[consts.PLANEFILE_KEY] = planefile
 
     # -------------------------------------------------------------------------
@@ -314,7 +315,7 @@ class AOV:
         return self._data[consts.PRIORITY_KEY]
 
     @priority.setter
-    def priority(self, priority):
+    def priority(self, priority: int) -> None:
         self._data[consts.PRIORITY_KEY] = priority
 
     # -------------------------------------------------------------------------
@@ -325,7 +326,7 @@ class AOV:
         return self._data[consts.QUANTIZE_KEY]
 
     @quantize.setter
-    def quantize(self, quantize):
+    def quantize(self, quantize: str) -> None:
         self._data[consts.QUANTIZE_KEY] = quantize
 
     # -------------------------------------------------------------------------
@@ -336,7 +337,7 @@ class AOV:
         return self._data[consts.SFILTER_KEY]
 
     @sfilter.setter
-    def sfilter(self, sfilter):
+    def sfilter(self, sfilter: str) -> None:
         self._data[consts.SFILTER_KEY] = sfilter
 
     # -------------------------------------------------------------------------
@@ -347,7 +348,7 @@ class AOV:
         return self._data[consts.VARIABLE_KEY]
 
     @variable.setter
-    def variable(self, variable):
+    def variable(self, variable: str) -> None:
         self._data[consts.VARIABLE_KEY] = variable
 
     # -------------------------------------------------------------------------
@@ -358,7 +359,7 @@ class AOV:
         return self._data[consts.VEXTYPE_KEY]
 
     @vextype.setter
-    def vextype(self, vextype):
+    def vextype(self, vextype: str) -> None:
         self._data[consts.VEXTYPE_KEY] = vextype
 
     # -------------------------------------------------------------------------
@@ -415,7 +416,7 @@ class AOV:
 
         return data
 
-    def update_data(self, data: dict):
+    def update_data(self, data: dict) -> None:
         """Update internal data with new data.
 
         :param data: AOV data.
@@ -440,7 +441,7 @@ class AOV:
         # Verify the new data is valid.
         self._verify_internal_data()
 
-    def write_to_ifd(self, wrangler: Any, cam: soho.SohoObject, now: float):
+    def write_to_ifd(self, wrangler: Any, cam: soho.SohoObject, now: float) -> None:
         """Output the AOV.
 
         :param wrangler: A SOHO wrangler.
@@ -504,56 +505,56 @@ class AOVGroup:
 
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self._aovs: List[AOV] = []
         self._comment = ""
-        self._icon = None
+        self._icon: Optional[str] = None
         self._includes: List[str] = []
         self._name = name
-        self._path = None
+        self._path: Optional[str] = None
         self._priority = -1
 
     # -------------------------------------------------------------------------
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, AOVGroup):
             return NotImplemented
 
         return self.name == other.name
 
-    def __ge__(self, other):
+    def __ge__(self, other: Any) -> bool:
         if not isinstance(other, AOVGroup):
             return NotImplemented
 
         return self.name >= other.name
 
-    def __gt__(self, other):
+    def __gt__(self, other: Any) -> bool:
         if not isinstance(other, AOVGroup):
             return NotImplemented
 
         return self.name > other.name
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.name)
 
-    def __le__(self, other):
+    def __le__(self, other: Any) -> bool:
         if not isinstance(other, AOVGroup):
             return NotImplemented
 
         return self.name <= other.name
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any) -> bool:
         if not isinstance(other, AOVGroup):
             return NotImplemented
 
         return self.name < other.name
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.name} ({len(self.aovs)} AOVs)>"
 
     # -------------------------------------------------------------------------
@@ -573,7 +574,7 @@ class AOVGroup:
         return self._comment
 
     @comment.setter
-    def comment(self, comment):
+    def comment(self, comment: str) -> None:
         self._comment = comment
 
     # -------------------------------------------------------------------------
@@ -584,7 +585,7 @@ class AOVGroup:
         return self._icon
 
     @icon.setter
-    def icon(self, icon):
+    def icon(self, icon: Optional[str]) -> None:
         self._icon = icon
 
     # -------------------------------------------------------------------------
@@ -609,7 +610,7 @@ class AOVGroup:
         return self._path
 
     @path.setter
-    def path(self, path):
+    def path(self, path: str) -> None:
         self._path = path
 
     # -------------------------------------------------------------------------
@@ -620,14 +621,14 @@ class AOVGroup:
         return self._priority
 
     @priority.setter
-    def priority(self, priority):
+    def priority(self, priority: int) -> None:
         self._priority = priority
 
     # -------------------------------------------------------------------------
     # METHODS
     # -------------------------------------------------------------------------
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear the list of AOVs belonging to this group.
 
         :return:
@@ -658,7 +659,7 @@ class AOVGroup:
 
         return {self.name: data}
 
-    def write_to_ifd(self, wrangler: Any, cam: soho.SohoObject, now: float):
+    def write_to_ifd(self, wrangler: Any, cam: soho.SohoObject, now: float) -> None:
         """Write all AOVs in the group to the ifd.
 
         :param wrangler: A SOHO wrangler.
@@ -678,7 +679,7 @@ class IntrinsicAOVGroup(AOVGroup):
 
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         super().__init__(name)
 
         self._comment = "Automatically generated"
@@ -701,19 +702,19 @@ class InvalidAOVValueError(AOVError):  # pragma: no cover
 
     """
 
-    def __init__(self, name: str, value: str):
+    def __init__(self, name: str, value: str) -> None:
         super().__init__()
         self.name = name
         self.value = value
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Invalid value '{self.value}' in '{self.name}': Must be one of {ALLOWABLE_VALUES[self.name]}"
 
 
 class MissingVariableError(AOVError):  # pragma: no cover
     """Exception for missing 'variable' information."""
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Cannot create AOV: missing 'variable' value."
 
 
@@ -724,11 +725,11 @@ class MissingVexTypeError(AOVError):  # pragma: no cover
 
     """
 
-    def __init__(self, variable: str):
+    def __init__(self, variable: str) -> None:
         super().__init__()
         self.variable = variable
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Cannot create AOV {self.variable}: missing 'vextype'."
 
 
@@ -790,10 +791,10 @@ def _call_post_defplane(
     :param wrangler: A SOHO wrangler.
     :param cam: A SOHO camera.
     :param now: The evaluation time.
-    :return: Whether or not the hook was successful.
+    :return: Whether the hook was successful.
 
     """
-    import IFDhooks
+    import IFDhooks  # type: ignore
 
     return IFDhooks.call(
         "post_defplane",
@@ -817,7 +818,7 @@ def _call_pre_defplane(
     :param wrangler: A SOHO wrangler.
     :param cam: A SOHO camera.
     :param now: The evaluation time.
-    :return: Whether or not the hook was successful.
+    :return: Whether the hook was successful.
 
     """
     import IFDhooks
@@ -835,7 +836,9 @@ def _call_pre_defplane(
     )
 
 
-def _write_data_to_ifd(data: dict, wrangler: Any, cam: soho.SohoObject, now: float):
+def _write_data_to_ifd(
+    data: dict, wrangler: Any, cam: soho.SohoObject, now: float
+) -> None:
     """Write AOV data to the ifd.
 
     :param data: AOV data.
@@ -900,7 +903,7 @@ def _write_light(
     wrangler: Any,
     cam: soho.SohoObject,
     now: float,
-):
+) -> None:
     """Write a light to the ifd.
 
     :param light: The light to write.
@@ -956,7 +959,7 @@ def _write_per_category(
     wrangler: Any,
     cam: soho.SohoObject,
     now: float,
-):
+) -> None:
     """Write lights to the ifd based on their category.
 
     :param lights: The light to write.
@@ -997,7 +1000,7 @@ def _write_single_channel(
     wrangler: Any,
     cam: soho.SohoObject,
     now: float,
-):
+) -> None:
     """Write lights to the ifd as a single channel.
 
     :param lights: The lights to write.

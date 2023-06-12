@@ -4,6 +4,7 @@
 # IMPORTS
 # ==============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
@@ -91,7 +92,9 @@ class CopyPasteSource(abc.ABC):
     @abc.abstractmethod
     def copy_helper_widget(
         self,
-    ) -> houdini_toolbox.ui.paste.helpers._BaseCopyHelperWidget:  # pylint: disable=protected-access
+    ) -> (
+        houdini_toolbox.ui.paste.helpers._BaseCopyHelperWidget
+    ):  # pylint: disable=protected-access
         """Get the copy helper widget for this source.
 
         :return: The helper widget to copy items to this source.
@@ -114,7 +117,9 @@ class CopyPasteSource(abc.ABC):
     @abc.abstractmethod
     def paste_helper_widget(
         self,
-    ) -> houdini_toolbox.ui.paste.helpers._BasePasteHelperWidget:  # pylint: disable=protected-access
+    ) -> (
+        houdini_toolbox.ui.paste.helpers._BasePasteHelperWidget
+    ):  # pylint: disable=protected-access
         """Get the paste helper widget for this source.
 
         :return: The helper widget to paste items from this source.
@@ -232,7 +237,9 @@ class HomeDirSource(CopyPasteSource):
 
     def copy_helper_widget(
         self, *args, **kwargs
-    ) -> houdini_toolbox.ui.paste.helpers.HomeToolDirItemsCopyHelperWidget:  # pylint: disable=arguments-differ
+    ) -> (
+        houdini_toolbox.ui.paste.helpers.HomeToolDirItemsCopyHelperWidget
+    ):  # pylint: disable=arguments-differ
         """Get the copy helper widget for this source.
 
         :return: The helper widget to copy items to this source.
@@ -265,7 +272,9 @@ class HomeDirSource(CopyPasteSource):
             "author": getpass.getuser(),
             "name": name,
             "context": context,
-            "date": houdini_toolbox.ui.paste.utils.date_to_string(datetime.datetime.now()),
+            "date": houdini_toolbox.ui.paste.utils.date_to_string(
+                datetime.datetime.now()
+            ),
         }
 
         if description is not None:
@@ -304,7 +313,9 @@ class HomeDirSource(CopyPasteSource):
 
     def paste_helper_widget(
         self, *args, **kwargs
-    ) -> houdini_toolbox.ui.paste.helpers.HomeToolDirItemsPasteHelperWidget:  # pylint: disable=arguments-differ
+    ) -> (
+        houdini_toolbox.ui.paste.helpers.HomeToolDirItemsPasteHelperWidget
+    ):  # pylint: disable=arguments-differ
         """Get the paste helper widget for this source.
 
         :return: The helper widget to paste items from this source.
@@ -570,9 +581,8 @@ class CPIOContextCopyPasteItemFile(CopyPasteItemSource):
         :return:
 
         """
-        if self._sidecar_path is not None:
-            if os.path.exists(self._sidecar_path):
-                os.remove(self._sidecar_path)
+        if self._sidecar_path is not None and os.path.exists(self._sidecar_path):
+            os.remove(self._sidecar_path)
 
         if os.path.exists(self.file_path):
             os.remove(self.file_path)
@@ -586,7 +596,7 @@ class CPIOContextCopyPasteItemFile(CopyPasteItemSource):
         parent.loadItemsFromFile(self.file_path)
 
     def save_items(self, parent: hou.Node, items: Tuple[hou.NetworkItem]):
-        """Save the supplied items under the parent node..
+        """Save the supplied items under the parent node.
 
         :param parent: The parent node of the items to save.
         :param items: The items to save.

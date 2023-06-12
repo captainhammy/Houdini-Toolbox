@@ -188,7 +188,9 @@ class Test_HoudiniEventManager:
             "events",
             new_callable=mocker.PropertyMock,
         )
-        mock_factory = mocker.patch("houdini_toolbox.events.manager.HoudiniEventFactory")
+        mock_factory = mocker.patch(
+            "houdini_toolbox.events.manager.HoudiniEventFactory"
+        )
 
         mock_event = mocker.MagicMock(spec=HoudiniEvent)
         mock_factory.get_event_type.return_value = mock_event
@@ -485,8 +487,12 @@ class Test_register_function:
 
     def test(self, mocker):
         """Test registering a callable object."""
-        mock_cls = mocker.patch("houdini_toolbox.events.manager.HoudiniEventItem", autospec=True)
-        mock_register_item = mocker.patch("houdini_toolbox.events.manager.register_item")
+        mock_cls = mocker.patch(
+            "houdini_toolbox.events.manager.HoudiniEventItem", autospec=True
+        )
+        mock_register_item = mocker.patch(
+            "houdini_toolbox.events.manager.register_item"
+        )
 
         mock_func = mocker.MagicMock()
         mock_event_name = mocker.MagicMock(spec=str)

@@ -4,8 +4,12 @@
 # IMPORTS
 # =============================================================================
 
+# Future
+from __future__ import annotations
+
 # Standard Library
 import atexit
+from typing import Any
 
 # Houdini Toolbox
 from houdini_toolbox.events.manager import run_event
@@ -19,7 +23,9 @@ import hou
 # =============================================================================
 
 
-def _atexit_callback(*args, **kwargs):  # pylint: disable=unused-argument
+def _atexit_callback(
+    *args: Any, **kwargs: Any
+) -> None:  # pylint: disable=unused-argument
     """Run SceneEvents.Exit events.
 
     :return:
@@ -28,7 +34,9 @@ def _atexit_callback(*args, **kwargs):  # pylint: disable=unused-argument
     run_event(SceneEvents.Exit)
 
 
-def _emit_ui_available(*args, **kwargs):  # pylint: disable=unused-argument
+def _emit_ui_available(
+    *args: Any, **kwargs: Any
+) -> None:  # pylint: disable=unused-argument
     """Run SceneEvents.WhenUIAvailable events.
 
     :return:
@@ -37,7 +45,7 @@ def _emit_ui_available(*args, **kwargs):  # pylint: disable=unused-argument
     run_event(SceneEvents.WhenUIAvailable)
 
 
-def _hip_event_callback(event_type: hou.hipFileEventType):
+def _hip_event_callback(event_type: hou.hipFileEventType) -> None:
     """Run HipFileEvents events
 
     :param event_type: The hip file event type which is running.
@@ -52,7 +60,7 @@ def _hip_event_callback(event_type: hou.hipFileEventType):
         run_event(event_name, scriptargs)
 
 
-def _register_when_ui_available():
+def _register_when_ui_available() -> None:
     """Register a function emits the SceneEvents.WhenUIAvailable event.
 
     This will be emitted when the UI is first brought up and the event
@@ -73,7 +81,7 @@ def _register_when_ui_available():
 # =============================================================================
 
 
-def register_callbacks():
+def register_callbacks() -> None:
     """Register any dynamic callback functions.
 
     :return:

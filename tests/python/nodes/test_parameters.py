@@ -13,7 +13,6 @@ import houdini_toolbox.nodes.parameters
 # Houdini
 import hou
 
-
 # Need to ensure the hip file gets loaded.
 pytestmark = pytest.mark.usefixtures("load_module_test_file")
 
@@ -23,63 +22,54 @@ pytestmark = pytest.mark.usefixtures("load_module_test_file")
 # =============================================================================
 
 
-def test_find_parameters_using_variable():
-    """Test houdini_toolbox.nodes.parameters.find_parameters_using_variable."""
-    result = houdini_toolbox.nodes.parameters.find_parameters_using_variable("BAR")
+@pytest.mark.parametrize(
+    "varname, expected_parms",
+    (
+        ("$BAR", ()),
+        (
+            "$HIP",
+            (
+                "/obj/geo1/font1/text",
+                "/out/mantra1/vm_picture",
+                "/out/mantra1/soho_diskfile",
+                "/out/mantra1/vm_dcmfilename",
+                "/out/mantra1/vm_dsmfilename",
+                "/out/mantra1/vm_tmpsharedstorage",
+                "/stage/rendergallerysource",
+                "/tasks/topnet1/taskgraphfile",
+                "/tasks/topnet1/checkpointfile",
+                "/tasks/topnet1/localscheduler/pdg_workingdir",
+            ),
+        ),
+        (
+            "$HIPNAME",
+            (
+                "/out/mantra1/vm_picture",
+                "/stage/rendergallerysource",
+                "/tasks/topnet1/taskgraphfile",
+                "/tasks/topnet1/checkpointfile",
+                "/tasks/topnet1/localscheduler/tempdircustom",
+            ),
+        ),
+        ("$HIPFILE", ("/obj/geo1/font2/text",)),
+        (
+            "F",  # Test var with no $ to handle auto adding.
+            ("/obj/geo1/font1/text", "/tasks/topnet1/taskgraphfile"),
+        ),
+        ("$F4", ("/out/mantra1/vm_picture",)),
+    ),
+)
+def test_find_parameters_using_variable(varname, expected_parms):
+    """Test houdini_toolbox.nodes.parameters.find_parameters_using_variable()."""
+    parms = {hou.parm(name) for name in expected_parms}
 
-    assert result == ()
+    result = houdini_toolbox.nodes.parameters.find_parameters_using_variable(varname)
 
-    expected = (
-        hou.parm("/obj/geo1/font1/text"),
-        hou.parm("/out/mantra1/vm_picture"),
-        hou.parm("/out/mantra1/soho_diskfile"),
-        hou.parm("/out/mantra1/vm_dcmfilename"),
-        hou.parm("/out/mantra1/vm_dsmfilename"),
-        hou.parm("/out/mantra1/vm_tmpsharedstorage"),
-        hou.parm("/stage/rendergallerysource"),
-        hou.parm("/tasks/topnet1/taskgraphfile"),
-        hou.parm("/tasks/topnet1/localscheduler/pdg_workingdir"),
-    )
-
-    result = houdini_toolbox.nodes.parameters.find_parameters_using_variable("HIP")
-
-    assert result == expected
-
-    expected = (
-        hou.parm("/out/mantra1/vm_picture"),
-        hou.parm("/stage/rendergallerysource"),
-        hou.parm("/tasks/topnet1/taskgraphfile"),
-        hou.parm("/tasks/topnet1/localscheduler/tempdircustom"),
-    )
-
-    result = houdini_toolbox.nodes.parameters.find_parameters_using_variable("$HIPNAME")
-
-    assert result == expected
-
-    expected = (hou.parm("/obj/geo1/font2/text"),)
-
-    result = houdini_toolbox.nodes.parameters.find_parameters_using_variable("$HIPFILE")
-
-    assert result == expected
-
-    expected = (
-        hou.parm("/obj/geo1/font1/text"),
-        hou.parm("/tasks/topnet1/taskgraphfile"),
-    )
-
-    result = houdini_toolbox.nodes.parameters.find_parameters_using_variable("F")
-
-    assert result == expected
-
-    expected = (hou.parm("/out/mantra1/vm_picture"),)
-
-    result = houdini_toolbox.nodes.parameters.find_parameters_using_variable("$F4")
-
-    assert result == expected
+    assert set(result) == parms
 
 
 def test_find_parameters_with_value():
-    """Test houdini_toolbox.nodes.parameters.find_parameters_with_value."""
+    """Test houdini_toolbox.nodes.parameters.find_parameters_with_value()."""
     result = houdini_toolbox.nodes.parameters.find_parameters_with_value("gaussian")
     assert result == (hou.parm("/out/mantra1/vm_pfilter"),)
 

@@ -4,6 +4,7 @@
 # IMPORTS
 # ==============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
@@ -15,9 +16,9 @@ from houdini_toolbox.events.types import KeyboardEvents
 
 # Houdini
 import hou
-import nodegraphutils
-from canvaseventtypes import KeyboardEvent
-from nodegraphdisplay import setKeyPrompt
+import nodegraphutils  # type: ignore
+from canvaseventtypes import KeyboardEvent  # type: ignore
+from nodegraphdisplay import setKeyPrompt  # type: ignore
 
 # ==============================================================================
 # FUNCTIONS
@@ -66,10 +67,10 @@ def handle_houdini_paste_event(uievent: KeyboardEvent) -> Tuple[None, bool]:
 
 
 def is_houdini_paste_event(uievent: KeyboardEvent) -> bool:
-    """Check whether or not the event is an item paste event.
+    """Check whether the event is an item paste event.
 
     :param uievent: The occurring keyboard event.
-    :return: Whether or not the event is a paste event (h.paste).
+    :return: Whether the event is a paste event (h.paste).
 
     """
     return setKeyPrompt(uievent.editor, uievent.key, "h.paste", uievent.eventtype)

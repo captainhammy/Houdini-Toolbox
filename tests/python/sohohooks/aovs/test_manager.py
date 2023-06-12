@@ -110,8 +110,12 @@ class Test_AOVManager:
 
     def test__init_from_files(self, init_manager, mocker):
         """Test initializing data from files."""
-        mock_find = mocker.patch("houdini_toolbox.sohohooks.aovs.manager._find_aov_files")
-        mock_file = mocker.patch("houdini_toolbox.sohohooks.aovs.manager.AOVFile", autospec=True)
+        mock_find = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.manager._find_aov_files"
+        )
+        mock_file = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.manager.AOVFile", autospec=True
+        )
         mock_merge = mocker.patch.object(manager.AOVManager, "_merge_readers")
         mock_build = mocker.patch.object(manager.AOVManager, "_build_intrinsic_groups")
 
@@ -442,7 +446,9 @@ class Test_AOVManager:
     def test_add_aovs_to_ifd__non_opid(self, init_manager, mocker, patch_soho):
         """Test adding aovs to the ifd when the variable isn't Op_Id."""
         mock_get = mocker.patch.object(manager.AOVManager, "get_aovs_from_string")
-        mock_flattened = mocker.patch("houdini_toolbox.sohohooks.aovs.manager.flatten_aov_items")
+        mock_flattened = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.manager.flatten_aov_items"
+        )
 
         mock_aov = mocker.MagicMock(spec=manager.AOV)
 
@@ -485,7 +491,9 @@ class Test_AOVManager:
     def test_add_aovs_to_ifd__opid(self, init_manager, mocker, patch_soho):
         """Test adding aovs to the ifd when the variable is Op_Id."""
         mock_get = mocker.patch.object(manager.AOVManager, "get_aovs_from_string")
-        mock_flattened = mocker.patch("houdini_toolbox.sohohooks.aovs.manager.flatten_aov_items")
+        mock_flattened = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.manager.flatten_aov_items"
+        )
 
         mock_aov = mocker.MagicMock(spec=manager.AOV)
         mock_aov.variable = "Op_Id"
@@ -696,7 +704,9 @@ class Test_AOVManager:
 
     def test_load(self, init_manager, mocker):
         """Test loading a file path."""
-        mock_file = mocker.patch("houdini_toolbox.sohohooks.aovs.manager.AOVFile", autospec=True)
+        mock_file = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.manager.AOVFile", autospec=True
+        )
         mock_merge = mocker.patch.object(manager.AOVManager, "_merge_readers")
 
         mgr = init_manager()
@@ -855,7 +865,9 @@ class Test_AOVFile:
         mock_path = mocker.patch.object(
             manager.AOVFile, "path", new_callable=mocker.PropertyMock
         )
-        mock_aov = mocker.patch("houdini_toolbox.sohohooks.aovs.manager.AOV", autospec=True)
+        mock_aov = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.manager.AOV", autospec=True
+        )
         mock_aovs = mocker.patch.object(
             manager.AOVFile, "aovs", new_callable=mocker.PropertyMock
         )
@@ -885,8 +897,12 @@ class Test_AOVFile:
     @pytest.mark.parametrize("all_data", (False, True))
     def test__create_groups(self, init_file, mocker, all_data):
         """Test creating groups."""
-        mock_group = mocker.patch("houdini_toolbox.sohohooks.aovs.manager.AOVGroup", autospec=True)
-        mock_expand = mocker.patch("houdini_toolbox.sohohooks.aovs.manager.os.path.expandvars")
+        mock_group = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.manager.AOVGroup", autospec=True
+        )
+        mock_expand = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.manager.os.path.expandvars"
+        )
         mock_path = mocker.patch.object(
             manager.AOVFile, "path", new_callable=mocker.PropertyMock
         )
@@ -1006,7 +1022,9 @@ class Test_AOVFile:
 
     def test_exists(self, init_file, mocker):
         """Test the 'exists' property."""
-        mock_isfile = mocker.patch("houdini_toolbox.sohohooks.aovs.manager.os.path.isfile")
+        mock_isfile = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.manager.os.path.isfile"
+        )
         mock_path = mocker.patch.object(
             manager.AOVFile, "path", new_callable=mocker.PropertyMock
         )
@@ -1261,7 +1279,9 @@ class Test__find_houdinipath_aov_folders:
 
     def test_no_dirs(self, mocker):
         """Test when no config/aov folders exist in HOUDINI_PATH."""
-        mock_find = mocker.patch("houdini_toolbox.sohohooks.aovs.manager.hou.findDirectories")
+        mock_find = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.manager.hou.findDirectories"
+        )
         mock_find.side_effect = hou.OperationFailed
 
         result = manager._find_houdinipath_aov_folders()
@@ -1270,7 +1290,9 @@ class Test__find_houdinipath_aov_folders:
 
     def test_dirs(self, mocker):
         """Test when one or more config/aov folders exist in HOUDINI_PATH."""
-        mock_find = mocker.patch("houdini_toolbox.sohohooks.aovs.manager.hou.findDirectories")
+        mock_find = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.manager.hou.findDirectories"
+        )
 
         result = manager._find_houdinipath_aov_folders()
 
@@ -1404,9 +1426,13 @@ def test_flatten_aov_items(mocker):
 
 def test_load_json_files(mocker, mock_hou_ui):
     """Test houdini_toolbox.sohohooks.aovs.manager.load_json_files."""
-    mock_expand = mocker.patch("houdini_toolbox.sohohooks.aovs.manager.os.path.expandvars")
+    mock_expand = mocker.patch(
+        "houdini_toolbox.sohohooks.aovs.manager.os.path.expandvars"
+    )
     mock_exists = mocker.patch("houdini_toolbox.sohohooks.aovs.manager.os.path.exists")
-    mock_manager = mocker.patch("houdini_toolbox.sohohooks.aovs.manager.AOV_MANAGER", autospec=True)
+    mock_manager = mocker.patch(
+        "houdini_toolbox.sohohooks.aovs.manager.AOV_MANAGER", autospec=True
+    )
 
     mock_expand.side_effect = ("expanded1", "expanded2")
 

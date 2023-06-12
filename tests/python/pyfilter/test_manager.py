@@ -86,7 +86,9 @@ class TestManager:
 
     def test__get_parsed_args(self, init_manager, mocker):
         """Test getting pyfilter args."""
-        mock_build_parser = mocker.patch("houdini_toolbox.pyfilter.manager._build_parser")
+        mock_build_parser = mocker.patch(
+            "houdini_toolbox.pyfilter.manager._build_parser"
+        )
         mock_register_args = mocker.patch.object(
             manager.PyFilterManager, "_register_parser_args"
         )
@@ -125,8 +127,12 @@ class TestManager:
 
     def test__register_operations__no_data(self, init_manager, mocker):
         """Test registering a file with no operation definitions."""
-        mock_find_files = mocker.patch("houdini_toolbox.pyfilter.manager._find_operation_files")
-        mock_get_data = mocker.patch("houdini_toolbox.pyfilter.manager._get_operation_data")
+        mock_find_files = mocker.patch(
+            "houdini_toolbox.pyfilter.manager._find_operation_files"
+        )
+        mock_get_data = mocker.patch(
+            "houdini_toolbox.pyfilter.manager._get_operation_data"
+        )
         mock_get_class = mocker.patch("houdini_toolbox.pyfilter.manager._get_class")
 
         mock_path = mocker.MagicMock(spec=str)
@@ -147,8 +153,12 @@ class TestManager:
         mock_operations = mocker.patch.object(
             manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
         )
-        mock_find_files = mocker.patch("houdini_toolbox.pyfilter.manager._find_operation_files")
-        mock_get_data = mocker.patch("houdini_toolbox.pyfilter.manager._get_operation_data")
+        mock_find_files = mocker.patch(
+            "houdini_toolbox.pyfilter.manager._find_operation_files"
+        )
+        mock_get_data = mocker.patch(
+            "houdini_toolbox.pyfilter.manager._get_operation_data"
+        )
         mock_get_class = mocker.patch(
             "houdini_toolbox.pyfilter.manager._get_class", return_value=None
         )
@@ -181,8 +191,12 @@ class TestManager:
         mock_operations = mocker.patch.object(
             manager.PyFilterManager, "operations", new_callable=mocker.PropertyMock
         )
-        mock_find_files = mocker.patch("houdini_toolbox.pyfilter.manager._find_operation_files")
-        mock_get_data = mocker.patch("houdini_toolbox.pyfilter.manager._get_operation_data")
+        mock_find_files = mocker.patch(
+            "houdini_toolbox.pyfilter.manager._find_operation_files"
+        )
+        mock_get_data = mocker.patch(
+            "houdini_toolbox.pyfilter.manager._get_operation_data"
+        )
         mock_get_class = mocker.patch("houdini_toolbox.pyfilter.manager._get_class")
 
         mock_path = mocker.MagicMock(spec=str)
@@ -337,7 +351,9 @@ class Test__get_class:
 
     def test_importerror(self, mocker):
         """Test importing a module when an ImportError occurs."""
-        mock_import = mocker.patch("houdini_toolbox.pyfilter.manager.importlib.import_module")
+        mock_import = mocker.patch(
+            "houdini_toolbox.pyfilter.manager.importlib.import_module"
+        )
 
         mock_module_name = mocker.MagicMock(spec=str)
         mock_class_name = mocker.MagicMock(spec=str)
@@ -352,7 +368,9 @@ class Test__get_class:
 
     def test(self, mocker):
         """Test importing a module and class."""
-        mock_import = mocker.patch("houdini_toolbox.pyfilter.manager.importlib.import_module")
+        mock_import = mocker.patch(
+            "houdini_toolbox.pyfilter.manager.importlib.import_module"
+        )
 
         mock_module_name = mocker.MagicMock(spec=str)
         class_name = "class_name"

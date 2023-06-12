@@ -11,12 +11,13 @@ and modules they are meant to extend.
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
 import ast
 import math
-from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Tuple, Type, Union
 
 # Houdini Toolbox
 from houdini_toolbox.inline import utils
@@ -27,6 +28,9 @@ import hou
 
 if TYPE_CHECKING:
     GeometryEntity = Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex]
+    GeometryEntityType = Union[
+        Type[hou.Geometry], Type[hou.Point], Type[hou.Prim], Type[hou.Vertex]
+    ]
     GeometryEntityList = List[GeometryEntity]
     ElementGroupList = List[Union[hou.PointGroup, hou.PrimGroup, hou.VertexGroup]]
     StringTuple = Tuple[str, ...]
@@ -62,7 +66,7 @@ class RunPyStatementsError(Exception):
 # =============================================================================
 
 
-def _assert_prim_vertex_index(prim: hou.Prim, index: int):
+def _assert_prim_vertex_index(prim: hou.Prim, index: int) -> None:
     """Validate that a vertex index is valid for a primitive.
 
     If an index is not valid a IndexError will be raised.
@@ -118,7 +122,7 @@ def _get_names_in_folder(parent_template: hou.FolderParmTemplate) -> StringTuple
 # =============================================================================
 
 
-def clear_caches(cache_names: Optional[List[str]] = None):
+def clear_caches(cache_names: Optional[List[str]] = None) -> None:
     """Clear internal Houdini caches.
 
     Cache names match those displayed in the Cache Manager window.
@@ -138,10 +142,10 @@ def clear_caches(cache_names: Optional[List[str]] = None):
         _cpp_methods.clearCacheByName(utils.string_encode(cache_name))
 
 
-def run_python_statements(code: str, use_new_context: bool = True):
+def run_python_statements(code: str, use_new_context: bool = True) -> None:
     """Run python statements using Houdini's Python execution code.
 
-    By default the code is run in a new Python context.  If setting
+    By default, the code is run in a new Python context.  If setting
     use_new_context to False the statements will be run in the global namespace.
 
     If any errors occurring during the run this function will raise a
@@ -166,7 +170,7 @@ def run_python_statements(code: str, use_new_context: bool = True):
         raise RunPyStatementsError(message, exception_name)
 
 
-def clear_user_data(node: hou.Node):
+def clear_user_data(node: hou.Node) -> None:
     """Clear all user data on a node.
 
     This does not create an Undo event.
@@ -183,13 +187,13 @@ def has_user_data(node: hou.Node, name: str) -> bool:
 
     :param node: The node to check for user data on.
     :param name: The user data name.
-    :return: Whether or not the node has user data of the given name.
+    :return: Whether the node has user data of the given name.
 
     """
     return _cpp_methods.hasUserData(node, name)
 
 
-def set_user_data(node: hou.Node, name: str, value: str):
+def set_user_data(node: hou.Node, name: str, value: str) -> None:
     """Sets user data.
 
     This does not create an Undo event.
@@ -203,7 +207,7 @@ def set_user_data(node: hou.Node, name: str, value: str):
     _cpp_methods.setUserData(node, name, value)
 
 
-def delete_user_data(node: hou.Node, name: str):
+def delete_user_data(node: hou.Node, name: str) -> None:
     """Deletes any user data under the supplied name.
 
     This does not create an Undo event.
@@ -233,7 +237,7 @@ def hash_string(value: str) -> int:
 def is_rendering() -> bool:
     """Check if Houdini is rendering or not.
 
-    :return: Whether or not Houdini is rendering.
+    :return: Whether Houdini is rendering.
 
     """
     return _cpp_methods.isRendering()
@@ -246,7 +250,7 @@ def get_global_variable_names(dirty: bool = False) -> StringTuple:
     variable that has been created or modified but not updated throughout the
     session by something like the 'varchange' hscript command.
 
-    :param dirty: Whether or not to return only dirty variables.
+    :param dirty: Whether to return only dirty variables.
     :return: A tuple of global variable names.
 
     """
@@ -264,7 +268,7 @@ def get_variable_names(dirty: bool = False) -> StringTuple:
     variable that has been created or modified but not updated throughout the
     session by something like the 'varchange' hscript command.
 
-    :param dirty: Whether or not to return only dirty variables.
+    :param dirty: Whether to return only dirty variables.
     :return: A tuple of variable names.
 
     """
@@ -306,12 +310,12 @@ def get_variable_value(name: str) -> Optional[str]:
         return value
 
 
-def set_variable(name: str, value: Union[float, int, str], local: bool = False):
+def set_variable(name: str, value: Union[float, int, str], local: bool = False) -> None:
     """Set a variable.
 
     :param name: The variable name.
     :param value: The variable value.
-    :param local: Whether or not to set the variable as local.
+    :param local: Whether to set the variable as local.
     :return:
 
     """
@@ -320,7 +324,7 @@ def set_variable(name: str, value: Union[float, int, str], local: bool = False):
     )
 
 
-def unset_variable(name: str):
+def unset_variable(name: str) -> None:
     """Unset a variable.
 
     This function will do nothing if no such variable exists.
@@ -332,7 +336,7 @@ def unset_variable(name: str):
     _cpp_methods.unsetVariable(utils.string_encode(name))
 
 
-def emit_var_change():
+def emit_var_change() -> None:
     """Cook any operators using changed variables.
 
     When a variable's value changes, the OPs which reference that variable are
@@ -407,7 +411,7 @@ def num_prim_vertices(prim: hou.Prim) -> int:
 
 def sort_geometry_by_values(
     geometry: hou.Geometry, geometry_type: hou.geometryType, values: List[float]
-):
+) -> None:
     """Sort points or primitives based on a list of corresponding values.
 
     The list of values must be the same length as the number of geometry
@@ -489,7 +493,7 @@ def create_n_points(geometry: hou.Geometry, npoints: int) -> Tuple[hou.Point, ..
     return tuple(geometry.points()[-npoints:])
 
 
-def merge_point_group(geometry: hou.Geometry, group: hou.PointGroup):
+def merge_point_group(geometry: hou.Geometry, group: hou.PointGroup) -> None:
     """Merges points from a group into the geometry.
 
     :param geometry: The geometry to merge into.
@@ -509,7 +513,7 @@ def merge_point_group(geometry: hou.Geometry, group: hou.PointGroup):
     )
 
 
-def merge_points(geometry: hou.Geometry, points: List[hou.Point]):
+def merge_points(geometry: hou.Geometry, points: List[hou.Point]) -> None:
     """Merge a list of points from a detail into the geometry.
 
     :param geometry: The geometry to merge into.
@@ -526,7 +530,7 @@ def merge_points(geometry: hou.Geometry, points: List[hou.Point]):
     _cpp_methods.mergePoints(geometry, points[0].geometry(), c_values, len(c_values))
 
 
-def merge_prim_group(geometry: hou.Geometry, group: hou.PrimGroup):
+def merge_prim_group(geometry: hou.Geometry, group: hou.PrimGroup) -> None:
     """Merges primitives from a group into the geometry.
 
     :param geometry: The geometry to merge into.
@@ -546,7 +550,7 @@ def merge_prim_group(geometry: hou.Geometry, group: hou.PrimGroup):
     )
 
 
-def merge_prims(geometry: hou.Geometry, prims: List[hou.Prim]):
+def merge_prims(geometry: hou.Geometry, prims: List[hou.Prim]) -> None:
     """Merges a list of primitives from a detail into the geometry.
 
     :param geometry: The geometry to merge into.
@@ -567,7 +571,7 @@ def copy_attribute_values(
     source_element: GeometryEntity,
     source_attribs: List[hou.Attrib],
     target_element: GeometryEntity,
-):
+) -> None:
     """Copy a list of attributes from the source element to the target element.
 
     :param source_element: The element to copy from.
@@ -619,13 +623,13 @@ def copy_attribute_values(
 
 def batch_copy_attributes_by_indices(
     source_geometry: hou.Geometry,
-    source_type: GeometryEntity,
+    source_type: GeometryEntityType,
     source_indices: Union[List[int], Tuple[int]],
     source_attribs: Union[List[hou.Attrib], Tuple[hou.Attrib]],
     target_geometry: hou.Geometry,
-    target_type: GeometryEntity,
+    target_type: GeometryEntityType,
     target_indices: Union[List[int], Tuple[int]],
-):
+) -> None:
     """Batch copy attributes given lists of indices.
 
     :param source_geometry: The geometry to copy attributes from.
@@ -681,7 +685,7 @@ def batch_copy_attrib_values(
     source_elements: GeometryEntityList,
     source_attribs: Union[List[hou.Attrib], Tuple[hou.Attrib]],
     target_elements: GeometryEntityList,
-):
+) -> None:
     """Copy a list of attributes from the source element to the target element.
 
     :param source_elements: The elements to copy from.
@@ -741,7 +745,7 @@ def copy_group_membership(
     source_element: GeometryEntity,
     source_groups: ElementGroupList,
     target_element: GeometryEntity,
-):
+) -> None:
     """Copy group membership from the source element to the target element.
 
     :param source_element: The element to copy from.
@@ -793,13 +797,13 @@ def copy_group_membership(
 
 def batch_copy_group_membership_by_indices(
     source_geometry: hou.Geometry,
-    source_type: GeometryEntity,
+    source_type: GeometryEntityType,
     source_indices: Union[List[int], Tuple[int]],
     source_groups: ElementGroupList,
     target_geometry: hou.Geometry,
-    target_type: GeometryEntity,
+    target_type: GeometryEntityType,
     target_indices: Union[List[int], Tuple[int]],
-):
+) -> None:
     """Batch copy group membership given lists of indices.
 
     :param source_geometry: The geometry to copy group membership from.
@@ -855,7 +859,7 @@ def batch_copy_group_membership(
     source_elements: GeometryEntityList,
     source_groups: ElementGroupList,
     target_elements: GeometryEntityList,
-):
+) -> None:
     """Copy group membership from the source element to the target element.
 
     :param source_elements: The elements to copy from.
@@ -920,17 +924,17 @@ def copy_packed_prims_to_points(  # pylint: disable=too-many-arguments
     attribs: Optional[List[hou.Attrib]] = None,
     copy_groups: bool = True,
     groups: Optional[Union[hou.PointGroup, hou.PrimGroup]] = None,
-):
+) -> None:
     """Copy packed primitives to points by index, optionally copying attributes.
 
     :param geometry: The geometry to copy the primitives into.
     :param source_geometry: The source geometry containing the primitives.
     :param prim_list: The list of primitive numbers to copy.
     :param point_list: The list of point numbers to copy onto.
-    :param copy_attribs: Whether or not to copy primitive attributes and their values.
+    :param copy_attribs: Whether to copy primitive attributes and their values.
     :param attribs: Optional list of attributes to copy. If None and copy_attribs is True, copies all primitive
     attributes.
-    :param copy_groups: Whether or not to copy primitive groups and their values.
+    :param copy_groups: Whether to copy primitive groups and their values.
     :param groups: Optional list of groups to copy. If None and copy_groups is True, copies all primitive groups.
     :return:
 
@@ -1114,7 +1118,7 @@ def vertex_string_attrib_values(geometry: hou.Geometry, name: str) -> StringTupl
 
 def set_vertex_string_attrib_values(
     geometry: hou.Geometry, name: str, values: StringTuple
-):
+) -> None:
     """Set the string attribute values for all vertices.
 
     :param geometry: The geometry.
@@ -1151,7 +1155,7 @@ def set_shared_point_string_attrib(
     name: str,
     value: str,
     group: Optional[hou.PointGroup] = None,
-):
+) -> None:
     """Set a string attribute value for points.
 
     If group is None, all points will have receive the value.  If a group is
@@ -1197,7 +1201,7 @@ def set_shared_point_string_attrib(
 
 def set_shared_prim_string_attrib(
     geometry: hou.Geometry, name: str, value: str, group: Optional[hou.PrimGroup] = None
-):
+) -> None:
     """Set a string attribute value for primitives.
 
     If group is None, all primitives will have receive the value.  If a group
@@ -1249,7 +1253,7 @@ def attribute_has_uninitialized_string_values(attribute: hou.Attrib) -> bool:
     statement.  CONFUSING!
 
     :param attribute: The attribute to check.
-    :return: Whether or not the attribute has uninitialized string values.
+    :return: Whether the attribute has uninitialized string values.
 
     """
     if attribute.dataType() != hou.attribData.String:
@@ -1271,7 +1275,7 @@ def face_has_edge(face: hou.Face, point1: hou.Point, point2: hou.Point) -> bool:
     :param face: The face to check for an edge.
     :param point1: A point to test for an edge with.
     :param point2: A point to test for an edge with.
-    :return: Whether or not the points share an edge.
+    :return: Whether the points share an edge.
 
     """
     # Test for the edge.
@@ -1334,7 +1338,7 @@ def insert_vertex(face: hou.Face, point: hou.Point, index: int) -> hou.Vertex:
     return face.vertex(index)
 
 
-def delete_vertex_from_face(face: hou.Face, index: int):
+def delete_vertex_from_face(face: hou.Face, index: int) -> None:
     """Delete the vertex at the specified index.
 
     :param face: The face to delete the vertex from.
@@ -1354,7 +1358,7 @@ def delete_vertex_from_face(face: hou.Face, index: int):
     _cpp_methods.deleteVertexFromFace(geometry, face.number(), index)
 
 
-def set_face_vertex_point(face: hou.Face, index: int, point: hou.Point):
+def set_face_vertex_point(face: hou.Face, index: int, point: hou.Point) -> None:
     """Set the vertex, at the specified index, to be attached to the point.
 
     :param face: The face to delete the vertex from.
@@ -1425,7 +1429,7 @@ def primitive_volume(prim: hou.Prim) -> float:
     return prim.intrinsicValue("measuredvolume")
 
 
-def reverse_prim(prim: hou.Prim):
+def reverse_prim(prim: hou.Prim) -> None:
     """Reverse the vertex order of the primitive.
 
     :param prim: The primitive to reverse.
@@ -1451,7 +1455,7 @@ def check_minimum_polygon_vertex_count(
     :param geometry: The geometry to check.
     :param minimum_vertices: The minimum number of vertices a polygon must have.
     :param ignore_open: Ignore polygons which are open.
-    :return: Whether or not all the polygons have the minimum number of vertices.
+    :return: Whether all the polygons have the minimum number of vertices.
 
     """
     return _cpp_methods.check_minimum_polygon_vertex_count(
@@ -1464,7 +1468,7 @@ def geometry_has_prims_with_shared_vertex_points(geometry: hou.Geometry) -> bool
     vertex referencing the same point.
 
     :param geometry: The geometry to check.
-    :return: Whether or not the geometry has any primitives with shared vertex points.
+    :return: Whether the geometry has any primitives with shared vertex points.
 
     """
     return _cpp_methods.hasPrimsWithSharedVertexPoints(geometry)
@@ -1487,7 +1491,7 @@ def get_primitives_with_shared_vertex_points(
         return utils.get_prims_from_list(geometry, result)
 
     # If none were found, return an empty tuple.
-    return tuple()
+    return ()
 
 
 def primitive_bounding_box(prim: hou.Prim) -> hou.BoundingBox:
@@ -1508,7 +1512,7 @@ def primitive_bounding_box(prim: hou.Prim) -> hou.BoundingBox:
     )
 
 
-def destroy_empty_groups(geometry: hou.Geometry, attrib_type: hou.attribType):
+def destroy_empty_groups(geometry: hou.Geometry, attrib_type: hou.attribType) -> None:
     """Remove any empty groups of the specified type.
 
     :param geometry: The geometry to destroy empty groups for.
@@ -1598,7 +1602,9 @@ def group_size(group: Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup]) -> in
     )
 
 
-def toggle_group_entries(group: Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup]):
+def toggle_group_entries(
+    group: Union[hou.EdgeGroup, hou.PointGroup, hou.PrimGroup]
+) -> None:
     """Toggle group membership for all elements in the group.
 
     All elements not in the group will be added to it and all that were in it
@@ -1666,13 +1672,13 @@ def groups_share_elements(
     group1: Union[hou.PointGroup, hou.PrimGroup],
     group2: Union[hou.PointGroup, hou.PrimGroup],
 ) -> bool:
-    """Check whether or not the groups contain any of the same elements.
+    """Check whether the groups contain any of the same elements.
 
     The groups must be of the same type and in the same detail.
 
-    :param group1: Group to compare..
+    :param group1: Group to compare.
     :param group2: Group to compare with.
-    :return: Whether or not the groups share any elements.
+    :return: Whether the groups share any elements.
 
     """
     group1_geometry = group1.geometry()
@@ -1697,7 +1703,7 @@ def groups_share_elements(
 
 def set_group_string_attribute(
     group: Union[hou.PointGroup, hou.PrimGroup], attribute: hou.Attrib, value: str
-):
+) -> None:
     """Set a string attribute value to all members of a group.
 
     :param group: The group to set the attribute for.
@@ -1734,7 +1740,7 @@ def convert_prim_to_point_group(
 
     :param prim_group: Group to convert.
     :param new_group_name: The name of the new group.
-    :param destroy: Whether or not to destroy this group.
+    :param destroy: Whether to destroy this group.
     :return: The new point group.
 
     """
@@ -1776,7 +1782,7 @@ def convert_point_to_prim_group(
 
     :param point_group: Group to convert.
     :param new_group_name: The name of the new group.
-    :param destroy: Whether or not to destroy this group.
+    :param destroy: Whether to destroy this group.
     :return: The new primitive group.
 
     """
@@ -1810,7 +1816,7 @@ def geometry_has_ungrouped_points(geometry: hou.Geometry) -> bool:
     """Check if the geometry has ungrouped points.
 
     :param geometry: The geometry to check.
-    :return: Whether or not the geometry has any ungrouped points.
+    :return: Whether the geometry has any ungrouped points.
 
     """
     return _cpp_methods.hasUngroupedPoints(geometry)
@@ -1843,7 +1849,7 @@ def geometry_has_ungrouped_prims(geometry: hou.Geometry) -> bool:
     """Check if the geometry has ungrouped primitives.
 
     :param geometry: The geometry to check.
-    :return: Whether or not the geometry has any ungrouped primitives.
+    :return: Whether the geometry has any ungrouped primitives.
 
     """
     return _cpp_methods.hasUngroupedPrims(geometry)
@@ -1879,7 +1885,7 @@ def bounding_box_is_inside(
 
     :param source_bbox: The bounding box to check for being enclosed.
     :param target_bbox: The bounding box to check for enclosure.
-    :return: Whether or not this object is totally enclosed by the other box.
+    :return: Whether this object is totally enclosed by the other box.
 
     """
     return _cpp_methods.boundingBoxIsInside(source_bbox, target_bbox)
@@ -1890,7 +1896,7 @@ def bounding_boxes_intersect(bbox1: hou.BoundingBox, bbox2: hou.BoundingBox) -> 
 
     :param bbox1: A bounding box to check for intersection with.
     :param bbox2: A bounding box to check for intersection with.
-    :return: Whether or not this object intersects the other box.
+    :return: Whether this object intersects the other box.
 
     """
     return _cpp_methods.boundingBoxesIntersect(bbox1, bbox2)
@@ -1914,7 +1920,7 @@ def compute_bounding_box_intersection(
 
 def expand_bounding_box(
     bbox: hou.BoundingBox, delta_x: float, delta_y: float, delta_z: float
-):
+) -> None:
     """Expand the min and max bounds in each direction by the axis delta.
 
     :param bbox: The bounding box to expand.
@@ -1927,7 +1933,7 @@ def expand_bounding_box(
     _cpp_methods.expandBoundingBoxBounds(bbox, delta_x, delta_y, delta_z)
 
 
-def add_to_bounding_box_min(bbox: hou.BoundingBox, vec: hou.Vector3):
+def add_to_bounding_box_min(bbox: hou.BoundingBox, vec: hou.Vector3) -> None:
     """Add values to the minimum bounds of this bounding box.
 
     :param bbox: The bounding box to expand.
@@ -1938,7 +1944,7 @@ def add_to_bounding_box_min(bbox: hou.BoundingBox, vec: hou.Vector3):
     _cpp_methods.addToBoundingBoxMin(bbox, vec)
 
 
-def add_to_bounding_box_max(bbox: hou.BoundingBox, vec: hou.Vector3):
+def add_to_bounding_box_max(bbox: hou.BoundingBox, vec: hou.Vector3) -> None:
     """Add values to the maximum bounds of this bounding box.
 
     :param bbox: The bounding box to expand.
@@ -1973,7 +1979,7 @@ def is_parm_tuple_vector(parm_tuple: hou.ParmTuple) -> bool:
     """Check if the tuple is a vector parameter.
 
     :param parm_tuple: The parm tuple to check.
-    :return: Whether or not the parameter tuple is a vector.
+    :return: Whether the parameter tuple is a vector.
 
     """
     parm_template = parm_tuple.parmTemplate()
@@ -2009,7 +2015,7 @@ def is_parm_tuple_color(parm_tuple: hou.ParmTuple) -> bool:
     """Check if the parameter is a color parameter.
 
     :param parm_tuple: The parm tuple to check.
-    :return: Whether or not the parameter tuple is a color.
+    :return: Whether the parameter tuple is a color.
 
     """
     parm_template = parm_tuple.parmTemplate()
@@ -2099,7 +2105,7 @@ def is_parm_multiparm(parm: Union[hou.Parm, hou.ParmTuple]) -> bool:
     """Check if this parameter is a multiparm.
 
     :param parm: The parm or tuple to check for being a multiparm.
-    :return: Whether or not the parameter is a multiparm.
+    :return: Whether the parameter is a multiparm.
 
     """
     # Get the parameter template for the parm/tuple.
@@ -2121,7 +2127,7 @@ def get_multiparm_instance_indices(
 
     :param parm: The parm to get the multiparm instance index for.
     :param instance_index: Each multi-parm can have multiple parameters in each instance. If instance_index is true,
-    the instance number will be returned. Otherwise the raw offset into the multi-parm will be extracted.
+    the instance number will be returned. Otherwise, the raw offset into the multi-parm will be extracted.
     :return The instance indices for the parameter.
 
     """
@@ -2264,7 +2270,7 @@ def eval_multiparm_instance(
     :param node: The node to evaluate the parameter on.
     :param name: The base parameter name.
     :param indices: The multiparm indices.
-    :param raw_indices: Whether or not the indices are 'raw' and should not try and take the folder offset into account.
+    :param raw_indices: Whether the indices are 'raw' and should not try and take the folder offset into account.
     :return: The evaluated parameter value.
 
     """
@@ -2333,7 +2339,7 @@ def unexpanded_string_multiparm_instance(
     :param node: The node to evaluate the parameter on.
     :param name: The base parameter name.
     :param indices: The multiparm indices.
-    :param raw_indices: Whether or not the indices are 'raw'and should not try and take the folder offset into account.
+    :param raw_indices: Whether the indices are 'raw'and should not try and take the folder offset into account.
     :return: The evaluated parameter value.
 
     """
@@ -2379,7 +2385,7 @@ def unexpanded_string_multiparm_instance(
     return values
 
 
-def disconnect_all_inputs(node: hou.Node):
+def disconnect_all_inputs(node: hou.Node) -> None:
     """Disconnect all of this node's inputs.
 
     :param node: The node to disconnect all inputs for.
@@ -2393,7 +2399,7 @@ def disconnect_all_inputs(node: hou.Node):
             node.setInput(connection.inputIndex(), None)
 
 
-def disconnect_all_outputs(node: hou.Node):
+def disconnect_all_outputs(node: hou.Node) -> None:
     """Disconnect all of this node's outputs.
 
     :param node: The node to disconnect all outputs for.
@@ -2417,16 +2423,15 @@ def get_node_message_nodes(node: hou.Node) -> Tuple[hou.Node, ...]:
     # Get the otl definition for this node's type, if any.
     definition = node.type().definition()
 
-    if definition is not None:
-        # Check that there are message nodes.
-        if "MessageNodes" in definition.sections():
-            # Extract the list of them.
-            contents = definition.sections()["MessageNodes"].contents()
+    # Check that there are message nodes.
+    if definition is not None and "MessageNodes" in definition.sections():
+        # Extract the list of them.
+        contents = definition.sections()["MessageNodes"].contents()
 
-            # Glob for any specified nodes and return them.
-            return node.glob(contents)
+        # Glob for any specified nodes and return them.
+        return node.glob(contents)
 
-    return tuple()
+    return ()
 
 
 def get_node_editable_nodes(node: hou.Node) -> Tuple[hou.Node, ...]:
@@ -2439,16 +2444,15 @@ def get_node_editable_nodes(node: hou.Node) -> Tuple[hou.Node, ...]:
     # Get the otl definition for this node's type, if any.
     definition = node.type().definition()
 
-    if definition is not None:
-        # Check that there are editable nodes.
-        if "EditableNodes" in definition.sections():
-            # Extract the list of them.
-            contents = definition.sections()["EditableNodes"].contents()
+    # Check that there are editable nodes.
+    if definition is not None and "EditableNodes" in definition.sections():
+        # Extract the list of them.
+        contents = definition.sections()["EditableNodes"].contents()
 
-            # Glob for any specified nodes and return them.
-            return node.glob(contents)
+        # Glob for any specified nodes and return them.
+        return node.glob(contents)
 
-    return tuple()
+    return ()
 
 
 def get_node_dive_target(node: hou.Node) -> Optional[hou.Node]:
@@ -2461,14 +2465,13 @@ def get_node_dive_target(node: hou.Node) -> Optional[hou.Node]:
     # Get the otl definition for this node's type, if any.
     definition = node.type().definition()
 
-    if definition is not None:
-        # Check that there is a dive target.
-        if "DiveTarget" in definition.sections():
-            # Get it's path.
-            target = definition.sections()["DiveTarget"].contents()
+    # Check that there is a dive target.
+    if definition is not None and "DiveTarget" in definition.sections():
+        # Get its path.
+        target = definition.sections()["DiveTarget"].contents()
 
-            # Return the node.
-            return node.node(target)
+        # Return the node.
+        return node.node(target)
 
     return None
 
@@ -2499,7 +2502,7 @@ def node_is_contained_by(node: hou.Node, containing_node: hou.Node) -> bool:
 
     :param node: The node to check for being contained.
     :param containing_node: A node which may contain this node
-    :return: Whether or not this node is a child of the passed node.
+    :return: Whether this node is a child of the passed node.
 
     """
     # Get this node's parent.
@@ -2527,7 +2530,7 @@ def node_author_name(node: hou.Node) -> str:
     """
     author = utils.string_decode(_cpp_methods.getNodeAuthor(node))
 
-    # Remove any machine name from the user name.
+    # Remove any machine name from the username.
     return author.split("@")[0]
 
 
@@ -2535,7 +2538,7 @@ def is_node_type_python(node_type: hou.NodeType) -> bool:
     """Check if the node type represents a Python operator.
 
     :param node_type: The node type to check.
-    :return: Whether or not the operator is a Python operator.
+    :return: Whether the operator is a Python operator.
 
     """
     return _cpp_methods.isNodeTypePythonType(node_type)
@@ -2547,7 +2550,7 @@ def is_node_type_subnet(node_type: hou.NodeType) -> bool:
     This is the operator type which is used as a default container for nodes.
 
     :param node_type: The node type to check.
-    :return: Whether or not the operator is a Subnet operator.
+    :return: Whether the operator is a Subnet operator.
 
     """
     return _cpp_methods.isNodeTypeSubnetType(node_type)
@@ -2589,17 +2592,10 @@ def vector_contains_nans(vector: Union[hou.Vector2, hou.Vector3, hou.Vector4]) -
     """Check if the vector contains NaNs.
 
     :param vector: The vector to check for NaNs.
-    :return: Whether or not there are any NaNs in the vector.
+    :return: Whether there are any NaNs in the vector.
 
     """
-    # Iterate over each component.
-    for component in vector:
-        # If this component is a NaN, return True.
-        if math.isnan(component):
-            return True
-
-    # Didn't find any NaNs, so return False.
-    return False
+    return any(math.isnan(component) for component in vector)
 
 
 def vector_compute_dual(vector: hou.Vector3) -> hou.Matrix3:
@@ -2625,7 +2621,7 @@ def matrix_is_identity(matrix: Union[hou.Matrix3, hou.Matrix4]) -> bool:
     """Check if the matrix is the identity matrix.
 
     :param matrix: The matrix to check.
-    :return: Whether or not the matrix is the identity matrix.
+    :return: Whether the matrix is the identity matrix.
 
     """
     # We are a 3x3 matrix.
@@ -2643,10 +2639,12 @@ def matrix_is_identity(matrix: Union[hou.Matrix3, hou.Matrix4]) -> bool:
     return matrix == hou.hmath.identityTransform()
 
 
-def matrix_set_translates(matrix: hou.Matrix4, translates: Tuple[float, float, float]):
+def matrix_set_translates(
+    matrix: hou.Matrix4, translates: Tuple[float, float, float]
+) -> None:
     """Set the translation values of this matrix.
 
-    :param matrix: The matrix to set the translate for..
+    :param matrix: The matrix to set the translations for.
     :param translates: The translation values to set.
     :return:
 
@@ -2715,7 +2713,7 @@ def get_oriented_point_transform(point: hou.Point) -> hou.Matrix4:
         # Create a full transform matrix using the point position as well.
         return hou.Matrix4(rot_matrix) * hou.hmath.buildTranslate(point.position())
 
-    # Just a simple unattached point so we can return the standard point instance
+    # Just a simple unattached point, so we can return the standard point instance
     # matrix.
     return point_instance_transform(point)
 
@@ -2734,15 +2732,15 @@ def point_instance_transform(point: hou.Point) -> hou.Matrix4:
 
 def build_instance_matrix(  # pylint: disable=too-many-arguments
     position: hou.Vector3,
-    direction: hou.Vector3 = hou.Vector3(0, 0, 1),
+    direction: Optional[hou.Vector3] = None,
     pscale: float = 1.0,
-    scale: hou.Vector3 = hou.Vector3(1, 1, 1),
-    up_vector: hou.Vector3 = hou.Vector3(0, 1, 0),
-    rot: hou.Quaternion = hou.Quaternion(0, 0, 0, 1),
-    trans: hou.Vector3 = hou.Vector3(0, 0, 0),
-    pivot: hou.Vector3 = hou.Vector3(0, 0, 0),
+    scale: Optional[hou.Vector3] = None,
+    up_vector: Optional[hou.Vector3] = None,
+    rot: Optional[hou.Quaternion] = None,
+    trans: Optional[hou.Vector3] = None,
+    pivot: Optional[hou.Vector3] = None,
     orient: Optional[hou.Quaternion] = None,
-):
+) -> hou.Matrix4:
     """Compute a transform to orient to a given direction.
 
     The transform can be computed for an optional position and scale.
@@ -2760,11 +2758,41 @@ def build_instance_matrix(  # pylint: disable=too-many-arguments
     If a pivot is specified, use it as the local transformation of the
     instance.
 
-    If an orientation quaternion is specified, the orientation (using the
-    direction and up vector will not be performed and this orientation will
+    If `orient` is specified, the orientation (using the
+    direction and up vector) will not be performed and this orientation will
     instead be used to define an original orientation.
 
+    See https://www.sidefx.com/docs/houdini//copy/instanceattrs.html for more details.
+
+    :param position: The position of the object to transform.
+    :param direction: "Velocity" vector. Uses (0, 0, 1) if not defined.
+    :param pscale: Uniform scaling.
+    :param scale: Optional non-uniform scale.  Uses (1, 0, 1) if not defined.
+    :param up_vector: Optional up vector when not using `orient`.  Uses (0, 1, 0) if not defined.
+    :param rot: Optional additional rotation. Uses (0, 0, 0, 1) if not defined.
+    :param trans: Optional additional translation. Uses (0, 0, 0) if not defined.
+    :param pivot: Optional local pivot point. Uses (0, 0, 0) if not defined.
+    :param orient: Optional orientation quaternion to use instead of calculating.
+    :return: The computed instance transform matrix.
     """
+    if direction is None:
+        direction = hou.Vector3(0, 0, 1)
+
+    if scale is None:
+        scale = hou.Vector3(1, 1, 1)
+
+    if up_vector is None:
+        up_vector = hou.Vector3(0, 1, 0)
+
+    if rot is None:
+        rot = hou.Quaternion(0, 0, 0, 1)
+
+    if trans is None:
+        trans = hou.Vector3(0, 0, 0)
+
+    if pivot is None:
+        pivot = hou.Vector3(0, 0, 0)
+
     zero_vec = hou.Vector3()
 
     # Scale the non-uniform scale by the uniform scale.
@@ -2808,7 +2836,7 @@ def is_node_digital_asset(node: hou.Node) -> bool:
     A node is a digital asset if its node type has a hou.HDADefinition.
 
     :param node: The node to check for being a digital asset.
-    :return: Whether or not this node is a digital asset.
+    :return: Whether this node is a digital asset.
 
     """
     return node.type().definition() is not None
@@ -2821,7 +2849,7 @@ def asset_file_meta_source(file_path: str) -> Optional[str]:
     the current session.  Examples include "Scanned OTL Directories", "Current
     Hip File", "Fallback Libraries" or specific OPlibraries files.
 
-    :param file_path: The path to get the install location for.
+    :param file_path: The path to get the location for.
     :return: The meta install location, if any.
 
     """
@@ -2853,7 +2881,7 @@ def remove_meta_source(meta_source: str) -> bool:
     Removing a meta source will uninstall the libraries it was responsible for.
 
     :param meta_source: The meta source name.
-    :return: Whether or not the source was removed.
+    :return: Whether the source was removed.
 
     """
     return _cpp_methods.removeMetaSource(utils.string_encode(meta_source))
@@ -2880,7 +2908,7 @@ def is_dummy_definition(definition: hou.HDADefinition) -> bool:
     an operator definition that it needs in the current session.
 
     :param definition: The definition to check.
-    :return: Whether or not the asset definition is a dummy definition.
+    :return: Whether the asset definition is a dummy definition.
 
     """
     return _cpp_methods.isDummyDefinition(

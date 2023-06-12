@@ -4,6 +4,7 @@
 # IMPORTS
 # ==============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
@@ -55,8 +56,8 @@ class BasicSourceItemTable(QtWidgets.QTableView):
     :param source: The table source.
     :param context: The Houdini context for the source.
     :param selection_mode: The selection mode.
-    :param allow_double_click: Whether or not to allow double clicking items.
-    :param allow_delete: Whether or not to allow deleting items.
+    :param allow_double_click: Whether to allow double clicking items.
+    :param allow_delete: Whether to allow deleting items.
     :param parent: Optional parent widget.
 
     """
@@ -81,7 +82,9 @@ class BasicSourceItemTable(QtWidgets.QTableView):
 
         self.allow_delete = allow_delete
 
-        self.table_model = houdini_toolbox.ui.paste.models.BasicSourceItemTableModel(source, context)
+        self.table_model = houdini_toolbox.ui.paste.models.BasicSourceItemTableModel(
+            source, context
+        )
 
         self.setModel(self.table_model)
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
@@ -196,7 +199,7 @@ class BasicSourceItemTable(QtWidgets.QTableView):
     def has_rows_selected(self) -> bool:
         """Quick check if the table has anything selected.
 
-        :return: Whether or not anything is selected.
+        :return: Whether anything is selected.
 
         """
         return bool(self.selection_model.selectedRows())

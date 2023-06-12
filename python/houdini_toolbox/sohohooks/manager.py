@@ -6,7 +6,7 @@
 
 # Standard Library
 import traceback
-from typing import Callable
+from typing import Any, Callable
 
 # =============================================================================
 # CLASSES
@@ -16,14 +16,14 @@ from typing import Callable
 class SohoHookManager:
     """This class manages custom soho hooks."""
 
-    def __init__(self):
-        self._hooks = {}
+    def __init__(self) -> None:
+        self._hooks: dict[str, Callable] = {}
 
     # -------------------------------------------------------------------------
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<SohoHookManager ({len(self.hooks)} hooks)>"
 
     # -------------------------------------------------------------------------
@@ -39,11 +39,11 @@ class SohoHookManager:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def call_hook(self, name: str, *args, **kwargs) -> bool:
+    def call_hook(self, name: str, *args: Any, **kwargs: Any) -> bool:
         """Call all hook functions for a given soho hook name.
 
         :param name: The name of the hook to call.
-        :return: Whether or not the hooks succeeded.
+        :return: Whether the hooks succeeded.
 
         """
         from IFDapi import ray_comment
@@ -70,7 +70,7 @@ class SohoHookManager:
 
         return return_value
 
-    def register_hook(self, name: str, hook: Callable):
+    def register_hook(self, name: str, hook: Callable) -> None:
         """Register a hook function for a given soho hook name.
 
         :param name: The hook name.

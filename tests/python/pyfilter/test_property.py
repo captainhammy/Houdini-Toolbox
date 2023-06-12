@@ -79,7 +79,9 @@ class Test__prep_value_to_set:
 
     def test_list_of_dicts__typeerror(self, mocker):
         """Test a list of dictionaries that raise a TypeError on dumping."""
-        mocker.patch("houdini_toolbox.pyfilter.property.json.dumps", side_effect=TypeError)
+        mocker.patch(
+            "houdini_toolbox.pyfilter.property.json.dumps", side_effect=TypeError
+        )
 
         mock_value = mocker.MagicMock(spec=dict)
 
@@ -91,7 +93,9 @@ class Test__prep_value_to_set:
 
     def test_list_of_dicts__valueerror(self, mocker):
         """Test a list of dictionaries that raise a ValueError on dumping."""
-        mocker.patch("houdini_toolbox.pyfilter.property.json.dumps", side_effect=ValueError)
+        mocker.patch(
+            "houdini_toolbox.pyfilter.property.json.dumps", side_effect=ValueError
+        )
 
         mock_value = mocker.MagicMock(spec=dict)
 
@@ -155,7 +159,9 @@ class Test__transform_values:
         mock_loads = mocker.patch("houdini_toolbox.pyfilter.property.json.loads")
         mock_loads.side_effect = ValueError
 
-        mock_parse = mocker.patch("houdini_toolbox.pyfilter.property._parse_string_for_bool")
+        mock_parse = mocker.patch(
+            "houdini_toolbox.pyfilter.property._parse_string_for_bool"
+        )
 
         mock_value = mocker.MagicMock(spec=str)
         mock_value.split.return_value.__len__.return_value = 2

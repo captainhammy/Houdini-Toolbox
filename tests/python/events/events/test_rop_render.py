@@ -24,7 +24,9 @@ import hou
 def init_event(mocker):
     """Fixture to initialize an event."""
     mocker.patch.object(
-        houdini_toolbox.events.events.rop_render.RopRenderEvent, "__init__", lambda x: None
+        houdini_toolbox.events.events.rop_render.RopRenderEvent,
+        "__init__",
+        lambda x: None,
     )
 
     def _create():
@@ -55,7 +57,9 @@ class Test_RopRenderEvent:
 
         event_map = {}
         mocker.patch.object(
-            houdini_toolbox.events.events.rop_render.RopRenderEvent, "event_map", event_map
+            houdini_toolbox.events.events.rop_render.RopRenderEvent,
+            "event_map",
+            event_map,
         )
 
         event = houdini_toolbox.events.events.rop_render.RopRenderEvent()
@@ -138,7 +142,9 @@ class Test_RopRenderEvent:
 
     def test_post_frame__valid_start_frame(self, init_event, mocker, mock_logger):
         """Test when a start time exists."""
-        mock_print = mocker.patch("houdini_toolbox.events.events.rop_render._print_frame_write")
+        mock_print = mocker.patch(
+            "houdini_toolbox.events.events.rop_render._print_frame_write"
+        )
 
         event = init_event()
         event._frame_start = mocker.MagicMock(spec=float)
@@ -161,7 +167,9 @@ class Test_RopRenderEvent:
 
     def test_post_frame__no_start_frame(self, init_event, mocker, mock_logger):
         """Test when no start time is known."""
-        mock_print = mocker.patch("houdini_toolbox.events.events.rop_render._print_frame_write")
+        mock_print = mocker.patch(
+            "houdini_toolbox.events.events.rop_render._print_frame_write"
+        )
 
         event = init_event()
         event._frame_start = None
@@ -325,7 +333,9 @@ class Test_build_scriptargs:
         """Test where there all args are default."""
         mock_time = mocker.patch("houdini_toolbox.events.events.rop_render.time.time")
         mock_frame = mocker.patch("houdini_toolbox.events.events.rop_render.hou.frame")
-        mock_get = mocker.patch("houdini_toolbox.events.events.rop_render._get_target_file")
+        mock_get = mocker.patch(
+            "houdini_toolbox.events.events.rop_render._get_target_file"
+        )
 
         result = houdini_toolbox.events.events.rop_render.build_scriptargs()
 
@@ -344,7 +354,9 @@ class Test_build_scriptargs:
         """Test where there is no 'trange' parm."""
         mock_time = mocker.patch("houdini_toolbox.events.events.rop_render.time.time")
         mock_frame = mocker.patch("houdini_toolbox.events.events.rop_render.hou.frame")
-        mock_get = mocker.patch("houdini_toolbox.events.events.rop_render._get_target_file")
+        mock_get = mocker.patch(
+            "houdini_toolbox.events.events.rop_render._get_target_file"
+        )
 
         mock_node = mocker.MagicMock(spec=hou.Node)
         mock_node.parm.return_value = None
@@ -367,7 +379,9 @@ class Test_build_scriptargs:
         """Test where we can't get a frame range because it is off."""
         mock_time = mocker.patch("houdini_toolbox.events.events.rop_render.time.time")
         mock_frame = mocker.patch("houdini_toolbox.events.events.rop_render.hou.frame")
-        mock_get = mocker.patch("houdini_toolbox.events.events.rop_render._get_target_file")
+        mock_get = mocker.patch(
+            "houdini_toolbox.events.events.rop_render._get_target_file"
+        )
 
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.evalAsString.return_value = "off"
@@ -393,7 +407,9 @@ class Test_build_scriptargs:
         """Test where we actually get a frame range."""
         mock_time = mocker.patch("houdini_toolbox.events.events.rop_render.time.time")
         mock_frame = mocker.patch("houdini_toolbox.events.events.rop_render.hou.frame")
-        mock_get = mocker.patch("houdini_toolbox.events.events.rop_render._get_target_file")
+        mock_get = mocker.patch(
+            "houdini_toolbox.events.events.rop_render._get_target_file"
+        )
 
         mock_node = mocker.MagicMock(spec=hou.Node)
 
@@ -417,7 +433,8 @@ class Test_build_scriptargs:
         mock_time = mocker.patch("houdini_toolbox.events.events.rop_render.time.time")
         mock_frame = mocker.patch("houdini_toolbox.events.events.rop_render.hou.frame")
         mock_get = mocker.patch(
-            "houdini_toolbox.events.events.rop_render._get_target_file", return_value=None
+            "houdini_toolbox.events.events.rop_render._get_target_file",
+            return_value=None,
         )
 
         mock_node = mocker.MagicMock(spec=hou.Node)

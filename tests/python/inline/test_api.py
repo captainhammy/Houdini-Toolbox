@@ -1565,7 +1565,7 @@ class Test_set_vertex_string_attrib_values:
         """Test when the geometry is read only."""
         with pytest.raises(hou.GeometryPermissionError):
             houdini_toolbox.inline.api.set_vertex_string_attrib_values(
-                obj_test_geo, "test", tuple()
+                obj_test_geo, "test", ()
             )
 
     def test(self, obj_test_geo_copy):
@@ -1589,14 +1589,14 @@ class Test_set_vertex_string_attrib_values:
         """Test when the attribute does not exist."""
         with pytest.raises(hou.OperationFailed):
             houdini_toolbox.inline.api.set_vertex_string_attrib_values(
-                obj_test_geo_copy, "thing", tuple()
+                obj_test_geo_copy, "thing", ()
             )
 
     def test_not_string_attribute(self, obj_test_geo_copy):
         """Test when the attribute is not a string attribute."""
         with pytest.raises(ValueError):
             houdini_toolbox.inline.api.set_vertex_string_attrib_values(
-                obj_test_geo_copy, "notstring", tuple()
+                obj_test_geo_copy, "notstring", ()
             )
 
     def test_invalid_attribute_size(self, obj_test_geo_copy):

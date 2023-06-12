@@ -15,7 +15,6 @@ from typing import Any, Callable, Optional, Tuple, Type
 # Houdini
 import hou
 
-
 # ==============================================================================
 # GLOBALS
 # ==============================================================================
@@ -74,7 +73,9 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         self._status_bar = status_bar
 
     def __new__(
-        cls: Type[HoudiniLoggerAdapter], *args: Any, **kwargs: Any  # pylint: disable=unused-argument
+        cls: Type[HoudiniLoggerAdapter],  # pylint: disable=unused-argument
+        *args: Any,
+        **kwargs: Any,
     ) -> HoudiniLoggerAdapter:  # pragma: no cover
         """Overridden __new__ that will wrap logging methods with custom function."""
         inst = super(HoudiniLoggerAdapter, cls).__new__(cls)
@@ -122,7 +123,9 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
         # Create a base logger
         base_logger = logging.getLogger(name)
 
-        return cls(base_logger, node=node, dialog=dialog, status_bar=status_bar, extra=extra)
+        return cls(
+            base_logger, node=node, dialog=dialog, status_bar=status_bar, extra=extra
+        )
 
     # --------------------------------------------------------------------------
     # PROPERTIES
@@ -218,12 +221,13 @@ class HoudiniLoggerAdapter(logging.LoggerAdapter):
 # ==============================================================================
 
 
-
 def _wrap_logger(func: Callable, severity: hou.severityType) -> Callable:
     """Function which wraps a logger method with custom code."""
 
     @wraps(func)
-    def func_wrapper(*args: Any, **kwargs: Any) -> Any:  # pylint: disable=missing-docstring
+    def func_wrapper(
+        *args: Any, **kwargs: Any
+    ) -> Any:  # pylint: disable=missing-docstring
         # Get the extra dictionary or an empty one if it doesn't exist.
         extra = kwargs.setdefault("extra", {})
 

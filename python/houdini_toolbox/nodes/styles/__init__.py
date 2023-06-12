@@ -9,7 +9,10 @@ Houdini.
 
 # Houdini Toolbox
 from houdini_toolbox.events import NodeEvents, register_function
-from houdini_toolbox.nodes.styles.event import style_node_by_name, style_node_on_creation
+from houdini_toolbox.nodes.styles.event import (
+    style_node_by_name,
+    style_node_on_creation,
+)
 
 # =============================================================================
 

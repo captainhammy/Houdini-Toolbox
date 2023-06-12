@@ -22,7 +22,9 @@ import hou
 # GLOBALS
 # =============================================================================
 
-with resources.files("houdini_toolbox.nodes").joinpath("resources/help_template.yaml").open(encoding="utf-8") as handle:
+with resources.files("houdini_toolbox.nodes").joinpath(
+    "resources/help_template.yaml"
+).open(encoding="utf-8") as handle:
     _TEMPLATES = yaml.safe_load(handle)
 
 # Parameter templates which are multiparms.
@@ -41,7 +43,7 @@ _TEMPLATES_TO_IGNORE = (hou.SeparatorParmTemplate, hou.LabelParmTemplate)
 # =============================================================================
 
 
-def _add_inputs(string_buf: io.StringIO, node: hou.Node):
+def _add_inputs(string_buf: io.StringIO, node: hou.Node) -> None:
     """Create the INPUTS section.
 
     :param string_buf: The output buffer.
@@ -64,7 +66,7 @@ def _add_inputs(string_buf: io.StringIO, node: hou.Node):
             string_buf.write("\n\n")
 
 
-def _add_using_section(string_buf: io.StringIO, node_type: hou.NodeType):
+def _add_using_section(string_buf: io.StringIO, node_type: hou.NodeType) -> None:
     """Create the 'Using' section.
 
     :param string_buf: The output buffer.
@@ -105,12 +107,12 @@ def _add_folder_help(
     parm_template: hou.FolderParmTemplate,
     items: Union[List, OrderedDict],
     in_multiparm: bool = False,
-):
+) -> None:
     """Build a help item for a folder parameter.
 
     :param parm_template: The source parameter template.
     :param items: A list of help items.
-    :param in_multiparm: Whether or not the template is inside a multiparm
+    :param in_multiparm: Whether the template is inside a multiparm
     :return:
 
     """
@@ -140,12 +142,12 @@ def _add_help_for_parameter(
     parm_template: hou.ParmTemplate,
     items: Union[List, OrderedDict],
     in_multiparm: bool = False,
-):
+) -> None:
     """Build a help item for a parameter.
 
     :param parm_template: The source parameter template.
     :param items: A list of help items.
-    :param in_multiparm: Whether or not the template is inside a multiparm
+    :param in_multiparm: Whether the template is inside a multiparm
     :return:
 
     """
@@ -174,7 +176,7 @@ def _add_help_for_parameter(
         items.append(parm_help)
 
 
-def _add_parameters_section(string_buf: io.StringIO, node_type: hou.NodeType):
+def _add_parameters_section(string_buf: io.StringIO, node_type: hou.NodeType) -> None:
     """Add a parameters section to the buffer.
 
     :param string_buf: The output buffer.
@@ -194,7 +196,7 @@ def _add_parameters_section(string_buf: io.StringIO, node_type: hou.NodeType):
     _get_help_text(string_buf, parameter_items, 0)
 
 
-def _create_header(string_buf: io.StringIO, node_type: hou.NodeType):
+def _create_header(string_buf: io.StringIO, node_type: hou.NodeType) -> None:
     """Create the header sections.
 
     :param string_buf: The output buffer.
@@ -230,7 +232,7 @@ def _get_template(key: str, in_multiparm: bool = False) -> jinja2.Template:
     be removed since they will cause problems.
 
     :param key: The output key.
-    :param in_multiparm: Whether or not the template is inside a multiparm
+    :param in_multiparm: Whether the template is inside a multiparm
     :return: The help template.
 
     """
@@ -246,7 +248,7 @@ def _get_template(key: str, in_multiparm: bool = False) -> jinja2.Template:
 
 def _get_help_text(
     string_buf: io.StringIO, items: Union[List, OrderedDict, str], indent: int
-):
+) -> None:
     """Add items to the output.
 
     :param string_buf: The output buffer.
@@ -279,12 +281,12 @@ def _process_parm_templates(
     items: Union[List, OrderedDict],
     templates: Tuple[hou.ParmTemplate],
     in_multiparm: bool = False,
-):
+) -> None:
     """Process parameter templates.
 
     :param items: A list of help items.
     :param templates: The parameter templates to process.
-    :param in_multiparm: Whether or not the templates are inside a multiparm.
+    :param in_multiparm: Whether the templates are inside a multiparm.
     :return:
 
     """
@@ -339,9 +341,9 @@ def generate_help_card(
     """Generate help card text for a node.
 
     :param node: The source node.
-    :param inputs: Whether or not to include an 'Inputs' section.
-    :param related: Whether or not to include a 'See also' section.
-    :param using: Whether or not to create a 'Using ...' section.
+    :param inputs: Whether to include an 'Inputs' section.
+    :param related: Whether to include a 'See also' section.
+    :param using: Whether to create a 'Using ...' section.
     :return: The generated help card text.
 
     """

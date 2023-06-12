@@ -14,7 +14,7 @@ from houdini_toolbox.events import NodeEvents, run_event
 
 def main():
     """Main function."""
-    run_event(NodeEvents.PreFirstCreate, kwargs)  # pylint: disable=undefined-variable
+    run_event(NodeEvents.PreFirstCreate, kwargs)
 
 
 # =============================================================================

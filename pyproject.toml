@@ -62,8 +62,7 @@
         directory = "coverage_html_report"
 
 [tool.mypy]
-    mypy_path = "python"
-    files = "python"
+    files = "python/houdini_toolbox"
     disallow_incomplete_defs = true
     disallow_untyped_calls = true
     disallow_untyped_defs = true
@@ -175,4 +174,4 @@
       allow-wildcard-with-all = ['no']
 
     [tool.pylint.'EXCEPTIONS']
-       overgeneral-exceptions = ['Exception,hou.Error']
+       overgeneral-exceptions = ['builtins.Exception,hou.Error']

@@ -78,8 +78,12 @@ def test_register_callbacks(mocker, ui_available):
     """Test houdini_toolbox.events.callbacks.register_callbacks."""
     mocker.patch("hou.isUIAvailable", return_value=ui_available)
     mock_register = mocker.patch("houdini_toolbox.events.callbacks.atexit.register")
-    mock_emit = mocker.patch("houdini_toolbox.events.callbacks._register_when_ui_available")
-    mock_add = mocker.patch("houdini_toolbox.events.callbacks.hou.hipFile.addEventCallback")
+    mock_emit = mocker.patch(
+        "houdini_toolbox.events.callbacks._register_when_ui_available"
+    )
+    mock_add = mocker.patch(
+        "houdini_toolbox.events.callbacks.hou.hipFile.addEventCallback"
+    )
 
     callbacks.register_callbacks()
 

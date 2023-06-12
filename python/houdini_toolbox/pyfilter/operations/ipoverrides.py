@@ -4,6 +4,7 @@
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
@@ -11,7 +12,10 @@ import math
 from typing import TYPE_CHECKING, List, Optional
 
 # Houdini Toolbox
-from houdini_toolbox.pyfilter.operations.operation import PyFilterOperation, log_filter_call
+from houdini_toolbox.pyfilter.operations.operation import (
+    PyFilterOperation,
+    log_filter_call,
+)
 from houdini_toolbox.pyfilter.property import get_property, set_property
 from houdini_toolbox.pyfilter.utils import build_pyfilter_command
 
@@ -35,7 +39,7 @@ class IpOverrides(PyFilterOperation):
 
     """
 
-    def __init__(self, manager: PyFilterManager):
+    def __init__(self, manager: PyFilterManager) -> None:
         super().__init__(manager)
 
         self._bucket_size = None
@@ -131,15 +135,15 @@ class IpOverrides(PyFilterOperation):
 
         :param res_scale: The resolution scale.
         :param sample_scale: The pixel sample scale.
-        :param disable_blur: Whether or not to disable blur.
-        :param disable_aovs: Whether or not to disable any AOVs.
-        :param disable_deep: Whether or not to disable deep images.
-        :param disable_displacement: Whether or not to disable displacement.
-        :param disable_subd: Whether or not to disable subdivision surfaces.
-        :param disable_tilecallback: Whether or not to disable any tile callback.
+        :param disable_blur: Whether to disable blur.
+        :param disable_aovs: Whether to disable any AOVs.
+        :param disable_deep: Whether to disable deep images.
+        :param disable_displacement: Whether to disable displacement.
+        :param disable_subd: Whether to disable subdivision surfaces.
+        :param disable_tilecallback: Whether to disable any tile callback.
         :param bucket_size: Override the render bucket size.
         :param transparent_samples: Override the number of transparent samples.
-        :param disable_matte: Whether or not to disable matte and phantom objects.
+        :param disable_matte: Whether to disable matte and phantom objects.
         :return: The constructed argument string.
 
         """
@@ -181,7 +185,7 @@ class IpOverrides(PyFilterOperation):
         return " ".join(args)
 
     @staticmethod
-    def register_parser_args(parser: argparse.ArgumentParser):
+    def register_parser_args(parser: argparse.ArgumentParser) -> None:
         """Register interested parser args for this operation.
 
         :param parser: The argument parser to attach arguments to.
@@ -251,7 +255,7 @@ class IpOverrides(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @log_filter_call
-    def filter_camera(self):
+    def filter_camera(self) -> None:
         """Apply camera properties.
 
         :return:
@@ -290,7 +294,7 @@ class IpOverrides(PyFilterOperation):
             set_property("image:transparentsamples", self.transparent_samples)
 
     @log_filter_call
-    def filter_instance(self):
+    def filter_instance(self) -> None:
         """Modify object properties.
 
         :return:
@@ -302,15 +306,15 @@ class IpOverrides(PyFilterOperation):
         if self.disable_subd:
             set_property("object:rendersubd", 0)
 
-        if self.disable_matte:
-            if get_property("object:matte") or get_property("object:phantom"):
-                set_property("object:renderable", False)
-
-            elif get_property("object:surface") == "opdef:/Shop/v_matte":
-                set_property("object:renderable", False)
+        if self.disable_matte and (
+            get_property("object:matte")
+            or get_property("object:phantom")
+            or get_property("object:surface") == "opdef:/Shop/v_matte"
+        ):
+            set_property("object:renderable", False)
 
     @log_filter_call
-    def filter_material(self):
+    def filter_material(self) -> None:
         """Modify material properties.
 
         :return:
@@ -320,7 +324,7 @@ class IpOverrides(PyFilterOperation):
             set_property("object:displace", [])
 
     @log_filter_call
-    def filter_plane(self):
+    def filter_plane(self) -> None:
         """Modify aov properties.
 
         :return:
@@ -330,7 +334,7 @@ class IpOverrides(PyFilterOperation):
         if self.disable_aovs and get_property("plane:variable") != "Cf+Af":
             set_property("plane:disable", 1)
 
-    def process_parsed_args(self, filter_args: argparse.Namespace):
+    def process_parsed_args(self, filter_args: argparse.Namespace) -> None:
         """Process any parsed args that the operation may be interested in.
 
         :param filter_args: The argparse namespace containing processed args.
@@ -358,11 +362,11 @@ class IpOverrides(PyFilterOperation):
             self._transparent_samples = filter_args.ip_transparent_samples
 
     def should_run(self) -> bool:
-        """Determine whether or not this filter should be run.
+        """Determine whether this filter should be run.
 
         This operation will run if we are rendering to ip and have something to set.
 
-        :return: Whether or not this operation should run.
+        :return: Whether this operation should run.
 
         """
         if get_property("image:filename") != "ip":
@@ -515,7 +519,7 @@ def build_pyfilter_command_from_node(node: hou.RopNode) -> str:
     return build_pyfilter_command(args.split())
 
 
-def set_mantra_command(node: hou.RopNode):
+def set_mantra_command(node: hou.RopNode) -> None:
     """Set the soho_pipecmd parameter to something that will render with our
     custom script and settings.
 

@@ -7,10 +7,11 @@ events in Houdini.
 # IMPORTS
 # =============================================================================
 
+
 # Standard Library
 import enum
 from contextlib import contextmanager
-from typing import Callable, List, Optional
+from typing import Callable, Generator, List, Optional
 
 # Houdini Toolbox
 from houdini_toolbox.events.event import HoudiniEvent, HoudiniEventFactory
@@ -25,26 +26,26 @@ from houdini_toolbox.events.item import HoudiniEventItem
 class HoudiniEventManager:
     """Manager and execute events in Houdini."""
 
-    def __init__(self):
-        self._data = {}
-        self._events = {}
+    def __init__(self) -> None:
+        self._data: dict = {}
+        self._events: dict = {}
 
         # Special dict used to maintain event enabled states when using
         # disabling context manager.
-        self._event_states = {}
+        self._event_states: dict = {}
 
     # -------------------------------------------------------------------------
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__}>"
 
     # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
     # -------------------------------------------------------------------------
 
-    def _disable_events(self, names: Optional[List[str]] = None):
+    def _disable_events(self, names: Optional[List[str]] = None) -> None:
         """Disable any events with matching names.
 
         :param names: A list of names of events to disable.
@@ -62,7 +63,7 @@ class HoudiniEventManager:
                 self._event_states[event.name] = event.enabled
                 event.enabled = False
 
-    def _restore_events(self):
+    def _restore_events(self) -> None:
         """Restore the enabled state of any events that were disabled.
 
         :return:
@@ -105,7 +106,9 @@ class HoudiniEventManager:
         return event
 
     @contextmanager
-    def event_disabler(self, names: Optional[List[str]] = None):
+    def event_disabler(
+        self, names: Optional[List[str]] = None
+    ) -> Generator[None, None, None]:
         """Context manager to disable any events with matching names.
 
         :param names: A list of names of events to disable.
@@ -124,7 +127,7 @@ class HoudiniEventManager:
             # Restore all event settings.
             self._restore_events()
 
-    def register_event_group(self, event_group: HoudiniEventGroup):
+    def register_event_group(self, event_group: HoudiniEventGroup) -> None:
         """Register a HoudiniEventGroup.
 
         This function will register all mapped functions in the event object's
@@ -151,7 +154,7 @@ class HoudiniEventManager:
             for item in items:
                 event.register_item(item)
 
-    def register_item(self, item: HoudiniEventItem, event_name: enum.Enum):
+    def register_item(self, item: HoudiniEventItem, event_name: enum.Enum) -> None:
         """Register a function for a given event name.
 
         :param item: The item to register
@@ -168,7 +171,7 @@ class HoudiniEventManager:
         event = self.events[event_name]
         event.register_item(item)
 
-    def run_event(self, event_name: enum.Enum, scriptargs: dict = None):
+    def run_event(self, event_name: enum.Enum, scriptargs: dict = None) -> None:
         """Run all registered events for the given name with the supplied args.
 
         Events are run in decreasing order of priority.
@@ -195,7 +198,7 @@ class HoudiniEventManager:
 # =============================================================================
 
 
-def register_event_group(event_group: HoudiniEventGroup):
+def register_event_group(event_group: HoudiniEventGroup) -> None:
     """Register a HoudiniEvent.
 
     This function will register all mapped functions in the event object's
@@ -214,7 +217,7 @@ def register_function(
     item_name: Optional[str] = None,
     priority: int = 1,
     stat_tags: Optional[List[str]] = None,
-):
+) -> None:
     """Register a function for a given event name.
 
     :param func: The function to register.
@@ -233,7 +236,7 @@ def register_function(
     register_item(item, event_name)
 
 
-def register_item(item: HoudiniEventItem, event_name: enum.Enum):
+def register_item(item: HoudiniEventItem, event_name: enum.Enum) -> None:
     """Register an item for a given event name.
 
     :param item: The item to register.
@@ -247,7 +250,7 @@ def register_item(item: HoudiniEventItem, event_name: enum.Enum):
     EVENT_MANAGER.register_item(item, event_name)
 
 
-def run_event(event_name: enum.Enum, scriptargs: dict = None):
+def run_event(event_name: enum.Enum, scriptargs: dict = None) -> None:
     """Run all registered events for the given name with the supplied args.
 
     :param event_name: The name of the event to run.

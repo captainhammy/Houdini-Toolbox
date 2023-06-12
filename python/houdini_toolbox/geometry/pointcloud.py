@@ -9,7 +9,7 @@ from typing import Optional, Sequence, Tuple
 
 # Third Party
 import numpy
-from scipy.spatial import KDTree
+from scipy.spatial import KDTree  # type: ignore
 
 # Houdini
 import hou
@@ -132,7 +132,7 @@ class PointCloud:
         # Bail out if we got no results since an empty list would be converted to ""
         # and hou.Geometry.globPoints would return all points.
         if not result:
-            return tuple()
+            return ()
 
         # Return any points that are found.
         return self._get_result_points(result[0])

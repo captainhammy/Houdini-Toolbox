@@ -5,11 +5,14 @@
 # =============================================================================
 
 # Standard Library
+import contextlib
 from typing import Optional
 
 # Houdini Toolbox
-from . import _ht_generic_image_badge
-from . import _ht_generic_text_badge
+from houdini_toolbox.nodes import (  # type: ignore # pylint: disable=no-name-in-module
+    _ht_generic_image_badge,
+    _ht_generic_text_badge,
+)
 
 # Houdini
 import hou
@@ -19,61 +22,51 @@ import hou
 # ==============================================================================
 
 
-def clear_generic_image_badge(node: hou.Node):
+def clear_generic_image_badge(node: hou.Node) -> None:
     """Clear the generic image badge from the node.
 
     :param node: The node to clear the badge from.
     :return:
 
     """
-    with hou.undos.disabler():
-        # Try to remove the user data from the node.
-        try:
-            node.destroyUserData(_ht_generic_image_badge.get_generic_image_key())
-
-        # Will fail if it doesn't exist, so just ignore.
-        except hou.OperationFailed:
-            pass
+    # Try to remove the user data from the node. If the data doesn't exist
+    # it will fail, but we can just ignore that.
+    with hou.undos.disabler(), contextlib.suppress(hou.OperationFailed):
+        node.destroyUserData(_ht_generic_image_badge.get_generic_image_key())
 
 
-def clear_generic_text_badge(node: hou.Node):
+def clear_generic_text_badge(node: hou.Node) -> None:
     """Clear the generic text badge from the node.
 
     :param node: The node to clear the badge from.
     :return:
 
     """
+    # Try to remove the user data from the node. If the data doesn't exist
+    # it will fail, but we can just ignore that.
     with hou.undos.disabler():
-        # Try to remove the user data from the node.
-        try:
+        with contextlib.suppress(hou.OperationFailed):
+            # Try to remove the user data from the node.
             node.destroyUserData(_ht_generic_text_badge.get_generic_text_key())
-
-        # Will fail if it doesn't exist, so just ignore.
-        except hou.OperationFailed:
-            pass
 
         # If we're clearing the text then clear any coloring too.
         clear_generic_text_badge_color(node)
 
 
-def clear_generic_text_badge_color(node: hou.Node):
+def clear_generic_text_badge_color(node: hou.Node) -> None:
     """Clear the generic text badge coloring from the node.
 
     :param node: The node to clear badge coloring from.
     :return:
 
     """
-    with hou.undos.disabler():
-        # Try to remove the user data from the node.
-        try:
-            node.destroyUserData(_ht_generic_text_badge.get_generic_text_color_key())
-
-        # Will fail if it doesn't exist, so just ignore.
-        except hou.OperationFailed:
-            pass
+    # Try to remove the user data from the node. If the data doesn't exist
+    # it will fail, but we can just ignore that.
+    with hou.undos.disabler(), contextlib.suppress(hou.OperationFailed):
+        node.destroyUserData(_ht_generic_text_badge.get_generic_text_color_key())
 
 
-def set_generic_image_badge(node: hou.Node, image: str):
+def set_generic_image_badge(node: hou.Node, image: str) -> None:
     """Set the node's generic image badge.
 
     :param node: The node to set the badge for.
@@ -88,7 +81,7 @@ def set_generic_image_badge(node: hou.Node, image: str):
 
 def set_generic_text_badge(
     node: hou.Node, value: str, color: Optional[hou.Color] = None
-):
+) -> None:
     """Set the node's generic text badge.
 
     :param node: The node to set the badge for.
@@ -105,7 +98,7 @@ def set_generic_text_badge(
             set_generic_text_badge_color(node, color)
 
 
-def set_generic_text_badge_color(node: hou.Node, color: hou.Color):
+def set_generic_text_badge_color(node: hou.Node, color: hou.Color) -> None:
     """Set the node's generic text badge color.
 
     :param node: The node to set the badge for.

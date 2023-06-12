@@ -248,7 +248,7 @@ class AOVSelectTreeWidget(
         if mime_data.hasUrls():
             for url in mime_data.urls():
                 # Only care about actual files on disk.
-                if not url.scheme() == "file":
+                if url.scheme() != "file":
                     continue
 
                 # Extract file path.
@@ -575,7 +575,9 @@ class AOVSelectTreeWidget(
         parent = hou.qt.mainWindow()
 
         for group in groups:
-            info_dialog = houdini_toolbox.ui.aovs.dialogs.AOVGroupInfoDialog(group, parent)
+            info_dialog = houdini_toolbox.ui.aovs.dialogs.AOVGroupInfoDialog(
+                group, parent
+            )
 
             info_dialog.group_updated_signal.connect(self.update_group)
 
@@ -1818,10 +1820,9 @@ class HelpButton(QtWidgets.QPushButton):
         """Display help page."""
         # Look for an existing, float help browser.
         for pane_tab in hou.ui.paneTabs():
-            if isinstance(pane_tab, hou.HelpBrowser):
-                if pane_tab.isFloating():
-                    browser = pane_tab
-                    break
+            if isinstance(pane_tab, hou.HelpBrowser) and pane_tab.isFloating():
+                browser = pane_tab
+                break
 
         # Didn't find one, so create a new floating browser.
         else:

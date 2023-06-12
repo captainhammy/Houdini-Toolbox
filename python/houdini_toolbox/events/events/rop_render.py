@@ -31,7 +31,7 @@ _logger = logging.getLogger(__name__)
 class RopRenderEvent(HoudiniEventGroup):
     """Event to run on ROP render script events."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self._frame_start = None
@@ -51,7 +51,7 @@ class RopRenderEvent(HoudiniEventGroup):
     # METHODS
     # -------------------------------------------------------------------------
 
-    def pre_frame(self, scriptargs: dict):
+    def pre_frame(self, scriptargs: dict) -> None:
         """Action run before the frame starts rendering.
 
         :param scriptargs: Event data.
@@ -64,7 +64,7 @@ class RopRenderEvent(HoudiniEventGroup):
 
         _logger.info("Starting Frame: %s", scriptargs["frame"])
 
-    def pre_render(self, scriptargs: dict):
+    def pre_render(self, scriptargs: dict) -> None:
         """Action run before the render starts.
 
         :param scriptargs: Event data.
@@ -83,7 +83,7 @@ class RopRenderEvent(HoudiniEventGroup):
         else:
             _logger.info("Starting render")
 
-    def post_frame(self, scriptargs: dict):
+    def post_frame(self, scriptargs: dict) -> None:
         """Action run after the frame has rendered.
 
         :param scriptargs: Event data.
@@ -104,7 +104,7 @@ class RopRenderEvent(HoudiniEventGroup):
         else:
             _logger.info("Completed Frame: %s", scriptargs["frame"])
 
-    def post_render(self, scriptargs: dict):
+    def post_render(self, scriptargs: dict) -> None:
         """Action run after the render is complete.
 
         :param scriptargs: Event data.
@@ -120,7 +120,7 @@ class RopRenderEvent(HoudiniEventGroup):
             _logger.info("Completed Render")
 
     @staticmethod
-    def post_write(scriptargs: dict):
+    def post_write(scriptargs: dict) -> None:
         """Action run after the frame is written to disk.
 
         :param scriptargs: Event data.
@@ -166,7 +166,7 @@ def _get_target_file(node: hou.RopNode) -> Optional[str]:
     return None
 
 
-def _print_frame_write(scriptargs: dict):
+def _print_frame_write(scriptargs: dict) -> None:
     """Print that a file was written.
 
     :param scriptargs: Event data.
@@ -206,9 +206,8 @@ def build_scriptargs(node: Optional[hou.Node] = None) -> dict:
     if node is not None:
         trange_parm = node.parm("trange")
 
-        if trange_parm is not None:
-            if trange_parm.evalAsString() != "off":
-                frame_range = node.evalParmTuple("f")
+        if trange_parm is not None and trange_parm.evalAsString() != "off":
+            frame_range = node.evalParmTuple("f")
 
     scriptargs = {
         "node": node,

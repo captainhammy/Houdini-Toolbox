@@ -5,6 +5,7 @@
 # =============================================================================
 
 # Standard Library
+import contextlib
 import re
 from typing import Callable, Tuple
 
@@ -22,6 +23,7 @@ def _find_parameters_with_value(
     """Find parameters which contain the target value.
 
     :param target_value: The string value to search for.
+    :param check_func: A function to use for testing value matching.
     :return: A tuple of parameters which contain the value.
 
     """
@@ -44,11 +46,8 @@ def _find_parameters_with_value(
             # Fails on non-string parameters.
             except hou.OperationFailed:
                 # In that case, check for any expressions.
-                try:
+                with contextlib.suppress(hou.OperationFailed):
                     value = parm.expression()
-
-                except hou.OperationFailed:
-                    pass
 
             # If we got a value and the checking function detects a match then
             # we'll return that parameter
@@ -84,7 +83,7 @@ def find_parameters_using_variable(variable: str) -> Tuple[hou.Parm, ...]:
     if not variable.startswith("$"):
         search_variable = "$" + search_variable
 
-    def _checker(value, target_variable):
+    def _checker(value, target_variable):  # type: ignore
         # We need to escape the $ since it's a special regex character.
         var = "\\" + target_variable
 
@@ -106,7 +105,7 @@ def find_parameters_with_value(target_value: str) -> Tuple[hou.Parm, ...]:
 
     """
 
-    def _checker(value, target):
+    def _checker(value, target):  # type: ignore
         # Simply check that the target value is in the value.
         return target in value
 

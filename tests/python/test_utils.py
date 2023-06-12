@@ -29,9 +29,8 @@ def test_restore_update_mode(mocker, mock_hou_ui):
 
     mock_value = mocker.MagicMock(spec=hou.updateMode)
 
-    with pytest.raises(RuntimeError):
-        with utils.restore_update_mode(mock_value):
-            raise RuntimeError()
+    with pytest.raises(RuntimeError), utils.restore_update_mode(mock_value):
+        raise RuntimeError()
 
     mock_hou_ui.setUpdateMode.assert_has_calls(
         [mocker.call(mock_value), mocker.call(mock_setting.return_value)]
@@ -52,9 +51,8 @@ class Test_timer:
 
         mock_label = mocker.MagicMock(spec=str)
 
-        with pytest.raises(RuntimeError):
-            with utils.timer(mock_label):
-                raise RuntimeError()
+        with pytest.raises(RuntimeError), utils.timer(mock_label):
+            raise RuntimeError()
 
         mock_logger.info.assert_called_with(
             "%s - %s", mock_label, mock_end - mock_start
@@ -69,8 +67,7 @@ class Test_timer:
 
         mock_logger = mocker.patch("houdini_toolbox.utils._logger")
 
-        with pytest.raises(RuntimeError):
-            with utils.timer():
-                raise RuntimeError()
+        with pytest.raises(RuntimeError), utils.timer():
+            raise RuntimeError()
 
         mock_logger.info.assert_called_with(mock_end - mock_start)

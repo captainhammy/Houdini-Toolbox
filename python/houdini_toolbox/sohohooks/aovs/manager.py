@@ -7,6 +7,7 @@ with AOVs.
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
@@ -23,9 +24,11 @@ from houdini_toolbox.sohohooks.aovs.aov import AOV, AOVGroup, IntrinsicAOVGroup
 import hou
 
 if TYPE_CHECKING:
-    from houdini_toolbox.ui.aovs.utils import AOVViewerInterface  # pylint: disable=ungrouped-imports
+    from houdini_toolbox.ui.aovs.utils import (
+        AOVViewerInterface,  # pylint: disable=ungrouped-imports
+    )
 
-    import soho
+    import soho  # type: ignore
 
 
 # =============================================================================
@@ -36,10 +39,10 @@ if TYPE_CHECKING:
 class AOVManager:
     """This class is for managing and applying AOVs at render time."""
 
-    def __init__(self):
-        self._aovs = {}
-        self._groups = {}
-        self._interface = None
+    def __init__(self) -> None:
+        self._aovs: Dict[str, AOV] = {}
+        self._groups: Dict[str, AOVGroup] = {}
+        self._interface: Optional[AOVViewerInterface] = None
 
         self._init_from_files()
 
@@ -47,14 +50,14 @@ class AOVManager:
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<AOVManager AOVs:{len(self.aovs)} groups:{len(self.groups)}>"
 
     # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
     # -------------------------------------------------------------------------
 
-    def _build_intrinsic_groups(self):
+    def _build_intrinsic_groups(self) -> None:
         """Build intrinsic groups.
 
         :return:
@@ -78,7 +81,7 @@ class AOVManager:
                 # Add this AOV to the group.
                 group.aovs.append(aov)
 
-    def _init_from_files(self):
+    def _init_from_files(self) -> None:
         """Initialize the manager from files on disk.
 
         :return:
@@ -92,7 +95,7 @@ class AOVManager:
 
         self._build_intrinsic_groups()
 
-    def _init_group_members(self, group: AOVGroup):
+    def _init_group_members(self, group: AOVGroup) -> None:
         """Populate the AOV lists of each group based on available AOVs.
 
         :param group: A group to populate.
@@ -105,7 +108,7 @@ class AOVManager:
             if include in self.aovs:
                 group.aovs.append(self.aovs[include])
 
-    def _init_reader_aovs(self, reader: AOVFile):
+    def _init_reader_aovs(self, reader: AOVFile) -> None:
         """Initialize aovs from a reader.
 
         :param reader: A source reader.
@@ -126,7 +129,7 @@ class AOVManager:
             else:
                 self.add_aov(aov)
 
-    def _init_reader_groups(self, reader: AOVFile):
+    def _init_reader_groups(self, reader: AOVFile) -> None:
         """Initialize groups from a reader.
 
         :param reader: A source reader.
@@ -149,7 +152,7 @@ class AOVManager:
             else:
                 self.add_group(group)
 
-    def _merge_readers(self, readers: List[AOVFile]):
+    def _merge_readers(self, readers: List[AOVFile]) -> None:
         """Merge the data of multiple AOVFile objects.
 
         :param readers: A list of file readers.
@@ -180,7 +183,7 @@ class AOVManager:
         return self._groups
 
     @property
-    def interface(self) -> AOVViewerInterface:
+    def interface(self) -> Optional[AOVViewerInterface]:
         """A viewer interface assigned to the manager."""
         return self._interface
 
@@ -188,7 +191,7 @@ class AOVManager:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def add_aov(self, aov: AOV):
+    def add_aov(self, aov: AOV) -> None:
         """Add an AOV to the manager.
 
         :param aov: An aov to add.
@@ -198,9 +201,9 @@ class AOVManager:
         self.aovs[aov.variable] = aov
 
         if self.interface is not None:
-            self.interface.aov_added_signal.emit(aov)
+            self.interface.aov_added_signal.emit(aov)  # type: ignore
 
-    def add_aovs_to_ifd(self, wrangler: Any, cam: soho.SohoObject, now: float):
+    def add_aovs_to_ifd(self, wrangler: Any, cam: soho.SohoObject, now: float) -> None:
         """Add auto_aovs to the ifd.
 
         :param wrangler: A SOHO wrangler.
@@ -210,7 +213,7 @@ class AOVManager:
 
         """
         import IFDapi
-        import IFDsettings
+        import IFDsettings  # type: ignore
         import soho
 
         # The parameter that defines which automatic aovs to add.
@@ -247,7 +250,7 @@ class AOVManager:
 
                     break
 
-    def add_group(self, group: AOVGroup):
+    def add_group(self, group: AOVGroup) -> None:
         """Add an AOVGroup to the manager.
 
         :param group: A group to add.
@@ -257,9 +260,9 @@ class AOVManager:
         self.groups[group.name] = group
 
         if self.interface is not None:
-            self.interface.group_added_signal.emit(group)
+            self.interface.group_added_signal.emit(group)  # type: ignore
 
-    def attach_interface(self, interface: AOVViewerInterface):
+    def attach_interface(self, interface: AOVViewerInterface) -> None:
         """Initialize an AOVViewerInterface for this manager.
 
         :return:
@@ -267,7 +270,7 @@ class AOVManager:
         """
         self._interface = interface
 
-    def clear(self):
+    def clear(self) -> None:
         """Clear all definitions.
 
         :return:
@@ -301,7 +304,7 @@ class AOVManager:
 
         return tuple(result)
 
-    def load(self, path: str):
+    def load(self, path: str) -> None:
         """Load a file.
 
         :param path: The file to load.
@@ -312,7 +315,7 @@ class AOVManager:
 
         self._merge_readers(readers)
 
-    def reload(self):
+    def reload(self) -> None:
         """Reload all definitions.
 
         :return:
@@ -321,7 +324,7 @@ class AOVManager:
         self.clear()
         self._init_from_files()
 
-    def remove_aov(self, aov: AOV):
+    def remove_aov(self, aov: AOV) -> None:
         """Remove the specified AOV from the manager.
 
         :param aov: The aov to remove
@@ -332,9 +335,9 @@ class AOVManager:
             self.aovs.pop(aov.variable)
 
             if self.interface is not None:
-                self.interface.aov_removed_signal.emit(aov)
+                self.interface.aov_removed_signal.emit(aov)  # type: ignore
 
-    def remove_group(self, group: AOVGroup):
+    def remove_group(self, group: AOVGroup) -> None:
         """Remove the specified group from the manager.
 
         :param group: The group to remove
@@ -345,7 +348,7 @@ class AOVManager:
             self.groups.pop(group.name)
 
             if self.interface is not None:
-                self.interface.group_removed_signal.emit(group)
+                self.interface.group_removed_signal.emit(group)  # type: ignore
 
 
 class AOVFile:
@@ -355,7 +358,7 @@ class AOVFile:
 
     """
 
-    def __init__(self, path: str):
+    def __init__(self, path: str) -> None:
         self._path = path
 
         self._aovs: List[AOV] = []
@@ -369,7 +372,7 @@ class AOVFile:
     # NON-PUBLIC METHODS
     # -------------------------------------------------------------------------
 
-    def _create_aovs(self, definitions: List[dict]):
+    def _create_aovs(self, definitions: List[dict]) -> None:
         """Create AOVs based on definitions.
 
         :param definitions: AOV definition data.
@@ -384,7 +387,7 @@ class AOVFile:
             aov = AOV(definition)
             self.aovs.append(aov)
 
-    def _create_groups(self, definitions: dict):
+    def _create_groups(self, definitions: dict) -> None:
         """Create AOVGroups based on definitions.
 
         :param definitions: AOVGroup definition data.
@@ -416,7 +419,7 @@ class AOVFile:
             # Add the group to the list.
             self.groups.append(group)
 
-    def _init_from_file(self):
+    def _init_from_file(self) -> None:
         """Read data from the file and create the appropriate entities.
 
         :return:
@@ -459,7 +462,7 @@ class AOVFile:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def add_aov(self, aov: AOV):
+    def add_aov(self, aov: AOV) -> None:
         """Add an AOV for writing.
 
         :param aov: The aov to add.
@@ -468,7 +471,7 @@ class AOVFile:
         """
         self.aovs.append(aov)
 
-    def add_group(self, group: AOVGroup):
+    def add_group(self, group: AOVGroup) -> None:
         """Add An AOVGroup for writing.
 
         :param group: The group to add.
@@ -481,7 +484,7 @@ class AOVFile:
         """Check if this file contains an AOV with the same variable name.
 
         :param aov: The aov to check.
-        :return: Whether or not the aov is in this file.
+        :return: Whether the aov is in this file.
 
         """
         return aov in self.aovs
@@ -490,12 +493,12 @@ class AOVFile:
         """Check if this file contains a group with the same name.
 
         :param group: The group to check.
-        :return: Whether or not the group is in this file.
+        :return: Whether the group is in this file.
 
         """
         return group in self.groups
 
-    def remove_aov(self, aov: AOV):
+    def remove_aov(self, aov: AOV) -> None:
         """Remove an AOV from the file.
 
         :param aov: The aov to remove.
@@ -506,7 +509,7 @@ class AOVFile:
 
         del self.aovs[idx]
 
-    def remove_group(self, group: AOVGroup):
+    def remove_group(self, group: AOVGroup) -> None:
         """Remove a group from the file.
 
         :param group: The group to remove
@@ -517,7 +520,7 @@ class AOVFile:
 
         del self.groups[idx]
 
-    def replace_aov(self, aov: AOV):
+    def replace_aov(self, aov: AOV) -> None:
         """Replace an AOV in the file.
 
         :param aov: An aov to replace.
@@ -528,7 +531,7 @@ class AOVFile:
 
         self.aovs[idx] = aov
 
-    def replace_group(self, group: AOVGroup):
+    def replace_group(self, group: AOVGroup) -> None:
         """Replace a group in the file.
 
         :param group: A group to replace.
@@ -539,7 +542,7 @@ class AOVFile:
 
         self.groups[idx] = group
 
-    def write_to_file(self, path: Optional[str] = None):
+    def write_to_file(self, path: Optional[str] = None) -> None:
         """Write data to file.
 
         If `path` is not set, use the AOVFile's path.
@@ -675,7 +678,7 @@ def flatten_aov_items(items: Tuple[Union[AOV, AOVGroup], ...]) -> Tuple[AOV, ...
     return tuple(aovs)
 
 
-def load_json_files():
+def load_json_files() -> None:
     """Load .json files into the manager.
 
     :return:

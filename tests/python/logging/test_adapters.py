@@ -127,7 +127,9 @@ class Test_HoudiniLoggerAdapter:
 
         assert result == ("/obj - test logger message", kwargs)
 
-    def test_process__ui_passed_no_severity_no_title(self, mocker, test_adapter, mock_hou_ui):
+    def test_process__ui_passed_no_severity_no_title(
+        self, mocker, test_adapter, mock_hou_ui
+    ):
         """Test HoudiniLoggerAdapter.process() when passing 'dialog' and 'status_bar' via the extra dict."""
         mock_message = mocker.MagicMock(spec=str)
 
@@ -144,7 +146,9 @@ class Test_HoudiniLoggerAdapter:
             mock_message, severity=hou.severityType.Message
         )
 
-    def test_process__ui_properties_with_severity_and_title(self, mocker, test_adapter, mock_hou_ui):
+    def test_process__ui_properties_with_severity_and_title(
+        self, mocker, test_adapter, mock_hou_ui
+    ):
         """Test HoudiniLoggerAdapter.process() passing 'dialog' and 'status_bar' via properties with a severity
         and title."""
         test_adapter.dialog = True
@@ -202,7 +206,6 @@ class Test_HoudiniLoggerAdapter:
 
         assert result == (mock_message, kwargs)
 
-
     @pytest.mark.parametrize(
         "level, severity, num_message_args, passed_kwargs",
         [
@@ -214,7 +217,9 @@ class Test_HoudiniLoggerAdapter:
             ("exception", hou.severityType.Error, 1, {}),
         ],
     )
-    def test_calls(self, mocker, test_adapter, level, severity, num_message_args, passed_kwargs):
+    def test_calls(
+        self, mocker, test_adapter, level, severity, num_message_args, passed_kwargs
+    ):
         """Test the various log calls.
 
         This helps to test the _wrap_logger functionality and that the wrapping occurred as expected.
@@ -224,7 +229,9 @@ class Test_HoudiniLoggerAdapter:
 
         mock_msg = mocker.MagicMock(spec=str)
 
-        message_args = tuple([mocker.MagicMock(spec=str) for i in range(num_message_args)])
+        message_args = tuple(
+            [mocker.MagicMock(spec=str) for i in range(num_message_args)]
+        )
 
         kwargs = {
             "foo": 3,  # A dummy extra kwarg our calling code does not care about
@@ -235,7 +242,7 @@ class Test_HoudiniLoggerAdapter:
         # runs and passes the expected data for the actual log call.
         mock_process = mocker.patch(
             "houdini_toolbox.logging.adapters.HoudiniLoggerAdapter.process",
-            return_value=(mocker.MagicMock(spec=str), kwargs)
+            return_value=(mocker.MagicMock(spec=str), kwargs),
         )
 
         expected_kwargs = {

@@ -1886,7 +1886,7 @@ removeMetaSource(const char *metasrc)
 {
     OP_OTLManager &manager = OPgetDirector()->getOTLManager();
 
-    // Try to remove the meta source and return whether or not it was
+    // Try to remove the meta source and return whether it was
     // successful.
     return manager.removeMetaSource(metasrc);
 }

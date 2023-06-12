@@ -4,13 +4,17 @@
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
 from typing import TYPE_CHECKING, Optional
 
 # Houdini Toolbox
-from houdini_toolbox.pyfilter.operations.operation import PyFilterOperation, log_filter_call
+from houdini_toolbox.pyfilter.operations.operation import (
+    PyFilterOperation,
+    log_filter_call,
+)
 from houdini_toolbox.pyfilter.property import set_property
 
 if TYPE_CHECKING:
@@ -30,10 +34,10 @@ class SetTileCallback(PyFilterOperation):
 
     """
 
-    def __init__(self, manager: PyFilterManager):
+    def __init__(self, manager: PyFilterManager) -> None:
         super().__init__(manager)
 
-        # This could also be hardcoded and we could not bother with
+        # This could also be hardcoded, and we could not bother with
         # parsing args or anything like that.
         self._tilecallback = None
 
@@ -68,7 +72,7 @@ class SetTileCallback(PyFilterOperation):
         return " ".join(args)
 
     @staticmethod
-    def register_parser_args(parser: argparse.ArgumentParser):
+    def register_parser_args(parser: argparse.ArgumentParser) -> None:
         """Register interested parser args for this operation.
 
         :param parser: The argument parser to attach arguments to.
@@ -82,7 +86,7 @@ class SetTileCallback(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @log_filter_call
-    def filter_camera(self):
+    def filter_camera(self) -> None:
         """Apply camera properties.
 
         :return:
@@ -90,7 +94,7 @@ class SetTileCallback(PyFilterOperation):
         """
         set_property("render:tilecallback", self.tilecallback)
 
-    def process_parsed_args(self, filter_args: argparse.Namespace):
+    def process_parsed_args(self, filter_args: argparse.Namespace) -> None:
         """Process any parsed args that the operation may be interested in.
 
         :param filter_args: The argparse namespace containing processed args.
@@ -101,11 +105,11 @@ class SetTileCallback(PyFilterOperation):
             self._tilecallback = filter_args.tilecallback
 
     def should_run(self) -> bool:
-        """Determine whether or not this filter should be run.
+        """Determine whether this filter should be run.
 
         This operation runs if the callback file path is set.
 
-        :return: Whether or not this operation should run.
+        :return: Whether this operation should run.
 
         """
         return self.tilecallback is not None

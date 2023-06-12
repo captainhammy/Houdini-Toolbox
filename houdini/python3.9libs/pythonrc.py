@@ -17,7 +17,6 @@ import houdini_toolbox.logging.config
 houdini_toolbox.logging.config.init_config()
 
 # Houdini Toolbox
-# flake8: noqa: E402
 import houdini_toolbox.events
 import houdini_toolbox.events.callbacks
 import houdini_toolbox.nodes.styles

@@ -114,7 +114,9 @@ class Test_SetPrimaryImage:
 
     def test_filter_camera__no_op(self, init_operation, patch_operation_logger, mocker):
         """Test 'filter_camera' when doing nothing."""
-        mock_set = mocker.patch("houdini_toolbox.pyfilter.operations.primaryimage.set_property")
+        mock_set = mocker.patch(
+            "houdini_toolbox.pyfilter.operations.primaryimage.set_property"
+        )
 
         op = init_operation()
         op._disable_primary_image = False
@@ -128,7 +130,9 @@ class Test_SetPrimaryImage:
         self, init_operation, patch_operation_logger, mocker
     ):
         """Test 'filter_camera' when disabling the image."""
-        mock_set = mocker.patch("houdini_toolbox.pyfilter.operations.primaryimage.set_property")
+        mock_set = mocker.patch(
+            "houdini_toolbox.pyfilter.operations.primaryimage.set_property"
+        )
         mock_logger = mocker.patch(
             "houdini_toolbox.pyfilter.operations.primaryimage._logger", autospec=True
         )
@@ -143,7 +147,9 @@ class Test_SetPrimaryImage:
 
     def test_filter_camera__path(self, init_operation, patch_operation_logger, mocker):
         """Test 'filter_camera' when setting the image path."""
-        mock_set = mocker.patch("houdini_toolbox.pyfilter.operations.primaryimage.set_property")
+        mock_set = mocker.patch(
+            "houdini_toolbox.pyfilter.operations.primaryimage.set_property"
+        )
 
         mock_path = mocker.MagicMock(spec=str)
 

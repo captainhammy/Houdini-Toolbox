@@ -22,37 +22,37 @@ def _valid_to_convert_to_absolute_reference(parm: hou.Parm) -> bool:
     value appears to be a relative path and points to a valid node.
 
     :param parm: There parameter to check.
-    :return: Whether or not the parm can be converted.
+    :return: Whether the parm can be converted.
 
     """
     parm_template = parm.parmTemplate()
 
-    # Check if the parameter is a string parameter.
-    if isinstance(parm_template, hou.StringParmTemplate):
-        # Check if the string parameter is a node reference.
-        if parm_template.stringType() == hou.stringParmType.NodeReference:
-            # Need to test values to decide whether to show up or not.
-            path = parm.eval()
+    # Check if the parameter is a string parameter and if so, a node reference.
+    if (
+        isinstance(parm_template, hou.StringParmTemplate)
+        and parm_template.stringType() == hou.stringParmType.NodeReference
+    ):
+        # Need to test values to decide whether to show up or not.
+        path = parm.eval()
 
-            # Ignore empty strings.
-            if not path:
-                return False
+        # Ignore empty strings.
+        if not path:
+            return False
 
-            # Ignore paths which already seem to be absolute.
-            if not path.startswith(".."):
-                return False
+        # Ignore paths which already seem to be absolute.
+        if not path.startswith(".."):
+            return False
 
-            # Can't convert parameters with keyframes/expressions.
-            if parm.keyframes():
-                return False
+        # Can't convert parameters with keyframes/expressions.
+        if parm.keyframes():
+            return False
 
-            # If the path is the same as the raw path then we can say that we
-            # can show the menu item.  If the path is not the same as the
-            # unexpanded we won't say yes because it would be some sort of an
-            # expression which we don't want to mess with.
-            if path == parm.unexpandedString():
-                if parm.evalAsNode() is not None:
-                    return True
+        # If the path is the same as the raw path then we can say that we
+        # can show the menu item.  If the path is not the same as the
+        # unexpanded we won't say yes because it would be some sort of
+        # expression which we don't want to mess with.
+        if path == parm.unexpandedString() and parm.evalAsNode() is not None:
+            return True
 
     return False
 
@@ -64,37 +64,37 @@ def _valid_to_convert_to_relative_reference(parm: hou.Parm) -> bool:
     value appears to be an absolute path and points to a valid node.
 
     :param parm: There parameter to check.
-    :return: Whether or not the parm can be converted.
+    :return: Whether the parm can be converted.
 
     """
     parm_template = parm.parmTemplate()
 
-    # Check if the parameter is a string parameter.
-    if isinstance(parm_template, hou.StringParmTemplate):
-        # Check if the string parameter is a node reference.
-        if parm_template.stringType() == hou.stringParmType.NodeReference:
-            # Need to test values to decide whether to show up or not.
-            path = parm.eval()
+    # Check if the parameter is a string parameter and if so, a node reference.
+    if (
+        isinstance(parm_template, hou.StringParmTemplate)
+        and parm_template.stringType() == hou.stringParmType.NodeReference
+    ):
+        # Need to test values to decide whether to show up or not.
+        path = parm.eval()
 
-            # Ignore empty strings.
-            if not path:
-                return False
+        # Ignore empty strings.
+        if not path:
+            return False
 
-            # Ignore paths which already seem to be relative.
-            if not path.startswith("/"):
-                return False
+        # Ignore paths which already seem to be relative.
+        if not path.startswith("/"):
+            return False
 
-            # Can't convert parameters with keyframes/expressions.
-            if parm.keyframes():
-                return False
+        # Can't convert parameters with keyframes/expressions.
+        if parm.keyframes():
+            return False
 
-            # If the path is the same as the raw path then we can say that we
-            # can show the menu item.  If the path is not the same as the
-            # unexpanded we won't say yes because it would be some sort of an
-            # expression which we don't want to mess with.
-            if path == parm.unexpandedString():
-                if parm.evalAsNode() is not None:
-                    return True
+        # If the path is the same as the raw path then we can say that we
+        # can show the menu item.  If the path is not the same as the
+        # unexpanded we won't say yes because it would be some sort of
+        # expression which we don't want to mess with.
+        if path == parm.unexpandedString() and parm.evalAsNode() is not None:
+            return True
 
     return False
 
@@ -111,7 +111,7 @@ def convert_absolute_to_relative_path_context(scriptargs: dict) -> bool:
     whose values are absolute paths.
 
     :param scriptargs: kwargs dict from PARMmenu entry.
-    :return: Whether or not to show the menu entry.
+    :return: Whether to show the menu entry.
 
     """
     parms = scriptargs["parms"]
@@ -119,7 +119,7 @@ def convert_absolute_to_relative_path_context(scriptargs: dict) -> bool:
     return any(_valid_to_convert_to_relative_reference(parm) for parm in parms)
 
 
-def convert_absolute_to_relative_path(scriptargs: dict):
+def convert_absolute_to_relative_path(scriptargs: dict) -> None:
     """Convert any absolute node paths to relative paths.
 
     :param scriptargs: kwargs dict from PARMmenu entry.
@@ -142,7 +142,7 @@ def convert_relative_to_absolute_path_context(scriptargs: dict) -> bool:
     whose values are relative paths.
 
     :param scriptargs: kwargs dict from PARMmenu entry.
-    :return: Whether or not to show the menu entry.
+    :return: Whether to show the menu entry.
 
     """
     parms = scriptargs["parms"]
@@ -150,7 +150,7 @@ def convert_relative_to_absolute_path_context(scriptargs: dict) -> bool:
     return any(_valid_to_convert_to_absolute_reference(parm) for parm in parms)
 
 
-def convert_relative_to_absolute_path(scriptargs: dict):
+def convert_relative_to_absolute_path(scriptargs: dict) -> None:
     """Convert any absolute node paths to absolute paths.
 
     :param scriptargs: kwargs dict from PARMmenu entry.
@@ -166,7 +166,9 @@ def convert_relative_to_absolute_path(scriptargs: dict):
             parm.set(target_node.path())
 
 
-def promote_parameter_to_node(scriptargs: dict):  # pylint: disable=too-many-locals
+def promote_parameter_to_node(  # pylint: disable=too-many-locals
+    scriptargs: dict,
+) -> None:
     """Promote a parameter to a target node.
 
     :param scriptargs: kwargs dict from PARMmenu entry.
@@ -202,7 +204,7 @@ def promote_parameter_to_node(scriptargs: dict):  # pylint: disable=too-many-loc
     num_components = len(parm_tuple)
 
     # Determine how many components of the tuple we will set.
-    num_components_to_set = max([len(value) for value in list(parm_tuple_map.values())])
+    num_components_to_set = max(len(value) for value in list(parm_tuple_map.values()))
 
     # Prompt for a target node.  Start at the parent (the most logical choice?)
     result = hou.ui.selectNode(initial_node=start_node)
@@ -218,7 +220,7 @@ def promote_parameter_to_node(scriptargs: dict):  # pylint: disable=too-many-loc
         # Should the target parm will be set to the source value?
         set_value = True
 
-        # The target node already has a parm tuple with the desired name so we
+        # The target node already has a parm tuple with the desired name, so we
         # should prompt to use it.
         if target_node.parmTuple(parm_tuple.name()) is not None:
             choice = hou.ui.displayMessage(
@@ -243,7 +245,7 @@ def promote_parameter_to_node(scriptargs: dict):  # pylint: disable=too-many-loc
             else:
                 return
 
-        # No existing parameter so we'll have to create one.
+        # No existing parameter, so we'll have to create one.
         else:
             # Get the target node's parm interface.
             target_ptg = target_node.parmTemplateGroup()

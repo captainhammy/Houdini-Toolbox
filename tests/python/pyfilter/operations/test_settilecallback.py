@@ -87,7 +87,9 @@ class Test_SetTileCallback:
 
     def test_filter_camera(self, init_operation, mocker, patch_operation_logger):
         """Test filter_camera."""
-        mock_set = mocker.patch("houdini_toolbox.pyfilter.operations.settilecallback.set_property")
+        mock_set = mocker.patch(
+            "houdini_toolbox.pyfilter.operations.settilecallback.set_property"
+        )
 
         mock_tilecallback = mocker.PropertyMock(spec=str)
 

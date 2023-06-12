@@ -34,10 +34,5 @@
 			"handlers": ["console"],
 			"propagate": false
 		}
-    },
-
-    "root": {
-		"level": "INFO",
-		"handlers": ["console"]
     }
 }

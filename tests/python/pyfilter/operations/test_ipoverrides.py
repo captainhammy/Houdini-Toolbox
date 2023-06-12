@@ -84,8 +84,12 @@ def init_operation(mocker):
 def properties(mocker):
     """Fixture to handle mocking (get|set)_property calls."""
 
-    _mock_get = mocker.patch("houdini_toolbox.pyfilter.operations.ipoverrides.get_property")
-    _mock_set = mocker.patch("houdini_toolbox.pyfilter.operations.ipoverrides.set_property")
+    _mock_get = mocker.patch(
+        "houdini_toolbox.pyfilter.operations.ipoverrides.get_property"
+    )
+    _mock_set = mocker.patch(
+        "houdini_toolbox.pyfilter.operations.ipoverrides.set_property"
+    )
 
     class Properties:
         """Fake class for accessing and setting properties."""
@@ -362,7 +366,9 @@ class Test_IpOverrides:
         self, init_operation, properties, patch_operation_logger, mocker
     ):
         """Test 'filter_camera' when scaling the samples."""
-        mock_scale = mocker.patch("houdini_toolbox.pyfilter.operations.ipoverrides._scale_samples")
+        mock_scale = mocker.patch(
+            "houdini_toolbox.pyfilter.operations.ipoverrides._scale_samples"
+        )
 
         op = init_operation({"sample_scale": float}, as_properties=True)
 
@@ -705,19 +711,19 @@ class Test_IpOverrides:
         assert not op.should_run()
 
         # Values to check
-        data = dict(
-            bucket_size=int,
-            disable_aovs=True,
-            disable_blur=True,
-            disable_deep=True,
-            disable_displacement=True,
-            disable_matte=True,
-            disable_subd=True,
-            disable_tilecallback=True,
-            res_scale=float,
-            sample_scale=float,
-            transparent_samples=int,
-        )
+        data = {
+            "bucket_size": int,
+            "disable_aovs": True,
+            "disable_blur": True,
+            "disable_deep": True,
+            "disable_displacement": True,
+            "disable_matte": True,
+            "disable_subd": True,
+            "disable_tilecallback": True,
+            "res_scale": float,
+            "sample_scale": float,
+            "transparent_samples": int,
+        }
 
         # Create an operation with each property set and ip set.
         for key, value in list(data.items()):
@@ -848,7 +854,9 @@ class Test_build_arg_string_from_node:
 
 def test_build_pixel_sample_scale_display(mocker):
     """Test the houdini_toolbox.pyfilter.operations.ipoverrides.build_pixel_sample_scale_display."""
-    mock_scale = mocker.patch("houdini_toolbox.pyfilter.operations.ipoverrides._scale_samples")
+    mock_scale = mocker.patch(
+        "houdini_toolbox.pyfilter.operations.ipoverrides._scale_samples"
+    )
 
     source_samples = (6, 6)
     target_samples = (3, 3)

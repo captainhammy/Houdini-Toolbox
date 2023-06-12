@@ -12,7 +12,7 @@ from houdini_toolbox.nodes.styles.manager import STYLE_MANAGER
 # =============================================================================
 
 
-def style_node_by_name(scriptargs: dict):
+def style_node_by_name(scriptargs: dict) -> None:
     """Style a node based on a name.
 
     :param scriptargs: Data passed by event runner.
@@ -24,7 +24,7 @@ def style_node_by_name(scriptargs: dict):
     STYLE_MANAGER.style_node_by_name(node)
 
 
-def style_node_on_creation(scriptargs: dict):
+def style_node_on_creation(scriptargs: dict) -> None:
     """Style a node on creation."
 
     :param scriptargs: Data passed by event runner.

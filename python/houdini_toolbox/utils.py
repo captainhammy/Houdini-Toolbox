@@ -4,13 +4,14 @@
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
 import contextlib
 import logging
 import time
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Generator, Optional
 
 if TYPE_CHECKING:
     import hou
@@ -24,7 +25,7 @@ _logger = logging.getLogger(__name__)
 
 
 @contextlib.contextmanager
-def restore_update_mode(update_mode: hou.updateMode):
+def restore_update_mode(update_mode: hou.updateMode) -> Generator[None, None, None]:
     """Set a UI update mode and restore the current mode on exit.
 
     >>> with restore_update_mode(hou.updateMode.Manual):
@@ -54,7 +55,7 @@ def restore_update_mode(update_mode: hou.updateMode):
 
 
 @contextlib.contextmanager
-def timer(label: Optional[str] = None):
+def timer(label: Optional[str] = None) -> Generator[None, None, None]:
     """Context manager for outputting timing information.
 
     >>> with timer("sleeping"):

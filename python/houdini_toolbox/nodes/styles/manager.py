@@ -7,6 +7,7 @@ colors in Houdini.
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
@@ -30,11 +31,11 @@ import hou
 class StyleManager:
     """Manage and apply Houdini node styles."""
 
-    def __init__(self):
-        self._constants = {}
-        self._name_rules = {}
-        self._node_type_rules = {}
-        self._tool_rules = {}
+    def __init__(self) -> None:
+        self._constants: dict = {}
+        self._name_rules: dict = {}
+        self._node_type_rules: dict = {}
+        self._tool_rules: dict = {}
 
         # Build mappings for this object.
         self._build()
@@ -43,14 +44,14 @@ class StyleManager:
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<StyleManager>"
 
     # -------------------------------------------------------------------------
     # NON-PUBLIC METHODS
     # -------------------------------------------------------------------------
 
-    def _build(self):
+    def _build(self) -> None:
         """Build styling data from files.
 
         :return:
@@ -73,7 +74,7 @@ class StyleManager:
 
         self._build_rules_from_data(all_data)
 
-    def _build_constants_from_data(self, all_data: List):
+    def _build_constants_from_data(self, all_data: List) -> None:
         """Build style constants from data..
 
         :param all_data: Base data definitions
@@ -98,7 +99,7 @@ class StyleManager:
                         name, color, color_type, shape, path
                     )
 
-    def _build_rules_from_data(self, all_data: List):
+    def _build_rules_from_data(self, all_data: List) -> None:
         """Build style rules from data.
 
         :param all_data: Base data definitions
@@ -288,11 +289,11 @@ class StyleManager:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def style_node(self, node: hou.Node):
+    def style_node(self, node: hou.Node) -> None:
         """Style the node given its properties.
 
         This function will attempt to style the node by first matching its
-        node type name, then the tab menu location and the whether or not it
+        node type name, then the tab menu location and whether it
         is a manager or generator type.
 
         :param node: A node to style
@@ -309,16 +310,15 @@ class StyleManager:
         if style is None:
             style = self._get_tool_style(node_type)
 
-        if style is None:
-            # Check if the node is a manager or generator.
-            if node_type.isManager() or node_type.isGenerator():
-                style = self._get_manager_generator_style(node_type)
+        # Check if the node is a manager or generator.
+        if style is None and (node_type.isManager() or node_type.isGenerator()):
+            style = self._get_manager_generator_style(node_type)
 
         # If a color was found, set it.
         if style is not None:
             style.apply_to_node(node)
 
-    def style_node_by_name(self, node: hou.Node):
+    def style_node_by_name(self, node: hou.Node) -> None:
         """Style the node given its name.
 
         :param node: A node to style
@@ -332,7 +332,7 @@ class StyleManager:
         if style is not None:
             style.apply_to_node(node)
 
-    def reload(self):
+    def reload(self) -> None:
         """Reload all color mappings.
 
         :return:
@@ -372,7 +372,7 @@ class InvalidColorTypeError(Exception):
 
 def _build_category_rules(
     rules: List[dict], category_map: dict, path: str, constant_map: dict
-):
+) -> None:
     """Build constant and style rules.
 
     :param rules: Rule data
@@ -518,7 +518,7 @@ def _get_tool_menu_locations(node_type: hou.NodeType) -> Tuple[str, ...]:
         # Return the menu locations.
         return tool.toolMenuLocations()
 
-    return tuple()
+    return ()
 
 
 # =============================================================================

@@ -41,8 +41,12 @@ def patch_logger(mocker):
 def properties(mocker):
     """Fixture to handle mocking (get|set)_property calls."""
 
-    _mock_get = mocker.patch("houdini_toolbox.pyfilter.operations.deepimage.get_property")
-    _mock_set = mocker.patch("houdini_toolbox.pyfilter.operations.deepimage.set_property")
+    _mock_get = mocker.patch(
+        "houdini_toolbox.pyfilter.operations.deepimage.get_property"
+    )
+    _mock_set = mocker.patch(
+        "houdini_toolbox.pyfilter.operations.deepimage.set_property"
+    )
 
     class Properties:
         """Fake class for accessing and setting properties."""
@@ -255,7 +259,7 @@ class Test_DeepImage:
 
         # Test depth planes with string list.
         result = deepimage.SetDeepImage.build_arg_string(
-            depth_planes="zfront,zback".split(",")
+            depth_planes=["zfront", "zback"]
         )
 
         assert result == "--deep-depth-planes=zfront,zback"

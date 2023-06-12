@@ -4,6 +4,7 @@
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
@@ -11,7 +12,10 @@ import logging
 from typing import TYPE_CHECKING, List, Optional, Union
 
 # Houdini Toolbox
-from houdini_toolbox.pyfilter.operations.operation import PyFilterOperation, log_filter_call
+from houdini_toolbox.pyfilter.operations.operation import (
+    PyFilterOperation,
+    log_filter_call,
+)
 from houdini_toolbox.pyfilter.property import get_property, set_property
 
 if TYPE_CHECKING:
@@ -34,7 +38,7 @@ class SetDeepImage(PyFilterOperation):
 
     """
 
-    def __init__(self, manager: PyFilterManager):
+    def __init__(self, manager: PyFilterManager) -> None:
         super().__init__(manager)
 
         self._all_passes = False
@@ -55,7 +59,7 @@ class SetDeepImage(PyFilterOperation):
     # NON-PUBLIC METHODS
     # -------------------------------------------------------------------------
 
-    def _modify_deep_args(self, deep_args: List[str]):
+    def _modify_deep_args(self, deep_args: List[str]) -> None:
         """Modify the args either in place or by adding to them.
 
         :param deep_args: The list of deep resolver args.
@@ -178,15 +182,15 @@ class SetDeepImage(PyFilterOperation):
     ) -> str:
         """Build an argument string for this operation.
 
-        :param disable_deep_image: Whether or not to disable the deep image.
-        :param deep_all_passes: Whether or not to modify the deep resolver
+        :param disable_deep_image: Whether to disable the deep image.
+        :param deep_all_passes: Whether to modify the deep resolver
                                 during all render types.
         :param deep_image_path: The path to the output deep image.
         :param resolver: The deep resolver to run.
-        :param compositing: Whether or not to pre-composite the values.
+        :param compositing: Whether to pre-composite the values.
         :param compression: The compression value.
         :param depth_planes: A list of special planes.
-        :param mipmaps: Whether or not to create MIP mapped images.
+        :param mipmaps: Whether to create MIP mapped images.
         :param ofsize: The opacity size (float vs vector).
         :param ofstorage: The opacity bit depth:
         :param pzstorage: The Z depth bit depth:
@@ -238,7 +242,7 @@ class SetDeepImage(PyFilterOperation):
         return " ".join(args)
 
     @staticmethod
-    def register_parser_args(parser: argparse.ArgumentParser):
+    def register_parser_args(parser: argparse.ArgumentParser) -> None:
         """Register interested parser args for this operation.
 
         :param parser: The argument parser to attach arguments to.
@@ -292,7 +296,7 @@ class SetDeepImage(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @log_filter_call
-    def filter_camera(self):
+    def filter_camera(self) -> None:
         """Apply camera properties.
 
         :return:
@@ -335,7 +339,7 @@ class SetDeepImage(PyFilterOperation):
 
             set_property("image:deepresolver", deep_args)
 
-    def process_parsed_args(self, filter_args: argparse.Namespace):
+    def process_parsed_args(self, filter_args: argparse.Namespace) -> None:
         """Process any parsed args that the operation may be interested in.
 
         :param filter_args: The argparse namespace containing processed args.
@@ -379,12 +383,12 @@ class SetDeepImage(PyFilterOperation):
             self._zbias = filter_args.deep_zbias
 
     def should_run(self) -> bool:
-        """Determine whether or not this operation should be run.
+        """Determine whether this operation should be run.
 
         This operation will run if the disable option is set or any of the
         other options which would modify the args are set.
 
-        :return: Whether or not this operation should run.
+        :return: Whether this operation should run.
 
         """
         if self.disable_deep_image:

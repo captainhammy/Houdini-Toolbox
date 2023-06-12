@@ -17,7 +17,9 @@ import hou
 
 def test_style_node_by_name(mocker):
     """Test styling a node by name."""
-    mock_manager = mocker.patch("houdini_toolbox.nodes.styles.event.STYLE_MANAGER", autospec=True)
+    mock_manager = mocker.patch(
+        "houdini_toolbox.nodes.styles.event.STYLE_MANAGER", autospec=True
+    )
 
     mock_node = mocker.MagicMock(spec=hou.Node)
 
@@ -30,7 +32,9 @@ def test_style_node_by_name(mocker):
 
 def test_style_node_on_creation(mocker):
     """Test styling a node on creation."""
-    mock_manager = mocker.patch("houdini_toolbox.nodes.styles.event.STYLE_MANAGER", autospec=True)
+    mock_manager = mocker.patch(
+        "houdini_toolbox.nodes.styles.event.STYLE_MANAGER", autospec=True
+    )
 
     mock_node = mocker.MagicMock(spec=hou.Node)
 

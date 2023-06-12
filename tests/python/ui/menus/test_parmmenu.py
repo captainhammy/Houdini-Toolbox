@@ -30,7 +30,11 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm.eval.return_value = mocker.MagicMock(spec=str)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(
+                mock_parm
+            )
+        )
 
         assert not result
 
@@ -49,7 +53,11 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm.eval.return_value = mock_path
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(
+                mock_parm
+            )
+        )
 
         assert not result
 
@@ -69,7 +77,11 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm.eval.return_value = mock_path
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(
+                mock_parm
+            )
+        )
 
         assert not result
 
@@ -93,7 +105,11 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm.parmTemplate.return_value = mock_template
         mock_parm.evalAsNode.return_value = mocker.MagicMock(spec=hou.Node)
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(
+                mock_parm
+            )
+        )
 
         assert result
 
@@ -117,7 +133,11 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm.parmTemplate.return_value = mock_template
         mock_parm.evalAsNode.return_value = None
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(
+                mock_parm
+            )
+        )
 
         assert not result
 
@@ -140,7 +160,11 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm.unexpandedString.return_value = mocker.MagicMock(spec=str)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(
+                mock_parm
+            )
+        )
 
         assert not result
 
@@ -158,7 +182,11 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(
+                mock_parm
+            )
+        )
 
         assert not result
 
@@ -171,7 +199,11 @@ class Test__valid_to_convert_to_absolute_reference:
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_absolute_reference(
+                mock_parm
+            )
+        )
 
         assert not result
 
@@ -188,7 +220,11 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm.eval.return_value = mocker.MagicMock(spec=str)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(
+                mock_parm
+            )
+        )
 
         assert not result
 
@@ -207,7 +243,11 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm.eval.return_value = mock_path
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(
+                mock_parm
+            )
+        )
 
         assert not result
 
@@ -227,7 +267,11 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm.eval.return_value = mock_path
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(
+                mock_parm
+            )
+        )
 
         assert not result
 
@@ -251,7 +295,11 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm.parmTemplate.return_value = mock_template
         mock_parm.evalAsNode.return_value = mocker.MagicMock(spec=hou.Node)
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(
+                mock_parm
+            )
+        )
 
         assert result
 
@@ -275,7 +323,11 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm.parmTemplate.return_value = mock_template
         mock_parm.evalAsNode.return_value = None
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(
+                mock_parm
+            )
+        )
 
         assert not result
 
@@ -298,7 +350,11 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm.unexpandedString.return_value = mocker.MagicMock(spec=str)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(
+                mock_parm
+            )
+        )
 
         assert not result
 
@@ -316,7 +372,11 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(
+                mock_parm
+            )
+        )
 
         assert not result
 
@@ -329,7 +389,11 @@ class Test__valid_to_convert_to_relative_reference:
         mock_parm = mocker.MagicMock(spec=hou.Parm)
         mock_parm.parmTemplate.return_value = mock_template
 
-        result = houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(mock_parm)
+        result = (
+            houdini_toolbox.ui.menus.parmmenu._valid_to_convert_to_relative_reference(
+                mock_parm
+            )
+        )
 
         assert not result
 
@@ -349,8 +413,10 @@ class Test_convert_absolute_to_relative_path_context:
 
         scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
-        result = houdini_toolbox.ui.menus.parmmenu.convert_absolute_to_relative_path_context(
-            scriptargs
+        result = (
+            houdini_toolbox.ui.menus.parmmenu.convert_absolute_to_relative_path_context(
+                scriptargs
+            )
         )
 
         assert not result
@@ -369,8 +435,10 @@ class Test_convert_absolute_to_relative_path_context:
 
         scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
-        result = houdini_toolbox.ui.menus.parmmenu.convert_absolute_to_relative_path_context(
-            scriptargs
+        result = (
+            houdini_toolbox.ui.menus.parmmenu.convert_absolute_to_relative_path_context(
+                scriptargs
+            )
         )
 
         assert result
@@ -420,8 +488,10 @@ class Test_convert_relative_to_absolute_path_context:
 
         scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
-        result = houdini_toolbox.ui.menus.parmmenu.convert_relative_to_absolute_path_context(
-            scriptargs
+        result = (
+            houdini_toolbox.ui.menus.parmmenu.convert_relative_to_absolute_path_context(
+                scriptargs
+            )
         )
 
         assert not result
@@ -440,8 +510,10 @@ class Test_convert_relative_to_absolute_path_context:
 
         scriptargs = {"parms": (mock_parm1, mock_parm2)}
 
-        result = houdini_toolbox.ui.menus.parmmenu.convert_relative_to_absolute_path_context(
-            scriptargs
+        result = (
+            houdini_toolbox.ui.menus.parmmenu.convert_relative_to_absolute_path_context(
+                scriptargs
+            )
         )
 
         assert result

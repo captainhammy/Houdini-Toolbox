@@ -8,7 +8,7 @@
 from PySide2 import QtCore, QtGui
 
 # Houdini Toolbox
-import houdini_toolbox.ui.icons  # noqa: F401 # pylint: disable=unused-import
+import houdini_toolbox.ui.icons  # type: ignore # noqa: F401 # pylint: disable=no-name-in-module,unused-import
 from houdini_toolbox.sohohooks.aovs import manager
 from houdini_toolbox.sohohooks.aovs.aov import AOV, IntrinsicAOVGroup
 from houdini_toolbox.ui.aovs import utils
@@ -408,11 +408,7 @@ class LeafFilterProxyModel(QtCore.QSortFilterProxyModel):
 
         num_children = model.rowCount(source_index)
 
-        for i in range(num_children):
-            if self.filterAcceptsRow(i, source_index):
-                return True
-
-        return False
+        return any(self.filterAcceptsRow(i, source_index) for i in range(num_children))
 
     def insert_data(self, data, position=None):
         """Insert data at an optional position."""
@@ -522,9 +518,8 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
 
             return True
 
-        if role == self.sortRole:
-            if isinstance(node, AOVBaseNode):
-                return node.name
+        if role == self.sortRole and isinstance(node, AOVBaseNode):
+            return node.name
 
         return None
 
@@ -549,7 +544,7 @@ class BaseAOVTreeModel(QtCore.QAbstractItemModel):
 
         return QtCore.QModelIndex()
 
-    def is_installed(self, node):  # pylint: disable=no-self-use,unused-argument
+    def is_installed(self, node):  # pylint: disable=unused-argument
         """Check whether a node is installed."""
         return False
 
@@ -954,7 +949,7 @@ class AOVGroupEditListModel(QtCore.QAbstractListModel):
 
     @property
     def checked(self):
-        """A mapping of whether or not things are checked."""
+        """A mapping of whether things are checked."""
         return self._checked
 
     # -------------------------------------------------------------------------
@@ -1054,7 +1049,7 @@ class InfoTableModel(QtCore.QAbstractTableModel):
         """Item flags."""
         return QtCore.Qt.ItemIsEnabled
 
-    def index(self, row, column, parent=QtCore.QModelIndex()):
+    def index(self, row, column, parent=QtCore.QModelIndex()):  # noqa: B008
         """Get an index at a certain location."""
         return self.createIndex(row, column, parent)
 

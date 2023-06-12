@@ -7,13 +7,18 @@
 # Standard Library
 import os
 import pickle
-from typing import List
+from typing import Any, List, Tuple
 
 # Third Party
 from PySide2 import QtCore, QtGui
 
 # Houdini Toolbox
-from houdini_toolbox.sohohooks.aovs.aov import ALLOWABLE_VALUES, AOV, AOVGroup, IntrinsicAOVGroup
+from houdini_toolbox.sohohooks.aovs.aov import (
+    ALLOWABLE_VALUES,
+    AOV,
+    AOVGroup,
+    IntrinsicAOVGroup,
+)
 from houdini_toolbox.ui.aovs import uidata
 
 # Houdini
@@ -54,15 +59,11 @@ class AOVViewerInterface(QtCore.QObject):
 # =============================================================================
 
 
-def _get_item_menu_index(items, item):
+def _get_item_menu_index(items, item) -> int:
     """Function to determine which index an item represents."""
-    idx = 0
-
-    for itm in items:
+    for idx, itm in enumerate(items):
         if item == itm[0]:
             return idx
-
-        idx += 1
 
     return 0
 
@@ -72,7 +73,7 @@ def _get_item_menu_index(items, item):
 # =============================================================================
 
 
-def apply_elements_as_parms(elements, nodes):
+def apply_elements_as_parms(elements, nodes) -> None:
     """Apply a list of elements are multiparms."""
     aovs = flatten_element_list(elements)
 
@@ -80,16 +81,16 @@ def apply_elements_as_parms(elements, nodes):
         apply_to_node_as_parms(node, aovs)
 
 
-def apply_elements_as_string(elements, nodes):
+def apply_elements_as_string(elements, nodes) -> None:
     """Apply a list of elements at render time."""
     value = element_list_as_string(elements)
 
     for node in nodes:
-        # Need to add the automatic aov parameters if they doesn't exist.
+        # Need to add the automatic aov parameters if they don't exist.
         if node.parm("auto_aovs") is None:
             # Add the parameters from the .ds file.
             hou.hscript(
-                f'opproperty -f -F "Extra Image Planes" {node.path()} ht_parms ht_automatic_aovs'
+                f'opproperty -f -F "Extra Image Planes" {node.path()} houdini_toolbox_parms houdini_toolbox_automatic_aovs'
             )
 
         parm = node.parm("auto_aovs")
@@ -99,7 +100,7 @@ def apply_elements_as_string(elements, nodes):
             node.parm("enable_auto_aovs").set(True)
 
 
-def apply_to_node_as_parms(node, aovs):
+def apply_to_node_as_parms(node, aovs) -> None:
     """Apply a list of AOVs to a Mantra node using multiparm entries."""
     num_aovs = len(aovs)
 
@@ -135,7 +136,7 @@ def apply_to_node_as_parms(node, aovs):
             node.parm(f"vm_lightexport_select{idx}").set(aov.lightexport_select)
 
 
-def build_aovs_from_multiparm(node):
+def build_aovs_from_multiparm(node) -> None:
     """Build a list of AOVs from a Mantra node's multiparm."""
     aovs = []
 
@@ -185,7 +186,7 @@ def decode_aov_mime_data(mime_data: QtCore.QMimeData) -> List:
     return pickle.loads(mime_data.data(_AOV_MIME_TYPE).data())
 
 
-def encode_aov_mime_data(mime_data: QtCore.QMimeData, aov_data: List):
+def encode_aov_mime_data(mime_data: QtCore.QMimeData, aov_data: List) -> None:
     """Encode AOV data into the mime data.
 
     :param mime_data: The mime data to decode from.
@@ -196,7 +197,7 @@ def encode_aov_mime_data(mime_data: QtCore.QMimeData, aov_data: List):
     mime_data.setData(_AOV_MIME_TYPE, QtCore.QByteArray(pickle.dumps(aov_data)))
 
 
-def get_selected_mantra_nodes():
+def get_selected_mantra_nodes() -> Tuple[hou.RopNode]:
     """Find any currently selected Mantra (ifd) nodes."""
     nodes = hou.selectedNodes()
 
@@ -227,7 +228,7 @@ def flatten_element_list(elements):
     return aovs
 
 
-def get_aov_names_from_multiparms(node):
+def get_aov_names_from_multiparms(node: hou.RopNode) -> List[str]:
     """Get a list of AOV names from a Mantra node's multiparm."""
     names = []
 
@@ -239,7 +240,7 @@ def get_aov_names_from_multiparms(node):
     return names
 
 
-def get_icon_for_group(group):
+def get_icon_for_group(group) -> QtGui.QIcon:
     """Get the icon for an AOVGroup."""
     # Group has a custom icon path so use. it.
     if group.icon is not None:
@@ -251,7 +252,7 @@ def get_icon_for_group(group):
     return QtGui.QIcon(":houdini_toolbox/rsc/icons/aovs/group.png")
 
 
-def get_icon_for_vex_type(vextype):
+def get_icon_for_vex_type(vextype) -> QtGui.QIcon:
     """Get the icon corresponding to a VEX type."""
     if vextype == "unitvector":
         vextype = "vector"
@@ -283,13 +284,13 @@ def has_aov_mime_data(mime_data: QtCore.QMimeData) -> bool:
     """Check if the mime data contains AOV data.
 
     :param mime_data: The mime data to check.
-    :return: Whether or not the mime data contains AOV data.
+    :return: Whether the mime data contains AOV data.
 
     """
     return mime_data.hasFormat(_AOV_MIME_TYPE)
 
 
-def is_file_path_valid(path):
+def is_file_path_valid(path: str) -> bool:
     """Check if a file path is valid."""
     if not path:
         return False
@@ -307,12 +308,12 @@ def is_file_path_valid(path):
     return True
 
 
-def is_value_default(value, field):
+def is_value_default(value: Any, field: str):
     """Check if a value for a field is default."""
     return uidata.DEFAULT_VALUES[field] == value
 
 
-def element_list_as_string(elements):
+def element_list_as_string(elements) -> str:
     """Flatten a list of elements into a space separated string."""
     names = []
 
@@ -326,7 +327,7 @@ def element_list_as_string(elements):
     return " ".join(names)
 
 
-def open_aov_editor(node):
+def open_aov_editor(node: hou.RopNode) -> None:
     """Open the AOV Manager dialog based on a node."""
     interface = hou.pypanel.interfaceByName("aov_manager")
 

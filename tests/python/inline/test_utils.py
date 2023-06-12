@@ -16,7 +16,6 @@ from houdini_toolbox.inline import utils
 # Houdini
 import hou
 
-
 # Need to ensure the hip file gets loaded.
 pytestmark = pytest.mark.usefixtures("load_module_test_file")
 

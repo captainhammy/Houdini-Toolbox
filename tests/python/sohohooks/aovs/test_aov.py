@@ -294,12 +294,18 @@ class Test_AOV:
             "houdini_toolbox.sohohooks.aovs.aov.AOV.lightexport_select",
             new_callable=mocker.PropertyMock,
         )
-        mock_write_light = mocker.patch("houdini_toolbox.sohohooks.aovs.aov._write_light")
-        mock_write_single = mocker.patch("houdini_toolbox.sohohooks.aovs.aov._write_single_channel")
+        mock_write_light = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov._write_light"
+        )
+        mock_write_single = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov._write_single_channel"
+        )
         mock_write_per_category = mocker.patch(
             "houdini_toolbox.sohohooks.aovs.aov._write_per_category"
         )
-        mock_write_to_ifd = mocker.patch("houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd")
+        mock_write_to_ifd = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd"
+        )
 
         inst = init_aov()
 
@@ -783,8 +789,12 @@ class Test_AOV:
 
     def test_update_data__unknown(self, init_aov, mocker):
         """Test updating data with an unknown key that won't be added to the data."""
-        mocker.patch("houdini_toolbox.sohohooks.aovs.aov.ALLOWABLE_VALUES", return_value={})
-        mock_verify = mocker.patch("houdini_toolbox.sohohooks.aovs.aov.AOV._verify_internal_data")
+        mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov.ALLOWABLE_VALUES", return_value={}
+        )
+        mock_verify = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov.AOV._verify_internal_data"
+        )
 
         inst = init_aov()
         inst._data = {}
@@ -799,8 +809,12 @@ class Test_AOV:
 
     def test_update_data__settable(self, init_aov, mocker):
         """Test updating data with a known value that will be updated"""
-        mocker.patch("houdini_toolbox.sohohooks.aovs.aov.ALLOWABLE_VALUES", return_value={})
-        mock_verify = mocker.patch("houdini_toolbox.sohohooks.aovs.aov.AOV._verify_internal_data")
+        mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov.ALLOWABLE_VALUES", return_value={}
+        )
+        mock_verify = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov.AOV._verify_internal_data"
+        )
 
         inst = init_aov()
         inst._data = {"key": None}
@@ -815,7 +829,9 @@ class Test_AOV:
 
     def test_update_data__allowable_valid(self, init_aov, mocker):
         """Test updating data with a valid checked value."""
-        mock_verify = mocker.patch("houdini_toolbox.sohohooks.aovs.aov.AOV._verify_internal_data")
+        mock_verify = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov.AOV._verify_internal_data"
+        )
 
         inst = init_aov()
         inst._data = {"key": None}
@@ -1557,7 +1573,9 @@ class Test_IntrinsicAOVGroup:
 
     def test___init__(self, mocker):
         """Test object initialization."""
-        mock_super_init = mocker.patch("houdini_toolbox.sohohooks.aovs.aov.AOVGroup.__init__")
+        mock_super_init = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov.AOVGroup.__init__"
+        )
 
         mock_name = mocker.MagicMock(spec=str)
 
@@ -1885,7 +1903,9 @@ class Test__write_light:
 
     def test_suffix_prefix(self, mocker, patch_soho):
         """Test when adding a suffix and prefix."""
-        mock_write = mocker.patch("houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd")
+        mock_write = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd"
+        )
 
         mock_light = mocker.MagicMock()
 
@@ -1921,7 +1941,9 @@ class Test__write_light:
 
     def test_no_suffix_path_prefix(self, mocker, patch_soho):
         """Test with no suffix and a path type prefix."""
-        mock_write = mocker.patch("houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd")
+        mock_write = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd"
+        )
 
         mock_name = mocker.MagicMock(spec=str)
         mock_light = mocker.MagicMock()
@@ -1954,7 +1976,9 @@ class Test__write_light:
 
     def test_suffix_no_prefix(self, mocker, patch_soho):
         """Test with no prefix and a suffix."""
-        mock_write = mocker.patch("houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd")
+        mock_write = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd"
+        )
 
         mock_name = mocker.MagicMock(spec=str)
 
@@ -1989,7 +2013,9 @@ class Test__write_light:
 
     def test_empty_suffix(self, mocker, patch_soho):
         """Test with no prefix and an empty suffix."""
-        mock_write = mocker.patch("houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd")
+        mock_write = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd"
+        )
 
         mock_name = mocker.MagicMock(spec=str)
 
@@ -2023,8 +2049,12 @@ class Test__write_per_category:
 
     def test_no_category(self, mocker):
         """Test when the category is 'None'."""
-        mock_build = mocker.patch("houdini_toolbox.sohohooks.aovs.aov._build_category_map")
-        mock_write = mocker.patch("houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd")
+        mock_build = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov._build_category_map"
+        )
+        mock_write = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd"
+        )
 
         mock_light1 = mocker.MagicMock()
         mock_light1.getName.return_value = "light1"
@@ -2057,8 +2087,12 @@ class Test__write_per_category:
 
     def test_category(self, mocker):
         """Test with a non-None category."""
-        mock_build = mocker.patch("houdini_toolbox.sohohooks.aovs.aov._build_category_map")
-        mock_write = mocker.patch("houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd")
+        mock_build = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov._build_category_map"
+        )
+        mock_write = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd"
+        )
 
         mock_light1 = mocker.MagicMock()
         mock_light1.getName.return_value = "light1"
@@ -2100,7 +2134,9 @@ class Test__write_single_channel:
 
     def test_lights(self, mocker):
         """Test writing multiple lights."""
-        mock_write = mocker.patch("houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd")
+        mock_write = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd"
+        )
 
         mock_light1 = mocker.MagicMock()
         mock_light1.getName.return_value = "light1"
@@ -2123,7 +2159,9 @@ class Test__write_single_channel:
 
     def test_no_lights(self, mocker):
         """Test writing no lights."""
-        mock_write = mocker.patch("houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd")
+        mock_write = mocker.patch(
+            "houdini_toolbox.sohohooks.aovs.aov._write_data_to_ifd"
+        )
 
         lights = ()
 

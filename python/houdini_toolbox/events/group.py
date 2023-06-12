@@ -13,15 +13,15 @@ class HoudiniEventGroup:
 
     """
 
-    def __init__(self):
-        self._data = {}
-        self._event_map = {}
+    def __init__(self) -> None:
+        self._data: dict = {}
+        self._event_map: dict = {}
 
     # -------------------------------------------------------------------------
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__}>"
 
     # -------------------------------------------------------------------------

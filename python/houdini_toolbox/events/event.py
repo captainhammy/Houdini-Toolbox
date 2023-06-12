@@ -4,6 +4,7 @@
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
@@ -28,7 +29,7 @@ class HoudiniEventFactory:
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__}>"
 
     # -------------------------------------------------------------------------
@@ -61,7 +62,7 @@ class HoudiniEvent:
 
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self._data: Dict[Any, Any] = {}
         self._enabled = True
         self._name = name
@@ -73,7 +74,7 @@ class HoudiniEvent:
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__}: {self.name}>"
 
     # -------------------------------------------------------------------------
@@ -87,11 +88,11 @@ class HoudiniEvent:
 
     @property
     def enabled(self) -> bool:
-        """Whether or not the action is enabled."""
+        """Whether the action is enabled."""
         return self._enabled
 
     @enabled.setter
-    def enabled(self, enabled):
+    def enabled(self, enabled: bool) -> None:
         self._enabled = enabled
 
     @property
@@ -113,7 +114,7 @@ class HoudiniEvent:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def register_item(self, item: HoudiniEventItem):
+    def register_item(self, item: HoudiniEventItem) -> None:
         """Register an item to run.
 
         :param item: An item to run.
@@ -126,7 +127,7 @@ class HoudiniEvent:
         priority_items = self.item_map.setdefault(item.priority, [])
         priority_items.append(item)
 
-    def run(self, scriptargs: dict):
+    def run(self, scriptargs: dict) -> None:
         """Run the items with the given args.
 
         Items are run in decreasing order of priority.
@@ -144,7 +145,7 @@ class HoudiniEvent:
 
         with self.stats:
             # Run in order of decreasing priority
-            for priority in reversed(sorted(self.item_map.keys())):
+            for priority in sorted(self.item_map.keys(), reverse=True):
                 priority_items = self.item_map[priority]
 
                 for item in priority_items:

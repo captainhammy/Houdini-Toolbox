@@ -12,7 +12,7 @@ import hou
 # =============================================================================
 
 
-def clear_session_settings(scriptargs: dict):  # pylint: disable=unused-argument
+def clear_session_settings(scriptargs: dict) -> None:  # pylint: disable=unused-argument
     """Clear out potentially annoying/bad settings.
 
     :param scriptargs: Event data.

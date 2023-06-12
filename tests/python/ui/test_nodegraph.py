@@ -32,7 +32,9 @@ class Test_handle_houdini_paste_event:
         mock_move = mocker.patch("nodegraphutils.moveItemsToLocation")
         mock_update = mocker.patch("nodegraphutils.updateCurrentItem")
 
-        mock_run_event = mocker.patch("houdini_toolbox.ui.nodegraph.EVENT_MANAGER.run_event")
+        mock_run_event = mocker.patch(
+            "houdini_toolbox.ui.nodegraph.EVENT_MANAGER.run_event"
+        )
 
         result = houdini_toolbox.ui.nodegraph.handle_houdini_paste_event(mock_event)
 
@@ -71,7 +73,9 @@ class Test_handle_houdini_paste_event:
         mock_move = mocker.patch("nodegraphutils.moveItemsToLocation")
         mock_update = mocker.patch("nodegraphutils.updateCurrentItem")
 
-        mock_run_event = mocker.patch("houdini_toolbox.ui.nodegraph.EVENT_MANAGER.run_event")
+        mock_run_event = mocker.patch(
+            "houdini_toolbox.ui.nodegraph.EVENT_MANAGER.run_event"
+        )
 
         result = houdini_toolbox.ui.nodegraph.handle_houdini_paste_event(mock_event)
 
@@ -107,7 +111,9 @@ class Test_handle_houdini_paste_event:
         mock_move = mocker.patch("nodegraphutils.moveItemsToLocation")
         mock_update = mocker.patch("nodegraphutils.updateCurrentItem")
 
-        mock_run_event = mocker.patch("houdini_toolbox.ui.nodegraph.EVENT_MANAGER.run_event")
+        mock_run_event = mocker.patch(
+            "houdini_toolbox.ui.nodegraph.EVENT_MANAGER.run_event"
+        )
 
         result = houdini_toolbox.ui.nodegraph.handle_houdini_paste_event(mock_event)
 

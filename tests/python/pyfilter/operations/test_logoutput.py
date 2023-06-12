@@ -29,7 +29,9 @@ def init_operation(mocker):
 @pytest.fixture
 def patch_logger(mocker):
     """Mock the fake 'mantra' module logger."""
-    yield mocker.patch("houdini_toolbox.pyfilter.operations.logoutput._logger", autospec=True)
+    yield mocker.patch(
+        "houdini_toolbox.pyfilter.operations.logoutput._logger", autospec=True
+    )
 
 
 # =============================================================================

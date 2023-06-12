@@ -5,6 +5,7 @@
 # =============================================================================
 
 # flake8: noqa: F401
+
 # Houdini Toolbox
 from houdini_toolbox.events.events import rop_render, scene_load
 from houdini_toolbox.events.manager import (
@@ -13,7 +14,12 @@ from houdini_toolbox.events.manager import (
     register_item,
     run_event,
 )
-from houdini_toolbox.events.types import HipFileEvents, NodeEvents, RopEvents, SceneEvents
+from houdini_toolbox.events.types import (
+    HipFileEvents,
+    NodeEvents,
+    RopEvents,
+    SceneEvents,
+)
 
 # =============================================================================
 

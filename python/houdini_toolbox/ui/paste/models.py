@@ -4,6 +4,7 @@
 # IMPORTS
 # ==============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
@@ -54,7 +55,7 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
         self.refresh()
 
     def columnCount(  # pylint: disable=unused-argument
-        self, parent: QtCore.QModelIndex = QtCore.QModelIndex()
+        self, parent: QtCore.QModelIndex = QtCore.QModelIndex()  # noqa: B008
     ) -> int:
         """The number of columns.
 
@@ -90,14 +91,13 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
             if column == 2:
                 return item.author
 
-            if column == 3:
-                if item.date is not None:
-                    return utils.date_to_string(item.date)
+            if column == 3 and item.date is not None:
+                return utils.date_to_string(item.date)
 
         return None
 
     def flags(
-        self, index: QtCore.QModelIndex  # pylint: disable=no-self-use,unused-argument
+        self, index: QtCore.QModelIndex  # pylint: disable=unused-argument
     ) -> QtCore.Qt.ItemFlags:
         """Item flags.
 
@@ -129,7 +129,10 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
         return QtCore.QAbstractTableModel.headerData(self, section, orientation, role)
 
     def index(
-        self, row: int, column: int, parent: QtCore.QModelIndex = QtCore.QModelIndex()
+        self,
+        row: int,
+        column: int,
+        parent: QtCore.QModelIndex = QtCore.QModelIndex(),  # noqa: B008
     ) -> QtCore.QModelIndex:
         """Create model indexes for items.
 
@@ -152,7 +155,7 @@ class BasicSourceItemTableModel(QtCore.QAbstractTableModel):
         self.modelReset.emit()
 
     def rowCount(  # pylint: disable=unused-argument
-        self, parent: QtCore.QModelIndex = QtCore.QModelIndex()
+        self, parent: QtCore.QModelIndex = QtCore.QModelIndex()  # noqa: B008
     ) -> int:
         """The number of rows.
 

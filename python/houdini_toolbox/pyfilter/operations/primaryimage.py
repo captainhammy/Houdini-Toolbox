@@ -4,6 +4,7 @@
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
@@ -11,7 +12,10 @@ import logging
 from typing import TYPE_CHECKING, Optional
 
 # Houdini Toolbox
-from houdini_toolbox.pyfilter.operations.operation import PyFilterOperation, log_filter_call
+from houdini_toolbox.pyfilter.operations.operation import (
+    PyFilterOperation,
+    log_filter_call,
+)
 from houdini_toolbox.pyfilter.property import set_property
 
 if TYPE_CHECKING:
@@ -34,7 +38,7 @@ class SetPrimaryImage(PyFilterOperation):
 
     """
 
-    def __init__(self, manager: PyFilterManager):
+    def __init__(self, manager: PyFilterManager) -> None:
         super().__init__(manager)
 
         self._disable_primary_image = False
@@ -65,7 +69,7 @@ class SetPrimaryImage(PyFilterOperation):
         """Build an argument string for this operation.
 
         :param primary_image_path: The primary image path to set.
-        :param disable_primary_image: Whether or not to disable the primary image.
+        :param disable_primary_image: Whether to disable the primary image.
         :return: The constructed argument string.
 
         """
@@ -80,7 +84,7 @@ class SetPrimaryImage(PyFilterOperation):
         return " ".join(args)
 
     @staticmethod
-    def register_parser_args(parser: argparse.ArgumentParser):
+    def register_parser_args(parser: argparse.ArgumentParser) -> None:
         """Register interested parser args for this operation.
 
         :param parser: The argument parser to attach arguments to.
@@ -98,7 +102,7 @@ class SetPrimaryImage(PyFilterOperation):
     # -------------------------------------------------------------------------
 
     @log_filter_call
-    def filter_camera(self):
+    def filter_camera(self) -> None:
         """Apply camera properties.
 
         :return:
@@ -111,7 +115,7 @@ class SetPrimaryImage(PyFilterOperation):
         elif self.primary_image_path is not None:
             set_property("image:filename", self.primary_image_path)
 
-    def process_parsed_args(self, filter_args: argparse.Namespace):
+    def process_parsed_args(self, filter_args: argparse.Namespace) -> None:
         """Process any parsed args that the operation may be interested in.
 
         :param filter_args: The argparse namespace containing processed args.
@@ -125,12 +129,12 @@ class SetPrimaryImage(PyFilterOperation):
             self._primary_image_path = filter_args.primary_image_path
 
     def should_run(self) -> bool:
-        """Determine whether or not this filter should be run.
+        """Determine whether this filter should be run.
 
         This operation will run if it is disabling the primary image or needs
         to set the image path.
 
-        :return: Whether or not this operation should run.
+        :return: Whether this operation should run.
 
         """
         return self.disable_primary_image or self.primary_image_path is not None

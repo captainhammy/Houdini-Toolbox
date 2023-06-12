@@ -4,14 +4,23 @@
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
+import contextlib
 import ctypes
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Sequence, Tuple, Type, Union
 
 # Houdini
 import hou
+
+if TYPE_CHECKING:
+    GeometryEntity = Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex]
+    GeometryEntityType = Union[
+        Type[hou.Geometry], Type[hou.Point], Type[hou.Prim], Type[hou.Vertex]
+    ]
+
 
 # =============================================================================
 # GLOBALS
@@ -180,7 +189,7 @@ def geo_details_match(geometry1: hou.Geometry, geometry2: hou.Geometry) -> bool:
 
     :param geometry1: A geometry detail.
     :param geometry2: A geometry detail.
-    :return: Whether or not the objects represent the same detail.
+    :return: Whether the objects represent the same detail.
 
     """
     # pylint: disable=protected-access
@@ -209,9 +218,7 @@ def get_attrib_owner(attribute_type: hou.attribType) -> int:
         raise ValueError(f"Invalid attribute type: {attribute_type}") from exc
 
 
-def get_attrib_owner_from_geometry_entity_type(
-    entity_type: Union[hou.Point, hou.Prim, hou.Vertex]
-) -> int:
+def get_attrib_owner_from_geometry_entity_type(entity_type: GeometryEntityType) -> int:
     """Get an HDK compatible attribute owner value from a geometry class.
 
     The type can be of hou.Geometry, hou.Point, hou.Prim (or subclasses) or hou.Vertex.
@@ -221,15 +228,12 @@ def get_attrib_owner_from_geometry_entity_type(
 
     """
     # If the class is a base class in the map then just return it.
-    try:
+    with contextlib.suppress(KeyError):
         return _GEOMETRY_ATTRIB_MAP[entity_type]
-
-    except KeyError:
-        pass
 
     # If it is not in the map then it is most likely a subclass of hou.Prim,
     # such as hou.Polygon, hou.Face, hou.Volume, etc.  We will check the class
-    # against being a subclass of any of our valid types and if it is, return
+    # against being a subclass of our valid types and if it is, return
     # the owner of that class.
     for key, value in list(_GEOMETRY_ATTRIB_MAP.items()):
         if issubclass(entity_type, key):
@@ -270,8 +274,8 @@ def get_attrib_storage(data_type: hou.attribType) -> int:
 
 
 def get_entity_data(
-    entity: Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex]
-) -> Tuple[Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex], hou.Geometry, int]:
+    entity: GeometryEntity,
+) -> Tuple[GeometryEntityType, hou.Geometry, int]:
     """Get entity data from a list of entities.
 
     :param entity: A geometry entity.
@@ -300,10 +304,8 @@ def get_entity_data(
 
 
 def get_entity_data_from_list(
-    entities: List[Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex]]
-) -> Tuple[
-    Union[hou.Geometry, hou.Point, hou.Prim, hou.Vertex], hou.Geometry, List[int]
-]:
+    entities: List[GeometryEntity],
+) -> Tuple[GeometryEntityType, hou.Geometry, List[int]]:
     """Get entity data from a list of entities.
 
     :param entities: List of geometry entities.
@@ -478,7 +480,7 @@ def get_points_from_list(
     """
     # Return a empty tuple if the point list is empty.
     if not point_list:
-        return tuple()
+        return ()
 
     # Convert the list of integers to a space separated string.
     point_str = " ".join([str(i) for i in point_list])
@@ -499,7 +501,7 @@ def get_prims_from_list(
     """
     # Return a empty tuple if the prim list is empty.
     if not prim_list:
-        return tuple()
+        return ()
 
     # Convert the list of integers to a space separated string.
     prim_str = " ".join([str(i) for i in prim_list])
@@ -512,7 +514,7 @@ def is_parm_template_multiparm_folder(parm_template: hou.ParmTemplate) -> bool:
     """Returns True if the parm template represents a multiparm folder type.
 
     :param parm_template: The parameter template to check.
-    :return: Whether or not the template represents a multiparm folder.
+    :return: Whether the template represents a multiparm folder.
 
     """
     if not isinstance(parm_template, hou.FolderParmTemplate):
@@ -548,7 +550,7 @@ def string_encode(value: Union[float, int, str]) -> bytes:
     return str(value).encode("utf-8")
 
 
-def validate_multiparm_resolve_values(name: str, indices: Sequence[int]):
+def validate_multiparm_resolve_values(name: str, indices: Sequence[int]) -> None:
     """Validate a multiparm token string and the indices to be resolved.
 
     This function will raise a ValueError if there are not enough indices

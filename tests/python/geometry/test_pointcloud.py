@@ -13,7 +13,6 @@ from houdini_toolbox.geometry.pointcloud import PointCloud
 # Houdini
 import hou
 
-
 # Need to ensure the hip file gets loaded.
 pytestmark = pytest.mark.usefixtures("load_module_test_file")
 

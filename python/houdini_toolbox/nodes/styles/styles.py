@@ -4,11 +4,12 @@
 # IMPORTS
 # =============================================================================
 
+# Future
 from __future__ import annotations
 
 # Standard Library
 import re
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Tuple
 
 if TYPE_CHECKING:
     import hou
@@ -37,7 +38,7 @@ class StyleConstant:
         color_type: str,
         shape: Optional[str] = None,
         file_path: Optional[str] = None,
-    ):
+    ) -> None:
         self._color = color
         self._color_type = color_type
         self._shape = shape
@@ -48,23 +49,23 @@ class StyleConstant:
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, StyleConstant):
             return NotImplemented
 
         # For our purposes we only care if the names match.
         return self.name == other.name
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.name)
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         if not isinstance(other, StyleConstant):
             return NotImplemented
 
         return not self.__eq__(other)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<StyleConstant {self.name} ({self.color})>"
 
     # -------------------------------------------------------------------------
@@ -108,7 +109,7 @@ class StyleConstant:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def apply_to_node(self, node: hou.Node):
+    def apply_to_node(self, node: hou.Node) -> None:
         """Apply styling to a node.
 
         :param node: Node to apply to
@@ -141,7 +142,7 @@ class StyleRule:
         color_type: str,
         shape: Optional[str] = None,
         file_path: Optional[str] = None,
-    ):
+    ) -> None:
         self._color = color
         self._color_type = color_type
         self._shape = shape
@@ -152,26 +153,26 @@ class StyleRule:
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, StyleRule):
             return NotImplemented
 
         # For our purposes we only care if the names match.
         return self.name == other.name
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.name)
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         if not isinstance(other, StyleRule):
             return NotImplemented
 
         return not self.__eq__(other)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<StyleRule {self.name} ({self.color})>"
 
-    def __str__(self):
+    def __str__(self) -> str:
         value = self._get_typed_color_value()
 
         components = [re.sub("\\.*0+$", "", f"{val:0.3f}") for val in value]
@@ -225,7 +226,7 @@ class StyleRule:
     # METHODS
     # -------------------------------------------------------------------------
 
-    def apply_to_node(self, node: hou.Node):
+    def apply_to_node(self, node: hou.Node) -> None:
         """Apply styling to a node.
 
         :param node: Node to apply to
@@ -249,7 +250,9 @@ class ConstantRule:
 
     """
 
-    def __init__(self, name: str, constant_name: str, file_path: Optional[str] = None):
+    def __init__(
+        self, name: str, constant_name: str, file_path: Optional[str] = None
+    ) -> None:
         self._constant_name = constant_name
         self._file_path = file_path
         self._name = name
@@ -258,23 +261,23 @@ class ConstantRule:
     # SPECIAL METHODS
     # -------------------------------------------------------------------------
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, ConstantRule):
             return NotImplemented
 
         # For our purposes we only care if the names match.
         return self.name == other.name
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.constant_name, self.name))
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         if not isinstance(other, ConstantRule):
             return NotImplemented
 
         return not self.__eq__(other)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<ConstantRule {self.name} ({self.constant_name})>"
 
     # -------------------------------------------------------------------------
